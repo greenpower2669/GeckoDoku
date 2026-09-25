@@ -162,3 +162,34 @@ Stats
 professorUsed pendant tentative
 └── victoire
     └── completed_with_prof + completed_with_prof_diff.
+
+
+UI Prof v0.8
+screenRoot : FrameLayout
+├── contenu principal : LinearLayout
+│   ├── titre/info/status
+│   ├── grille
+│   ├── controlsPanel
+│   │   ├── taille/difficulté
+│   │   ├── nouvelle/stats/FX
+│   │   └── rejouer/sauver/journal
+│   └── bouton Prof
+├── ProfessorBubbleView overlay
+│   ├── position = juste au-dessus bouton Prof
+│   ├── × → closeProfessorBubble()
+│   └── ouverture → controlsPanel GONE
+└── VictoryCelebrationView overlay
+
+Célébration sonore
+VictoryCelebrationView
+└── onFireworkBurst(level,index,last)
+    └── FxFeedback.celebrationBurst()
+        ├── ton lancement
+        ├── ton explosion différé
+        └── accent final haut niveau
+
+Arrêt
+├── bouton FX OFF
+├── toucher célébration
+└── release
+→ FxFeedback.stopCelebration().

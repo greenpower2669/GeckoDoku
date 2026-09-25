@@ -159,3 +159,35 @@
 - [ ] Vérifier qu'une grille terminée par le Prof déclenche le feu d'artifice.
 - [ ] Vérifier « Terminées avec Prof » dans Stats.
 - [ ] Vérifier que le Prof n'incrémente jamais le compteur d'erreurs.
+
+
+## Fait v0.8.0-dev
+- [x] Sortir la bulle Prof du LinearLayout principal.
+- [x] Ajouter screenRoot FrameLayout.
+- [x] Positionner la bulle juste au-dessus du bouton Prof.
+- [x] Ne plus réduire la grille lors de l'affichage de la bulle.
+- [x] Regrouper les trois lignes de commandes dans controlsPanel.
+- [x] Masquer controlsPanel tant que la bulle est ouverte.
+- [x] Garder le bouton Prof visible.
+- [x] Dessiner une grosse croix × dans la bulle.
+- [x] Restaurer les commandes à la fermeture.
+- [x] Ne pas annuler pendingProfessorHypothesis en fermant seulement la bulle.
+- [x] Émettre un événement à chaque salve visuelle.
+- [x] Ajouter lancement/explosion sonore stylisés.
+- [x] Augmenter naturellement les salves avec la difficulté.
+- [x] Ajouter accent final sur niveaux élevés.
+- [x] Lier les sons de célébration au bouton FX.
+- [x] Arrêter les sons différés lorsque la célébration est fermée.
+- [x] Synchroniser ordre + 4 mémoires.
+
+## Validation v0.8
+- [ ] Compiler GitHub Actions.
+- [ ] Tester 12×12 avec une longue bulle Prof : grille non réduite.
+- [ ] Vérifier que la bulle reste juste au-dessus du bouton Prof.
+- [ ] Vérifier × suffisamment grande et cliquable.
+- [ ] Vérifier retour immédiat des autres boutons.
+- [ ] Fermer la bulle pendant une hypothèse puis reprendre le Prof.
+- [ ] Tester FX ON sur plusieurs difficultés.
+- [ ] Tester FX OFF : célébration visuelle silencieuse.
+- [ ] Fermer la célébration pendant les salves : plus aucun son retardé.
+- [ ] Vérifier Mission Impossible et Infernal : montée sonore plus riche.

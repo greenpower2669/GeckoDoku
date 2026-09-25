@@ -51,6 +51,12 @@ class MainActivity : Activity() {
     private lateinit var professorButton:
         Button
 
+    private lateinit var screenRoot:
+        FrameLayout
+
+    private lateinit var controlsPanel:
+        LinearLayout
+
     private lateinit var professorBubble:
         ProfessorBubbleView
 
@@ -155,6 +161,9 @@ class MainActivity : Activity() {
         professorBubble =
             ProfessorBubbleView(this).apply {
                 visibility = View.GONE
+                onClose = {
+                    closeProfessorBubble()
+                }
             }
 
         status =
@@ -320,12 +329,6 @@ class MainActivity : Activity() {
         )
 
         root.addView(
-            professorBubble,
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
-
-        root.addView(
             status,
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
@@ -430,9 +433,23 @@ class MainActivity : Activity() {
                 )
             }
 
-        root.addView(row1)
-        root.addView(row2)
-        root.addView(row3)
+        controlsPanel =
+            LinearLayout(this).apply {
+                orientation =
+                    LinearLayout.VERTICAL
+
+                addView(row1)
+                addView(row2)
+                addView(row3)
+            }
+
+        root.addView(
+            controlsPanel,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        )
 
         root.addView(
             professorButton,
@@ -442,12 +459,51 @@ class MainActivity : Activity() {
             )
         )
 
-        setContentView(root)
+        screenRoot =
+            FrameLayout(this).apply {
+                addView(
+                    root,
+                    FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT
+                    )
+                )
+
+                addView(
+                    professorBubble,
+                    FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        leftMargin = dp(12)
+                        rightMargin = dp(12)
+                        gravity = Gravity.TOP
+                    }
+                )
+            }
 
         celebrationView =
-            VictoryCelebrationView(this)
+            VictoryCelebrationView(this).apply {
+                visibility = View.GONE
 
-        addContentView(
+                onFireworkBurst = {
+                        level,
+                        burst,
+                        isLast ->
+
+                    fx.celebrationBurst(
+                        level,
+                        burst,
+                        isLast
+                    )
+                }
+
+                onCelebrationStopped = {
+                    fx.stopCelebration()
+                }
+            }
+
+        screenRoot.addView(
             celebrationView,
             FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
@@ -455,8 +511,9 @@ class MainActivity : Activity() {
             )
         )
 
-        celebrationView.visibility =
-            View.GONE
+        setContentView(
+            screenRoot
+        )
 
         protectFromSystemBars(root)
         refreshGameUi()
@@ -1085,8 +1142,9 @@ class MainActivity : Activity() {
             status.text =
                 "Prof Gecko"
 
-            professorBubble
-                .showMessage(message)
+            showProfessorBubble(
+                message
+            )
 
             board.announceForAccessibility(
                 message
@@ -1113,8 +1171,9 @@ class MainActivity : Activity() {
                 next.focusText +
                     "\n\nLes deux geckos semi-transparents sont les deux possibilités. Appuie encore sur Prof Gecko : je testerai la branche qui mène à la contradiction."
 
-            professorBubble
-                .showMessage(message)
+            showProfessorBubble(
+                message
+            )
 
             status.text =
                 "Prof Gecko • 2 possibilités"
@@ -1155,8 +1214,9 @@ class MainActivity : Activity() {
             val message =
                 "Alerte : ma déduction contredit la solution unique. Je refuse de modifier la grille et je garde ce cas pour le debug."
 
-            professorBubble
-                .showMessage(message)
+            showProfessorBubble(
+                message
+            )
 
             status.text =
                 "Prof Gecko • incohérence détectée"
@@ -1189,8 +1249,9 @@ class MainActivity : Activity() {
                     hint.appliedText
             }
 
-        professorBubble
-            .showMessage(message)
+        showProfessorBubble(
+            message
+        )
 
         status.text =
             "Prof Gecko • étape appliquée"
@@ -1233,15 +1294,125 @@ class MainActivity : Activity() {
                 "🧑‍🏫 Prof Gecko"
         }
 
+        closeProfessorBubble()
+    }
+
+    private fun showProfessorBubble(
+        message: String
+    ) {
+        if (
+            ::controlsPanel.isInitialized
+        ) {
+            controlsPanel.visibility =
+                View.GONE
+        }
+
+        professorBubble.showMessage(
+            message
+        )
+
+        professorBubble.bringToFront()
+
+        if (
+            ::celebrationView.isInitialized &&
+            celebrationView.visibility ==
+                View.VISIBLE
+        ) {
+            celebrationView.bringToFront()
+        }
+
+        screenRoot.post {
+            positionProfessorBubble()
+        }
+    }
+
+    private fun closeProfessorBubble() {
         if (
             ::professorBubble.isInitialized
         ) {
             professorBubble.hideMessage()
         }
+
+        if (
+            ::controlsPanel.isInitialized
+        ) {
+            controlsPanel.visibility =
+                View.VISIBLE
+        }
+    }
+
+    private fun positionProfessorBubble() {
+        if (
+            professorBubble.visibility !=
+                View.VISIBLE ||
+            !::screenRoot.isInitialized ||
+            !::professorButton.isInitialized
+        ) {
+            return
+        }
+
+        val availableWidth =
+            (
+                screenRoot.width -
+                    dp(24)
+                ).coerceAtLeast(
+                dp(220)
+            )
+
+        professorBubble.measure(
+            View.MeasureSpec.makeMeasureSpec(
+                availableWidth,
+                View.MeasureSpec.EXACTLY
+            ),
+            View.MeasureSpec.makeMeasureSpec(
+                screenRoot.height,
+                View.MeasureSpec.AT_MOST
+            )
+        )
+
+        val rootLocation =
+            IntArray(2)
+
+        val buttonLocation =
+            IntArray(2)
+
+        screenRoot.getLocationOnScreen(
+            rootLocation
+        )
+
+        professorButton.getLocationOnScreen(
+            buttonLocation
+        )
+
+        val buttonTop =
+            buttonLocation[1] -
+                rootLocation[1]
+
+        val top =
+            (
+                buttonTop -
+                    professorBubble.measuredHeight -
+                    dp(8)
+                ).coerceAtLeast(
+                dp(8)
+            )
+
+        val params =
+            professorBubble.layoutParams
+                as FrameLayout.LayoutParams
+
+        if (params.topMargin != top) {
+            params.topMargin = top
+            params.leftMargin = dp(12)
+            params.rightMargin = dp(12)
+            params.gravity = Gravity.TOP
+            professorBubble.layoutParams =
+                params
+        }
     }
 
     private fun completeGame() {
-        fx.complete()
+        fx.stopCelebration()
         clearProfessorSession()
 
         if (!completionRecorded) {

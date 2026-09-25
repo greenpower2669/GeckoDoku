@@ -138,3 +138,25 @@ Un garde-fou compare uniquement la conclusion finale d'un gecko forcé à la sol
 **État : Implémenté v0.7.0-dev, à tester.**
 
 Toute utilisation du Prof pendant une tentative marque la partie comme assistée. Si la grille est terminée, incrémenter « terminée avec Prof » globalement et pour la difficulté correspondante. Cela ne compte ni comme erreur ni comme échec.
+
+
+## GECKO-020 — Bulle Prof flottante
+**État : Implémenté v0.8.0-dev, à tester.**
+
+Retour téléphone v0.7 : la bulle Prof occupait une hauteur réelle dans le LinearLayout et réduisait fortement la grille, particulièrement en 12×12.
+
+Correction :
+- ProfessorBubbleView devient un overlay dans un FrameLayout racine ;
+- positionnement juste au-dessus du bouton Prof Gecko ;
+- aucune hauteur n'est retirée à la grille ;
+- pendant l'affichage, masquer temporairement les trois rangées de commandes secondaires ;
+- conserver le bouton Prof visible ;
+- ajouter une cible × de fermeture directement dessinée dans la bulle ;
+- fermer la bulle restaure les commandes sans modifier la grille, les overlays logiques ou une hypothèse Prof en attente.
+
+## GECKO-021 — FX de célébration synchronisés
+**État : Implémenté v0.8.0-dev, à tester.**
+
+Chaque salve de VictoryCelebrationView émet un événement sonore au même instant. ToneFxFeedback produit un petit lancement puis une explosion stylisée ; les niveaux élevés reçoivent davantage de salves et une accentuation finale.
+
+Le bouton FX contrôle aussi ces sons. Toucher la célébration pour la fermer ou désactiver FX annule les sons différés restants.

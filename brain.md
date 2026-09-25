@@ -128,3 +128,19 @@ GeckoBoardView.professorGhosts affiche les deux possibilités à alpha 0,24 sans
 
 ## Stats assistance
 MainActivity garde professorUsed pour toute la tentative. PlayerStatsStore.recordComplete(..., usedProfessor) incrémente completed_with_prof et completed_with_prof_diff_<difficulty>. Le taux de réussite principal reste completed/started ; l'aide est un attribut de la réussite, pas une erreur.
+
+
+## Bulle Prof overlay v0.8
+L'activité utilise désormais un FrameLayout screenRoot contenant :
+1. le LinearLayout principal du jeu ;
+2. ProfessorBubbleView en overlay ;
+3. VictoryCelebrationView au premier plan lorsqu'il est actif.
+
+ProfessorBubbleView ne participe donc plus à la mesure verticale du plateau. À l'ouverture, controlsPanel (les trois lignes de boutons secondaires) passe en GONE ; le bouton Prof reste visible. La bulle est mesurée puis positionnée relativement au haut réel de professorButton.
+
+ProfessorBubbleView dessine sa propre cible × de fermeture et expose onClose. closeProfessorBubble() ne réinitialise pas pendingProfessorHypothesis : fermer le dialogue visuel n'annule pas le raisonnement en cours.
+
+## Audio célébration v0.8
+VictoryCelebrationView émet onFireworkBurst(level, burstIndex, isLast) exactement lorsque chaque salve devient active. ToneFxFeedback.celebrationBurst() crée une séquence courte lancement/explosion avec ToneGenerator. Les sons sont donc alignés sur l'animation sans fichier audio externe.
+
+ToneFxFeedback possède un Handler dédié aux sons différés de célébration. stopCelebration() supprime ces callbacks. enabled=false et release() appellent également stopCelebration().

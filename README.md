@@ -83,3 +83,17 @@ GitHub Actions produit GeckoDoku-v0.4.0-dev.apk.
 - Les étapes du Prof restent expliquées dans la bulle BD.
 - Garde-fou : avant de muter la grille, une conclusion de gecko est vérifiée contre la solution unique ; en cas d'incohérence le Prof refuse l'action et signale le bug.
 - Les statistiques distinguent désormais les grilles terminées avec aide du Prof, globalement et par difficulté.
+
+
+## v0.8.0-dev — Bulle flottante et feu d'artifice sonore
+- La bulle Prof Gecko n'est plus dans le LinearLayout principal : elle flotte en overlay au-dessus du bouton Prof.
+- La grille conserve donc sa taille normale quand le Prof parle.
+- Pendant l'ouverture de la bulle, les rangées Taille/Difficulté, Nouvelle/Stats/FX et Rejouer/Sauver/Journal sont temporairement masquées.
+- Le bouton Prof reste visible sous la bulle.
+- Une grosse croix × accessible dans le coin de la bulle permet de la fermer.
+- Fermer la bulle restaure immédiatement les autres commandes sans annuler une hypothèse du Prof déjà en attente.
+- Les célébrations de victoire déclenchent désormais des FX stylisés synchronisés avec chaque salve visuelle.
+- Le nombre de salves sonores suit le nombre de salves visuelles et augmente avec la difficulté.
+- Les hauts niveaux ajoutent un accent final plus long.
+- Désactiver FX coupe aussi les sons de célébration.
+- Fermer le feu d'artifice visuel arrête les sons de célébration encore programmés.

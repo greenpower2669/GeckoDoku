@@ -128,3 +128,20 @@ Un gecko forcé est contrôlé contre la solution unique avant toute mutation. U
 
 ## 2026-09-25 — Réussites assistées indifférenciées
 Correction v0.7 : stats globales et par difficulté conservent le nombre de grilles terminées avec Prof, tout en gardant le taux de réussite standard.
+
+
+## 2026-09-25 — Bulle Prof écrase la grille
+### Symptôme
+Capture téléphone v0.7 : en 12×12, la grande bulle BD apparaît entre l'en-tête et le plateau et force la grille à devenir minuscule.
+### Cause
+ProfessorBubbleView était un enfant normal du LinearLayout vertical.
+### Correction v0.8
+La bulle est sortie du flux de layout et dessinée en overlay dans screenRoot. Les commandes secondaires sont temporairement masquées pour dégager l'espace visuel ; le bouton Prof reste toujours accessible. Une croix × ferme la bulle.
+### Non-régression
+La taille du plateau ne doit plus diminuer à cause de la longueur du texte du Prof.
+
+## 2026-09-25 — Célébration sans FX dédiés
+### Besoin
+Les feux d'artifice et confettis doivent être accompagnés de sons cohérents et gradués.
+### Correction v0.8
+VictoryCelebrationView émet un callback par salve ; ToneFxFeedback synchronise lancement/explosion et accent final. Les callbacks différés sont annulables.

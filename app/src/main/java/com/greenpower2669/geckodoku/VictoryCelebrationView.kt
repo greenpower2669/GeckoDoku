@@ -16,6 +16,14 @@ class VictoryCelebrationView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : View(context, attrs) {
+    var onFireworkBurst:
+        ((Int, Int, Boolean) -> Unit)? =
+        null
+
+    var onCelebrationStopped:
+        (() -> Unit)? =
+        null
+
     private val paint =
         Paint(Paint.ANTI_ALIAS_FLAG)
 
@@ -35,11 +43,16 @@ class VictoryCelebrationView @JvmOverloads constructor(
     private var durationMs = 2600L
     private var level = 0
     private var difficultyLabel = ""
+    private var emittedBursts = 0
+    private var running = false
 
     init {
         visibility = GONE
         isClickable = true
-        setOnClickListener { stop() }
+
+        setOnClickListener {
+            stop()
+        }
     }
 
     fun start(
@@ -49,13 +62,23 @@ class VictoryCelebrationView @JvmOverloads constructor(
         difficultyLabel = difficulty.label
         durationMs = 2200L + level * 320L
         startedAt = SystemClock.uptimeMillis()
+        emittedBursts = 0
+        running = true
         visibility = VISIBLE
         bringToFront()
         invalidate()
     }
 
     fun stop() {
+        if (!running &&
+            visibility == GONE
+        ) {
+            return
+        }
+
+        running = false
         visibility = GONE
+        onCelebrationStopped?.invoke()
     }
 
     override fun onDraw(
@@ -63,7 +86,12 @@ class VictoryCelebrationView @JvmOverloads constructor(
     ) {
         super.onDraw(canvas)
 
-        if (visibility != VISIBLE) return
+        if (
+            visibility != VISIBLE ||
+            !running
+        ) {
+            return
+        }
 
         val elapsed =
             SystemClock.uptimeMillis() -
@@ -73,6 +101,8 @@ class VictoryCelebrationView @JvmOverloads constructor(
             stop()
             return
         }
+
+        emitSoundBursts(elapsed)
 
         paint.style = Paint.Style.FILL
         paint.color =
@@ -91,11 +121,43 @@ class VictoryCelebrationView @JvmOverloads constructor(
             paint
         )
 
-        drawConfetti(canvas, elapsed)
-        drawFireworks(canvas, elapsed)
+        drawConfetti(
+            canvas,
+            elapsed
+        )
+
+        drawFireworks(
+            canvas,
+            elapsed
+        )
+
         drawMessage(canvas)
 
         postInvalidateOnAnimation()
+    }
+
+    private fun emitSoundBursts(
+        elapsed: Long
+    ) {
+        val bursts =
+            2 + level
+
+        while (
+            emittedBursts < bursts &&
+            elapsed >=
+                emittedBursts * 180L
+        ) {
+            val index =
+                emittedBursts
+
+            onFireworkBurst?.invoke(
+                level,
+                index,
+                index == bursts - 1
+            )
+
+            emittedBursts += 1
+        }
     }
 
     private fun drawFireworks(
@@ -103,14 +165,17 @@ class VictoryCelebrationView @JvmOverloads constructor(
         elapsed: Long
     ) {
         val bursts = 2 + level
-        val particleCount = 10 + level * 3
+        val particleCount =
+            10 + level * 3
 
         for (burst in 0 until bursts) {
             val localElapsed =
                 elapsed -
                     burst * 180L
 
-            if (localElapsed < 0L) continue
+            if (localElapsed < 0L) {
+                continue
+            }
 
             val progress =
                 (localElapsed / 1250f)
@@ -119,7 +184,9 @@ class VictoryCelebrationView @JvmOverloads constructor(
                         1f
                     )
 
-            if (progress >= 1f) continue
+            if (progress >= 1f) {
+                continue
+            }
 
             val cx =
                 width *
