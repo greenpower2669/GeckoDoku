@@ -42,3 +42,22 @@ Le Prof ne joue pas automatiquement. Si aucune déduction sûre n'est trouvée, 
 - tester projection et X-Wing visuellement ;
 - surveiller la lisibilité du surlignage sur 12×12 ;
 - éviter que les explications deviennent trop longues sur petit écran.
+
+
+## 2026-09-25 — Prof Gecko masqué par la barre Android
+### Symptôme
+Sur téléphone 12×12, le bouton Prof Gecko apparaît derrière la barre de navigation Android et n'est pas utilisable normalement. Le haut de l'interface empiète également sur la barre d'état.
+### Cause
+L'activité cible Android API 36 et l'interface programmatique n'appliquait aucun WindowInsets système.
+### Correction v0.4.1
+Application des insets systemBars haut, bas, gauche et droite au conteneur racine, en plus du padding de base. Compatibilité API 26–36.
+### Non-régression
+Prof Gecko doit rester entièrement visible et cliquable avec navigation Android par boutons comme par gestes.
+
+## 2026-09-25 — Facile nécessitant deux X-Wing
+### Symptôme
+Test humain sur grille 12×12 affichée « Facile • zones 1 • trace 7 » : deux Gecko X-Wing ont été nécessaires pour terminer.
+### Interprétation
+Si ces deux X-Wing sont logiquement indispensables, le classement Facile est faux malgré l'analyse actuelle.
+### Décision
+Bug enregistré comme GECKO-012. Ne pas le mélanger au correctif UI urgent ; auditer ensuite DifficultyIndexer, solverTrace et la notion de technique réellement nécessaire.

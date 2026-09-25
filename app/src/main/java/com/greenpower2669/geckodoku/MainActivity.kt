@@ -3,9 +3,11 @@ package com.greenpower2669.geckodoku
 import android.app.Activity
 import android.app.AlertDialog
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.Gravity
+import android.view.WindowInsets
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -205,6 +207,7 @@ class MainActivity : Activity() {
         )
 
         setContentView(root)
+        protectFromSystemBars(root)
         refreshGameUi()
     }
 
@@ -848,6 +851,40 @@ class MainActivity : Activity() {
             " min " +
             seconds +
             " s"
+    }
+
+    private fun protectFromSystemBars(
+        root: LinearLayout
+    ) {
+        root.setOnApplyWindowInsetsListener { view, insets ->
+            val base = dp(8)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val bars =
+                    insets.getInsets(
+                        WindowInsets.Type.systemBars()
+                    )
+
+                view.setPadding(
+                    base + bars.left,
+                    base + bars.top,
+                    base + bars.right,
+                    base + bars.bottom
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                view.setPadding(
+                    base + insets.systemWindowInsetLeft,
+                    base + insets.systemWindowInsetTop,
+                    base + insets.systemWindowInsetRight,
+                    base + insets.systemWindowInsetBottom
+                )
+            }
+
+            insets
+        }
+
+        root.requestApplyInsets()
     }
 
     override fun onDestroy() {

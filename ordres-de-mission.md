@@ -53,3 +53,14 @@ Le Professeur :
 6. refuse d'inventer une déduction si l'état courant n'en fournit pas.
 
 Objectif : pédagogie pour le joueur ET outil de debug du solveur.
+
+
+## GECKO-011 — Protection contre les barres système Android
+**État : Corrigé v0.4.1-dev, à tester.**
+
+Retour téléphone : le bouton Prof Gecko était dessiné derrière la barre de navigation Android et devenait pratiquement impossible à activer. La racine applique maintenant les system bars insets sur les quatre côtés. Le titre est également protégé de la barre d'état.
+
+## GECKO-012 — Difficulté Facile sous-estimée
+**État : Bug confirmé par test humain, correction logique à faire après GECKO-011.**
+
+Cas observé : grille 12×12 affichée Facile, trace 7, mais résolution humaine nécessitant deux Gecko X-Wing pour terminer. Une grille nécessitant réellement X-Wing ne doit jamais être classée Facile. Conserver ce cas comme non-régression pour l'audit du DifficultyIndexer et de la trace.

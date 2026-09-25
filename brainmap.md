@@ -50,3 +50,16 @@ génération → difficulté → professeur → debug → futur apprentissage IA
 
 ## Build
 push main → GitHub Actions → GeckoDoku-v0.4.0-dev.apk.
+
+
+MainActivity / WindowInsets
+├── systemBars top
+├── systemBars bottom
+├── systemBars left/right
+└── padding de base + insets
+    ├── titre hors barre d'état
+    └── Prof Gecko hors barre de navigation
+
+KnownIssue GECKO-012
+└── Facile 12×12 observé avec 2 X-Wing humains
+    └── audit DifficultyIndexer + solverTrace à venir

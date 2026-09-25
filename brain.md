@@ -61,3 +61,10 @@ L'IA pourra prédire le niveau et sélectionner des explications, mais la trace 
 
 ## Stats/média
 Stats SharedPreferences locales. Audio léger. Médias riches futurs séparés du moteur.
+
+
+## Barres système Android
+MainActivity doit toujours respecter les WindowInsets des systemBars. Le padding de base d'accessibilité est additionné aux insets haut/bas/gauche/droite afin qu'aucun contrôle, notamment Prof Gecko, ne soit masqué par la barre de navigation ou la barre d'état.
+
+## Anomalie difficulté à auditer
+Un test réel 12×12 étiqueté Facile a nécessité deux Gecko X-Wing selon le joueur. Cette observation invalide le classement si les X-Wing étaient effectivement indispensables. Ne pas considérer le libellé Facile comme fiable pour ce cas avant audit. La correction doit comparer la trace réellement nécessaire et les alternatives logiques, puis garantir qu'un niveau inférieur ne dépend d'aucun X-Wing.

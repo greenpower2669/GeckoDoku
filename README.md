@@ -33,3 +33,10 @@ Jeu de logique Android accessible, local et sans publicité.
 ## Build
 Android API 36, JDK 17, Android Gradle Plugin 9.4.0, Gradle 9.6.0.
 GitHub Actions produit GeckoDoku-v0.4.0-dev.apk.
+
+
+## v0.4.1-dev — Correctif barres système
+- L'interface applique désormais les insets Android haut, bas, gauche et droite.
+- Le bouton Prof Gecko reste au-dessus de la barre de navigation Android, y compris sur téléphones avec navigation par boutons ou gestes.
+- Le titre n'est plus placé sous la barre d'état.
+- Bug logique enregistré séparément : une grille affichée Facile a nécessité deux Gecko X-Wing lors du test humain. Le classement sera audité après ce correctif UI prioritaire.

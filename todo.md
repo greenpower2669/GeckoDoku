@@ -47,3 +47,20 @@
 - [ ] Voix d'encouragement.
 - [ ] Animations / FX visuels.
 - [ ] Images / éventuelles vidéos.
+
+
+## Correctif urgent v0.4.1
+- [x] Enregistrer le bug Facile nécessitant 2 X-Wing comme GECKO-012.
+- [x] Diagnostiquer Prof Gecko derrière la barre Android.
+- [x] Ajouter WindowInsets systemBars haut/bas/gauche/droite.
+- [x] Préserver un padding de base en plus des insets.
+- [x] Monter version 0.4.1-dev.
+- [ ] Compiler v0.4.1.
+- [ ] Tester sur téléphone que Prof Gecko est entièrement visible et cliquable.
+- [ ] Vérifier le titre sous la barre d'état.
+
+## Priorité logique suivante
+- [ ] Reproduire le 12×12 Facile ayant nécessité deux X-Wing.
+- [ ] Comparer solverTrace stockée au chemin humain.
+- [ ] Vérifier si DifficultyIndexer masque un X-Wing par une autre déduction admise.
+- [ ] Interdire définitivement Facile/Réflexion/Difficile si X-Wing est réellement indispensable.
