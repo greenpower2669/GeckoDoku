@@ -16,17 +16,24 @@ La première carte de régions 5×5 admettait plusieurs placements conformes aux
 ### Cause
 La carte de régions initiale n'avait pas été vérifiée par solveur exhaustif.
 
-### Preuve
-Énumération de toutes les permutations 5×5 respectant ligne/colonne et non-contact, puis filtrage par régions : l'ancienne carte produisait plusieurs solutions.
-
 ### Correction
 Nouvelle carte de régions conservant la solution (0,2,4,1,3). L'énumération exhaustive retourne exactement cette unique solution.
 
 ### Règle de non-régression
 Toute grille générée ou intégrée devra passer un UniqueSolutionValidator avant d'être jouable.
 
-### Toujours non vérifié
-Compilation AGP 9.4.0 / Gradle 9.6.0, gestes téléphone, volume/confort FX et vitesse du clignotement.
+## 2026-09-25 — Aucun GitHub Action visible pour l'APK
+### Symptôme
+Fab ne voyait aucune Action en cours après la demande d'APK.
+
+### Cause confirmée
+Le fichier .github/workflows/build.yml était absent : la tentative précédente de création du workflow avait été bloquée avant commit. Aucun build ne pouvait donc démarrer.
+
+### Correction
+Ajout d'un workflow minimal build APK déclenché sur push de main et manuellement. Il utilise JDK 17, Gradle 9.6.0, assembleDebug et upload-artifact.
+
+### Toujours à vérifier
+Résultat réel du workflow, compilation Android, installation téléphone, volume/confort FX et vitesse du clignotement.
 
 ### Difficulté
 Le score actuel est heuristique, pas une IA entraînée.

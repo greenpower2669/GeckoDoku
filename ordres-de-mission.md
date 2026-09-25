@@ -33,3 +33,8 @@ Prévoir dès l'architecture la coexistence de deux systèmes : rendu léger/pro
 **État : Préparé, non entraîné.**
 
 Créer un index de difficulté objectif des grilles générées. À terme, entraîner un modèle interne léger sur les caractéristiques du chemin de résolution et les observations de jeu. La taille brute de la grille ne doit pas suffire à déterminer la difficulté.
+
+## GECKO-006 — APK de test
+**État : Build GitHub Actions lancé, résultat à valider.**
+
+Produire un APK Android de test correctement nommé pour installer GeckoDoku sur téléphone. Le build doit rester léger et ne doit pas ajouter de gros assets au dépôt.

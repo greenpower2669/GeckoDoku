@@ -32,8 +32,11 @@ Le moteur logique ne dépend pas des médias. Les futurs sons, voix, images, ani
 ## Difficulté
 La v0.1 expose un index heuristique 0–100. Ce n'est pas encore une IA entraînée. DifficultyModel est le point de remplacement futur.
 
+## Build et livraison
+Le dépôt contient un workflow GitHub Actions déclenché sur push de main ou manuellement. Il construit l'APK debug avec JDK 17 et Gradle 9.6.0 puis publie un artefact nommé GeckoDoku-v0.1.0-dev-APK.
+
 ## Accessibilité
 Traits de zones épais, grande grille, retours visuels + sonores, grandes commandes, clignotement seulement sur un repère explicitement choisi, pas de publicité.
 
 ## Validation
-La logique d'unicité de la démo est vérifiée. Build APK et test physique restent non confirmés.
+La logique d'unicité de la démo est vérifiée. L'APK et le test physique restent à valider après le build CI.

@@ -24,6 +24,15 @@ MainActivity
     ├── DifficultyModel
     └── HeuristicDifficultyModel
 
+## Build CI
+push main / workflow_dispatch
+→ GitHub Actions ubuntu-latest
+→ JDK 17
+→ Gradle 9.6.0
+→ :app:assembleDebug
+→ GeckoDoku-v0.1.0-dev.apk
+→ artefact GeckoDoku-v0.1.0-dev-APK
+
 ## Séparation critique
 Puzzle + GameEngine = logique pure.
 GeckoBoardView = rendu léger actuel.

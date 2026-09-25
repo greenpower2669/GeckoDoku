@@ -15,11 +15,13 @@
 - [x] Interrupteur FX.
 - [x] Index de difficulté heuristique remplaçable.
 - [x] Séparation moteur / médias.
+- [x] Workflow GitHub Actions pour APK.
 - [x] FAB Copilot : ordre de mission + 4 mémoires synchronisés.
 
 ## Validation suivante
-- [ ] Compiler avec JDK 17 + Gradle 9.6.0 + AGP 9.4.0.
-- [ ] Produire APK de test bien nommé.
+- [ ] Vérifier que le run GitHub Actions démarre.
+- [ ] Vérifier le résultat du build.
+- [ ] Récupérer GeckoDoku-v0.1.0-dev.apk.
 - [ ] Tester tap, croix→gecko, appui long, palette.
 - [ ] Tester distinction et volume FX.
 - [ ] Vérifier lisibilité et fatigue visuelle.
