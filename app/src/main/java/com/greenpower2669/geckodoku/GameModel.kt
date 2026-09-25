@@ -8,20 +8,17 @@ enum class GameDifficulty(val label: String) {
     DISCOVERY("Découverte"),
     EASY("Facile"),
     THINKING("Réflexion"),
-    EXPERT("Expert");
+    HARD("Difficile"),
+    EXPERT("Expert"),
+    DEMENTIAL("Démentiel");
 
     fun minimumGivens(size: Int): Int = when (this) {
-        DISCOVERY -> maxOf(2, size - 2)
-        EASY -> maxOf(1, size / 2)
-        THINKING -> 1
+        DISCOVERY -> maxOf(2, size / 2)
+        EASY -> maxOf(1, size / 3)
+        THINKING -> maxOf(1, size / 5)
+        HARD -> 0
         EXPERT -> 0
-    }
-
-    fun allowedTechnique(): SolveTechnique = when (this) {
-        DISCOVERY -> SolveTechnique.REGION_SINGLE
-        EASY -> SolveTechnique.LOCKED_CANDIDATE
-        THINKING -> SolveTechnique.LOCKED_CANDIDATE
-        EXPERT -> SolveTechnique.X_WING
+        DEMENTIAL -> 0
     }
 }
 
@@ -35,7 +32,7 @@ data class Puzzle(
     val seed: Long = 0L
 ) {
     init {
-        require(size in 5..8)
+        require(size in 5..12)
         require(regions.size == size * size)
         require(solutionCols.size == size)
         require(regions.toSet().size == size)

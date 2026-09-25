@@ -2,11 +2,25 @@ package com.greenpower2669.geckodoku
 
 enum class SolveTechnique(val label: String, val weight: Int) {
     GIVEN("Gecko donné", 0),
-    ROW_SINGLE("Ligne forcée", 6),
-    COLUMN_SINGLE("Colonne forcée", 6),
-    REGION_SINGLE("Zone forcée", 8),
-    LOCKED_CANDIDATE("Interaction ligne/zone", 15),
-    X_WING("X-Wing", 28)
+    ROW_SINGLE("Ligne forcée", 4),
+    COLUMN_SINGLE("Colonne forcée", 4),
+    REGION_SINGLE("Zone forcée", 6),
+    REGION_LOCKED("Zone verrouillée ligne/colonne", 12),
+    REGION_TOUCH_PROJECTION("Projection de zone", 18),
+    GECKO_X_WING("Gecko X-Wing", 30)
+}
+
+data class SolverRules(
+    val regionLocked: Boolean = true,
+    val regionTouchProjection: Boolean = true,
+    val xWing: Boolean = true
+) {
+    companion object {
+        val SINGLES = SolverRules(false, false, false)
+        val REGION = SolverRules(true, true, false)
+        val NO_PROJECTION = SolverRules(true, false, true)
+        val FULL = SolverRules(true, true, true)
+    }
 }
 
 data class SolveStep(
@@ -21,25 +35,35 @@ data class SolveAnalysis(
     val maxTechnique: SolveTechnique,
     val remaining: Int
 ) {
-    val xWingCount: Int get() = steps.count { it.technique == SolveTechnique.X_WING }
+    val xWingCount: Int get() = steps.count { it.technique == SolveTechnique.GECKO_X_WING }
+    val regionLogicCount: Int get() = steps.count {
+        it.technique == SolveTechnique.REGION_SINGLE ||
+            it.technique == SolveTechnique.REGION_LOCKED ||
+            it.technique == SolveTechnique.REGION_TOUCH_PROJECTION
+    }
+    val projectionCount: Int get() = steps.count { it.technique == SolveTechnique.REGION_TOUCH_PROJECTION }
 }
 
 object HumanSolver {
     fun analyze(
         puzzle: Puzzle,
         givens: Set<Cell> = puzzle.givens,
-        allowed: SolveTechnique = SolveTechnique.X_WING
+        rules: SolverRules = SolverRules.FULL
     ): SolveAnalysis {
         val placed = linkedSetOf<Cell>().apply { addAll(givens) }
         val eliminated = linkedSetOf<Cell>()
         val steps = mutableListOf<SolveStep>()
 
-        repeat(puzzle.size * puzzle.size * 8) {
+        repeat(puzzle.size * puzzle.size * 20) {
             if (placed.size == puzzle.size) {
                 return SolveAnalysis(true, steps, maxTechnique(steps), 0)
             }
 
             val candidates = candidates(puzzle, placed, eliminated)
+            if (candidates.isEmpty()) {
+                return SolveAnalysis(false, steps, maxTechnique(steps), puzzle.size - placed.size)
+            }
+
             val single = findSingle(puzzle, placed, candidates)
             if (single != null) {
                 placed.add(single.second)
@@ -47,20 +71,29 @@ object HumanSolver {
                 return@repeat
             }
 
-            if (allowed.ordinal >= SolveTechnique.LOCKED_CANDIDATE.ordinal) {
-                val fresh = findLockedElimination(puzzle, placed, candidates) - eliminated
+            if (rules.regionLocked) {
+                val fresh = findRegionLockedElimination(puzzle, placed, candidates) - eliminated
                 if (fresh.isNotEmpty()) {
                     eliminated.addAll(fresh)
-                    steps.add(SolveStep(SolveTechnique.LOCKED_CANDIDATE, eliminated = fresh))
+                    steps.add(SolveStep(SolveTechnique.REGION_LOCKED, eliminated = fresh))
                     return@repeat
                 }
             }
 
-            if (allowed.ordinal >= SolveTechnique.X_WING.ordinal) {
-                val fresh = findXWingElimination(puzzle, placed, candidates) - eliminated
+            if (rules.regionTouchProjection) {
+                val fresh = findRegionTouchProjection(puzzle, placed, candidates) - eliminated
                 if (fresh.isNotEmpty()) {
                     eliminated.addAll(fresh)
-                    steps.add(SolveStep(SolveTechnique.X_WING, eliminated = fresh))
+                    steps.add(SolveStep(SolveTechnique.REGION_TOUCH_PROJECTION, eliminated = fresh))
+                    return@repeat
+                }
+            }
+
+            if (rules.xWing) {
+                val fresh = findGeckoXWingElimination(puzzle, placed, candidates) - eliminated
+                if (fresh.isNotEmpty()) {
+                    eliminated.addAll(fresh)
+                    steps.add(SolveStep(SolveTechnique.GECKO_X_WING, eliminated = fresh))
                     return@repeat
                 }
             }
@@ -71,22 +104,11 @@ object HumanSolver {
         return SolveAnalysis(placed.size == puzzle.size, steps, maxTechnique(steps), puzzle.size - placed.size)
     }
 
-    fun selectGivens(puzzle: Puzzle, difficulty: GameDifficulty, orderSeed: Long): Set<Cell> {
-        val allowed = difficulty.allowedTechnique()
-        val minimum = difficulty.minimumGivens(puzzle.size)
-        val chosen = puzzle.solutionCells().toMutableSet()
-        val order = puzzle.solutionCells().shuffled(java.util.Random(orderSeed))
-
-        for (cell in order) {
-            if (chosen.size <= minimum) break
-            chosen.remove(cell)
-            val probe = analyze(puzzle, chosen, allowed)
-            if (!probe.solved || probe.maxTechnique.ordinal > allowed.ordinal) chosen.add(cell)
-        }
-        return chosen
-    }
-
-    private fun candidates(puzzle: Puzzle, placed: Set<Cell>, eliminated: Set<Cell>): Set<Cell> {
+    private fun candidates(
+        puzzle: Puzzle,
+        placed: Set<Cell>,
+        eliminated: Set<Cell>
+    ): Set<Cell> {
         val result = linkedSetOf<Cell>()
         for (r in 0 until puzzle.size) {
             for (c in 0 until puzzle.size) {
@@ -103,8 +125,11 @@ object HumanSolver {
         if (a == b) return false
         if (a.row == b.row || a.col == b.col) return true
         if (puzzle.regionAt(a) == puzzle.regionAt(b)) return true
-        return kotlin.math.abs(a.row - b.row) <= 1 && kotlin.math.abs(a.col - b.col) <= 1
+        return touches(a, b)
     }
+
+    private fun touches(a: Cell, b: Cell): Boolean =
+        kotlin.math.abs(a.row - b.row) <= 1 && kotlin.math.abs(a.col - b.col) <= 1
 
     private fun findSingle(
         puzzle: Puzzle,
@@ -129,7 +154,7 @@ object HumanSolver {
         return null
     }
 
-    private fun findLockedElimination(
+    private fun findRegionLockedElimination(
         puzzle: Puzzle,
         placed: Set<Cell>,
         candidates: Set<Cell>
@@ -137,19 +162,20 @@ object HumanSolver {
         for (region in 0 until puzzle.size) {
             if (placed.any { puzzle.regionAt(it) == region }) continue
             val rc = candidates.filter { puzzle.regionAt(it) == region }
-            if (rc.size >= 2) {
-                val rows = rc.map { it.row }.toSet()
-                if (rows.size == 1) {
-                    val row = rows.first()
-                    val out = candidates.filter { it.row == row && puzzle.regionAt(it) != region }.toSet()
-                    if (out.isNotEmpty()) return out
-                }
-                val cols = rc.map { it.col }.toSet()
-                if (cols.size == 1) {
-                    val col = cols.first()
-                    val out = candidates.filter { it.col == col && puzzle.regionAt(it) != region }.toSet()
-                    if (out.isNotEmpty()) return out
-                }
+            if (rc.size < 2) continue
+
+            val rows = rc.map { it.row }.toSet()
+            if (rows.size == 1) {
+                val row = rows.first()
+                val out = candidates.filter { it.row == row && puzzle.regionAt(it) != region }.toSet()
+                if (out.isNotEmpty()) return out
+            }
+
+            val cols = rc.map { it.col }.toSet()
+            if (cols.size == 1) {
+                val col = cols.first()
+                val out = candidates.filter { it.col == col && puzzle.regionAt(it) != region }.toSet()
+                if (out.isNotEmpty()) return out
             }
         }
 
@@ -177,7 +203,27 @@ object HumanSolver {
         return emptySet()
     }
 
-    private fun findXWingElimination(
+    private fun findRegionTouchProjection(
+        puzzle: Puzzle,
+        placed: Set<Cell>,
+        candidates: Set<Cell>
+    ): Set<Cell> {
+        for (region in 0 until puzzle.size) {
+            if (placed.any { puzzle.regionAt(it) == region }) continue
+            val regionCandidates = candidates.filter { puzzle.regionAt(it) == region }
+            if (regionCandidates.size !in 2..4) continue
+
+            val out = candidates.asSequence()
+                .filter { puzzle.regionAt(it) != region }
+                .filter { outside -> regionCandidates.all { inside -> touches(outside, inside) } }
+                .toSet()
+
+            if (out.isNotEmpty()) return out
+        }
+        return emptySet()
+    }
+
+    private fun findGeckoXWingElimination(
         puzzle: Puzzle,
         placed: Set<Cell>,
         candidates: Set<Cell>
@@ -205,6 +251,37 @@ object HumanSolver {
             if (cols.size == 2) {
                 val out = candidates.filter { it.col !in cols && it.row in rows }.toSet()
                 if (out.isNotEmpty()) return out
+            }
+        }
+
+        val unsolvedRegions = (0 until puzzle.size)
+            .filter { region -> placed.none { puzzle.regionAt(it) == region } }
+
+        for (i in 0 until unsolvedRegions.size) {
+            for (j in i + 1 until unsolvedRegions.size) {
+                val a = unsolvedRegions[i]
+                val b = unsolvedRegions[j]
+                val pairCandidates = candidates.filter {
+                    val region = puzzle.regionAt(it)
+                    region == a || region == b
+                }
+                if (pairCandidates.isEmpty()) continue
+
+                val rows = pairCandidates.map { it.row }.toSet()
+                if (rows.size == 2) {
+                    val out = candidates.filter {
+                        it.row in rows && puzzle.regionAt(it) != a && puzzle.regionAt(it) != b
+                    }.toSet()
+                    if (out.isNotEmpty()) return out
+                }
+
+                val cols = pairCandidates.map { it.col }.toSet()
+                if (cols.size == 2) {
+                    val out = candidates.filter {
+                        it.col in cols && puzzle.regionAt(it) != a && puzzle.regionAt(it) != b
+                    }.toSet()
+                    if (out.isNotEmpty()) return out
+                }
             }
         }
         return emptySet()

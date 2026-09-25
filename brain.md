@@ -1,75 +1,76 @@
 # Brain — GeckoDoku
 
 ## Contrat produit
-GeckoDoku est un jeu de logique Android accessible, mignon, hors ligne et sans publicité. Les retours audio complètent le visuel.
+GeckoDoku est un jeu Android de logique accessible, hors ligne et sans publicité. Le moteur doit pouvoir expliquer pourquoi chaque grille est résoluble et pourquoi elle reçoit son niveau.
 
-## Règles cœur
+## Règles
 - exactement un gecko par ligne ;
 - exactement un gecko par colonne ;
 - exactement un gecko par zone ;
-- aucun contact entre geckos, diagonales comprises ;
-- toute grille jouable doit avoir une solution unique ;
-- les modes normaux doivent fournir un chemin de résolution logique compatible avec leur niveau.
+- aucun contact horizontal, vertical ou diagonal ;
+- solution unique compte tenu des givens ;
+- pas de guessing dans les niveaux proposés par le solveur actuel.
 
-## Gestes v0.2
-- clic simple confirmé : poser/enlever une croix manuelle ;
-- vrai double-clic : poser/enlever un gecko ;
-- appui long : hypothèse discrète → alerte clignotante → aucun ;
-- appui long hors grille : palette de repères ;
-- un gecko donné est verrouillé.
+## Gestes
+- clic simple confirmé : croix ;
+- vrai double-clic : gecko ;
+- appui long : hypothèse faible → forte → aucune ;
+- appui long hors grille : repères personnels ;
+- givens verrouillés.
 
-La séparation single/double est assurée par GestureDetector.onSingleTapConfirmed et onDoubleTap. Deux clics simples séparés ne doivent plus produire un gecko.
+## Tailles et zones
+Tailles : 5 à 12.
+Chaque grille NxN contient N zones.
+Rendu v0.3 : 12 teintes pastel, frontières noires fortes. La taille ne définit pas la difficulté.
 
-## Taille et difficulté
-Tailles initiales : 5, 6, 7, 8.
-Difficultés :
-- Découverte : davantage de geckos donnés, singles ;
-- Facile : moins de donnés, interactions simples admises ;
-- Réflexion : peu de donnés, interactions ligne/zone ;
-- Expert : peut utiliser X-Wing.
+## Solveur humain v0.3
+Techniques :
+1. ROW_SINGLE ;
+2. COLUMN_SINGLE ;
+3. REGION_SINGLE ;
+4. REGION_LOCKED : toutes les possibilités d'une zone sur une même ligne/colonne ou inverse ;
+5. REGION_TOUCH_PROJECTION : si toutes les 2 à 4 possibilités restantes d'une zone touchent une même case extérieure, cette case est exclue ;
+6. GECKO_X_WING :
+   - deux lignes → mêmes deux colonnes ;
+   - deux colonnes → mêmes deux lignes ;
+   - deux zones confinées à deux lignes ou deux colonnes.
 
-Taille et difficulté sont indépendantes.
+La projection exploite directement la règle de non-contact, ce que le Sudoku classique n'a pas.
+
+## Difficulté mesurée
+DifficultyIndexer exécute plusieurs solveurs par ablation :
+- singles seuls ;
+- logique de zone complète sans X-Wing ;
+- X-Wing sans projection ;
+- toutes les techniques.
+
+Classement :
+- Découverte si singles seuls suffisent ;
+- Facile si logique de zone nécessaire avec 1 étape ;
+- Réflexion avec 2–3 étapes de zone ;
+- Difficile avec au moins 4 étapes de zone ;
+- Expert si l'analyse complète réussit mais échoue sans X-Wing ;
+- Démentiel si elle échoue sans X-Wing ET échoue sans projection : combinaison des deux indispensable.
+
+Le score 0–100 reste secondaire. Le niveau nominal provient d'abord de la preuve logique.
 
 ## Génération
-PuzzleGenerator :
-1. génère les permutations respectant ligne/colonne/non-contact ;
-2. choisit une solution ;
-3. fait croître des zones connectées autour des cellules solution ;
-4. rejette la carte si elle n'a pas exactement une solution ;
-5. sélectionne les geckos donnés ;
-6. vérifie que HumanSolver résout selon les techniques autorisées ;
-7. possède un fallback vérifié 5×5 à 8×8.
+Pour 5..12, ne jamais pré-calculer toutes les permutations : le volume devient trop grand.
+Pipeline v0.3 :
+- construire une solution valide par backtracking aléatoire ;
+- faire croître N zones connectées depuis les N geckos solution ;
+- partir de givens sûrs puis les retirer ;
+- après chaque retrait, vérifier unicité par backtracking borné à 2 solutions ;
+- vérifier la résolubilité HumanSolver ;
+- comparer le niveau mesuré au niveau demandé ;
+- essayer plusieurs cartes/ordres ;
+- si l'exact n'est pas trouvé dans le budget, retourner le meilleur candidat sûr et afficher demandé vs mesuré.
 
-## Solveur humain
-Techniques v0.2 :
-- ligne forcée ;
-- colonne forcée ;
-- zone forcée ;
-- interaction ligne/zone ;
-- X-Wing lignes et colonnes.
-
-HumanSolver ne lit pas solutionCols pendant la résolution : il raisonne uniquement à partir des règles, givens et éliminations.
-
-## Difficulté
-DifficultyIndexer utilise la taille, le nombre de givens, le nombre d'étapes, la technique maximale et le nombre de X-Wings. Le score actuel est heuristique et explicable ; ce n'est pas encore l'IA entraînée future.
+## IA future
+Une IA locale pourra prédire difficulté et guider la génération plus vite, mais elle ne remplace pas les preuves logiques. Le solveur sert de vérité terrain et produit les futures données d'apprentissage.
 
 ## Stats locales
-SharedPreferences uniquement sur le téléphone :
-- parties lancées ;
-- parties terminées ;
-- taux de réussite ;
-- erreurs ;
-- temps total et moyen ;
-- terminées par taille ;
-- terminées par difficulté.
+SharedPreferences : lancées, terminées, taux de réussite, erreurs, temps, tailles et difficulté mesurée. Aucun envoi réseau.
 
-Architecture prête à évoluer vers profils multiples sans réseau.
-
-## Audio
-ToneGenerator léger : croix, blocage, gecko, erreur, hypothèse, repère, fin. FX désactivables. Futur AssetFxFeedback prévu.
-
-## Architecture média
-GameEngine ne dépend pas des médias. Les futurs sons, voix, images, animations, vidéos et FX riches devront rester interchangeables.
-
-## Validation
-v0.1 APK a compilé avec succès. v0.2.0-dev doit être compilé puis testé sur téléphone, notamment gestes, génération, difficulté et stats.
+## Audio et média
+ToneGenerator actuellement. Moteur indépendant des médias ; futurs AssetRenderer, AssetFxFeedback, voix et animations restent des couches remplaçables.

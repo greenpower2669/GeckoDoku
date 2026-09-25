@@ -49,7 +49,7 @@ class MainActivity : Activity() {
         }
 
         info = TextView(this).apply {
-            textSize = 16f
+            textSize = 15f
             setTextColor(Color.DKGRAY)
             gravity = Gravity.CENTER
             setPadding(0, 0, 0, dp(4))
@@ -72,21 +72,21 @@ class MainActivity : Activity() {
         }
 
         sizeButton = Button(this).apply {
-            textSize = 16f
-            minHeight = dp(48)
+            textSize = 15f
+            minHeight = dp(46)
             setOnClickListener { chooseSize() }
         }
 
         difficultyButton = Button(this).apply {
-            textSize = 16f
-            minHeight = dp(48)
+            textSize = 15f
+            minHeight = dp(46)
             setOnClickListener { chooseDifficulty() }
         }
 
         val newButton = Button(this).apply {
             text = "↻ Nouvelle"
-            textSize = 16f
-            minHeight = dp(48)
+            textSize = 15f
+            minHeight = dp(46)
             setOnClickListener {
                 createPuzzle(recordStart = true)
                 refreshGameUi()
@@ -95,15 +95,15 @@ class MainActivity : Activity() {
 
         val statsButton = Button(this).apply {
             text = "Stats"
-            textSize = 16f
-            minHeight = dp(48)
+            textSize = 15f
+            minHeight = dp(46)
             setOnClickListener { showStats() }
         }
 
         soundButton = Button(this).apply {
             text = "🔊 FX"
-            textSize = 16f
-            minHeight = dp(48)
+            textSize = 15f
+            minHeight = dp(46)
             setOnClickListener {
                 fx.enabled = !fx.enabled
                 text = if (fx.enabled) "🔊 FX" else "🔇 FX"
@@ -120,6 +120,7 @@ class MainActivity : Activity() {
             addView(sizeButton, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             addView(difficultyButton, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         }
+
         val row2 = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             addView(newButton, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
@@ -140,7 +141,10 @@ class MainActivity : Activity() {
         eraseMarkerMode = false
         completionRecorded = false
         gameStartedAt = SystemClock.elapsedRealtime()
-        if (recordStart) statsStore.recordStart(selectedSize, selectedDifficulty)
+
+        if (recordStart) {
+            statsStore.recordStart(selectedSize, puzzle.difficulty)
+        }
     }
 
     private fun refreshGameUi() {
@@ -148,18 +152,36 @@ class MainActivity : Activity() {
         val report = DifficultyIndexer.analyze(puzzle)
 
         if (::info.isInitialized) {
+            val measured = report.ratedDifficulty.label
+            val requestedText = if (report.ratedDifficulty == selectedDifficulty) {
+                measured
+            } else {
+                selectedDifficulty.label + " demandé • " + measured + " mesuré"
+            }
+
+            val logic = buildString {
+                append("zones ").append(report.features.regionLogicCount)
+                if (report.features.xWingRequired) append(" • X-Wing requis")
+                if (report.features.projectionRequired) append(" • projection requise")
+            }
+
             info.text = selectedSize.toString() + "×" + selectedSize +
-                " • " + selectedDifficulty.label +
-                " • index " + report.index + "/100" +
-                " • max " + report.features.maxTechnique.label
+                " • " + requestedText +
+                " • " + logic
         }
 
-        if (::sizeButton.isInitialized) sizeButton.text = "Taille " + selectedSize + "×" + selectedSize
-        if (::difficultyButton.isInitialized) difficultyButton.text = selectedDifficulty.label
+        if (::sizeButton.isInitialized) {
+            sizeButton.text = "Taille " + selectedSize + "×" + selectedSize
+        }
+
+        if (::difficultyButton.isInitialized) {
+            difficultyButton.text = selectedDifficulty.label
+        }
 
         if (::status.isInitialized) {
             status.text = if (puzzle.givens.isNotEmpty()) {
-                puzzle.givens.size.toString() + " gecko(s) donné(s). Simple = ✕, vrai double-clic = 🦎."
+                puzzle.givens.size.toString() +
+                    " gecko(s) donné(s). Simple = ✕, double = 🦎."
             } else {
                 "Simple = ✕, vrai double-clic = 🦎, appui long = hypothèse."
             }
@@ -256,7 +278,7 @@ class MainActivity : Activity() {
         fx.complete()
         if (!completionRecorded) {
             val seconds = (SystemClock.elapsedRealtime() - gameStartedAt) / 1000L
-            statsStore.recordComplete(selectedSize, selectedDifficulty, seconds)
+            statsStore.recordComplete(selectedSize, puzzle.difficulty, seconds)
             completionRecorded = true
         }
         status.text = "Bravo ! Grille terminée 🦎"
@@ -265,18 +287,30 @@ class MainActivity : Activity() {
 
     private fun placePendingMarkerIfNeeded(cell: Cell): Boolean {
         if (pendingMarker == null && !eraseMarkerMode) return false
-        val result = engine.placeCustomMarker(cell, if (eraseMarkerMode) null else pendingMarker)
+
+        val result = engine.placeCustomMarker(
+            cell,
+            if (eraseMarkerMode) null else pendingMarker
+        )
+
         pendingMarker = null
         eraseMarkerMode = false
         fx.marker()
-        status.text = if (result == ActionFeedback.CUSTOM_MARKER_CLEARED) "Repère effacé." else "Repère personnel posé."
+
+        status.text = if (result == ActionFeedback.CUSTOM_MARKER_CLEARED) {
+            "Repère effacé."
+        } else {
+            "Repère personnel posé."
+        }
+
         board.invalidate()
         return true
     }
 
     private fun chooseSize() {
-        val values = intArrayOf(5, 6, 7, 8)
+        val values = intArrayOf(5, 6, 7, 8, 9, 10, 11, 12)
         val labels = values.map { it.toString() + "×" + it }.toTypedArray()
+
         AlertDialog.Builder(this)
             .setTitle("Taille de grille")
             .setSingleChoiceItems(labels, values.indexOf(selectedSize)) { dialog, which ->
@@ -291,8 +325,9 @@ class MainActivity : Activity() {
     private fun chooseDifficulty() {
         val values = GameDifficulty.entries
         val labels = values.map { it.label }.toTypedArray()
+
         AlertDialog.Builder(this)
-            .setTitle("Difficulté logique")
+            .setTitle("Difficulté logique réelle")
             .setSingleChoiceItems(labels, values.indexOf(selectedDifficulty)) { dialog, which ->
                 selectedDifficulty = values[which]
                 dialog.dismiss()
@@ -335,9 +370,15 @@ class MainActivity : Activity() {
             append("Erreurs : ").append(s.mistakes).append("\n")
             append("Temps moyen terminé : ").append(formatSeconds(s.averageSeconds)).append("\n\n")
             append("Terminées par taille :\n")
-            for (size in 5..8) append(size).append("×").append(size).append(" : ").append(statsStore.completedForSize(size)).append("\n")
-            append("\nTerminées par difficulté :\n")
-            for (d in GameDifficulty.entries) append(d.label).append(" : ").append(statsStore.completedForDifficulty(d)).append("\n")
+            for (size in 5..12) {
+                append(size).append("×").append(size).append(" : ")
+                    .append(statsStore.completedForSize(size)).append("\n")
+            }
+            append("\nTerminées par difficulté mesurée :\n")
+            for (d in GameDifficulty.entries) {
+                append(d.label).append(" : ")
+                    .append(statsStore.completedForDifficulty(d)).append("\n")
+            }
             append("\nTout reste sur ce téléphone.")
         }
 
@@ -369,5 +410,6 @@ class MainActivity : Activity() {
         super.onDestroy()
     }
 
-    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+    private fun dp(value: Int): Int =
+        (value * resources.displayMetrics.density).toInt()
 }

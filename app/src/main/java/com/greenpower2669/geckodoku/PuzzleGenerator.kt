@@ -1,63 +1,152 @@
 package com.greenpower2669.geckodoku
 
 import java.util.Random
+import kotlin.math.abs
 
 object PuzzleGenerator {
-    private val permutationCache = mutableMapOf<Int, List<IntArray>>()
+    private data class Candidate(val puzzle: Puzzle, val distance: Int)
 
     fun generate(
         size: Int,
-        difficulty: GameDifficulty,
+        requested: GameDifficulty,
         seed: Long = System.nanoTime()
     ): Puzzle {
-        require(size in 5..8)
+        require(size in 5..12)
         val random = Random(seed)
-        val permutations = validPermutations(size)
+        var best: Candidate? = null
+        val attempts = when {
+            size <= 7 -> 140
+            size <= 9 -> 90
+            else -> 55
+        }
 
-        repeat(180) { attempt ->
-            val solution = permutations[random.nextInt(permutations.size)]
+        repeat(attempts) { attempt ->
+            val solution = randomSolution(size, random) ?: return@repeat
             val regions = growRegions(size, solution, random)
-            if (countSolutions(size, regions, permutations, 2) == 1) {
-                val base = Puzzle(
-                    id = "g-" + size + "-" + difficulty.name.lowercase() + "-" + seed + "-" + attempt,
-                    size = size,
-                    regions = regions,
-                    solutionCols = solution.copyOf(),
-                    difficulty = difficulty,
-                    seed = seed
-                )
-                val givens = HumanSolver.selectGivens(base, difficulty, seed + attempt * 31L)
-                val prepared = base.copy(givens = givens)
-                if (HumanSolver.analyze(prepared, givens, difficulty.allowedTechnique()).solved) return prepared
+            val base = Puzzle(
+                id = "g-" + size + "-" + requested.name.lowercase() + "-" + seed + "-" + attempt,
+                size = size,
+                regions = regions,
+                solutionCols = solution,
+                difficulty = requested,
+                seed = seed
+            )
+
+            val tuned = tuneGivens(base, requested, random)
+            val report = DifficultyIndexer.analyze(tuned)
+            if (!report.logicallySolvable) return@repeat
+            if (countSolutions(tuned, 2) != 1) return@repeat
+
+            val ratedPuzzle = tuned.copy(difficulty = report.ratedDifficulty)
+            if (report.ratedDifficulty == requested && meetsProfile(report, requested)) {
+                return ratedPuzzle
+            }
+
+            val distance = difficultyDistance(report, requested)
+            if (best == null || distance < best!!.distance) {
+                best = Candidate(ratedPuzzle, distance)
             }
         }
 
-        return fallback(size, difficulty, seed)
+        return best?.puzzle ?: safeFallback(size, requested, seed)
     }
 
-    private fun validPermutations(size: Int): List<IntArray> =
-        permutationCache.getOrPut(size) {
-            val result = mutableListOf<IntArray>()
-            val current = IntArray(size) { -1 }
-            val used = BooleanArray(size)
+    private fun tuneGivens(base: Puzzle, requested: GameDifficulty, random: Random): Puzzle {
+        var best = base.copy(givens = base.solutionCells().toSet())
+        var bestDistance = Int.MAX_VALUE
 
-            fun build(row: Int) {
-                if (row == size) {
-                    result.add(current.copyOf())
-                    return
+        repeat(8) {
+            val chosen = base.solutionCells().toMutableSet()
+            val order = base.solutionCells().shuffled(random)
+
+            for (cell in order) {
+                if (chosen.size <= requested.minimumGivens(base.size)) break
+                chosen.remove(cell)
+
+                val probe = base.copy(givens = chosen.toSet())
+                if (countSolutions(probe, 2) != 1) {
+                    chosen.add(cell)
+                    continue
                 }
-                for (col in 0 until size) {
-                    if (used[col]) continue
-                    if (row > 0 && kotlin.math.abs(current[row - 1] - col) <= 1) continue
-                    used[col] = true
-                    current[row] = col
-                    build(row + 1)
-                    used[col] = false
+
+                val report = DifficultyIndexer.analyze(probe)
+                if (!report.logicallySolvable) {
+                    chosen.add(cell)
+                    continue
+                }
+
+                val distance = difficultyDistance(report, requested)
+                if (distance < bestDistance) {
+                    bestDistance = distance
+                    best = probe
+                }
+
+                if (report.ratedDifficulty == requested && meetsProfile(report, requested)) {
+                    return probe
+                }
+
+                if (report.ratedDifficulty.ordinal > requested.ordinal + 1) {
+                    chosen.add(cell)
                 }
             }
-            build(0)
-            result
         }
+        return best
+    }
+
+    private fun meetsProfile(report: DifficultyReport, requested: GameDifficulty): Boolean {
+        val f = report.features
+        return when (requested) {
+            GameDifficulty.DISCOVERY -> report.ratedDifficulty == GameDifficulty.DISCOVERY
+            GameDifficulty.EASY -> report.ratedDifficulty == GameDifficulty.EASY && f.regionLogicCount >= 1
+            GameDifficulty.THINKING -> report.ratedDifficulty == GameDifficulty.THINKING && f.regionLogicCount in 2..3
+            GameDifficulty.HARD -> report.ratedDifficulty == GameDifficulty.HARD && f.regionLogicCount >= 4
+            GameDifficulty.EXPERT -> report.ratedDifficulty == GameDifficulty.EXPERT && f.xWingRequired
+            GameDifficulty.DEMENTIAL ->
+                report.ratedDifficulty == GameDifficulty.DEMENTIAL &&
+                    f.xWingRequired && f.projectionRequired
+        }
+    }
+
+    private fun difficultyDistance(report: DifficultyReport, requested: GameDifficulty): Int {
+        var d = abs(report.ratedDifficulty.ordinal - requested.ordinal) * 100
+        val f = report.features
+        d += when (requested) {
+            GameDifficulty.DISCOVERY -> f.regionLogicCount * 8 + f.xWingCount * 20
+            GameDifficulty.EASY -> abs(f.regionLogicCount - 1) * 8
+            GameDifficulty.THINKING -> when {
+                f.regionLogicCount < 2 -> (2 - f.regionLogicCount) * 8
+                f.regionLogicCount > 3 -> (f.regionLogicCount - 3) * 8
+                else -> 0
+            }
+            GameDifficulty.HARD -> if (f.regionLogicCount >= 4) 0 else (4 - f.regionLogicCount) * 8
+            GameDifficulty.EXPERT -> if (f.xWingRequired) 0 else 35
+            GameDifficulty.DEMENTIAL ->
+                (if (f.xWingRequired) 0 else 35) + (if (f.projectionRequired) 0 else 35)
+        }
+        return d
+    }
+
+    private fun randomSolution(size: Int, random: Random): IntArray? {
+        val current = IntArray(size) { -1 }
+        val used = BooleanArray(size)
+
+        fun build(row: Int): Boolean {
+            if (row == size) return true
+            val cols = (0 until size).shuffled(random)
+            for (col in cols) {
+                if (used[col]) continue
+                if (row > 0 && abs(current[row - 1] - col) <= 1) continue
+                current[row] = col
+                used[col] = true
+                if (build(row + 1)) return true
+                used[col] = false
+                current[row] = -1
+            }
+            return false
+        }
+
+        return if (build(0)) current.copyOf() else null
+    }
 
     private fun growRegions(size: Int, solution: IntArray, random: Random): IntArray {
         val regions = IntArray(size * size) { -1 }
@@ -71,7 +160,7 @@ object PuzzleGenerator {
         }
 
         while (unassigned.isNotEmpty()) {
-            val expandable = mutableListOf<Pair<Int, List<Int>>>()
+            val frontier = mutableListOf<Pair<Int, List<Int>>>()
             for (idx in unassigned) {
                 val r = idx / size
                 val c = idx % size
@@ -82,89 +171,78 @@ object PuzzleGenerator {
                     val region = regions[rr * size + cc]
                     if (region >= 0) neighborRegions.add(region)
                 }
-                if (neighborRegions.isNotEmpty()) expandable.add(idx to neighborRegions.toList())
+                if (neighborRegions.isNotEmpty()) frontier.add(idx to neighborRegions.toList())
             }
-            if (expandable.isEmpty()) break
-            val (idx, choices) = expandable[random.nextInt(expandable.size)]
+
+            if (frontier.isEmpty()) break
+            val (idx, choices) = frontier[random.nextInt(frontier.size)]
             regions[idx] = choices[random.nextInt(choices.size)]
             unassigned.remove(idx)
         }
-
         return regions
     }
 
-    private fun countSolutions(
-        size: Int,
-        regions: IntArray,
-        permutations: List<IntArray>,
-        limit: Int
-    ): Int {
+    private fun countSolutions(puzzle: Puzzle, limit: Int): Int {
+        val size = puzzle.size
+        val usedCols = BooleanArray(size)
+        val usedRegions = BooleanArray(size)
+        val rowsFixed = IntArray(size) { -1 }
+
+        for (given in puzzle.givens) {
+            rowsFixed[given.row] = given.col
+        }
+
         var count = 0
-        for (perm in permutations) {
-            val seen = BooleanArray(size)
-            var valid = true
-            for (r in 0 until size) {
-                val region = regions[r * size + perm[r]]
-                if (region !in 0 until size || seen[region]) {
-                    valid = false
-                    break
-                }
-                seen[region] = true
-            }
-            if (valid) {
+        val chosen = IntArray(size) { -1 }
+
+        fun search(row: Int) {
+            if (count >= limit) return
+            if (row == size) {
                 count++
-                if (count >= limit) return count
+                return
+            }
+
+            val fixed = rowsFixed[row]
+            val cols: IntRange = if (fixed >= 0) fixed..fixed else 0 until size
+
+            for (col in cols) {
+                if (usedCols[col]) continue
+                if (row > 0 && chosen[row - 1] >= 0 && abs(chosen[row - 1] - col) <= 1) continue
+                val region = puzzle.regions[row * size + col]
+                if (usedRegions[region]) continue
+
+                usedCols[col] = true
+                usedRegions[region] = true
+                chosen[row] = col
+                search(row + 1)
+                chosen[row] = -1
+                usedRegions[region] = false
+                usedCols[col] = false
+                if (count >= limit) return
             }
         }
+
+        search(0)
         return count
     }
 
-    private fun fallback(size: Int, difficulty: GameDifficulty, seed: Long): Puzzle {
-        val pair = when (size) {
-            5 -> intArrayOf(0,2,4,1,3) to intArrayOf(
-                0,1,1,1,1,
-                1,1,1,1,2,
-                1,1,1,1,2,
-                1,3,3,4,4,
-                3,3,3,4,4
+    private fun safeFallback(size: Int, requested: GameDifficulty, seed: Long): Puzzle {
+        val random = Random(seed xor 0x5EEDL)
+        repeat(200) { attempt ->
+            val solution = randomSolution(size, random) ?: return@repeat
+            val regions = growRegions(size, solution, random)
+            val allGivens = solution.mapIndexed { row, col -> Cell(row, col) }.toSet()
+            val puzzle = Puzzle(
+                id = "safe-" + size + "-" + seed + "-" + attempt,
+                size = size,
+                regions = regions,
+                solutionCols = solution,
+                givens = allGivens,
+                difficulty = GameDifficulty.DISCOVERY,
+                seed = seed
             )
-            6 -> intArrayOf(0,2,4,1,3,5) to intArrayOf(
-                0,3,1,2,2,2,
-                3,3,1,2,2,2,
-                3,3,1,2,2,2,
-                3,3,2,2,2,2,
-                3,3,2,4,2,5,
-                3,3,3,3,5,5
-            )
-            7 -> intArrayOf(0,2,4,1,5,3,6) to intArrayOf(
-                0,1,1,1,1,1,1,
-                1,1,1,1,1,1,1,
-                3,1,3,2,2,2,4,
-                3,3,3,3,2,2,4,
-                3,3,5,5,5,4,4,
-                3,3,3,5,5,5,4,
-                3,3,5,5,5,5,6
-            )
-            else -> intArrayOf(0,2,4,1,5,7,3,6) to intArrayOf(
-                0,0,2,2,2,2,2,4,
-                1,1,1,1,2,2,2,4,
-                3,3,2,2,2,4,4,4,
-                3,3,3,4,4,4,4,4,
-                3,6,3,6,6,4,5,5,
-                3,6,6,6,6,5,5,5,
-                6,6,6,6,6,6,7,5,
-                6,6,6,6,6,6,7,7
-            )
+            if (countSolutions(puzzle, 2) == 1) return puzzle
         }
-
-        val base = Puzzle(
-            id = "fallback-" + size + "-" + difficulty.name.lowercase() + "-" + seed,
-            size = size,
-            regions = pair.second,
-            solutionCols = pair.first,
-            difficulty = difficulty,
-            seed = seed
-        )
-        return base.copy(givens = HumanSolver.selectGivens(base, difficulty, seed))
+        throw IllegalStateException("Impossible de générer une grille GeckoDoku sûre.")
     }
 }

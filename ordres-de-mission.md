@@ -1,56 +1,50 @@
 # Ordres de mission — GeckoDoku
 
 ## GECKO-001 — Base du jeu accessible
-**État : En validation téléphone v0.2.0-dev.**
-
-Créer GeckoDoku avec grosses cases, contours lisibles, un gecko par ligne/colonne/zone et interdiction de contact. Les exclusions automatiques doivent se remplir après un gecko confirmé.
+**État : En validation téléphone.**
+Un gecko par ligne, colonne et zone ; aucun contact, diagonales comprises ; grosses cases, contours de zones lisibles et exclusions automatiques après confirmation.
 
 ## GECKO-002 — Repères avancés
 **État : Implémenté, à revalider.**
+Appui long case : gecko hypothèse discret → alerte clignotante → aucun. Appui long hors grille : palette de 10 repères personnels, sans effet sur la logique.
 
-- Appui long case : gecko hypothèse discret → gecko alerte clignotant → aucun.
-- Appui long hors grille : palette de 10 repères personnels.
-- Inclure !, ?, cible et gecko arc-en-ciel.
-- Les repères personnels ne modifient jamais la logique.
-
-## GECKO-003 — Retours sonores utiles
+## GECKO-003 — Retours sonores
 **État : Implémenté en FX légers.**
-
-FX dès la première version, désactivables, pour confirmer les actions sans dépendre uniquement de la vue.
+Retours audio désactivables pour confirmer les actions sans dépendre uniquement de la vue.
 
 ## GECKO-004 — Habillage graphique/média futur
 **État : Ordre futur conservé.**
+Préserver rendu léger et futurs assets riches : images, animations, vidéos, voix, sons et FX sans modifier le moteur. Début visé autour du 10 octobre 2026 ; cible autour du 30 octobre 2026.
 
-Prévoir deux systèmes interchangeables : rendu léger/procédural et rendu assets riches. Futurs beaux sons, voix, images, animations, vidéos et FX sans réécrire le moteur. Début visé autour du 10 octobre 2026 ; cible autour du 30 octobre 2026.
+## GECKO-005 — Difficulté logique objective
+**État : v0.3 implémentée, à valider humainement.**
 
-## GECKO-005 — Difficulté objective et IA interne
-**État : Première base logique implémentée ; IA entraînée future.**
+La difficulté doit être déterminée par la technique minimale indispensable :
+- Découverte : singles suffisants ;
+- Facile : au moins 1 déduction de zone indispensable ;
+- Réflexion : 2 à 3 déductions de zone ;
+- Difficile : 4 ou davantage ;
+- Expert : la grille ne se résout pas sans Gecko X-Wing ;
+- Démentiel : la grille exige à la fois Gecko X-Wing et projection de zone.
 
-- Séparer taille de grille et difficulté.
-- Utiliser un solveur humain explicable pour mesurer le raisonnement requis.
-- Monter jusqu'au X-Wing pour le mode Expert.
-- Garder DifficultyModel interchangeable pour une future IA locale entraînée.
-- Ne pas confondre unicité mathématique et résolubilité humaine.
+Les techniques peuvent être combinées. Le futur modèle IA local pourra prédire rapidement le niveau, mais le solveur logique reste le juge explicable.
 
-## GECKO-006 — APK de test
-**État : v0.1 construit avec succès ; v0.2 en build après commit.**
+## GECKO-006 — APK
+**État : v0.3 à construire après commit.**
+APK correctement nommé, testable sur téléphone, sans médias lourds intégrés.
 
-Produire des APK correctement nommés et les valider sur téléphone.
+## GECKO-007 — Gestes
+**État : Corrigé depuis v0.2.**
+Clic simple confirmé = croix uniquement. Vrai double-clic = gecko uniquement. Appui long = hypothèse.
 
-## GECKO-007 — Correction des gestes
-**État : Implémenté v0.2.0-dev, à tester.**
+## GECKO-008 — Tailles, couleurs et stats
+**État : Étendu v0.3.**
+- tailles 5×5 à 12×12, soit 8 tailles au lieu des 4 initiales ;
+- palette de 12 couleurs de zones ;
+- statistiques locales conservées ;
+- difficulté stockée selon le niveau réellement mesuré.
 
-Le comportement v0.1 était incorrect : deux clics simples successifs pouvaient transformer une croix en gecko. Désormais :
-- clic simple confirmé = croix uniquement ;
-- vrai double-clic GestureDetector = gecko uniquement ;
-- appui long = hypothèse.
-
-## GECKO-008 — Taille, difficulté et stats locales
-**État : Implémenté v0.2.0-dev, à tester.**
-
-- tailles 5×5 à 8×8 ;
-- difficultés Découverte / Facile / Réflexion / Expert ;
-- geckos donnés selon le niveau ;
-- génération validée unique ;
-- statistiques locales : lancées, terminées, réussite, erreurs, temps moyen, répartition taille/difficulté ;
-- aucune donnée de stats envoyée sur Internet.
+## GECKO-009 — Déductions Gecko spécifiques
+**État : Implémenté v0.3, à valider.**
+Projection de zone : lorsqu'une zone sans gecko n'a plus que 2 à 4 cases candidates, toute case extérieure qui toucherait chacune de ces possibilités est impossible.
+Gecko X-Wing : deux lignes avec les mêmes deux colonnes candidates, deux colonnes avec les mêmes deux lignes, ou deux zones enfermées dans exactement deux lignes/colonnes réservent ces axes et éliminent les autres candidats.

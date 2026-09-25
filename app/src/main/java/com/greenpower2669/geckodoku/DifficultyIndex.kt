@@ -4,13 +4,18 @@ data class DifficultyFeatures(
     val size: Int,
     val givenCount: Int,
     val logicalSteps: Int,
+    val regionLogicCount: Int,
+    val projectionCount: Int,
+    val xWingCount: Int,
     val maxTechnique: SolveTechnique,
-    val xWingCount: Int
+    val xWingRequired: Boolean,
+    val projectionRequired: Boolean
 )
 
 data class DifficultyReport(
     val index: Int,
     val label: String,
+    val ratedDifficulty: GameDifficulty,
     val features: DifficultyFeatures,
     val model: String,
     val logicallySolvable: Boolean
@@ -22,12 +27,13 @@ interface DifficultyModel {
 
 class HeuristicDifficultyModel : DifficultyModel {
     override fun score(features: DifficultyFeatures): Int {
-        val sizePart = (features.size - 5) * 6
-        val cluePart = (features.size - features.givenCount).coerceAtLeast(0) * 5
+        val sizePart = (features.size - 5) * 3
         val stepPart = (features.logicalSteps * 2).coerceAtMost(25)
-        val techniquePart = features.maxTechnique.weight
-        val xWingPart = features.xWingCount * 8
-        return (sizePart + cluePart + stepPart + techniquePart + xWingPart).coerceIn(0, 100)
+        val regionPart = (features.regionLogicCount * 5).coerceAtMost(25)
+        val projectionPart = features.projectionCount * 7
+        val xWingPart = if (features.xWingRequired) 22 + features.xWingCount * 6 else features.xWingCount * 3
+        val comboPart = if (features.xWingRequired && features.projectionRequired) 18 else 0
+        return (sizePart + stepPart + regionPart + projectionPart + xWingPart + comboPart).coerceIn(0, 100)
     }
 }
 
@@ -36,22 +42,44 @@ object DifficultyIndexer {
         puzzle: Puzzle,
         model: DifficultyModel = HeuristicDifficultyModel()
     ): DifficultyReport {
-        val solve = HumanSolver.analyze(puzzle, puzzle.givens, SolveTechnique.X_WING)
+        val full = HumanSolver.analyze(puzzle, puzzle.givens, SolverRules.FULL)
+        val singles = HumanSolver.analyze(puzzle, puzzle.givens, SolverRules.SINGLES)
+        val region = HumanSolver.analyze(puzzle, puzzle.givens, SolverRules.REGION)
+        val noProjection = HumanSolver.analyze(puzzle, puzzle.givens, SolverRules.NO_PROJECTION)
+
+        val xWingRequired = full.solved && !region.solved
+        val projectionRequired = full.solved && !noProjection.solved
+
+        val rated = when {
+            !full.solved -> GameDifficulty.DEMENTIAL
+            xWingRequired && projectionRequired -> GameDifficulty.DEMENTIAL
+            xWingRequired -> GameDifficulty.EXPERT
+            singles.solved -> GameDifficulty.DISCOVERY
+            region.regionLogicCount <= 1 -> GameDifficulty.EASY
+            region.regionLogicCount <= 3 -> GameDifficulty.THINKING
+            else -> GameDifficulty.HARD
+        }
+
         val features = DifficultyFeatures(
             size = puzzle.size,
             givenCount = puzzle.givens.size,
-            logicalSteps = solve.steps.size,
-            maxTechnique = solve.maxTechnique,
-            xWingCount = solve.xWingCount
+            logicalSteps = full.steps.size,
+            regionLogicCount = full.regionLogicCount,
+            projectionCount = full.projectionCount,
+            xWingCount = full.xWingCount,
+            maxTechnique = full.maxTechnique,
+            xWingRequired = xWingRequired,
+            projectionRequired = projectionRequired
         )
         val index = model.score(features)
-        val label = when (index) {
-            in 0..20 -> "Détente"
-            in 21..40 -> "Facile"
-            in 41..60 -> "Réflexion"
-            in 61..80 -> "Difficile"
-            else -> "Expert"
-        }
-        return DifficultyReport(index, label, features, model::class.simpleName ?: "model", solve.solved)
+
+        return DifficultyReport(
+            index = index,
+            label = rated.label,
+            ratedDifficulty = rated,
+            features = features,
+            model = model::class.simpleName ?: "model",
+            logicallySolvable = full.solved
+        )
     }
 }

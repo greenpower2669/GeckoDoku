@@ -28,15 +28,20 @@ class GeckoBoardView @JvmOverloads constructor(
     private val boardRect = RectF()
     private var cellSize = 1f
     private val gutter = dp(76f)
+
     private val regionColors = intArrayOf(
-        Color.rgb(238, 249, 238),
-        Color.rgb(232, 244, 255),
-        Color.rgb(255, 245, 221),
-        Color.rgb(247, 235, 255),
-        Color.rgb(255, 235, 238),
-        Color.rgb(233, 250, 248),
-        Color.rgb(249, 239, 226),
-        Color.rgb(237, 239, 255)
+        Color.rgb(232, 248, 232),
+        Color.rgb(222, 239, 255),
+        Color.rgb(255, 241, 204),
+        Color.rgb(244, 225, 255),
+        Color.rgb(255, 222, 226),
+        Color.rgb(218, 247, 242),
+        Color.rgb(255, 229, 204),
+        Color.rgb(225, 229, 255),
+        Color.rgb(237, 246, 205),
+        Color.rgb(255, 218, 242),
+        Color.rgb(216, 245, 255),
+        Color.rgb(239, 225, 207)
     )
 
     private val gestures = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
@@ -91,10 +96,10 @@ class GeckoBoardView @JvmOverloads constructor(
 
     private fun updateBoardRect(w: Int = width, h: Int = height) {
         if (w <= 0 || h <= 0) return
-        val horizontal = dp(8f)
-        val side = min(w - horizontal * 2, h - gutter - dp(6f)).coerceAtLeast(dp(80f))
+        val horizontal = dp(6f)
+        val side = min(w - horizontal * 2, h - gutter - dp(4f)).coerceAtLeast(dp(80f))
         val left = (w - side) / 2f
-        boardRect.set(left, dp(6f), left + side, dp(6f) + side)
+        boardRect.set(left, dp(4f), left + side, dp(4f) + side)
         if (::puzzle.isInitialized) cellSize = side / puzzle.size
     }
 
@@ -106,28 +111,35 @@ class GeckoBoardView @JvmOverloads constructor(
         if (boardRect.width() <= 0f) updateBoardRect()
         cellSize = boardRect.width() / puzzle.size
         val state = snapshotProvider()
+
         drawRegions(canvas)
         drawGrid(canvas)
         drawMarks(canvas, state)
         drawGutterHint(canvas)
-        if (state.hypotheses.values.any { it == HypothesisMark.ALERT_GECKO }) postInvalidateDelayed(450)
+
+        if (state.hypotheses.values.any { it == HypothesisMark.ALERT_GECKO }) {
+            postInvalidateDelayed(450)
+        }
     }
 
     private fun drawRegions(canvas: Canvas) {
-        for (r in 0 until puzzle.size) for (c in 0 until puzzle.size) {
-            val cell = Cell(r, c)
-            paint.style = Paint.Style.FILL
-            paint.color = regionColors[puzzle.regionAt(cell) % regionColors.size]
-            canvas.drawRect(cellRect(cell), paint)
+        for (r in 0 until puzzle.size) {
+            for (c in 0 until puzzle.size) {
+                val cell = Cell(r, c)
+                paint.style = Paint.Style.FILL
+                paint.color = regionColors[puzzle.regionAt(cell) % regionColors.size]
+                canvas.drawRect(cellRect(cell), paint)
+            }
         }
     }
 
     private fun drawGrid(canvas: Canvas) {
         paint.style = Paint.Style.STROKE
         paint.strokeCap = Paint.Cap.SQUARE
+
         for (i in 0..puzzle.size) {
             paint.color = Color.rgb(70, 70, 70)
-            paint.strokeWidth = dp(if (i == 0 || i == puzzle.size) 3.2f else 1.1f)
+            paint.strokeWidth = dp(if (i == 0 || i == puzzle.size) 3.0f else 1.0f)
             val x = boardRect.left + i * cellSize
             val y = boardRect.top + i * cellSize
             canvas.drawLine(x, boardRect.top, x, boardRect.bottom, paint)
@@ -135,38 +147,47 @@ class GeckoBoardView @JvmOverloads constructor(
         }
 
         paint.color = Color.BLACK
-        paint.strokeWidth = dp(4.0f)
-        for (r in 0 until puzzle.size) for (c in 0 until puzzle.size) {
-            val here = puzzle.regionAt(Cell(r, c))
-            val rect = cellRect(Cell(r, c))
-            if (c + 1 < puzzle.size && here != puzzle.regionAt(Cell(r, c + 1))) {
-                canvas.drawLine(rect.right, rect.top, rect.right, rect.bottom, paint)
-            }
-            if (r + 1 < puzzle.size && here != puzzle.regionAt(Cell(r + 1, c))) {
-                canvas.drawLine(rect.left, rect.bottom, rect.right, rect.bottom, paint)
+        paint.strokeWidth = dp(if (puzzle.size >= 10) 3.2f else 4.0f)
+
+        for (r in 0 until puzzle.size) {
+            for (c in 0 until puzzle.size) {
+                val here = puzzle.regionAt(Cell(r, c))
+                val rect = cellRect(Cell(r, c))
+
+                if (c + 1 < puzzle.size && here != puzzle.regionAt(Cell(r, c + 1))) {
+                    canvas.drawLine(rect.right, rect.top, rect.right, rect.bottom, paint)
+                }
+                if (r + 1 < puzzle.size && here != puzzle.regionAt(Cell(r + 1, c))) {
+                    canvas.drawLine(rect.left, rect.bottom, rect.right, rect.bottom, paint)
+                }
             }
         }
     }
 
     private fun drawMarks(canvas: Canvas, state: GameSnapshot) {
-        for (r in 0 until puzzle.size) for (c in 0 until puzzle.size) {
-            val cell = Cell(r, c)
-            val rect = cellRect(cell)
-            when {
-                state.givens.contains(cell) -> {
-                    drawGecko(canvas, rect, 1f, false)
-                    drawGivenRing(canvas, rect)
+        for (r in 0 until puzzle.size) {
+            for (c in 0 until puzzle.size) {
+                val cell = Cell(r, c)
+                val rect = cellRect(cell)
+
+                when {
+                    state.givens.contains(cell) -> {
+                        drawGecko(canvas, rect, 1f, false)
+                        drawGivenRing(canvas, rect)
+                    }
+                    state.confirmed.contains(cell) -> drawGecko(canvas, rect, 1f, false)
+                    state.hypotheses[cell] == HypothesisMark.ALERT_GECKO -> {
+                        val visible = (SystemClock.uptimeMillis() / 450L) % 2L == 0L
+                        drawGecko(canvas, rect, if (visible) 1f else .20f, true)
+                    }
+                    state.hypotheses[cell] == HypothesisMark.GHOST_GECKO ->
+                        drawGecko(canvas, rect, .18f, false)
+                    state.manualCrosses.contains(cell) -> drawCross(canvas, rect, 1f)
+                    state.autoCrosses.contains(cell) -> drawCross(canvas, rect, .30f)
                 }
-                state.confirmed.contains(cell) -> drawGecko(canvas, rect, 1f, false)
-                state.hypotheses[cell] == HypothesisMark.ALERT_GECKO -> {
-                    val visible = (SystemClock.uptimeMillis() / 450L) % 2L == 0L
-                    drawGecko(canvas, rect, if (visible) 1f else .20f, true)
-                }
-                state.hypotheses[cell] == HypothesisMark.GHOST_GECKO -> drawGecko(canvas, rect, .18f, false)
-                state.manualCrosses.contains(cell) -> drawCross(canvas, rect, 1f)
-                state.autoCrosses.contains(cell) -> drawCross(canvas, rect, .30f)
+
+                state.customMarkers[cell]?.let { drawCustomMarker(canvas, rect, it) }
             }
-            state.customMarkers[cell]?.let { drawCustomMarker(canvas, rect, it) }
         }
     }
 
@@ -194,7 +215,10 @@ class GeckoBoardView @JvmOverloads constructor(
 
         paint.style = Paint.Style.FILL
         paint.color = Color.argb(a, 31, 128, 72)
-        canvas.drawOval(RectF(cx-cellSize*.13f, cy-cellSize*.18f, cx+cellSize*.13f, cy+cellSize*.20f), paint)
+        canvas.drawOval(
+            RectF(cx-cellSize*.13f, cy-cellSize*.18f, cx+cellSize*.13f, cy+cellSize*.20f),
+            paint
+        )
         canvas.drawCircle(cx, cy-cellSize*.21f, cellSize*.105f, paint)
 
         paint.style = Paint.Style.STROKE
@@ -208,7 +232,11 @@ class GeckoBoardView @JvmOverloads constructor(
 
         val tail = Path()
         tail.moveTo(cx, cy + cellSize*.18f)
-        tail.cubicTo(cx+cellSize*.02f, cy+cellSize*.32f, cx+cellSize*.22f, cy+cellSize*.26f, cx+cellSize*.20f, cy+cellSize*.36f)
+        tail.cubicTo(
+            cx+cellSize*.02f, cy+cellSize*.32f,
+            cx+cellSize*.22f, cy+cellSize*.26f,
+            cx+cellSize*.20f, cy+cellSize*.36f
+        )
         canvas.drawPath(tail, paint)
 
         paint.style = Paint.Style.FILL
@@ -226,7 +254,10 @@ class GeckoBoardView @JvmOverloads constructor(
 
     private fun drawCustomMarker(canvas: Canvas, rect: RectF, marker: CustomMarker) {
         if (marker == CustomMarker.RAINBOW_GECKO) {
-            val colors = intArrayOf(Color.RED, Color.rgb(255,140,0), Color.YELLOW, Color.GREEN, Color.BLUE, Color.MAGENTA)
+            val colors = intArrayOf(
+                Color.RED, Color.rgb(255,140,0), Color.YELLOW,
+                Color.GREEN, Color.BLUE, Color.MAGENTA
+            )
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = cellSize*.025f
             colors.forEachIndexed { i, color ->
@@ -251,8 +282,13 @@ class GeckoBoardView @JvmOverloads constructor(
         paint.style = Paint.Style.FILL
         paint.color = Color.rgb(55, 55, 55)
         paint.textAlign = Paint.Align.CENTER
-        paint.textSize = dp(14f)
-        canvas.drawText("Simple = ✕   •   Double = 🦎   •   Long = hypothèse", width/2f, boardRect.bottom+dp(32f), paint)
+        paint.textSize = dp(13f)
+        canvas.drawText(
+            "Simple = ✕   •   Double = 🦎   •   Long = hypothèse",
+            width/2f,
+            boardRect.bottom+dp(32f),
+            paint
+        )
     }
 
     private fun cellAt(x: Float, y: Float): Cell? {

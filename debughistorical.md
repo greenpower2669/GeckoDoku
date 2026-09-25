@@ -1,57 +1,47 @@
 # Debug historical — GeckoDoku
 
-## 2026-09-25 — Initialisation
-Dépôt initialement presque vide. Mise en place Android, moteur, FX et mémoires FAB Copilot.
-
-## 2026-09-25 — Grille démo non unique
-### Symptôme
-La première carte 5×5 admettait plusieurs solutions.
-### Cause
-Unicité non vérifiée avant intégration.
-### Correction
-Énumération exhaustive et remplacement par une carte unique.
-### Non-régression
-Toute grille passe countSolutions avec arrêt à 2.
+## 2026-09-25 — Grille initiale non unique
+Cause : absence de validateur exhaustif. Correction : unicité vérifiée, puis pipeline de génération sécurisé.
 
 ## 2026-09-25 — Workflow APK absent
+Cause : workflow non commité. Correction : GitHub Actions ajouté ; v0.1 et v0.2 ont construit avec succès.
+
+## 2026-09-25 — Deux clics simples transformaient une croix en gecko
+Cause : GameEngine.tap mélangeait les intentions. Correction v0.2 : toggleCross/toggleGecko séparés + onSingleTapConfirmed/onDoubleTap.
+
+## 2026-09-25 — Unique ≠ humainement résoluble
+Cause : seul le nombre de solutions était contrôlé. Correction : HumanSolver explicable.
+
+## 2026-09-25 — Difficultés v0.2 peu fidèles au ressenti
 ### Symptôme
-Aucune Action visible.
-### Cause
-La tentative de création du workflow avait été bloquée avant commit.
+Le niveau affiché reposait encore trop sur une heuristique et sur la technique maximale autorisée, pas sur la preuve qu'une technique était nécessaire.
+### Retour humain
+Expert doit signifier : impossible sans X-Wing.
+Démentiel doit demander une combinaison de raisonnements, notamment X-Wing et déduction/projection de zone.
+Le nombre de déductions de couleur doit augmenter avec la difficulté.
+
+### Correction v0.3
+DifficultyIndexer compare plusieurs résolutions où certaines familles de techniques sont volontairement désactivées.
+- Expert seulement si sans X-Wing le solveur bloque.
+- Démentiel seulement si sans X-Wing il bloque ET si sans projection de zone il bloque.
+- Facile/Réflexion/Difficile séparés par le nombre de déductions de zone nécessaires dans le chemin trouvé.
+
+## 2026-09-25 — Déduction de projection de zone manquante
+### Exemple
+Une zone n'a plus que 2 cases possibles sur une ligne. Le gecko sera forcément dans l'une d'elles. Une case située au-dessus ou dessous qui toucherait les deux possibilités est donc impossible, même sans connaître laquelle contient le gecko.
 ### Correction
-Workflow GitHub Actions ajouté ; run v0.1 terminé avec succès et APK produit.
+REGION_TOUCH_PROJECTION généralise ce raisonnement à 2..4 candidats : une case extérieure touchant toutes les possibilités de la zone est éliminée.
 
-## 2026-09-25 — Geste croix → gecko incorrect
-### Symptôme observé sur téléphone
-Un premier clic posait une croix, puis un second clic normal sur la même case pouvait poser un gecko, même sans vrai double-clic.
-### Cause racine
-GameEngine.tap() codait volontairement la séquence croix puis gecko. La vue utilisait onSingleTapUp et ne distinguait pas une intention double-clic.
-### Correction v0.2
-- suppression du comportement tap séquentiel ;
-- toggleCross() séparé de toggleGecko() ;
-- onSingleTapConfirmed pour la croix ;
-- onDoubleTap pour le gecko.
-### À valider
-Tempo réel du double-clic sur téléphone et confort avec déficience visuelle.
+## 2026-09-25 — Gecko X-Wing enrichi
+Ajout du X-Wing lignes/colonnes et d'un équivalent par paires de zones confinées dans exactement deux lignes ou colonnes.
 
-## 2026-09-25 — Unique ne veut pas dire humainement résoluble
-### Symptôme observé
-Première grille ressentie comme insoluble et sans point d'entrée évident.
-### Cause
-Le validateur testait seulement l'unicité mathématique, pas le chemin de déduction.
-### Correction v0.2
-Ajout HumanSolver et sélection de givens jusqu'à ce que la grille soit résoluble avec les techniques autorisées. Techniques : singles, interactions ligne/zone, X-Wing.
-### Vigilance
-Le solveur humain est une première formalisation. Les tests de Fab restent la référence pour le ressenti réel de difficulté.
+## 2026-09-25 — Passage 5..12
+Le pré-calcul de toutes les permutations ne convient plus aux grandes tailles. v0.3 passe à un backtracking aléatoire pour créer une solution et à un comptage de solutions borné à 2.
 
-## 2026-09-25 — Taille/difficulté/stats
-Ajout tailles 5..8, quatre difficultés et stats SharedPreferences locales. Aucune synchronisation réseau.
-
-## Toujours à vérifier v0.2
-- compilation ;
-- performance génération surtout 8×8 ;
-- distinction clic simple / double-clic ;
-- difficulté vécue vs index ;
-- qualité des givens de départ ;
-- stats après plusieurs parties ;
-- volume FX et fatigue visuelle.
+## Vigilances v0.3
+- temps de génération 10×10 à 12×12 sur téléphone ;
+- rareté possible d'Expert/Démentiel sur certaines petites tailles ;
+- si niveau exact non trouvé, l'UI doit annoncer le niveau réellement mesuré ;
+- vérifier visuellement les 12 couleurs ;
+- valider que les nouvelles déductions correspondent au raisonnement humain ;
+- garder le double-clic fiable.

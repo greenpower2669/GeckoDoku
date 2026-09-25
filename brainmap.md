@@ -1,65 +1,66 @@
-# Brainmap — GeckoDoku v0.2
+# Brainmap — GeckoDoku v0.3
 
 MainActivity
-├── réglage taille 5..8
-├── réglage GameDifficulty
-├── PuzzleGenerator.generate()
+├── taille 5..12
+├── difficulté demandée
+├── PuzzleGenerator
+├── DifficultyIndexer → difficulté mesurée
 ├── GameEngine
-├── GeckoBoardView
+├── GeckoBoardView (12 couleurs)
 ├── PlayerStatsStore
-├── FxFeedback
-└── DifficultyIndexer
+└── FxFeedback
 
 PuzzleGenerator
-├── validPermutations()
+├── randomSolution() backtracking
 ├── growRegions()
-├── countSolutions() == 1
-├── HumanSolver.selectGivens()
-└── fallback 5..8
+├── tuneGivens()
+├── countSolutions(limit=2)
+├── DifficultyIndexer.analyze()
+└── meilleur candidat sûr si exact indisponible
 
 HumanSolver
-├── candidates
-├── ROW_SINGLE
-├── COLUMN_SINGLE
-├── REGION_SINGLE
-├── LOCKED_CANDIDATE
-└── X_WING
+├── singles
+│   ├── ROW_SINGLE
+│   ├── COLUMN_SINGLE
+│   └── REGION_SINGLE
+├── REGION_LOCKED
+├── REGION_TOUCH_PROJECTION
+└── GECKO_X_WING
+    ├── paire de lignes
+    ├── paire de colonnes
+    └── paire de zones sur 2 axes
+
+DifficultyIndexer
+├── solve Singles
+├── solve Zone sans X-Wing
+├── solve X-Wing sans projection
+├── solve Full
+└── classifie par nécessité réelle
+
+Difficulté
+Découverte → singles
+Facile → ≥1 zone
+Réflexion → 2..3 zones
+Difficile → ≥4 zones
+Expert → X-Wing indispensable
+Démentiel → X-Wing + projection indispensables
 
 GameEngine
-├── givens verrouillés
+├── givens
 ├── confirmed
-├── manualCrosses
+├── crosses
 ├── autoCrosses
 ├── hypotheses
-└── customMarkers
+└── markers
 
-GeckoBoardView
-├── onSingleTapConfirmed → croix
-├── onDoubleTap → gecko
-├── onLongPress → hypothèse/palette
-├── givens entourés
-└── rendu procédural
+## Flux
+demande taille+niveau
+→ génération
+→ unicité
+→ solveurs d'ablation
+→ niveau mesuré
+→ jeu
+→ stats locales du niveau mesuré.
 
-PlayerStatsStore
-└── SharedPreferences local uniquement
-
-## Flux nouvelle grille
-taille + difficulté
-→ générateur
-→ unicité exhaustive
-→ sélection de givens
-→ validation HumanSolver
-→ GameEngine
-→ partie
-→ stats locales.
-
-## Séparation critique
-Logique = PuzzleGenerator + HumanSolver + GameEngine.
-Rendu = GeckoBoardView.
-Audio = FxFeedback.
-Stats = PlayerStatsStore.
-Scoring = DifficultyModel.
-Les futurs AssetRenderer / AssetFx / VoiceFeedback ne doivent pas pénétrer le moteur logique.
-
-## Build CI
-push main → GitHub Actions → JDK17 + Gradle9.6 → assembleDebug → GeckoDoku-v0.2.0-dev.apk.
+## Build
+push main → GitHub Actions → assembleDebug → GeckoDoku-v0.3.0-dev.apk.

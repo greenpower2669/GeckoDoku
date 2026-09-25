@@ -1,45 +1,44 @@
 # TODO — GeckoDoku
 
-## Fait v0.2.0-dev
-- [x] Séparer clic simple et vrai double-clic.
-- [x] Clic simple = croix uniquement.
-- [x] Double-clic = gecko uniquement.
-- [x] Givens verrouillés.
-- [x] Tailles 5×5 à 8×8.
-- [x] Difficultés Découverte / Facile / Réflexion / Expert.
-- [x] Générateur local de régions.
-- [x] Validation solution unique.
-- [x] Solveur humain.
-- [x] Singles ligne/colonne/zone.
-- [x] Interactions ligne/zone.
-- [x] X-Wing lignes/colonnes.
-- [x] Sélection automatique de givens par difficulté.
-- [x] Index difficulté basé sur trace logique.
-- [x] Stats locales SharedPreferences.
-- [x] Répartition stats par taille et difficulté.
-- [x] FX conservés.
-- [x] Architecture média riche future conservée.
-- [x] Ordres + brain + brainmap + debughistorical + todo synchronisés.
+## Fait v0.3.0-dev
+- [x] Étendre tailles de 5×5 à 12×12.
+- [x] Étendre palette à 12 couleurs.
+- [x] Ajouter Difficile et Démentiel.
+- [x] Séparer score numérique et niveau logique prouvé.
+- [x] Ajouter solveurs d'ablation pour mesurer les techniques indispensables.
+- [x] Facile : au moins 1 déduction de zone nécessaire.
+- [x] Réflexion : 2 à 3 déductions de zone.
+- [x] Difficile : 4+ déductions de zone.
+- [x] Expert : Gecko X-Wing nécessaire.
+- [x] Démentiel : X-Wing + projection de zone nécessaires.
+- [x] Ajouter REGION_TOUCH_PROJECTION sur 2..4 candidats de zone.
+- [x] Étendre Gecko X-Wing aux paires de zones.
+- [x] Remplacer cache exhaustif de permutations par backtracking compatible 12×12.
+- [x] Vérifier unicité avec givens par compteur borné à 2.
+- [x] Afficher demandé vs mesuré si le niveau exact n'est pas trouvé.
+- [x] Stats basées sur difficulté mesurée.
+- [x] Conserver gestes v0.2, FX et repères.
+- [x] Synchroniser ordre + 4 mémoires dans le cycle v0.3.
 
 ## Validation immédiate
-- [ ] Compiler v0.2.0-dev sur GitHub Actions.
+- [ ] Commit v0.3.
+- [ ] Vérifier démarrage GitHub Action.
 - [ ] Corriger toute erreur de compilation.
-- [ ] Récupérer APK v0.2.
-- [ ] Test téléphone : deux clics simples séparés ne posent jamais de gecko.
-- [ ] Test téléphone : vrai double-clic fiable.
-- [ ] Tester 5×5, 6×6, 7×7, 8×8.
-- [ ] Tester les quatre difficultés.
-- [ ] Vérifier qu'une grille n'arrive jamais bloquée sans chemin logique prévu.
-- [ ] Vérifier stats locales et temps moyen.
-- [ ] Vérifier confort sonore et visuel.
+- [ ] Récupérer APK v0.3.
+- [ ] Tester génération 5×5 à 12×12, surtout temps 10–12.
+- [ ] Vérifier que Expert affiche X-Wing requis.
+- [ ] Vérifier que Démentiel affiche X-Wing + projection requise.
+- [ ] Tester que Facile/Réflexion/Difficile correspondent mieux au ressenti.
+- [ ] Vérifier couleurs et lisibilité.
+- [ ] Vérifier double-clic et stats.
 
-## Moteur futur
-- [ ] Ajouter une vraie trace pédagogique pour Professeur Gecko.
-- [ ] Visualiser une technique X-Wing sur demande.
-- [ ] Enregistrer ressenti local trop facile / bien / trop dur.
-- [ ] Dataset local opt-in.
-- [ ] Modèle IA interne de difficulté comparé à l'heuristique.
-- [ ] Profils joueurs multiples.
+## Futur logique
+- [ ] Professeur Gecko : expliquer chaque SolveStep visuellement.
+- [ ] Montrer le rectangle/axes Gecko X-Wing.
+- [ ] Montrer la zone et la projection commune.
+- [ ] Ajouter ressenti local trop facile / bien / trop dur.
+- [ ] Entraîner IA locale de prédiction à partir des preuves + retours humains.
+- [ ] Explorer Gecko Swordfish (N geckos / N axes) uniquement si explicable.
 
 ## Habillage futur
 - [ ] Switch procédural / assets riches.
