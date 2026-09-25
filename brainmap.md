@@ -63,3 +63,34 @@ MainActivity / WindowInsets
 KnownIssue GECKO-012
 └── Facile 12×12 observé avec 2 X-Wing humains
     └── audit DifficultyIndexer + solverTrace à venir
+
+
+PuzzleJournalStore
+├── SharedPreferences / JSON
+├── save(Puzzle)
+│   ├── définition de grille uniquement
+│   └── dédoublonnage par id
+├── list()
+├── load(id)
+│   └── HumanSolver.analyze() → solverTrace reconstruite
+├── delete(id)
+└── clear()
+
+MainActivity v0.5
+├── ↺ Rejouer
+│   └── même Puzzle → nouveau GameEngine
+├── ⭐ Sauver
+│   └── PuzzleJournalStore.save
+├── 📚 Journal
+│   ├── charger/rejouer
+│   ├── supprimer
+│   └── vider tout
+└── Stats
+    └── DifficultyStats par difficulté
+
+Stats tentative
+Nouvelle / Rejouer / Journal load
+→ recordStart(difficulté mesurée)
+→ fin réussie
+→ recordComplete
+→ taux = completed / started.

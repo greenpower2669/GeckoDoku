@@ -64,3 +64,37 @@
 - [ ] Comparer solverTrace stockée au chemin humain.
 - [ ] Vérifier si DifficultyIndexer masque un X-Wing par une autre déduction admise.
 - [ ] Interdire définitivement Facile/Réflexion/Difficile si X-Wing est réellement indispensable.
+
+
+## Fait v0.5.0-dev
+- [x] ↺ Rejouer la grille courante à zéro.
+- [x] ⭐ Sauvegarder une grille dans un journal local.
+- [x] Dédupliquer le journal par id de grille.
+- [x] 📚 Lister les grilles sauvegardées.
+- [x] Recharger/rejouer une grille du journal.
+- [x] Supprimer une grille du journal.
+- [x] Vider tout le journal avec confirmation.
+- [x] Conserver stats séparées du journal.
+- [x] Reconstruire solverTrace lors du chargement.
+- [x] Afficher taux de réussite par difficulté.
+- [x] Afficher terminées/lancées par difficulté.
+- [x] Compter Rejouer et Journal load comme nouvelles tentatives.
+- [x] Synchroniser ordre + 4 mémoires.
+
+## Validation v0.5
+- [ ] Compiler GitHub Actions.
+- [ ] Installer APK v0.5.
+- [ ] Tester Rejouer avant et après fin de partie.
+- [ ] Sauver plusieurs grilles et redémarrer l'application.
+- [ ] Charger une grille et vérifier qu'elle est identique.
+- [ ] Vérifier Prof Gecko après chargement.
+- [ ] Supprimer une entrée.
+- [ ] Vider tout et vérifier que les stats restent présentes.
+- [ ] Vérifier taux de réussite par difficulté avec plusieurs tentatives.
+- [ ] Vérifier que les nouveaux boutons restent au-dessus de la barre Android.
+
+## Futur journal
+- [ ] Export/import d'une grille pour un autre appareil.
+- [ ] Petit code de partage compact et vérifié.
+- [ ] Nom/note personnalisée d'une grille favorite.
+- [ ] Tags : pédagogique, X-Wing, projection, test.

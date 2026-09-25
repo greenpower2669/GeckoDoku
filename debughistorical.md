@@ -61,3 +61,25 @@ Test humain sur grille 12×12 affichée « Facile • zones 1 • trace 7 » : d
 Si ces deux X-Wing sont logiquement indispensables, le classement Facile est faux malgré l'analyse actuelle.
 ### Décision
 Bug enregistré comme GECKO-012. Ne pas le mélanger au correctif UI urgent ; auditer ensuite DifficultyIndexer, solverTrace et la notion de technique réellement nécessaire.
+
+
+## 2026-09-25 — Impossible de rejouer/conserver une bonne grille
+### Besoin
+Une grille appréciée devait pouvoir être rejouée à l'identique et conservée pour être testée de nouveau par le joueur ou une autre personne.
+### Correction v0.5
+Ajout d'un journal local persistant et de l'action Rejouer. Le journal stocke la définition originale et non la progression afin de garantir un redémarrage propre.
+
+## 2026-09-25 — Stats sans réussite par difficulté
+### Symptôme
+L'application comptait les terminées par difficulté mais n'affichait pas le nombre de tentatives ni le taux de réussite par niveau.
+### Correction v0.5
+Exposition de started_diff + completed_diff et affichage completionRate pour chaque GameDifficulty.
+
+## Vigilances v0.5
+- journal toujours relisible après fermeture/réouverture de l'app ;
+- supprimer une entrée sans affecter la partie courante ;
+- vider le journal sans supprimer les stats ;
+- rejouer doit conserver exactement la même définition de grille ;
+- vérifier que le Prof reconstruit correctement sa trace au chargement ;
+- vérifier que chaque replay/load compte bien comme nouvelle tentative ;
+- GECKO-012 difficulté reste ouvert et non corrigé par cette version.

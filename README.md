@@ -40,3 +40,18 @@ GitHub Actions produit GeckoDoku-v0.4.0-dev.apk.
 - Le bouton Prof Gecko reste au-dessus de la barre de navigation Android, y compris sur téléphones avec navigation par boutons ou gestes.
 - Le titre n'est plus placé sous la barre d'état.
 - Bug logique enregistré séparément : une grille affichée Facile a nécessité deux Gecko X-Wing lors du test humain. Le classement sera audité après ce correctif UI prioritaire.
+
+
+## v0.5.0-dev — Rejouer, journal et statistiques par difficulté
+- ↺ Rejouer remet exactement la grille courante à zéro.
+- ⭐ Sauver conserve la définition de la grille dans un journal local.
+- 📚 Journal permet de recharger une grille sauvegardée pour la refaire.
+- Suppression d'une grille du journal.
+- Vider tout le journal avec confirmation.
+- La sauvegarde journal contient la grille originale, pas la progression : chaque joueur repart d'une grille propre.
+- Une grille rechargée reconstruit sa trace Professeur Gecko.
+- Le même identifiant n'est pas dupliqué ; le resauvegarder le remonte dans le journal.
+- Les statistiques affichent désormais le taux de réussite séparé pour chaque difficulté : terminées / lancées.
+- Nouvelle, Rejouer et Chargement journal comptent comme de nouvelles tentatives.
+- Tout reste local sur le téléphone.
+- GECKO-012 reste ouvert : le classement de difficulté doit encore être audité sur le cas 12×12 Facile ayant nécessité deux X-Wing.

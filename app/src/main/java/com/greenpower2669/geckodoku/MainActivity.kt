@@ -11,134 +11,307 @@ import android.view.WindowInsets
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : Activity() {
     private lateinit var puzzle: Puzzle
     private lateinit var engine: GameEngine
-    private val fx: FxFeedback = ToneFxFeedback()
-    private lateinit var statsStore: PlayerStatsStore
 
-    private lateinit var board: GeckoBoardView
-    private lateinit var status: TextView
-    private lateinit var info: TextView
-    private lateinit var soundButton: Button
-    private lateinit var sizeButton: Button
-    private lateinit var difficultyButton: Button
-    private lateinit var professorButton: Button
+    private val fx: FxFeedback =
+        ToneFxFeedback()
+
+    private lateinit var statsStore:
+        PlayerStatsStore
+
+    private lateinit var journalStore:
+        PuzzleJournalStore
+
+    private lateinit var board:
+        GeckoBoardView
+
+    private lateinit var status:
+        TextView
+
+    private lateinit var info:
+        TextView
+
+    private lateinit var soundButton:
+        Button
+
+    private lateinit var sizeButton:
+        Button
+
+    private lateinit var difficultyButton:
+        Button
+
+    private lateinit var professorButton:
+        Button
+
+    private lateinit var saveButton:
+        Button
 
     private var selectedSize = 5
-    private var selectedDifficulty = GameDifficulty.EASY
-    private var pendingMarker: CustomMarker? = null
+
+    private var selectedDifficulty =
+        GameDifficulty.EASY
+
+    private var pendingMarker:
+        CustomMarker? = null
+
     private var eraseMarkerMode = false
+
     private var gameStartedAt = 0L
+
     private var completionRecorded = false
 
-    private var professorHint: ProfessorHint? = null
+    private var professorHint:
+        ProfessorHint? = null
+
     private var professorLevel = 0
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onCreate(
+        savedInstanceState: Bundle?
+    ) {
+        super.onCreate(
+            savedInstanceState
+        )
 
-        statsStore = PlayerStatsStore(this)
-        createPuzzle(recordStart = true)
+        statsStore =
+            PlayerStatsStore(this)
 
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(8), dp(8), dp(8), dp(8))
-            setBackgroundColor(Color.rgb(247, 250, 247))
-        }
+        journalStore =
+            PuzzleJournalStore(this)
 
-        val title = TextView(this).apply {
-            text = "GeckoDoku 🦎"
-            textSize = 28f
-            setTextColor(Color.rgb(20, 70, 40))
-            gravity = Gravity.CENTER
-        }
+        createPuzzle(
+            recordStart = true
+        )
 
-        info = TextView(this).apply {
-            textSize = 15f
-            setTextColor(Color.DKGRAY)
-            gravity = Gravity.CENTER
-            setPadding(0, 0, 0, dp(4))
-        }
+        val root =
+            LinearLayout(this).apply {
+                orientation =
+                    LinearLayout.VERTICAL
 
-        status = TextView(this).apply {
-            textSize = 17f
-            setTextColor(Color.BLACK)
-            gravity = Gravity.CENTER
-            minHeight = dp(58)
-        }
+                setPadding(
+                    dp(8),
+                    dp(8),
+                    dp(8),
+                    dp(8)
+                )
 
-        board = GeckoBoardView(this).apply {
-            setPuzzleAndRefresh(this@MainActivity.puzzle)
-            snapshotProvider = { engine.snapshot() }
-            onSingleTapCell = { handleSingleTap(it) }
-            onDoubleTapCell = { handleDoubleTap(it) }
-            onLongPressCell = { handleLongPress(it) }
-            onLongPressOutside = { showMarkerPalette() }
-        }
-
-        sizeButton = Button(this).apply {
-            textSize = 15f
-            minHeight = dp(46)
-            setOnClickListener { chooseSize() }
-        }
-
-        difficultyButton = Button(this).apply {
-            textSize = 15f
-            minHeight = dp(46)
-            setOnClickListener { chooseDifficulty() }
-        }
-
-        val newButton = Button(this).apply {
-            text = "↻ Nouvelle"
-            textSize = 15f
-            minHeight = dp(46)
-            setOnClickListener {
-                createPuzzle(recordStart = true)
-                refreshGameUi()
+                setBackgroundColor(
+                    Color.rgb(
+                        247,
+                        250,
+                        247
+                    )
+                )
             }
-        }
 
-        val statsButton = Button(this).apply {
-            text = "Stats"
-            textSize = 15f
-            minHeight = dp(46)
-            setOnClickListener { showStats() }
-        }
+        val title =
+            TextView(this).apply {
+                text =
+                    "GeckoDoku 🦎"
 
-        soundButton = Button(this).apply {
-            text = "🔊 FX"
-            textSize = 15f
-            minHeight = dp(46)
-            setOnClickListener {
-                fx.enabled = !fx.enabled
-                text = if (fx.enabled) "🔊 FX" else "🔇 FX"
+                textSize = 28f
+
+                setTextColor(
+                    Color.rgb(
+                        20,
+                        70,
+                        40
+                    )
+                )
+
+                gravity =
+                    Gravity.CENTER
             }
-        }
 
-        professorButton = Button(this).apply {
-            text = "🧑‍🏫 Prof Gecko"
-            textSize = 16f
-            minHeight = dp(50)
-            setOnClickListener { showProfessorHint() }
-        }
+        info =
+            TextView(this).apply {
+                textSize = 15f
+                setTextColor(
+                    Color.DKGRAY
+                )
+                gravity =
+                    Gravity.CENTER
+                setPadding(
+                    0,
+                    0,
+                    0,
+                    dp(4)
+                )
+            }
+
+        status =
+            TextView(this).apply {
+                textSize = 17f
+                setTextColor(
+                    Color.BLACK
+                )
+                gravity =
+                    Gravity.CENTER
+                minHeight =
+                    dp(58)
+            }
+
+        board =
+            GeckoBoardView(this).apply {
+                setPuzzleAndRefresh(
+                    this@MainActivity
+                        .puzzle
+                )
+
+                snapshotProvider = {
+                    engine.snapshot()
+                }
+
+                onSingleTapCell = {
+                    handleSingleTap(it)
+                }
+
+                onDoubleTapCell = {
+                    handleDoubleTap(it)
+                }
+
+                onLongPressCell = {
+                    handleLongPress(it)
+                }
+
+                onLongPressOutside = {
+                    showMarkerPalette()
+                }
+            }
+
+        sizeButton =
+            Button(this).apply {
+                textSize = 15f
+                minHeight = dp(46)
+
+                setOnClickListener {
+                    chooseSize()
+                }
+            }
+
+        difficultyButton =
+            Button(this).apply {
+                textSize = 15f
+                minHeight = dp(46)
+
+                setOnClickListener {
+                    chooseDifficulty()
+                }
+            }
+
+        val newButton =
+            Button(this).apply {
+                text = "↻ Nouvelle"
+                textSize = 15f
+                minHeight = dp(46)
+
+                setOnClickListener {
+                    createPuzzle(
+                        recordStart = true
+                    )
+                    refreshGameUi()
+                }
+            }
+
+        val statsButton =
+            Button(this).apply {
+                text = "Stats"
+                textSize = 15f
+                minHeight = dp(46)
+
+                setOnClickListener {
+                    showStats()
+                }
+            }
+
+        soundButton =
+            Button(this).apply {
+                text = "🔊 FX"
+                textSize = 15f
+                minHeight = dp(46)
+
+                setOnClickListener {
+                    fx.enabled =
+                        !fx.enabled
+
+                    text =
+                        if (fx.enabled) {
+                            "🔊 FX"
+                        } else {
+                            "🔇 FX"
+                        }
+                }
+            }
+
+        val replayButton =
+            Button(this).apply {
+                text = "↺ Rejouer"
+                textSize = 14f
+                minHeight = dp(46)
+
+                setOnClickListener {
+                    replayCurrentPuzzle()
+                }
+            }
+
+        saveButton =
+            Button(this).apply {
+                text = "⭐ Sauver"
+                textSize = 14f
+                minHeight = dp(46)
+
+                setOnClickListener {
+                    saveCurrentPuzzle()
+                }
+            }
+
+        val journalButton =
+            Button(this).apply {
+                text = "📚 Journal"
+                textSize = 14f
+                minHeight = dp(46)
+
+                setOnClickListener {
+                    showJournal()
+                }
+            }
+
+        professorButton =
+            Button(this).apply {
+                text =
+                    "🧑‍🏫 Prof Gecko"
+
+                textSize = 16f
+                minHeight = dp(50)
+
+                setOnClickListener {
+                    showProfessorHint()
+                }
+            }
 
         root.addView(
             title,
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
+
         root.addView(
             info,
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
+
         root.addView(
             status,
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
+
         root.addView(
             board,
             LinearLayout.LayoutParams(
@@ -148,56 +321,100 @@ class MainActivity : Activity() {
             )
         )
 
-        val row1 = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            addView(
-                sizeButton,
-                LinearLayout.LayoutParams(
-                    0,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    1f
-                )
-            )
-            addView(
-                difficultyButton,
-                LinearLayout.LayoutParams(
-                    0,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    1f
-                )
-            )
-        }
+        val row1 =
+            LinearLayout(this).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
 
-        val row2 = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            addView(
-                newButton,
-                LinearLayout.LayoutParams(
-                    0,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    1f
+                addView(
+                    sizeButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
                 )
-            )
-            addView(
-                statsButton,
-                LinearLayout.LayoutParams(
-                    0,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    1f
+
+                addView(
+                    difficultyButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
                 )
-            )
-            addView(
-                soundButton,
-                LinearLayout.LayoutParams(
-                    0,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    1f
+            }
+
+        val row2 =
+            LinearLayout(this).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+
+                addView(
+                    newButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
                 )
-            )
-        }
+
+                addView(
+                    statsButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
+                )
+
+                addView(
+                    soundButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
+                )
+            }
+
+        val row3 =
+            LinearLayout(this).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+
+                addView(
+                    replayButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
+                )
+
+                addView(
+                    saveButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
+                )
+
+                addView(
+                    journalButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
+                )
+            }
 
         root.addView(row1)
         root.addView(row2)
+        root.addView(row3)
+
         root.addView(
             professorButton,
             LinearLayout.LayoutParams(
@@ -207,45 +424,293 @@ class MainActivity : Activity() {
         )
 
         setContentView(root)
+
         protectFromSystemBars(root)
         refreshGameUi()
     }
 
-    private fun createPuzzle(recordStart: Boolean) {
-        puzzle = PuzzleGenerator.generate(
-            selectedSize,
-            selectedDifficulty
-        )
+    private fun createPuzzle(
+        recordStart: Boolean
+    ) {
+        val generated =
+            PuzzleGenerator.generate(
+                selectedSize,
+                selectedDifficulty
+            )
 
-        engine = GameEngine(puzzle)
+        startPuzzle(
+            generated,
+            recordStart
+        )
+    }
+
+    private fun startPuzzle(
+        nextPuzzle: Puzzle,
+        recordStart: Boolean
+    ) {
+        puzzle = nextPuzzle
+
+        selectedSize =
+            puzzle.size
+
+        engine =
+            GameEngine(puzzle)
+
         pendingMarker = null
         eraseMarkerMode = false
         completionRecorded = false
-        gameStartedAt = SystemClock.elapsedRealtime()
+
+        gameStartedAt =
+            SystemClock.elapsedRealtime()
+
         clearProfessorSession()
 
         if (recordStart) {
             statsStore.recordStart(
-                selectedSize,
+                puzzle.size,
                 puzzle.difficulty
             )
         }
     }
 
+    private fun replayCurrentPuzzle() {
+        startPuzzle(
+            puzzle,
+            recordStart = true
+        )
+
+        refreshGameUi()
+
+        status.text =
+            "Même grille réinitialisée. À toi de rejouer 🦎"
+    }
+
+    private fun saveCurrentPuzzle() {
+        journalStore.save(puzzle)
+
+        saveButton.text =
+            "★ Sauvée"
+
+        status.text =
+            "Grille sauvegardée dans le journal ⭐"
+
+        fx.marker()
+    }
+
+    private fun loadJournalPuzzle(
+        id: String
+    ) {
+        val saved =
+            journalStore.load(id)
+
+        if (saved == null) {
+            fx.error()
+            status.text =
+                "Impossible de relire cette grille."
+            return
+        }
+
+        selectedDifficulty =
+            saved.difficulty
+
+        startPuzzle(
+            saved,
+            recordStart = true
+        )
+
+        refreshGameUi()
+
+        status.text =
+            "Grille du journal chargée et remise à zéro 📚"
+    }
+
+    private fun showJournal() {
+        val entries =
+            journalStore.list()
+
+        if (entries.isEmpty()) {
+            AlertDialog.Builder(this)
+                .setTitle(
+                    "📚 Journal de grilles"
+                )
+                .setMessage(
+                    "Le journal est vide. Utilise ⭐ Sauver pour conserver une grille."
+                )
+                .setPositiveButton(
+                    "OK",
+                    null
+                )
+                .show()
+
+            return
+        }
+
+        val labels =
+            entries.mapIndexed {
+                    index,
+                    entry ->
+
+                val date =
+                    SimpleDateFormat(
+                        "dd/MM HH:mm",
+                        Locale.getDefault()
+                    ).format(
+                        Date(entry.savedAt)
+                    )
+
+                (index + 1)
+                    .toString() +
+                    ". " +
+                    entry.size +
+                    "×" +
+                    entry.size +
+                    " • " +
+                    entry.difficulty.label +
+                    " • " +
+                    date
+            }
+            .toTypedArray()
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "📚 Journal de grilles"
+            )
+            .setItems(
+                labels
+            ) { _, which ->
+                showJournalEntryActions(
+                    entries[which]
+                )
+            }
+            .setNeutralButton(
+                "Vider tout"
+            ) { _, _ ->
+                confirmClearJournal()
+            }
+            .setNegativeButton(
+                "Fermer",
+                null
+            )
+            .show()
+    }
+
+    private fun showJournalEntryActions(
+        entry: JournalEntry
+    ) {
+        val label =
+            entry.size.toString() +
+                "×" +
+                entry.size +
+                " • " +
+                entry.difficulty.label
+
+        AlertDialog.Builder(this)
+            .setTitle(label)
+            .setItems(
+                arrayOf(
+                    "▶ Rejouer cette grille",
+                    "🗑 Supprimer du journal"
+                )
+            ) { _, which ->
+                when (which) {
+                    0 ->
+                        loadJournalPuzzle(
+                            entry.id
+                        )
+
+                    1 ->
+                        confirmDeleteJournalEntry(
+                            entry
+                        )
+                }
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
+    }
+
+    private fun confirmDeleteJournalEntry(
+        entry: JournalEntry
+    ) {
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Supprimer cette grille ?"
+            )
+            .setMessage(
+                "La grille sera retirée du journal local."
+            )
+            .setPositiveButton(
+                "Supprimer"
+            ) { _, _ ->
+                journalStore.delete(
+                    entry.id
+                )
+
+                if (entry.id ==
+                    puzzle.id
+                ) {
+                    saveButton.text =
+                        "⭐ Sauver"
+                }
+
+                status.text =
+                    "Grille supprimée du journal."
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
+    }
+
+    private fun confirmClearJournal() {
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Vider tout le journal ?"
+            )
+            .setMessage(
+                "Toutes les grilles sauvegardées seront supprimées. Les statistiques restent intactes."
+            )
+            .setPositiveButton(
+                "Tout vider"
+            ) { _, _ ->
+                journalStore.clear()
+
+                saveButton.text =
+                    "⭐ Sauver"
+
+                status.text =
+                    "Journal vidé."
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
+    }
+
     private fun refreshGameUi() {
         if (::board.isInitialized) {
-            board.setPuzzleAndRefresh(puzzle)
+            board.setPuzzleAndRefresh(
+                puzzle
+            )
         }
 
         val report =
-            DifficultyIndexer.analyze(puzzle)
+            DifficultyIndexer.analyze(
+                puzzle
+            )
 
         if (::info.isInitialized) {
             val measured =
-                report.ratedDifficulty.label
+                report.ratedDifficulty
+                    .label
 
             val requestedText =
-                if (report.ratedDifficulty ==
+                if (
+                    report.ratedDifficulty ==
                     selectedDifficulty
                 ) {
                     measured
@@ -264,20 +729,28 @@ class MainActivity : Activity() {
                             .regionLogicCount
                     )
 
-                    if (report.features
+                    if (
+                        report.features
                             .xWingRequired
                     ) {
-                        append(" • X-Wing requis")
+                        append(
+                            " • X-Wing requis"
+                        )
                     }
 
-                    if (report.features
+                    if (
+                        report.features
                             .projectionRequired
                     ) {
-                        append(" • projection requise")
+                        append(
+                            " • projection requise"
+                        )
                     }
 
                     append(" • trace ")
-                    append(puzzle.solverTrace.size)
+                    append(
+                        puzzle.solverTrace.size
+                    )
                 }
 
             info.text =
@@ -308,9 +781,24 @@ class MainActivity : Activity() {
                 "🧑‍🏫 Prof Gecko"
         }
 
+        if (::saveButton.isInitialized) {
+            saveButton.text =
+                if (
+                    journalStore.contains(
+                        puzzle.id
+                    )
+                ) {
+                    "★ Sauvée"
+                } else {
+                    "⭐ Sauver"
+                }
+        }
+
         if (::status.isInitialized) {
             status.text =
-                if (puzzle.givens.isNotEmpty()) {
+                if (
+                    puzzle.givens.isNotEmpty()
+                ) {
                     puzzle.givens.size
                         .toString() +
                         " gecko(s) donné(s). Simple = ✕, double = 🦎."
@@ -320,22 +808,32 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun handleSingleTap(cell: Cell) {
-        if (placePendingMarkerIfNeeded(cell)) {
+    private fun handleSingleTap(
+        cell: Cell
+    ) {
+        if (
+            placePendingMarkerIfNeeded(
+                cell
+            )
+        ) {
             return
         }
 
         clearProfessorSession()
 
-        when (engine.toggleCross(cell)) {
+        when (
+            engine.toggleCross(cell)
+        ) {
             ActionFeedback.CROSS_SET -> {
                 fx.cross()
-                status.text = "Croix posée."
+                status.text =
+                    "Croix posée."
             }
 
             ActionFeedback.CROSS_REMOVED -> {
                 fx.cross()
-                status.text = "Croix retirée."
+                status.text =
+                    "Croix retirée."
             }
 
             ActionFeedback.CROSS_BLOCKED -> {
@@ -362,14 +860,22 @@ class MainActivity : Activity() {
         board.invalidate()
     }
 
-    private fun handleDoubleTap(cell: Cell) {
-        if (placePendingMarkerIfNeeded(cell)) {
+    private fun handleDoubleTap(
+        cell: Cell
+    ) {
+        if (
+            placePendingMarkerIfNeeded(
+                cell
+            )
+        ) {
             return
         }
 
         clearProfessorSession()
 
-        when (engine.toggleGecko(cell)) {
+        when (
+            engine.toggleGecko(cell)
+        ) {
             ActionFeedback.GECKO_CONFIRMED -> {
                 fx.gecko()
 
@@ -379,18 +885,22 @@ class MainActivity : Activity() {
                             .confirmed.size
 
                 status.text =
-                    encouragement(remaining)
+                    encouragement(
+                        remaining
+                    )
 
-                board.announceForAccessibility(
-                    "Gecko confirmé. " +
-                        remaining +
-                        " restant."
-                )
+                board
+                    .announceForAccessibility(
+                        "Gecko confirmé. " +
+                            remaining +
+                            " restant."
+                    )
             }
 
             ActionFeedback.GECKO_REMOVED -> {
                 fx.cross()
-                status.text = "Gecko retiré."
+                status.text =
+                    "Gecko retiré."
             }
 
             ActionFeedback.WRONG_GECKO -> {
@@ -400,9 +910,10 @@ class MainActivity : Activity() {
                 status.text =
                     "Pas ici. Une croix reste en place."
 
-                board.announceForAccessibility(
-                    "Gecko incorrect."
-                )
+                board
+                    .announceForAccessibility(
+                        "Gecko incorrect."
+                    )
             }
 
             ActionFeedback.CROSS_BLOCKED -> {
@@ -426,10 +937,14 @@ class MainActivity : Activity() {
         board.invalidate()
     }
 
-    private fun handleLongPress(cell: Cell) {
+    private fun handleLongPress(
+        cell: Cell
+    ) {
         clearProfessorSession()
 
-        when (engine.longPress(cell)) {
+        when (
+            engine.longPress(cell)
+        ) {
             ActionFeedback.HYPOTHESIS_CHANGED -> {
                 fx.hint()
 
@@ -483,7 +998,10 @@ class MainActivity : Activity() {
                 fx.blocked()
 
                 status.text =
-                    if (engine.snapshot().complete) {
+                    if (
+                        engine.snapshot()
+                            .complete
+                    ) {
                         "Prof Gecko : la grille est déjà terminée 🦎"
                     } else {
                         "Prof Gecko : je ne trouve plus de déduction sûre avec l'état actuel. Vérifie tes croix et tes hypothèses."
@@ -495,12 +1013,15 @@ class MainActivity : Activity() {
 
             professorHint = next
             professorLevel = 1
-        } else if (professorLevel < 3) {
+        } else if (
+            professorLevel < 3
+        ) {
             professorLevel += 1
         }
 
         val hint =
-            professorHint ?: return
+            professorHint
+                ?: return
 
         board.showProfessorHint(
             hint.step,
@@ -518,9 +1039,14 @@ class MainActivity : Activity() {
 
         professorButton.text =
             when (professorLevel) {
-                1 -> "🧑‍🏫 Pourquoi ? 2/3"
-                2 -> "🧑‍🏫 Montre l'action 3/3"
-                else -> "🧑‍🏫 Action montrée"
+                1 ->
+                    "🧑‍🏫 Pourquoi ? 2/3"
+
+                2 ->
+                    "🧑‍🏫 Montre l'action 3/3"
+
+                else ->
+                    "🧑‍🏫 Action montrée"
             }
 
         board.announceForAccessibility(
@@ -536,7 +1062,9 @@ class MainActivity : Activity() {
             board.clearProfessorHint()
         }
 
-        if (::professorButton.isInitialized) {
+        if (
+            ::professorButton.isInitialized
+        ) {
             professorButton.text =
                 "🧑‍🏫 Prof Gecko"
         }
@@ -549,12 +1077,13 @@ class MainActivity : Activity() {
         if (!completionRecorded) {
             val seconds =
                 (
-                    SystemClock.elapsedRealtime() -
+                    SystemClock
+                        .elapsedRealtime() -
                         gameStartedAt
                     ) / 1000L
 
             statsStore.recordComplete(
-                selectedSize,
+                puzzle.size,
                 puzzle.difficulty,
                 seconds
             )
@@ -573,7 +1102,8 @@ class MainActivity : Activity() {
     private fun placePendingMarkerIfNeeded(
         cell: Cell
     ): Boolean {
-        if (pendingMarker == null &&
+        if (
+            pendingMarker == null &&
             !eraseMarkerMode
         ) {
             return false
@@ -591,12 +1121,14 @@ class MainActivity : Activity() {
 
         pendingMarker = null
         eraseMarkerMode = false
+
         fx.marker()
 
         status.text =
             if (
                 result ==
-                ActionFeedback.CUSTOM_MARKER_CLEARED
+                ActionFeedback
+                    .CUSTOM_MARKER_CLEARED
             ) {
                 "Repère effacé."
             } else {
@@ -621,27 +1153,31 @@ class MainActivity : Activity() {
             )
 
         val labels =
-            values
-                .map {
-                    it.toString() +
-                        "×" +
-                        it
-                }
-                .toTypedArray()
+            values.map {
+                it.toString() +
+                    "×" +
+                    it
+            }.toTypedArray()
 
         AlertDialog.Builder(this)
-            .setTitle("Taille de grille")
+            .setTitle(
+                "Taille de grille"
+            )
             .setSingleChoiceItems(
                 labels,
-                values.indexOf(selectedSize)
+                values.indexOf(
+                    selectedSize
+                )
             ) { dialog, which ->
                 selectedSize =
                     values[which]
 
                 dialog.dismiss()
+
                 createPuzzle(
                     recordStart = true
                 )
+
                 refreshGameUi()
             }
             .show()
@@ -652,9 +1188,9 @@ class MainActivity : Activity() {
             GameDifficulty.entries
 
         val labels =
-            values
-                .map { it.label }
-                .toTypedArray()
+            values.map {
+                it.label
+            }.toTypedArray()
 
         AlertDialog.Builder(this)
             .setTitle(
@@ -670,9 +1206,11 @@ class MainActivity : Activity() {
                     values[which]
 
                 dialog.dismiss()
+
                 createPuzzle(
                     recordStart = true
                 )
+
                 refreshGameUi()
             }
             .show()
@@ -683,24 +1221,27 @@ class MainActivity : Activity() {
             CustomMarker.entries
 
         val labels =
-            markers
-                .map {
-                    it.symbol +
-                        "  " +
-                        it.label
-                }
-                .toMutableList()
+            markers.map {
+                it.symbol +
+                    "  " +
+                    it.label
+            }.toMutableList()
 
         labels.add(
             "⌫  Effacer un repère"
         )
 
         AlertDialog.Builder(this)
-            .setTitle("Choisir un repère")
+            .setTitle(
+                "Choisir un repère"
+            )
             .setItems(
                 labels.toTypedArray()
             ) { _, which ->
-                if (which == markers.size) {
+                if (
+                    which ==
+                    markers.size
+                ) {
                     pendingMarker = null
                     eraseMarkerMode = true
 
@@ -737,20 +1278,36 @@ class MainActivity : Activity() {
                     "Statistiques locales uniquement\n\n"
                 )
 
-                append("Parties lancées : ")
-                append(s.gamesStarted)
+                append(
+                    "Parties lancées : "
+                )
+                append(
+                    s.gamesStarted
+                )
                 append("\n")
 
-                append("Parties terminées : ")
-                append(s.gamesCompleted)
+                append(
+                    "Parties terminées : "
+                )
+                append(
+                    s.gamesCompleted
+                )
                 append("\n")
 
-                append("Réussite : ")
-                append(s.completionRate)
+                append(
+                    "Réussite globale : "
+                )
+                append(
+                    s.completionRate
+                )
                 append("%\n")
 
-                append("Erreurs : ")
-                append(s.mistakes)
+                append(
+                    "Erreurs : "
+                )
+                append(
+                    s.mistakes
+                )
                 append("\n")
 
                 append(
@@ -764,7 +1321,45 @@ class MainActivity : Activity() {
                 append("\n\n")
 
                 append(
-                    "Terminées par taille :\n"
+                    "Réussite par difficulté :\n"
+                )
+
+                for (
+                    d in
+                    GameDifficulty.entries
+                ) {
+                    val ds =
+                        statsStore
+                            .statsForDifficulty(
+                                d
+                            )
+
+                    append(d.label)
+                    append(" : ")
+
+                    if (ds.started == 0) {
+                        append(
+                            "— (0 partie)"
+                        )
+                    } else {
+                        append(
+                            ds.completionRate
+                        )
+                        append("%  •  ")
+                        append(
+                            ds.completed
+                        )
+                        append("/")
+                        append(
+                            ds.started
+                        )
+                    }
+
+                    append("\n")
+                }
+
+                append(
+                    "\nTerminées par taille :\n"
                 )
 
                 for (size in 5..12) {
@@ -782,30 +1377,14 @@ class MainActivity : Activity() {
                 }
 
                 append(
-                    "\nTerminées par difficulté mesurée :\n"
-                )
-
-                for (d in
-                    GameDifficulty.entries
-                ) {
-                    append(d.label)
-                    append(" : ")
-                    append(
-                        statsStore
-                            .completedForDifficulty(
-                                d
-                            )
-                    )
-                    append("\n")
-                }
-
-                append(
                     "\nTout reste sur ce téléphone."
                 )
             }
 
         AlertDialog.Builder(this)
-            .setTitle("Stats du joueur")
+            .setTitle(
+                "Stats du joueur"
+            )
             .setMessage(text)
             .setPositiveButton(
                 "OK",
@@ -844,8 +1423,11 @@ class MainActivity : Activity() {
     private fun formatSeconds(
         total: Long
     ): String {
-        val minutes = total / 60
-        val seconds = total % 60
+        val minutes =
+            total / 60
+
+        val seconds =
+            total % 60
 
         return minutes.toString() +
             " min " +
@@ -856,13 +1438,21 @@ class MainActivity : Activity() {
     private fun protectFromSystemBars(
         root: LinearLayout
     ) {
-        root.setOnApplyWindowInsetsListener { view, insets ->
-            val base = dp(8)
+        root.setOnApplyWindowInsetsListener {
+                view,
+                insets ->
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val base =
+                dp(8)
+
+            if (
+                Build.VERSION.SDK_INT >=
+                Build.VERSION_CODES.R
+            ) {
                 val bars =
                     insets.getInsets(
-                        WindowInsets.Type.systemBars()
+                        WindowInsets.Type
+                            .systemBars()
                     )
 
                 view.setPadding(
@@ -872,12 +1462,23 @@ class MainActivity : Activity() {
                     base + bars.bottom
                 )
             } else {
-                @Suppress("DEPRECATION")
+                @Suppress(
+                    "DEPRECATION"
+                )
+
                 view.setPadding(
-                    base + insets.systemWindowInsetLeft,
-                    base + insets.systemWindowInsetTop,
-                    base + insets.systemWindowInsetRight,
-                    base + insets.systemWindowInsetBottom
+                    base +
+                        insets
+                            .systemWindowInsetLeft,
+                    base +
+                        insets
+                            .systemWindowInsetTop,
+                    base +
+                        insets
+                            .systemWindowInsetRight,
+                    base +
+                        insets
+                            .systemWindowInsetBottom
                 )
             }
 

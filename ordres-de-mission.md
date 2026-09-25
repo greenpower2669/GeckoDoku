@@ -64,3 +64,23 @@ Retour téléphone : le bouton Prof Gecko était dessiné derrière la barre de 
 **État : Bug confirmé par test humain, correction logique à faire après GECKO-011.**
 
 Cas observé : grille 12×12 affichée Facile, trace 7, mais résolution humaine nécessitant deux Gecko X-Wing pour terminer. Une grille nécessitant réellement X-Wing ne doit jamais être classée Facile. Conserver ce cas comme non-régression pour l'audit du DifficultyIndexer et de la trace.
+
+
+## GECKO-013 — Rejouer / Favoris / Journal local
+**État : Implémenté v0.5.0-dev, à tester.**
+
+- ↺ Rejouer réinitialise exactement la grille courante : mêmes zones, mêmes givens, même difficulté, mais aucun coup joueur.
+- ⭐ Sauver ajoute la définition immuable de la grille au journal local.
+- 📚 Journal liste les grilles sauvegardées avec taille, difficulté et date.
+- Une grille du journal peut être rejouée proprement.
+- Suppression individuelle disponible.
+- Vider tout le journal disponible avec confirmation.
+- Une resauvegarde du même id ne crée pas de doublon.
+- La trace Professeur Gecko est reconstruite au chargement.
+- Le journal permet notamment de faire tester les mêmes grilles à d'autres joueurs sur le même appareil.
+- Export/import inter-appareils reste une évolution future distincte.
+
+## GECKO-014 — Taux de réussite par difficulté
+**État : Implémenté v0.5.0-dev, à tester.**
+
+Pour chaque difficulté mesurée, conserver parties lancées et parties terminées, puis afficher le pourcentage de réussite. Nouvelle grille, Rejouer et Chargement journal sont chacun une tentative distincte.
