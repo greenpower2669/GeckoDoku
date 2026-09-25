@@ -78,6 +78,55 @@ class GameEngine(val puzzle: Puzzle) {
         return ActionFeedback.CUSTOM_MARKER_SET
     }
 
+    fun applyProfessorStep(
+        step: SolveStep
+    ): ActionFeedback {
+        step.cell?.let { forced ->
+            if (puzzle.isGiven(forced)) {
+                return ActionFeedback.GIVEN_LOCKED
+            }
+
+            // Safety net only: the logical solver chooses the move.
+            // If its conclusion ever disagrees with the unique solution,
+            // refuse to mutate the player's grid.
+            if (!puzzle.isSolution(forced)) {
+                return ActionFeedback.WRONG_GECKO
+            }
+        }
+
+        step.hypothesisRejected?.let { rejected ->
+            if (!puzzle.isGiven(rejected) &&
+                !confirmed.contains(rejected)
+            ) {
+                hypotheses.remove(rejected)
+                manualCrosses.add(rejected)
+            }
+        }
+
+        for (cell in step.eliminated) {
+            if (!puzzle.isGiven(cell) &&
+                !confirmed.contains(cell)
+            ) {
+                hypotheses.remove(cell)
+                manualCrosses.add(cell)
+            }
+        }
+
+        step.cell?.let { forced ->
+            manualCrosses.remove(forced)
+            hypotheses.remove(forced)
+            confirmed.add(forced)
+
+            return if (confirmed.size == puzzle.size) {
+                ActionFeedback.COMPLETED
+            } else {
+                ActionFeedback.GECKO_CONFIRMED
+            }
+        }
+
+        return ActionFeedback.CROSS_SET
+    }
+
     private fun computeAutoCrosses(): Set<Cell> {
         val auto = linkedSetOf<Cell>()
         for (gecko in confirmed) {

@@ -114,3 +114,17 @@ VictoryCelebrationView procédural, sans asset lourd. Confettis et feux d'artifi
 - vérifier lisibilité de la bulle sur petit écran ;
 - vérifier overlay de victoire avec barres Android ;
 - GECKO-012 reste ouvert : classification Facile/X-Wing à auditer séparément.
+
+
+## 2026-09-25 — Prof montre mais ne joue pas
+### Besoin
+Le joueur souhaite pouvoir demander au Prof de poursuivre réellement la résolution, une étape à la fois, au lieu de devoir recopier chaque exclusion/gecko indiqué.
+### Correction v0.7
+Ajout GameEngine.applyProfessorStep. Chaque pression applique une seule déduction déterministe puis s'arrête.
+### Hypothèses
+Une bifurcation à deux candidats utilise deux phases : deux geckos fantômes d'abord, contradiction et mutation seulement à la pression suivante. L'overlay fantôme ne touche pas aux hypothèses personnelles.
+### Garde-fou
+Un gecko forcé est contrôlé contre la solution unique avant toute mutation. Une divergence devient une alerte de debug et non une erreur joueur.
+
+## 2026-09-25 — Réussites assistées indifférenciées
+Correction v0.7 : stats globales et par difficulté conservent le nombre de grilles terminées avec Prof, tout en gardant le taux de réussite standard.

@@ -74,10 +74,10 @@ class MainActivity : Activity() {
 
     private var completionRecorded = false
 
-    private var professorHint:
+    private var pendingProfessorHypothesis:
         ProfessorHint? = null
 
-    private var professorLevel = 0
+    private var professorUsed = false
 
     override fun onCreate(
         savedInstanceState: Bundle?
@@ -492,6 +492,7 @@ class MainActivity : Activity() {
         pendingMarker = null
         eraseMarkerMode = false
         completionRecorded = false
+        professorUsed = false
 
         gameStartedAt =
             SystemClock.elapsedRealtime()
@@ -1043,98 +1044,183 @@ class MainActivity : Activity() {
     }
 
     private fun showProfessorHint() {
-        val current =
-            professorHint
+        professorUsed = true
 
-        if (current == null) {
-            val next =
-                ProfessorGecko.nextHint(
-                    puzzle,
-                    engine.snapshot()
-                )
+        val pending =
+            pendingProfessorHypothesis
 
-            if (next == null) {
-                fx.blocked()
+        if (pending != null) {
+            pendingProfessorHypothesis =
+                null
 
-                val message =
-                    if (
-                        engine.snapshot()
-                            .complete
-                    ) {
-                        "La grille est déjà terminée, biloute 🦎"
-                    } else {
-                        "Je ne trouve plus de déduction sûre avec l'état actuel. Vérifie tes croix et tes hypothèses."
-                    }
+            applyProfessorHint(
+                pending,
+                resolvingHypothesis = true
+            )
 
-                status.text =
-                    "Prof Gecko"
-
-                professorBubble
-                    .showMessage(message)
-
-                board.clearProfessorHint()
-
-                board.announceForAccessibility(
-                    message
-                )
-
-                return
-            }
-
-            professorHint = next
-            professorLevel = 1
-        } else if (
-            professorLevel < 3
-        ) {
-            professorLevel += 1
+            return
         }
 
-        val hint =
-            professorHint
-                ?: return
+        board.clearProfessorHint()
+
+        val next =
+            ProfessorGecko.nextHint(
+                puzzle,
+                engine.snapshot()
+            )
+
+        if (next == null) {
+            fx.blocked()
+
+            val message =
+                if (
+                    engine.snapshot()
+                        .complete
+                ) {
+                    "La grille est déjà terminée, biloute 🦎"
+                } else {
+                    "Je ne trouve plus de déduction sûre avec l'état actuel. Vérifie tes croix et tes hypothèses."
+                }
+
+            status.text =
+                "Prof Gecko"
+
+            professorBubble
+                .showMessage(message)
+
+            board.announceForAccessibility(
+                message
+            )
+
+            return
+        }
+
+        val isHypothesis =
+            next.step.technique ==
+                SolveTechnique.HYPOTHESIS_TEST ||
+            next.step.technique ==
+                SolveTechnique.DOUBLE_HYPOTHESIS
+
+        if (isHypothesis) {
+            pendingProfessorHypothesis =
+                next
+
+            board.showProfessorHypothesis(
+                next.step
+            )
+
+            val message =
+                next.focusText +
+                    "\n\nLes deux geckos semi-transparents sont les deux possibilités. Appuie encore sur Prof Gecko : je testerai la branche qui mène à la contradiction."
+
+            professorBubble
+                .showMessage(message)
+
+            status.text =
+                "Prof Gecko • 2 possibilités"
+
+            professorButton.text =
+                "🧑‍🏫 Tester l'hypothèse"
+
+            fx.hint()
+
+            board.announceForAccessibility(
+                message
+            )
+
+            return
+        }
+
+        applyProfessorHint(
+            next,
+            resolvingHypothesis = false
+        )
+    }
+
+    private fun applyProfessorHint(
+        hint: ProfessorHint,
+        resolvingHypothesis: Boolean
+    ) {
+        val result =
+            engine.applyProfessorStep(
+                hint.step
+            )
+
+        if (
+            result ==
+            ActionFeedback.WRONG_GECKO
+        ) {
+            fx.error()
+
+            val message =
+                "Alerte : ma déduction contredit la solution unique. Je refuse de modifier la grille et je garde ce cas pour le debug."
+
+            professorBubble
+                .showMessage(message)
+
+            status.text =
+                "Prof Gecko • incohérence détectée"
+
+            board.clearProfessorHint()
+
+            professorButton.text =
+                "🧑‍🏫 Prof Gecko"
+
+            board.announceForAccessibility(
+                message
+            )
+
+            return
+        }
 
         board.showProfessorHint(
             hint.step,
-            professorLevel
+            3
         )
 
-        fx.hint()
-
         val message =
-            when (professorLevel) {
-                1 -> hint.focusText
-                2 -> hint.explanationText
-                else -> hint.actionText
+            if (resolvingHypothesis) {
+                hint.explanationText +
+                    "\n\n" +
+                    hint.appliedText
+            } else {
+                hint.explanationText +
+                    "\n\n" +
+                    hint.appliedText
             }
 
         professorBubble
             .showMessage(message)
 
         status.text =
-            "Prof Gecko • indice " +
-                professorLevel +
-                "/3"
+            "Prof Gecko • étape appliquée"
 
         professorButton.text =
-            when (professorLevel) {
-                1 ->
-                    "🧑‍🏫 Pourquoi ? 2/3"
+            "🧑‍🏫 Étape suivante"
 
-                2 ->
-                    "🧑‍🏫 Montre l'action 3/3"
+        if (hint.step.cell != null) {
+            fx.gecko()
+        } else {
+            fx.cross()
+        }
 
-                else ->
-                    "🧑‍🏫 Action montrée"
-            }
+        board.invalidate()
 
         board.announceForAccessibility(
             message
         )
+
+        if (
+            result ==
+            ActionFeedback.COMPLETED
+        ) {
+            completeGame()
+        }
     }
 
     private fun clearProfessorSession() {
-        professorHint = null
-        professorLevel = 0
+        pendingProfessorHypothesis =
+            null
 
         if (::board.isInitialized) {
             board.clearProfessorHint()
@@ -1169,7 +1255,9 @@ class MainActivity : Activity() {
             statsStore.recordComplete(
                 puzzle.size,
                 puzzle.difficulty,
-                seconds
+                seconds,
+                usedProfessor =
+                    professorUsed
             )
 
             completionRecorded = true
@@ -1387,6 +1475,14 @@ class MainActivity : Activity() {
                 append("\n")
 
                 append(
+                    "Terminées avec Prof : "
+                )
+                append(
+                    s.assistedCompleted
+                )
+                append("\n")
+
+                append(
                     "Réussite globale : "
                 )
                 append(
@@ -1445,6 +1541,17 @@ class MainActivity : Activity() {
                         append(
                             ds.started
                         )
+
+                        if (
+                            ds.assistedCompleted > 0
+                        ) {
+                            append(
+                                " • Prof "
+                            )
+                            append(
+                                ds.assistedCompleted
+                            )
+                        }
                     }
 
                     append("\n")

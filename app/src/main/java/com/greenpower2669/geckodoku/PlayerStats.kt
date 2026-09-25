@@ -5,6 +5,7 @@ import android.content.Context
 data class LocalPlayerStats(
     val gamesStarted: Int,
     val gamesCompleted: Int,
+    val assistedCompleted: Int,
     val mistakes: Int,
     val totalSeconds: Long
 ) {
@@ -32,7 +33,8 @@ data class LocalPlayerStats(
 
 data class DifficultyStats(
     val started: Int,
-    val completed: Int
+    val completed: Int,
+    val assistedCompleted: Int
 ) {
     val completionRate: Int
         get() =
@@ -77,7 +79,8 @@ class PlayerStatsStore(
     fun recordComplete(
         size: Int,
         difficulty: GameDifficulty,
-        elapsedSeconds: Long
+        elapsedSeconds: Long,
+        usedProfessor: Boolean = false
     ) {
         increment("completed")
         increment(
@@ -87,6 +90,14 @@ class PlayerStatsStore(
             "completed_diff_" +
                 difficulty.name
         )
+
+        if (usedProfessor) {
+            increment("completed_with_prof")
+            increment(
+                "completed_with_prof_diff_" +
+                    difficulty.name
+            )
+        }
 
         prefs.edit()
             .putLong(
@@ -111,6 +122,11 @@ class PlayerStatsStore(
             gamesCompleted =
                 prefs.getInt(
                     "completed",
+                    0
+                ),
+            assistedCompleted =
+                prefs.getInt(
+                    "completed_with_prof",
                     0
                 ),
             mistakes =
@@ -162,6 +178,12 @@ class PlayerStatsStore(
             completed =
                 completedForDifficulty(
                     difficulty
+                ),
+            assistedCompleted =
+                prefs.getInt(
+                    "completed_with_prof_diff_" +
+                        difficulty.name,
+                    0
                 )
         )
 

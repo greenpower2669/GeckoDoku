@@ -44,14 +44,19 @@ ProfessorGecko.nextHint() reçoit le snapshot actuel.
 Il tente d'abord de réutiliser une étape de solverTrace dont les préconditions sont satisfaites et dont l'action n'est pas déjà faite.
 Si aucune étape pré-calculée ne correspond, HumanSolver.nextStep() recalcule uniquement la prochaine déduction depuis confirmed + manualCrosses + autoCrosses.
 
-Trois niveaux :
-1. focusText : zone/ligne/structure à regarder ;
-2. explanationText : preuve logique ;
-3. actionText : case gecko ou cases à barrer.
+Le Prof fonctionne désormais en pas-à-pas actif :
+- chaque pression demande une seule prochaine déduction ;
+- une étape déterministe est expliquée puis appliquée au GameEngine ;
+- croix et geckos posés par le Prof deviennent de vrais éléments de partie ;
+- après chaque étape, le Prof attend explicitement une nouvelle pression ;
+- toute action manuelle du joueur efface l'overlay pédagogique courant.
 
-La vue affiche les sources en ambre et les cibles en rouge seulement au niveau 3. Toute action du joueur efface l'indice courant.
+Pour une bifurcation à deux candidats, le Prof ne confirme rien immédiatement :
+- il affiche d'abord les deux candidats comme geckos semi-transparents dans un overlay distinct ;
+- une seconde pression résout la preuve de contradiction ;
+- le candidat rejeté devient une croix et le survivant devient un gecko confirmé.
 
-Le Prof ne modifie pas le moteur et ne joue pas automatiquement.
+La bulle BD accompagne chaque étape. Les sources restent encadrées en ambre et l'action appliquée est encadrée en rouge.
 
 ## Difficulté
 Mesurée par solveurs d'ablation. Expert nécessite réellement X-Wing. Démentiel nécessite X-Wing + projection.
@@ -112,3 +117,14 @@ ProfessorBubbleView est une couche UI distincte. Elle affiche un fond clair, con
 
 ## Célébration
 VictoryCelebrationView est un overlay procédural sans asset : fond translucide, confettis et particules radiales. Le nombre de salves et particules dépend de l'ordinal de GameDifficulty. Pas de stroboscope ; l'alpha des particules décroît progressivement. Durée environ 2,2 s + 0,32 s par niveau, toucher pour fermer.
+
+
+## Application des étapes du Prof v0.7
+GameEngine.applyProfessorStep(SolveStep) applique les eliminations, hypothesisRejected et cell. Les geckos posés déclenchent ensuite computeAutoCrosses comme un coup joueur normal.
+
+La sélection du coup reste entièrement issue de HumanSolver/HypothesisSolver. Avant de confirmer un gecko, GameEngine utilise puzzle.isSolution uniquement comme garde-fou de cohérence. Si la conclusion diverge de la solution unique, aucune mutation n'est appliquée et l'UI signale l'incohérence.
+
+GeckoBoardView.professorGhosts affiche les deux possibilités à alpha 0,24 sans modifier GameSnapshot.hypotheses.
+
+## Stats assistance
+MainActivity garde professorUsed pour toute la tentative. PlayerStatsStore.recordComplete(..., usedProfessor) incrémente completed_with_prof et completed_with_prof_diff_<difficulty>. Le taux de réussite principal reste completed/started ; l'aide est un attribut de la réussite, pas une erreur.

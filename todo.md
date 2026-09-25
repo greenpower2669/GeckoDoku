@@ -132,3 +132,30 @@
 - [ ] Vérifier absence de flash agressif.
 - [ ] Tester sauvegarde/rechargement d'une grille Mission/Infernal.
 - [ ] Mesurer temps de génération 12×12 haut niveau.
+
+
+## Fait v0.7.0-dev
+- [x] Prof applique réellement une étape déterministe par pression.
+- [x] Prof pose les croix d'exclusion.
+- [x] Prof pose les geckos forcés.
+- [x] Conserver les exclusions automatiques après gecko du Prof.
+- [x] Afficher deux geckos fantômes lors d'une bifurcation.
+- [x] Ne pas mélanger fantômes Prof et hypothèses joueur.
+- [x] Deuxième pression d'hypothèse : contradiction, croix rejetée, gecko survivant.
+- [x] Garde-fou avant mutation d'un gecko.
+- [x] Conserver bulle BD et surlignages.
+- [x] Enregistrer les victoires assistées globalement.
+- [x] Enregistrer les victoires assistées par difficulté.
+- [x] Synchroniser ordre + 4 mémoires.
+
+## Validation v0.7
+- [ ] Compiler GitHub Actions.
+- [ ] Tester Prof sur une déduction de ligne/colonne.
+- [ ] Tester Prof sur REGION_LOCKED / projection.
+- [ ] Tester Prof sur Gecko X-Wing.
+- [ ] Tester première pression d'hypothèse : deux fantômes seulement.
+- [ ] Tester seconde pression : mauvaise branche barrée, bonne branche solide.
+- [ ] Vérifier qu'une action manuelle annule les fantômes.
+- [ ] Vérifier qu'une grille terminée par le Prof déclenche le feu d'artifice.
+- [ ] Vérifier « Terminées avec Prof » dans Stats.
+- [ ] Vérifier que le Prof n'incrémente jamais le compteur d'erreurs.

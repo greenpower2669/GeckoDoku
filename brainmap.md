@@ -133,3 +133,32 @@ completeGame()
     ├── intensité croissante
     ├── Mission accomplie
     └── Infernal vaincu
+
+
+Prof Gecko v0.7
+bouton Prof
+├── étape déterministe
+│   ├── ProfessorGecko.nextHint()
+│   ├── GameEngine.applyProfessorStep()
+│   ├── croix / gecko réels
+│   ├── bulle explicative
+│   └── arrêt → attend pression suivante
+└── étape hypothèse
+    ├── pression 1
+    │   ├── professorGhosts = 2 candidats
+    │   └── aucune mutation
+    └── pression 2
+        ├── croix sur hypothesisRejected
+        ├── gecko solide sur cell
+        └── fantômes supprimés
+
+GameEngine.applyProfessorStep
+├── garde-fou solution unique
+├── eliminated → manualCrosses
+├── hypothesisRejected → manualCrosses
+└── cell → confirmed → autoCrosses
+
+Stats
+professorUsed pendant tentative
+└── victoire
+    └── completed_with_prof + completed_with_prof_diff.

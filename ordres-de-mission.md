@@ -112,3 +112,29 @@ Après Démentiel :
 Le moteur ne lit pas solutionCols pour choisir l'hypothèse. Il cherche un axe ou une zone réduit à exactement deux candidats, suppose chaque possibilité et déroule les conséquences. Une branche n'est rejetée que si une contradiction structurelle est démontrée. Prof Gecko doit pouvoir expliquer le candidat rejeté et le candidat forcé.
 
 Au-delà de deux hypothèses/profondeur 2, la grille est considérée hors contrat actuel et ne doit pas être proposée comme résoluble par ces niveaux.
+
+
+## GECKO-018 — Professeur Gecko actif pas à pas
+**État : Implémenté v0.7.0-dev, à tester.**
+
+Le comportement GECKO-010 « ne joue jamais » est remplacé par un mode professeur actif mais contrôlé par le joueur :
+- chaque pression sur Prof Gecko applique une seule prochaine déduction sûre ;
+- une exclusion logique devient une ou plusieurs croix réelles ;
+- un gecko forcé devient un gecko réel et déclenche ses exclusions automatiques ;
+- le Prof s'arrête après chaque étape et attend une nouvelle pression ;
+- le joueur peut reprendre la main à tout moment.
+
+Pour une étape d'hypothèse :
+1. première pression : afficher exactement les deux candidats sous forme de geckos semi-transparents ;
+2. aucune mutation logique à ce stade ;
+3. pression suivante : expliquer la contradiction, barrer le candidat rejeté et confirmer le survivant ;
+4. les fantômes disparaissent.
+
+Les geckos fantômes du Prof ne doivent pas modifier les hypothèses personnelles de l'utilisateur.
+
+Un garde-fou compare uniquement la conclusion finale d'un gecko forcé à la solution unique avant mutation. Cette vérification ne choisit pas le coup ; elle empêche seulement un bug du solveur de corrompre la partie.
+
+## GECKO-019 — Statistiques avec aide du Prof
+**État : Implémenté v0.7.0-dev, à tester.**
+
+Toute utilisation du Prof pendant une tentative marque la partie comme assistée. Si la grille est terminée, incrémenter « terminée avec Prof » globalement et pour la difficulté correspondante. Cela ne compte ni comme erreur ni comme échec.

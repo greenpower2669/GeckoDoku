@@ -5,6 +5,7 @@ data class ProfessorHint(
     val focusText: String,
     val explanationText: String,
     val actionText: String,
+    val appliedText: String,
     val fromCachedTrace: Boolean
 )
 
@@ -51,6 +52,7 @@ object ProfessorGecko {
             focusText = focusText(step),
             explanationText = explanationText(step),
             actionText = actionText(step),
+            appliedText = appliedText(step),
             fromCachedTrace = cached != null
         )
     }
@@ -167,6 +169,58 @@ object ProfessorGecko {
             SolveTechnique.GIVEN ->
                 "Un gecko donné est certain. Ses exclusions servent de point de départ."
         }
+
+    private fun appliedText(
+        step: SolveStep
+    ): String {
+        if (
+            step.technique ==
+                SolveTechnique.HYPOTHESIS_TEST ||
+            step.technique ==
+                SolveTechnique.DOUBLE_HYPOTHESIS
+        ) {
+            val good = step.cell
+            val bad =
+                step.hypothesisRejected
+
+            if (good != null &&
+                bad != null
+            ) {
+                return "Je barre la branche contradictoire en ligne " +
+                    (bad.row + 1) +
+                    ", colonne " +
+                    (bad.col + 1) +
+                    ", puis je confirme l'autre gecko en ligne " +
+                    (good.row + 1) +
+                    ", colonne " +
+                    (good.col + 1) +
+                    "."
+            }
+        }
+
+        step.cell?.let { cell ->
+            return "Je place le gecko certain en ligne " +
+                (cell.row + 1) +
+                ", colonne " +
+                (cell.col + 1) +
+                "."
+        }
+
+        if (step.eliminated.size == 1) {
+            val cell =
+                step.eliminated.first()
+
+            return "Je pose la croix certaine en ligne " +
+                (cell.row + 1) +
+                ", colonne " +
+                (cell.col + 1) +
+                "."
+        }
+
+        return "Je pose " +
+            step.eliminated.size +
+            " exclusions certaines sur la grille."
+    }
 
     private fun actionText(step: SolveStep): String {
         step.cell?.let { cell ->

@@ -71,3 +71,15 @@ GitHub Actions produit GeckoDoku-v0.4.0-dev.apk.
 - Infernal affiche « INFERNAL VAINCU ! » avec la célébration maximale.
 - L'animation est courte, progressive et peut être interrompue en touchant l'écran.
 - Les grilles Mission Impossible / Infernal sauvegardées reconstruisent leur trace d'hypothèses au chargement.
+
+
+## v0.7.0-dev — Professeur qui joue pas à pas
+- Une pression sur Prof Gecko applique maintenant la prochaine déduction certaine : gecko forcé ou croix d'exclusion.
+- Le Prof continue une étape à la fois tant que le joueur le sollicite ; il ne déroule jamais toute la grille automatiquement.
+- Lors d'une bifurcation à deux candidats, la première pression affiche les deux geckos possibles en semi-transparence.
+- La pression suivante exécute la preuve par contradiction : le candidat impossible reçoit une croix et l'autre devient un gecko confirmé.
+- Les geckos fantômes du Prof sont un overlay pédagogique distinct des hypothèses personnelles du joueur.
+- Chaque action du joueur annule l'étape temporaire du Prof.
+- Les étapes du Prof restent expliquées dans la bulle BD.
+- Garde-fou : avant de muter la grille, une conclusion de gecko est vérifiée contre la solution unique ; en cas d'incohérence le Prof refuse l'action et signale le bug.
+- Les statistiques distinguent désormais les grilles terminées avec aide du Prof, globalement et par difficulté.

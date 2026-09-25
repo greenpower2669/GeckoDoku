@@ -32,6 +32,7 @@ class GeckoBoardView @JvmOverloads constructor(
 
     private var professorSources: Set<Cell> = emptySet()
     private var professorTargets: Set<Cell> = emptySet()
+    private var professorGhosts: Set<Cell> = emptySet()
     private var professorLevel = 0
 
     private val regionColors = intArrayOf(
@@ -124,7 +125,7 @@ class GeckoBoardView @JvmOverloads constructor(
 
     fun showProfessorHint(
         step: SolveStep,
-        level: Int
+        level: Int = 3
     ) {
         professorLevel =
             level.coerceIn(1, 3)
@@ -134,11 +135,30 @@ class GeckoBoardView @JvmOverloads constructor(
 
         professorTargets =
             if (professorLevel >= 3) {
-                step.actionCells
+                step.actionCells +
+                    listOfNotNull(
+                        step.hypothesisRejected
+                    )
             } else {
                 emptySet()
             }
 
+        professorGhosts =
+            emptySet()
+
+        invalidate()
+    }
+
+    fun showProfessorHypothesis(
+        step: SolveStep
+    ) {
+        professorLevel = 2
+        professorSources =
+            step.sourceCells
+        professorTargets =
+            emptySet()
+        professorGhosts =
+            step.sourceCells
         invalidate()
     }
 
@@ -146,6 +166,7 @@ class GeckoBoardView @JvmOverloads constructor(
         professorLevel = 0
         professorSources = emptySet()
         professorTargets = emptySet()
+        professorGhosts = emptySet()
         invalidate()
     }
 
@@ -236,6 +257,7 @@ class GeckoBoardView @JvmOverloads constructor(
         drawRegions(canvas)
         drawGrid(canvas)
         drawMarks(canvas, state)
+        drawProfessorGhosts(canvas, state)
         drawProfessorOverlay(canvas)
         drawGutterHint(canvas)
 
@@ -464,6 +486,28 @@ class GeckoBoardView @JvmOverloads constructor(
                         )
                     }
             }
+        }
+    }
+
+    private fun drawProfessorGhosts(
+        canvas: Canvas,
+        state: GameSnapshot
+    ) {
+        for (cell in professorGhosts) {
+            if (state.confirmed.contains(cell) ||
+                state.givens.contains(cell) ||
+                state.manualCrosses.contains(cell) ||
+                state.autoCrosses.contains(cell)
+            ) {
+                continue
+            }
+
+            drawGecko(
+                canvas,
+                cellRect(cell),
+                .24f,
+                false
+            )
         }
     }
 
