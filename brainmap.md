@@ -193,3 +193,48 @@ Arrêt
 ├── toucher célébration
 └── release
 → FxFeedback.stopCelebration().
+
+
+Rich Media GECKO-022
+GameEngine / Solver / Stats
+└── NE DÉPENDENT JAMAIS des médias
+
+Rendu normal
+└── RichMediaOverlay (optionnel)
+    ├── Intro
+    │   └── assets/gecko/Gecko_Intro.mp4
+    ├── case gecko confirmée
+    │   └── Gecko_apparition.mp4 complet
+    ├── gecko retiré
+    │   └── Gecko_disparition.mp4 complet
+    ├── action mignonne occasionnelle
+    │   └── Gecko_actions_plusieurs.mp4 complet ~30 s
+    └── contexte Prof occasionnel
+        └── Prof_actions.mp4 complet ~30 s
+
+Assets
+assets/
+├── gecko/
+│   ├── Gecko_Intro.mp4
+│   ├── Gecko_apparition.mp4
+│   ├── Gecko_disparition.mp4
+│   └── Gecko_actions_plusieurs.mp4
+└── prof/
+    ├── Prof.png
+    ├── Prof_fb.png
+    └── Prof_actions.mp4
+
+Interrupteurs
+Habillage animé OFF
+└── rendu normal uniquement
+
+Habillage animé ON
+├── FX ON → vidéo + audio embarqué
+└── FX OFF → vidéo muette
+
+Règle actuelle
+vidéo longue
+→ t=0
+→ lecture entière
+→ EOF
+→ jamais de découpage / boucle

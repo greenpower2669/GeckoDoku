@@ -160,3 +160,272 @@ Correction :
 Chaque salve de VictoryCelebrationView émet un événement sonore au même instant. ToneFxFeedback produit un petit lancement puis une explosion stylisée ; les niveaux élevés reçoivent davantage de salves et une accentuation finale.
 
 Le bouton FX contrôle aussi ces sons. Toucher la célébration pour la fermer ou désactiver FX annule les sons différés restants.
+
+
+## GECKO-022 — HABILLAGE RICHE SUPERPOSÉ / CONTRAT MÉDIA
+**État : ordre de mission figé le 26/09/2026. Organisation des assets à appliquer immédiatement. Intégration runtime à réaliser ensuite sans modifier la logique du jeu.**
+
+### 0. Règle absolue
+L'habillage riche est une couche purement visuelle et sonore AU-DESSUS du jeu existant.
+
+Il est interdit à cette couche :
+- de remplacer GameEngine ;
+- de modifier Puzzle, HumanSolver, HypothesisSolver, DifficultyIndexer ou les règles ;
+- de changer une case, une croix, un gecko, une hypothèse ou une statistique par elle-même ;
+- de rendre le jeu inutilisable si un média est absent, illisible ou désactivé ;
+- de devenir obligatoire pour comprendre une déduction.
+
+Le rendu procédural actuel reste la vérité visuelle de secours et doit toujours fonctionner seul.
+
+### 1. Interrupteur général
+Ajouter un interrupteur utilisateur explicite « Animations riches » / « Habillage animé » :
+- état mémorisé localement ;
+- ON : les médias peuvent être joués ;
+- OFF : aucun média riche n'est lancé ;
+- OFF ne change aucune logique, aucun score, aucune difficulté ni aucune sauvegarde ;
+- la bascule doit être possible sans redémarrer l'application ;
+- si OFF est activé pendant une vidéo, arrêter proprement la vidéo et revenir immédiatement au jeu normal.
+
+Les FX sonores du jeu restent un réglage séparé.
+Le son embarqué dans les vidéos riches doit respecter le réglage FX :
+- Animations ON + FX ON : vidéo + son embarqué ;
+- Animations ON + FX OFF : vidéo muette ;
+- Animations OFF : aucune vidéo, donc aucun son vidéo.
+
+### 2. Principe de superposition
+Tous les médias riches sont affichés dans une couche overlay dédiée au-dessus de screenRoot / du rendu normal.
+
+Ordre recommandé des couches, du fond vers l'avant :
+1. écran de jeu normal ;
+2. surlignages logiques / Prof ;
+3. habillage média riche ;
+4. célébration de victoire si active ;
+5. contrôles de sécurité indispensables : fermeture × / skip.
+
+Une animation ne doit pas provoquer de reflow du layout :
+- la grille ne rétrécit pas ;
+- les boutons ne changent pas de taille ;
+- le média n'est jamais ajouté comme enfant mesuré dans le LinearLayout de la grille.
+
+### 3. Politique actuelle des vidéos longues — IMPORTANT
+Pour cette phase, NE PAS découper les vidéos de 30 secondes.
+NE PAS utiliser de timecodes internes.
+NE PAS sélectionner une expression particulière dans la vidéo.
+
+Les deux vidéos longues sont toujours lues :
+- depuis t = 0 ;
+- jusqu'à leur fin naturelle (~30,07 s) ;
+- une seule fois ;
+- sans boucle.
+
+Une fermeture volontaire × peut interrompre la lecture si l'utilisateur le souhaite, mais le programme ne doit jamais tronquer automatiquement le clip.
+
+Cette règle reste en vigueur tant qu'un futur ordre de mission « découpage clips / catalogue d'actions » n'a pas été validé.
+
+### 4. Catalogue immuable des assets et rôle UNIQUE
+Les fichiers doivent être rangés sous le dossier racine `assets/` avec deux sous-dossiers.
+
+#### assets/gecko/
+**Gecko_Intro.mp4**
+- rôle UNIQUE : ouverture / intro de l'application ;
+- jamais utilisé comme apparition de case ;
+- jamais utilisé comme animation ambiante ;
+- lecture complète ;
+- audio embarqué autorisé si FX ON ;
+- afficher par-dessus un texte stylisé « GeckoDoku » ;
+- texte lisible, contrasté, indépendant du contenu de la vidéo ;
+- si Animations riches OFF : démarrage direct du jeu, sans intro vidéo.
+
+**Gecko_apparition.mp4**
+- rôle UNIQUE : apparition visuelle d'un gecko confirmé ;
+- déclenché seulement après qu'un gecko est réellement confirmé par GameEngine ;
+- ne décide jamais si le gecko est correct ;
+- lecture complète du fichier ;
+- overlay au premier plan ;
+- à la fin, le gecko procédural/normal déjà confirmé reste visible.
+
+**Gecko_disparition.mp4**
+- rôle UNIQUE : disparition visuelle d'un gecko retiré ;
+- déclenché seulement après le retrait effectif dans GameEngine ;
+- lecture complète ;
+- à la fin, la case reste dans son état logique normal.
+
+**Gecko_actions_plusieurs.mp4**
+- rôle UNIQUE pour cette phase : grande séquence d'actions mignonnes occasionnelle ;
+- durée ~30,07 s ;
+- toujours lue en totalité ;
+- aucune extraction d'actions individuelles maintenant ;
+- aucun timecode ;
+- aucun découpage ;
+- déclenchement occasionnel et aléatoire avec cooldown ;
+- ne doit jamais se déclencher pendant une célébration, une autre vidéo, l'intro ou une étape critique du Prof ;
+- ne doit pas changer l'état du jeu.
+
+#### assets/prof/
+**Prof.png**
+- rôle UNIQUE : portrait normal du Prof ;
+- image de référence utilisable dans la bulle / interface ;
+- aucun keycolor nécessaire si la transparence est exploitable.
+
+**Prof_fb.png**
+- rôle UNIQUE : source Prof sur fond bleu destinée au futur keycolor / tests ;
+- ne pas substituer automatiquement à Prof.png ;
+- ne pas traiter le bleu maintenant sauf ordre séparé.
+
+**Prof_actions.mp4**
+- rôle UNIQUE pour cette phase : animation longue occasionnelle du Prof ;
+- durée ~30,07 s ;
+- toujours lue en totalité ;
+- aucun découpage interne maintenant ;
+- ne doit être déclenchée que dans un contexte Prof ;
+- ne doit jamais retarder ou modifier une déduction ;
+- la logique du Prof doit pouvoir continuer même si cette vidéo est désactivée ou absente.
+
+### 5. Intro GeckoDoku
+Au lancement d'une session d'application :
+- si Habillage animé OFF : afficher immédiatement l'écran normal ;
+- si ON : jouer Gecko_Intro.mp4 en overlay ;
+- conserver le son original seulement si FX ON ;
+- afficher un titre stylisé « GeckoDoku » au-dessus de la vidéo ;
+- le titre doit être dessiné par l'application, pas brûlé dans le média ;
+- prévoir un bouton « Passer » ou × accessible ;
+- la fin ou le skip révèle exactement l'écran normal déjà prêt sous l'overlay ;
+- ne pas générer une nouvelle grille à la fin de l'intro : la grille doit déjà exister.
+
+### 6. Apparition / disparition dans les cases
+Objectif final : l'animation se place visuellement sur la case concernée, au-dessus du rendu normal.
+
+Séquence apparition :
+1. GameEngine confirme le gecko ;
+2. état logique immédiatement valide ;
+3. rendu normal disponible dessous ;
+4. Gecko_apparition.mp4 est joué en overlay sur la zone de la case ;
+5. fin vidéo ;
+6. overlay retiré ;
+7. le gecko normal demeure.
+
+Séquence disparition :
+1. GameEngine retire le gecko ;
+2. état logique immédiatement valide ;
+3. Gecko_disparition.mp4 est joué au-dessus de l'ancienne case ;
+4. fin ;
+5. overlay retiré ;
+6. la case normale demeure sans gecko.
+
+Si la vidéo ne peut pas être lue :
+- aucune erreur logique ;
+- aucun rollback ;
+- afficher simplement le rendu procédural normal.
+
+### 7. Actions longues occasionnelles — phase actuelle
+Tant que les vidéos ne sont pas découpées :
+- Gecko_actions_plusieurs.mp4 et Prof_actions.mp4 sont des séquences longues événementielles ;
+- une seule vidéo riche à la fois ;
+- jamais de boucle ;
+- jamais deux vidéos superposées ;
+- lecture complète 0→fin ;
+- priorité faible : elles cèdent la place à la victoire, à l'intro et aux besoins pédagogiques.
+
+Déclenchement Gecko_actions_plusieurs :
+- uniquement pendant une partie active ;
+- après une action logique valide ou après une période calme ;
+- probabilité faible ;
+- cooldown minimal recommandé : 180 secondes ;
+- pas plus d'une séquence longue pendant ce cooldown ;
+- ne pas déclencher si une bulle Prof est ouverte, si une hypothèse Prof attend sa seconde étape ou si la grille vient d'être terminée.
+
+Déclenchement Prof_actions :
+- uniquement après interaction avec Prof Gecko ;
+- probabilité faible ;
+- cooldown recommandé partagé ou séparé d'au moins 180 secondes ;
+- ne jamais empêcher l'affichage immédiat du texte logique ;
+- si la vidéo doit être montrée, elle vient en habillage complémentaire, jamais comme prérequis avant la réponse du Prof.
+
+Les valeurs de probabilité restent des constantes réglables. Valeur initiale conseillée pour tests : 10 à 15 % après un événement éligible, avec cooldown 180 s.
+
+### 8. Concurrence / priorités
+Priorité haute vers basse :
+1. cohérence GameEngine ;
+2. célébration de victoire ;
+3. Professeur / explication logique ;
+4. intro au démarrage ;
+5. apparition / disparition courte liée à une case ;
+6. actions longues mignonnes aléatoires.
+
+Si une priorité supérieure apparaît :
+- ne jamais empiler une seconde vidéo ;
+- arrêter ou différer l'animation basse priorité selon son type ;
+- conserver l'état du jeu.
+
+Les actions longues ne doivent jamais démarrer :
+- pendant VictoryCelebrationView ;
+- pendant une autre vidéo ;
+- pendant un dialogue système ;
+- pendant le chargement d'une nouvelle grille ;
+- pendant la sauvegarde/relecture du journal ;
+- pendant une étape d'hypothèse Prof en attente.
+
+### 9. Son
+Les fichiers vidéo conservent leur bande son d'origine.
+Le lecteur média reçoit le volume selon FX :
+- FX ON → volume média normal ;
+- FX OFF → volume 0, sans empêcher la vidéo.
+
+Le son des vidéos n'est pas mélangé artificiellement aux ToneFxFeedback.
+Éviter de lancer un ToneGenerator simultané inutilement lors de l'apparition/disparition si la vidéo possède déjà son propre effet.
+
+### 10. Keycolor bleu — PAS MAINTENANT
+Les fonds bleus sont conservés comme sources de travail.
+Aucun keycolor/chroma-key n'est implémenté dans cette phase.
+
+Futur ordre séparé :
+- seuil de bleu ;
+- bord doux ;
+- suppression des franges bleues ;
+- tests GPU / performances ;
+- fallback si shader indisponible.
+
+Il est interdit de bricoler un détourage approximatif dans le moteur logique.
+
+### 11. Robustesse
+Le système média doit être optionnel :
+- asset absent → log + fallback ;
+- décodage vidéo impossible → fallback ;
+- Activity pause → pause/stop propre ;
+- Activity destroy → libération MediaPlayer/VideoView ;
+- changement de grille → aucune ancienne vidéo ne doit survivre ;
+- désactivation de l'habillage → arrêt immédiat et nettoyage ;
+- aucune fuite de Surface/MediaPlayer.
+
+### 12. Accessibilité
+- la vidéo ne remplace jamais une information textuelle ;
+- intro skippable ;
+- × / Passer avec grande cible tactile ;
+- pas de flash stroboscopique ajouté ;
+- le texte « GeckoDoku » reste lisible ;
+- TalkBack doit pouvoir annoncer « Passer l'animation » ;
+- l'utilisateur doit pouvoir jouer avec Habillage animé OFF sans perdre aucune fonction.
+
+### 13. Architecture cible
+Créer plus tard une couche dédiée, par exemple :
+- RichMediaSettings ;
+- RichMediaOverlayView ;
+- AssetMediaCatalog ;
+- RichMediaScheduler.
+
+MainActivity ne doit pas accumuler les timecodes ou noms de fichiers en dur.
+AssetMediaCatalog est la seule source de vérité des chemins.
+
+### 14. Critères d'acceptation
+Le lot sera considéré valide lorsque :
+- le jeu fonctionne identiquement avec Habillage animé OFF ;
+- ON ajoute uniquement du visuel/son ;
+- les médias sont en overlay sans réduire la grille ;
+- intro complète fonctionne ;
+- apparition/disparition complètes fonctionnent ;
+- les deux vidéos longues sont jouées entières et rarement ;
+- aucune longue vidéo n'est découpée ;
+- une seule vidéo est active à la fois ;
+- audio vidéo suit FX ;
+- les médias manquants ne cassent jamais le jeu ;
+- tous les assets sont rangés dans `assets/`.

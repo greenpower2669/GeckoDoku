@@ -144,3 +144,23 @@ ProfessorBubbleView dessine sa propre cible × de fermeture et expose onClose. c
 VictoryCelebrationView émet onFireworkBurst(level, burstIndex, isLast) exactement lorsque chaque salve devient active. ToneFxFeedback.celebrationBurst() crée une séquence courte lancement/explosion avec ToneGenerator. Les sons sont donc alignés sur l'animation sans fichier audio externe.
 
 ToneFxFeedback possède un Handler dédié aux sons différés de célébration. stopCelebration() supprime ces callbacks. enabled=false et release() appellent également stopCelebration().
+
+
+## Contrat média riche GECKO-022
+L'habillage riche est strictement décoratif et superposé. Il ne remplace jamais le rendu procédural ni le moteur logique.
+
+Switch local indépendant : Habillage animé ON/OFF.
+FX contrôle le volume des bandes son des vidéos, pas leur activation.
+
+Catalogue de vérité :
+- assets/gecko/Gecko_Intro.mp4 = intro uniquement ;
+- assets/gecko/Gecko_apparition.mp4 = apparition d'un gecko confirmé uniquement ;
+- assets/gecko/Gecko_disparition.mp4 = disparition d'un gecko retiré uniquement ;
+- assets/gecko/Gecko_actions_plusieurs.mp4 = séquence longue mignonne occasionnelle entière ;
+- assets/prof/Prof.png = portrait normal Prof ;
+- assets/prof/Prof_fb.png = source fond bleu pour futur keycolor ;
+- assets/prof/Prof_actions.mp4 = séquence longue Prof occasionnelle entière.
+
+Les deux vidéos longues (~30,07 s) ne sont PAS découpées dans la phase actuelle : lecture 0→EOF, une fois, sans boucle. Le futur découpage en micro-actions est explicitement différé.
+
+Le futur runtime devra utiliser une couche overlay dédiée avec fallback systématique vers le rendu normal. Une défaillance média ne peut jamais modifier ou invalider l'état de partie.

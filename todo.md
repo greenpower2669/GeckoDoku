@@ -191,3 +191,32 @@
 - [ ] Tester FX OFF : célébration visuelle silencieuse.
 - [ ] Fermer la célébration pendant les salves : plus aucun son retardé.
 - [ ] Vérifier Mission Impossible et Infernal : montée sonore plus riche.
+
+
+## GECKO-022 — Habillage riche : préparation
+- [x] Figer le rôle exact de chaque asset.
+- [x] Interdire le découpage actuel des deux vidéos longues.
+- [x] Définir lecture complète 0→EOF sans boucle.
+- [x] Définir overlay au-dessus du rendu normal.
+- [x] Définir switch Habillage animé ON/OFF.
+- [x] Définir relation audio vidéo ↔ FX.
+- [x] Définir fallback obligatoire si média absent ou illisible.
+- [x] Définir priorités entre intro, Prof, victoire, apparition et actions longues.
+- [x] Définir le keycolor comme chantier futur séparé.
+- [x] Définir règles d'accessibilité / skip.
+- [x] Ranger les assets dans un dossier assets.
+- [ ] Implémenter AssetMediaCatalog.
+- [ ] Implémenter RichMediaSettings persistant.
+- [ ] Implémenter RichMediaOverlayView hors layout de grille.
+- [ ] Implémenter lecture Intro + texte stylisé GeckoDoku.
+- [ ] Implémenter apparition sur case après confirmation logique.
+- [ ] Implémenter disparition sur case après retrait logique.
+- [ ] Implémenter lecture occasionnelle ENTIÈRE de Gecko_actions_plusieurs.mp4.
+- [ ] Implémenter lecture occasionnelle ENTIÈRE de Prof_actions.mp4 en contexte Prof.
+- [ ] Respecter FX ON/OFF pour le son média.
+- [ ] Tester arrêt propre Activity pause/destroy.
+- [ ] Tester asset manquant → jeu inchangé.
+- [ ] Tester qu'une seule vidéo peut être active.
+- [ ] Mesurer impact APK / mémoire / décodage sur téléphone.
+- [ ] FUTUR : découpage des clips par timecodes, uniquement après validation séparée.
+- [ ] FUTUR : keycolor bleu GPU, uniquement après validation séparée.

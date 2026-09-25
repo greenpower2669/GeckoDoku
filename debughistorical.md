@@ -145,3 +145,16 @@ La taille du plateau ne doit plus diminuer à cause de la longueur du texte du P
 Les feux d'artifice et confettis doivent être accompagnés de sons cohérents et gradués.
 ### Correction v0.8
 VictoryCelebrationView émet un callback par salve ; ToneFxFeedback synchronise lancement/explosion et accent final. Les callbacks différés sont annulables.
+
+
+## 2026-09-26 — Risque de mélanger les rôles des nouveaux médias
+### Constat
+Plusieurs médias Gecko et Prof ont été ajoutés successivement. Une interprétation trop rapide avait commencé à confondre « banque d'actions », apparition, disparition, intro et portrait Prof.
+### Décision GECKO-022
+Figer un catalogue à rôle unique par fichier. Aucun fichier ne doit être réutilisé pour un autre rôle sans nouvel ordre de mission.
+### Décision vidéos 30 s
+Ne pas découper Gecko_actions_plusieurs.mp4 ni Prof_actions.mp4 maintenant. Les lire occasionnellement en totalité, 0→EOF, sans boucle.
+### Décision rendu
+L'habillage riche doit toujours être un overlay désactivable au-dessus du rendu normal. Aucune dépendance du moteur logique.
+### Décision assets
+Sortir les médias de la racine du dépôt et les ranger sous assets/gecko et assets/prof sans réencodage.
