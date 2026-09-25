@@ -20,14 +20,14 @@ data class Puzzle(
 
     companion object {
         fun demo5x5(): Puzzle = Puzzle(
-            id = "demo-5x5-001",
+            id = "demo-5x5-unique-001",
             size = 5,
             regions = intArrayOf(
-                0, 0, 1, 1, 2,
-                0, 0, 1, 1, 2,
-                0, 3, 1, 2, 2,
-                3, 3, 4, 4, 2,
-                3, 3, 4, 4, 4
+                0, 0, 0, 1, 2,
+                0, 1, 1, 1, 2,
+                0, 1, 3, 2, 2,
+                3, 3, 3, 2, 4,
+                3, 4, 4, 4, 4
             ),
             solutionCols = intArrayOf(0, 2, 4, 1, 3)
         )

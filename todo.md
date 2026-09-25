@@ -4,6 +4,7 @@
 - [x] Projet Android léger.
 - [x] Moteur de règles.
 - [x] Grille 5×5 démo.
+- [x] Vérifier et corriger la démo pour obtenir exactement une solution.
 - [x] Croix manuelles.
 - [x] Exclusions automatiques.
 - [x] Hypothèse gecko discrète.
@@ -26,8 +27,8 @@
 
 ## Moteur à venir
 - [ ] Générateur procédural.
-- [ ] Solveur.
-- [ ] Solution unique.
+- [ ] Solveur générique.
+- [ ] UniqueSolutionValidator obligatoire dans le pipeline de génération.
 - [ ] Trace du chemin de résolution.
 - [ ] Caractéristiques objectives de difficulté.
 - [ ] Dataset local si Fab valide.

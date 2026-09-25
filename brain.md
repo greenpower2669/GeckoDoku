@@ -9,7 +9,8 @@ GeckoDoku est un jeu de logique Android accessible, mignon et utilisable hors li
 - Chaque colonne contient exactement un gecko.
 - Chaque zone contient exactement un gecko.
 - Deux geckos ne peuvent pas se toucher, diagonales comprises.
-- La future génération doit vérifier une solution unique.
+- La grille 5×5 de démonstration possède une solution unique vérifiée par énumération exhaustive.
+- La future génération doit également vérifier l'unicité.
 
 ## Gestes v0.1
 - Tap case vide : croix manuelle.
@@ -32,12 +33,7 @@ Le moteur logique ne dépend pas des médias. Les futurs sons, voix, images, ani
 La v0.1 expose un index heuristique 0–100. Ce n'est pas encore une IA entraînée. DifficultyModel est le point de remplacement futur.
 
 ## Accessibilité
-- traits de zones épais ;
-- grande grille ;
-- retours visuels + sonores ;
-- grandes commandes ;
-- clignotement seulement sur un repère explicitement choisi ;
-- pas de publicité.
+Traits de zones épais, grande grille, retours visuels + sonores, grandes commandes, clignotement seulement sur un repère explicitement choisi, pas de publicité.
 
 ## Validation
-Build APK et test physique non encore confirmés.
+La logique d'unicité de la démo est vérifiée. Build APK et test physique restent non confirmés.

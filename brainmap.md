@@ -2,6 +2,7 @@
 
 MainActivity
 ├── Puzzle.demo5x5()
+│   └── carte de régions 5×5 à solution unique vérifiée
 ├── GameEngine
 │   ├── confirmed
 │   ├── manualCrosses
@@ -31,10 +32,11 @@ DifficultyModel = port de scoring interchangeable.
 
 ## Flux
 Touch → GeckoBoardView → MainActivity → GameEngine → ActionFeedback → FX + message accessible → rendu.
-
 Gecko confirmé → recalcul autoCrosses → ligne + colonne + zone + voisinage exclus.
-
 Long press hors grille → palette → sélection → prochain tap → customMarkers, sans effet logique.
+
+## Validation puzzle
+Énumérer les permutations d'une position par ligne et colonne → filtrer non-contact diagonal/adjacent → filtrer exactement un gecko par région → exiger exactement une solution.
 
 ## Futur
 Generator → UniqueSolutionValidator → SolverTrace → DifficultyFeatures → DifficultyModel.
