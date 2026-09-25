@@ -29,7 +29,8 @@ data class Puzzle(
     val solutionCols: IntArray,
     val givens: Set<Cell> = emptySet(),
     val difficulty: GameDifficulty = GameDifficulty.EASY,
-    val seed: Long = 0L
+    val seed: Long = 0L,
+    val solverTrace: List<SolveStep> = emptyList()
 ) {
     init {
         require(size in 5..12)
@@ -41,10 +42,15 @@ data class Puzzle(
     fun regionAt(cell: Cell): Int = regions[cell.index(size)]
     fun isSolution(cell: Cell): Boolean = solutionCols[cell.row] == cell.col
     fun isGiven(cell: Cell): Boolean = givens.contains(cell)
-    fun solutionCells(): List<Cell> = solutionCols.mapIndexed { row, col -> Cell(row, col) }
+    fun solutionCells(): List<Cell> =
+        solutionCols.mapIndexed { row, col -> Cell(row, col) }
 }
 
-enum class HypothesisMark { NONE, GHOST_GECKO, ALERT_GECKO }
+enum class HypothesisMark {
+    NONE,
+    GHOST_GECKO,
+    ALERT_GECKO
+}
 
 enum class CustomMarker(val label: String, val symbol: String) {
     EXCLAMATION("Important", "!"),

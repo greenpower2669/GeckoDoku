@@ -1,76 +1,63 @@
 # Brain — GeckoDoku
 
 ## Contrat produit
-GeckoDoku est un jeu Android de logique accessible, hors ligne et sans publicité. Le moteur doit pouvoir expliquer pourquoi chaque grille est résoluble et pourquoi elle reçoit son niveau.
+Jeu Android de logique accessible, hors ligne et sans publicité. Toute difficulté et tout conseil doivent pouvoir être expliqués par une preuve logique.
 
 ## Règles
-- exactement un gecko par ligne ;
-- exactement un gecko par colonne ;
-- exactement un gecko par zone ;
-- aucun contact horizontal, vertical ou diagonal ;
-- solution unique compte tenu des givens ;
-- pas de guessing dans les niveaux proposés par le solveur actuel.
+Un gecko exactement par ligne, colonne et zone. Aucun contact horizontal, vertical ou diagonal. Solution unique compte tenu des givens. Pas de guessing dans le solveur humain actuel.
 
 ## Gestes
-- clic simple confirmé : croix ;
-- vrai double-clic : gecko ;
-- appui long : hypothèse faible → forte → aucune ;
-- appui long hors grille : repères personnels ;
-- givens verrouillés.
+Simple : croix. Vrai double-clic : gecko. Long : hypothèse. Givens verrouillés.
 
-## Tailles et zones
-Tailles : 5 à 12.
-Chaque grille NxN contient N zones.
-Rendu v0.3 : 12 teintes pastel, frontières noires fortes. La taille ne définit pas la difficulté.
+## Tailles et rendu
+5 à 12. N zones pour NxN. 12 teintes pastel et frontières fortes.
 
-## Solveur humain v0.3
+## Solveur
 Techniques :
-1. ROW_SINGLE ;
-2. COLUMN_SINGLE ;
-3. REGION_SINGLE ;
-4. REGION_LOCKED : toutes les possibilités d'une zone sur une même ligne/colonne ou inverse ;
-5. REGION_TOUCH_PROJECTION : si toutes les 2 à 4 possibilités restantes d'une zone touchent une même case extérieure, cette case est exclue ;
-6. GECKO_X_WING :
-   - deux lignes → mêmes deux colonnes ;
-   - deux colonnes → mêmes deux lignes ;
-   - deux zones confinées à deux lignes ou deux colonnes.
+- ROW_SINGLE ;
+- COLUMN_SINGLE ;
+- REGION_SINGLE ;
+- REGION_LOCKED ;
+- REGION_TOUCH_PROJECTION ;
+- GECKO_X_WING.
 
-La projection exploite directement la règle de non-contact, ce que le Sudoku classique n'a pas.
+## Trace pédagogique v0.4
+SolveStep contient :
+- technique ;
+- cell forcée ou eliminated ;
+- sourceCells ;
+- sourceRegions ;
+- axis ;
+- beforeConfirmed ;
+- beforeExcluded.
 
-## Difficulté mesurée
-DifficultyIndexer exécute plusieurs solveurs par ablation :
-- singles seuls ;
-- logique de zone complète sans X-Wing ;
-- X-Wing sans projection ;
-- toutes les techniques.
+HumanSolver.analyze() produit une trace ordonnée complète. Puzzle.solverTrace conserve cette trace calculée une fois au moment où le générateur accepte la grille.
 
-Classement :
-- Découverte si singles seuls suffisent ;
-- Facile si logique de zone nécessaire avec 1 étape ;
-- Réflexion avec 2–3 étapes de zone ;
-- Difficile avec au moins 4 étapes de zone ;
-- Expert si l'analyse complète réussit mais échoue sans X-Wing ;
-- Démentiel si elle échoue sans X-Wing ET échoue sans projection : combinaison des deux indispensable.
+Cette trace devient une ressource commune :
+- calcul de difficulté ;
+- Professeur Gecko ;
+- debug ;
+- futur dataset IA.
 
-Le score 0–100 reste secondaire. Le niveau nominal provient d'abord de la preuve logique.
+## Professeur Gecko
+ProfessorGecko.nextHint() reçoit le snapshot actuel.
+Il tente d'abord de réutiliser une étape de solverTrace dont les préconditions sont satisfaites et dont l'action n'est pas déjà faite.
+Si aucune étape pré-calculée ne correspond, HumanSolver.nextStep() recalcule uniquement la prochaine déduction depuis confirmed + manualCrosses + autoCrosses.
 
-## Génération
-Pour 5..12, ne jamais pré-calculer toutes les permutations : le volume devient trop grand.
-Pipeline v0.3 :
-- construire une solution valide par backtracking aléatoire ;
-- faire croître N zones connectées depuis les N geckos solution ;
-- partir de givens sûrs puis les retirer ;
-- après chaque retrait, vérifier unicité par backtracking borné à 2 solutions ;
-- vérifier la résolubilité HumanSolver ;
-- comparer le niveau mesuré au niveau demandé ;
-- essayer plusieurs cartes/ordres ;
-- si l'exact n'est pas trouvé dans le budget, retourner le meilleur candidat sûr et afficher demandé vs mesuré.
+Trois niveaux :
+1. focusText : zone/ligne/structure à regarder ;
+2. explanationText : preuve logique ;
+3. actionText : case gecko ou cases à barrer.
+
+La vue affiche les sources en ambre et les cibles en rouge seulement au niveau 3. Toute action du joueur efface l'indice courant.
+
+Le Prof ne modifie pas le moteur et ne joue pas automatiquement.
+
+## Difficulté
+Mesurée par solveurs d'ablation. Expert nécessite réellement X-Wing. Démentiel nécessite X-Wing + projection.
 
 ## IA future
-Une IA locale pourra prédire difficulté et guider la génération plus vite, mais elle ne remplace pas les preuves logiques. Le solveur sert de vérité terrain et produit les futures données d'apprentissage.
+L'IA pourra prédire le niveau et sélectionner des explications, mais la trace logique reste la vérité terrain.
 
-## Stats locales
-SharedPreferences : lancées, terminées, taux de réussite, erreurs, temps, tailles et difficulté mesurée. Aucun envoi réseau.
-
-## Audio et média
-ToneGenerator actuellement. Moteur indépendant des médias ; futurs AssetRenderer, AssetFxFeedback, voix et animations restent des couches remplaçables.
+## Stats/média
+Stats SharedPreferences locales. Audio léger. Médias riches futurs séparés du moteur.
