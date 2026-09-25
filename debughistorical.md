@@ -1,39 +1,57 @@
 # Debug historical — GeckoDoku
 
 ## 2026-09-25 — Initialisation
-Le dépôt contenait uniquement un README. Aucun code ni mémoire FAB Copilot n'existait.
+Dépôt initialement presque vide. Mise en place Android, moteur, FX et mémoires FAB Copilot.
 
-### Prévention
-- Pas de médias binaires lourds dans l'initialisation.
-- FX via ToneGenerator pour retour audio immédiat sans asset.
-- Gecko dessiné procéduralement.
-- Séparation moteur / rendu / audio / difficulté pour l'habillage futur.
-
-## 2026-09-25 — Grille démo non unique détectée avant validation
+## 2026-09-25 — Grille démo non unique
 ### Symptôme
-La première carte de régions 5×5 admettait plusieurs placements conformes aux règles alors que GameEngine utilisait une solution cachée unique pour accepter/refuser un gecko.
-
+La première carte 5×5 admettait plusieurs solutions.
 ### Cause
-La carte de régions initiale n'avait pas été vérifiée par solveur exhaustif.
-
+Unicité non vérifiée avant intégration.
 ### Correction
-Nouvelle carte de régions conservant la solution (0,2,4,1,3). L'énumération exhaustive retourne exactement cette unique solution.
+Énumération exhaustive et remplacement par une carte unique.
+### Non-régression
+Toute grille passe countSolutions avec arrêt à 2.
 
-### Règle de non-régression
-Toute grille générée ou intégrée devra passer un UniqueSolutionValidator avant d'être jouable.
-
-## 2026-09-25 — Aucun GitHub Action visible pour l'APK
+## 2026-09-25 — Workflow APK absent
 ### Symptôme
-Fab ne voyait aucune Action en cours après la demande d'APK.
-
-### Cause confirmée
-Le fichier .github/workflows/build.yml était absent : la tentative précédente de création du workflow avait été bloquée avant commit. Aucun build ne pouvait donc démarrer.
-
+Aucune Action visible.
+### Cause
+La tentative de création du workflow avait été bloquée avant commit.
 ### Correction
-Ajout d'un workflow minimal build APK déclenché sur push de main et manuellement. Il utilise JDK 17, Gradle 9.6.0, assembleDebug et upload-artifact.
+Workflow GitHub Actions ajouté ; run v0.1 terminé avec succès et APK produit.
 
-### Toujours à vérifier
-Résultat réel du workflow, compilation Android, installation téléphone, volume/confort FX et vitesse du clignotement.
+## 2026-09-25 — Geste croix → gecko incorrect
+### Symptôme observé sur téléphone
+Un premier clic posait une croix, puis un second clic normal sur la même case pouvait poser un gecko, même sans vrai double-clic.
+### Cause racine
+GameEngine.tap() codait volontairement la séquence croix puis gecko. La vue utilisait onSingleTapUp et ne distinguait pas une intention double-clic.
+### Correction v0.2
+- suppression du comportement tap séquentiel ;
+- toggleCross() séparé de toggleGecko() ;
+- onSingleTapConfirmed pour la croix ;
+- onDoubleTap pour le gecko.
+### À valider
+Tempo réel du double-clic sur téléphone et confort avec déficience visuelle.
 
-### Difficulté
-Le score actuel est heuristique, pas une IA entraînée.
+## 2026-09-25 — Unique ne veut pas dire humainement résoluble
+### Symptôme observé
+Première grille ressentie comme insoluble et sans point d'entrée évident.
+### Cause
+Le validateur testait seulement l'unicité mathématique, pas le chemin de déduction.
+### Correction v0.2
+Ajout HumanSolver et sélection de givens jusqu'à ce que la grille soit résoluble avec les techniques autorisées. Techniques : singles, interactions ligne/zone, X-Wing.
+### Vigilance
+Le solveur humain est une première formalisation. Les tests de Fab restent la référence pour le ressenti réel de difficulté.
+
+## 2026-09-25 — Taille/difficulté/stats
+Ajout tailles 5..8, quatre difficultés et stats SharedPreferences locales. Aucune synchronisation réseau.
+
+## Toujours à vérifier v0.2
+- compilation ;
+- performance génération surtout 8×8 ;
+- distinction clic simple / double-clic ;
+- difficulté vécue vs index ;
+- qualité des givens de départ ;
+- stats après plusieurs parties ;
+- volume FX et fatigue visuelle.

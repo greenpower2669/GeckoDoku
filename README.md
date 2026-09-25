@@ -1,16 +1,25 @@
 # GeckoDoku 🦎
 
-Jeu de logique Android accessible et mignon.
+Jeu de logique Android accessible, mignon et local.
 
-## v0.1-dev
-- Android natif Kotlin, grille 5×5 de démonstration.
-- Tap : croix ; second tap : tentative de gecko.
-- Gecko confirmé : exclusions automatiques ligne, colonne, zone et voisinage.
-- Appui long : gecko hypothèse discret puis alerte clignotant.
-- Appui long hors grille : palette de 10 repères personnels.
-- FX audio légers générés par Android et désactivables.
-- Rendu procédural sans gros assets.
+## v0.2.0-dev
+- Tailles réglables : 5×5, 6×6, 7×7, 8×8.
+- Difficultés : Découverte, Facile, Réflexion, Expert.
+- Clic simple : poser/enlever une croix.
+- Vrai double-clic : poser/enlever un gecko.
+- Appui long : gecko hypothèse discret puis repère fort clignotant.
+- Gecko confirmé : exclusions automatiques sur ligne, colonne, zone et voisinage.
+- Geckos donnés au départ selon difficulté, verrouillés et entourés.
+- Générateur local de régions + validation d'une solution unique.
+- Solveur humain : singles ligne/colonne/zone, interactions ligne-zone, X-Wing.
+- Index 0–100 basé sur le chemin logique, pas seulement la taille.
+- Stats du joueur stockées uniquement sur le téléphone.
+- FX audio légers sans asset et désactivables.
 - Architecture prête pour futurs sons, voix, images, animations, FX et vidéos.
-- Index de difficulté heuristique remplaçable plus tard par un modèle interne entraîné.
 
-Build visé : Android API 36, JDK 17, Android Gradle Plugin 9.4.0, Gradle 9.6.0.
+## Philosophie difficulté
+Une grille proposée dans un mode normal doit être résoluble par les techniques autorisées pour ce niveau. Le solveur exhaustif garantit l'unicité ; le solveur humain garantit un chemin logique sans guessing selon le niveau.
+
+## Build
+Android API 36, JDK 17, Android Gradle Plugin 9.4.0, Gradle 9.6.0.
+GitHub Actions produit GeckoDoku-v0.2.0-dev.apk.

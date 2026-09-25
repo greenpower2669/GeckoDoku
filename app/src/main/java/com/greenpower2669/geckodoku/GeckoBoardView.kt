@@ -19,28 +19,39 @@ class GeckoBoardView @JvmOverloads constructor(
 ) : View(context, attrs) {
     lateinit var puzzle: Puzzle
     lateinit var snapshotProvider: () -> GameSnapshot
-    var onTapCell: ((Cell) -> Unit)? = null
+    var onSingleTapCell: ((Cell) -> Unit)? = null
+    var onDoubleTapCell: ((Cell) -> Unit)? = null
     var onLongPressCell: ((Cell) -> Unit)? = null
     var onLongPressOutside: (() -> Unit)? = null
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val boardRect = RectF()
     private var cellSize = 1f
-    private val gutter = dp(86f)
+    private val gutter = dp(76f)
     private val regionColors = intArrayOf(
         Color.rgb(238, 249, 238),
         Color.rgb(232, 244, 255),
         Color.rgb(255, 245, 221),
         Color.rgb(247, 235, 255),
-        Color.rgb(255, 235, 238)
+        Color.rgb(255, 235, 238),
+        Color.rgb(233, 250, 248),
+        Color.rgb(249, 239, 226),
+        Color.rgb(237, 239, 255)
     )
 
     private val gestures = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
         override fun onDown(e: MotionEvent): Boolean = true
 
-        override fun onSingleTapUp(e: MotionEvent): Boolean {
+        override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
             val cell = cellAt(e.x, e.y) ?: return false
-            onTapCell?.invoke(cell)
+            onSingleTapCell?.invoke(cell)
+            performClick()
+            return true
+        }
+
+        override fun onDoubleTap(e: MotionEvent): Boolean {
+            val cell = cellAt(e.x, e.y) ?: return false
+            onDoubleTapCell?.invoke(cell)
             performClick()
             return true
         }
@@ -55,12 +66,18 @@ class GeckoBoardView @JvmOverloads constructor(
         isFocusable = true
         isClickable = true
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
-        contentDescription = "Grille GeckoDoku. Touchez une case pour poser une croix, puis retouchez pour proposer un gecko."
+        contentDescription = "Grille GeckoDoku. Clic simple pour une croix, vrai double-clic pour un gecko, appui long pour une hypothèse."
     }
 
     override fun performClick(): Boolean {
         super.performClick()
         return true
+    }
+
+    fun setPuzzleAndRefresh(newPuzzle: Puzzle) {
+        puzzle = newPuzzle
+        requestLayout()
+        invalidate()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -69,10 +86,15 @@ class GeckoBoardView @JvmOverloads constructor(
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        val horizontal = dp(12f)
-        val side = min(w - horizontal * 2, h - gutter - dp(8f)).coerceAtLeast(dp(80f))
+        updateBoardRect(w, h)
+    }
+
+    private fun updateBoardRect(w: Int = width, h: Int = height) {
+        if (w <= 0 || h <= 0) return
+        val horizontal = dp(8f)
+        val side = min(w - horizontal * 2, h - gutter - dp(6f)).coerceAtLeast(dp(80f))
         val left = (w - side) / 2f
-        boardRect.set(left, dp(8f), left + side, dp(8f) + side)
+        boardRect.set(left, dp(6f), left + side, dp(6f) + side)
         if (::puzzle.isInitialized) cellSize = side / puzzle.size
     }
 
@@ -81,6 +103,7 @@ class GeckoBoardView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (!::puzzle.isInitialized || !::snapshotProvider.isInitialized) return
+        if (boardRect.width() <= 0f) updateBoardRect()
         cellSize = boardRect.width() / puzzle.size
         val state = snapshotProvider()
         drawRegions(canvas)
@@ -104,7 +127,7 @@ class GeckoBoardView @JvmOverloads constructor(
         paint.strokeCap = Paint.Cap.SQUARE
         for (i in 0..puzzle.size) {
             paint.color = Color.rgb(70, 70, 70)
-            paint.strokeWidth = dp(if (i == 0 || i == puzzle.size) 3.2f else 1.2f)
+            paint.strokeWidth = dp(if (i == 0 || i == puzzle.size) 3.2f else 1.1f)
             val x = boardRect.left + i * cellSize
             val y = boardRect.top + i * cellSize
             canvas.drawLine(x, boardRect.top, x, boardRect.bottom, paint)
@@ -112,7 +135,7 @@ class GeckoBoardView @JvmOverloads constructor(
         }
 
         paint.color = Color.BLACK
-        paint.strokeWidth = dp(4.2f)
+        paint.strokeWidth = dp(4.0f)
         for (r in 0 until puzzle.size) for (c in 0 until puzzle.size) {
             val here = puzzle.regionAt(Cell(r, c))
             val rect = cellRect(Cell(r, c))
@@ -130,6 +153,10 @@ class GeckoBoardView @JvmOverloads constructor(
             val cell = Cell(r, c)
             val rect = cellRect(cell)
             when {
+                state.givens.contains(cell) -> {
+                    drawGecko(canvas, rect, 1f, false)
+                    drawGivenRing(canvas, rect)
+                }
                 state.confirmed.contains(cell) -> drawGecko(canvas, rect, 1f, false)
                 state.hypotheses[cell] == HypothesisMark.ALERT_GECKO -> {
                     val visible = (SystemClock.uptimeMillis() / 450L) % 2L == 0L
@@ -137,10 +164,17 @@ class GeckoBoardView @JvmOverloads constructor(
                 }
                 state.hypotheses[cell] == HypothesisMark.GHOST_GECKO -> drawGecko(canvas, rect, .18f, false)
                 state.manualCrosses.contains(cell) -> drawCross(canvas, rect, 1f)
-                state.autoCrosses.contains(cell) -> drawCross(canvas, rect, .33f)
+                state.autoCrosses.contains(cell) -> drawCross(canvas, rect, .30f)
             }
             state.customMarkers[cell]?.let { drawCustomMarker(canvas, rect, it) }
         }
+    }
+
+    private fun drawGivenRing(canvas: Canvas, rect: RectF) {
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = cellSize * .045f
+        paint.color = Color.rgb(16, 78, 44)
+        canvas.drawCircle(rect.centerX(), rect.centerY(), cellSize * .34f, paint)
     }
 
     private fun drawCross(canvas: Canvas, rect: RectF, alpha: Float) {
@@ -217,8 +251,8 @@ class GeckoBoardView @JvmOverloads constructor(
         paint.style = Paint.Style.FILL
         paint.color = Color.rgb(55, 55, 55)
         paint.textAlign = Paint.Align.CENTER
-        paint.textSize = dp(15f)
-        canvas.drawText("Appui long ici : repères personnels", width/2f, boardRect.bottom+dp(35f), paint)
+        paint.textSize = dp(14f)
+        canvas.drawText("Simple = ✕   •   Double = 🦎   •   Long = hypothèse", width/2f, boardRect.bottom+dp(32f), paint)
     }
 
     private fun cellAt(x: Float, y: Float): Cell? {

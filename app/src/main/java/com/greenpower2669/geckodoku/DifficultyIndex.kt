@@ -1,20 +1,19 @@
 package com.greenpower2669.geckodoku
 
-import kotlin.math.abs
-import kotlin.math.roundToInt
-
 data class DifficultyFeatures(
     val size: Int,
-    val regionBoundaryCount: Int,
-    val meanSolutionSpacing: Double,
-    val constraintDensity: Double
+    val givenCount: Int,
+    val logicalSteps: Int,
+    val maxTechnique: SolveTechnique,
+    val xWingCount: Int
 )
 
 data class DifficultyReport(
     val index: Int,
     val label: String,
     val features: DifficultyFeatures,
-    val model: String
+    val model: String,
+    val logicallySolvable: Boolean
 )
 
 interface DifficultyModel {
@@ -23,32 +22,28 @@ interface DifficultyModel {
 
 class HeuristicDifficultyModel : DifficultyModel {
     override fun score(features: DifficultyFeatures): Int {
-        val sizePart = (features.size - 4).coerceAtLeast(0) * 8
-        val boundaryPart = (features.regionBoundaryCount * 1.6).roundToInt()
-        val spacingPart = ((3.0 - features.meanSolutionSpacing).coerceAtLeast(0.0) * 8).roundToInt()
-        val densityPart = (features.constraintDensity * 40).roundToInt()
-        return (sizePart + boundaryPart + spacingPart + densityPart).coerceIn(0, 100)
+        val sizePart = (features.size - 5) * 6
+        val cluePart = (features.size - features.givenCount).coerceAtLeast(0) * 5
+        val stepPart = (features.logicalSteps * 2).coerceAtMost(25)
+        val techniquePart = features.maxTechnique.weight
+        val xWingPart = features.xWingCount * 8
+        return (sizePart + cluePart + stepPart + techniquePart + xWingPart).coerceIn(0, 100)
     }
 }
 
 object DifficultyIndexer {
-    fun analyze(puzzle: Puzzle, model: DifficultyModel = HeuristicDifficultyModel()): DifficultyReport {
-        var boundaries = 0
-        for (r in 0 until puzzle.size) {
-            for (c in 0 until puzzle.size) {
-                val here = puzzle.regions[r * puzzle.size + c]
-                if (c + 1 < puzzle.size && here != puzzle.regions[r * puzzle.size + c + 1]) boundaries++
-                if (r + 1 < puzzle.size && here != puzzle.regions[(r + 1) * puzzle.size + c]) boundaries++
-            }
-        }
-        val spacing = if (puzzle.size <= 1) 0.0 else {
-            (0 until puzzle.size - 1)
-                .map { r -> abs(puzzle.solutionCols[r + 1] - puzzle.solutionCols[r]).toDouble() }
-                .average()
-        }
-        val denom = (2.0 * puzzle.size * (puzzle.size - 1)).coerceAtLeast(1.0)
-        val density = boundaries.toDouble() / denom
-        val features = DifficultyFeatures(puzzle.size, boundaries, spacing, density)
+    fun analyze(
+        puzzle: Puzzle,
+        model: DifficultyModel = HeuristicDifficultyModel()
+    ): DifficultyReport {
+        val solve = HumanSolver.analyze(puzzle, puzzle.givens, SolveTechnique.X_WING)
+        val features = DifficultyFeatures(
+            size = puzzle.size,
+            givenCount = puzzle.givens.size,
+            logicalSteps = solve.steps.size,
+            maxTechnique = solve.maxTechnique,
+            xWingCount = solve.xWingCount
+        )
         val index = model.score(features)
         val label = when (index) {
             in 0..20 -> "Détente"
@@ -57,6 +52,6 @@ object DifficultyIndexer {
             in 61..80 -> "Difficile"
             else -> "Expert"
         }
-        return DifficultyReport(index, label, features, model::class.simpleName ?: "model")
+        return DifficultyReport(index, label, features, model::class.simpleName ?: "model", solve.solved)
     }
 }

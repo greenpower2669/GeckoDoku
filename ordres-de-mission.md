@@ -1,40 +1,56 @@
 # Ordres de mission — GeckoDoku
 
 ## GECKO-001 — Base du jeu accessible
-**État : Livré, à valider sur téléphone.**
+**État : En validation téléphone v0.2.0-dev.**
 
-Créer GeckoDoku, jeu Android de logique avec geckos, agréable pour une personne malvoyante :
-- grosses cases et contours lisibles ;
-- un gecko par ligne, colonne et zone ;
-- les geckos ne se touchent pas, diagonales comprises ;
-- un clic pose une croix de repère utilisateur ;
-- une nouvelle découverte de gecko provoque le remplissage automatique des impossibilités autour, sur sa ligne, sa colonne et sa zone.
-La grille de démonstration doit elle-même être logiquement déterminée : la v0.1 utilise désormais une grille 5×5 à solution unique vérifiée par énumération exhaustive.
+Créer GeckoDoku avec grosses cases, contours lisibles, un gecko par ligne/colonne/zone et interdiction de contact. Les exclusions automatiques doivent se remplir après un gecko confirmé.
 
 ## GECKO-002 — Repères avancés
-**État : Livré, à valider.**
+**État : Implémenté, à revalider.**
 
-- Appui long sur une case : deux niveaux de repère gecko, un presque invisible et un très visible/clignotant.
-- Appui long hors grille : palette de repères personnels.
-- Prévoir 10 repères, avec notamment point d'exclamation et gecko arc-en-ciel.
-- Après sélection, la palette disparaît et le joueur place le repère sur la case voulue.
+- Appui long case : gecko hypothèse discret → gecko alerte clignotant → aucun.
+- Appui long hors grille : palette de 10 repères personnels.
+- Inclure !, ?, cible et gecko arc-en-ciel.
+- Les repères personnels ne modifient jamais la logique.
 
 ## GECKO-003 — Retours sonores utiles
-**État : Livré en version légère, à enrichir.**
+**État : Implémenté en FX légers.**
 
-Mettre des FX sonores dès la première version car le retour audio aide à compenser la difficulté visuelle. Ils doivent rester désactivables.
+FX dès la première version, désactivables, pour confirmer les actions sans dépendre uniquement de la vue.
 
 ## GECKO-004 — Habillage graphique/média futur
 **État : Ordre futur conservé.**
 
-Prévoir dès l'architecture la coexistence de deux systèmes : rendu léger/procédural et rendu futur très riche utilisant des assets importés. Cette couche pourra recevoir belles images, animations, vidéos, voix, sons et FX sans réécrire le moteur logique. Début visé autour du 10 octobre 2026 ; cible autour du 30 octobre 2026.
+Prévoir deux systèmes interchangeables : rendu léger/procédural et rendu assets riches. Futurs beaux sons, voix, images, animations, vidéos et FX sans réécrire le moteur. Début visé autour du 10 octobre 2026 ; cible autour du 30 octobre 2026.
 
 ## GECKO-005 — Difficulté objective et IA interne
-**État : Préparé, non entraîné.**
+**État : Première base logique implémentée ; IA entraînée future.**
 
-Créer un index de difficulté objectif des grilles générées. À terme, entraîner un modèle interne léger sur les caractéristiques du chemin de résolution et les observations de jeu. La taille brute de la grille ne doit pas suffire à déterminer la difficulté.
+- Séparer taille de grille et difficulté.
+- Utiliser un solveur humain explicable pour mesurer le raisonnement requis.
+- Monter jusqu'au X-Wing pour le mode Expert.
+- Garder DifficultyModel interchangeable pour une future IA locale entraînée.
+- Ne pas confondre unicité mathématique et résolubilité humaine.
 
 ## GECKO-006 — APK de test
-**État : Build GitHub Actions lancé, résultat à valider.**
+**État : v0.1 construit avec succès ; v0.2 en build après commit.**
 
-Produire un APK Android de test correctement nommé pour installer GeckoDoku sur téléphone. Le build doit rester léger et ne doit pas ajouter de gros assets au dépôt.
+Produire des APK correctement nommés et les valider sur téléphone.
+
+## GECKO-007 — Correction des gestes
+**État : Implémenté v0.2.0-dev, à tester.**
+
+Le comportement v0.1 était incorrect : deux clics simples successifs pouvaient transformer une croix en gecko. Désormais :
+- clic simple confirmé = croix uniquement ;
+- vrai double-clic GestureDetector = gecko uniquement ;
+- appui long = hypothèse.
+
+## GECKO-008 — Taille, difficulté et stats locales
+**État : Implémenté v0.2.0-dev, à tester.**
+
+- tailles 5×5 à 8×8 ;
+- difficultés Découverte / Facile / Réflexion / Expert ;
+- geckos donnés selon le niveau ;
+- génération validée unique ;
+- statistiques locales : lancées, terminées, réussite, erreurs, temps moyen, répartition taille/difficulté ;
+- aucune donnée de stats envoyée sur Internet.

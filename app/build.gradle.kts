@@ -1,16 +1,19 @@
 plugins {
     id("com.android.application")
 }
+
 android {
     namespace = "com.greenpower2669.geckodoku"
     compileSdk = 36
+
     defaultConfig {
         applicationId = "com.greenpower2669.geckodoku"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0-dev"
+        versionCode = 2
+        versionName = "0.2.0-dev"
     }
+
     buildTypes {
         release {
             isMinifyEnabled = false

@@ -1,7 +1,7 @@
 package com.greenpower2669.geckodoku
 
 class GameEngine(val puzzle: Puzzle) {
-    private val confirmed = linkedSetOf<Cell>()
+    private val confirmed = linkedSetOf<Cell>().apply { addAll(puzzle.givens) }
     private val manualCrosses = linkedSetOf<Cell>()
     private val hypotheses = linkedMapOf<Cell, HypothesisMark>()
     private val customMarkers = linkedMapOf<Cell, CustomMarker>()
@@ -9,35 +9,57 @@ class GameEngine(val puzzle: Puzzle) {
     var mistakes: Int = 0
         private set
 
-    fun snapshot(): GameSnapshot {
-        return GameSnapshot(
-            confirmed = confirmed.toSet(),
-            manualCrosses = manualCrosses.toSet(),
-            autoCrosses = computeAutoCrosses(),
-            hypotheses = hypotheses.toMap(),
-            customMarkers = customMarkers.toMap(),
-            mistakes = mistakes,
-            complete = confirmed.size == puzzle.size
-        )
+    fun snapshot(): GameSnapshot = GameSnapshot(
+        confirmed = confirmed.toSet(),
+        givens = puzzle.givens,
+        manualCrosses = manualCrosses.toSet(),
+        autoCrosses = computeAutoCrosses(),
+        hypotheses = hypotheses.toMap(),
+        customMarkers = customMarkers.toMap(),
+        mistakes = mistakes,
+        complete = confirmed.size == puzzle.size
+    )
+
+    fun toggleCross(cell: Cell): ActionFeedback {
+        if (puzzle.isGiven(cell)) return ActionFeedback.GIVEN_LOCKED
+        if (confirmed.contains(cell)) return ActionFeedback.GECKO_PRESENT
+        if (computeAutoCrosses().contains(cell)) return ActionFeedback.CROSS_BLOCKED
+
+        hypotheses.remove(cell)
+        return if (manualCrosses.remove(cell)) {
+            ActionFeedback.CROSS_REMOVED
+        } else {
+            manualCrosses.add(cell)
+            ActionFeedback.CROSS_SET
+        }
     }
 
-    fun tap(cell: Cell): ActionFeedback {
-        if (confirmed.contains(cell)) {
-            confirmed.remove(cell)
+    fun toggleGecko(cell: Cell): ActionFeedback {
+        if (puzzle.isGiven(cell)) return ActionFeedback.GIVEN_LOCKED
+        if (confirmed.remove(cell)) {
             hypotheses.remove(cell)
             return ActionFeedback.GECKO_REMOVED
         }
         if (computeAutoCrosses().contains(cell)) return ActionFeedback.CROSS_BLOCKED
 
-        if (manualCrosses.remove(cell)) return tryConfirmGecko(cell)
-
-        manualCrosses.add(cell)
+        manualCrosses.remove(cell)
         hypotheses.remove(cell)
-        return ActionFeedback.CROSS_SET
+
+        if (!puzzle.isSolution(cell)) {
+            mistakes += 1
+            manualCrosses.add(cell)
+            return ActionFeedback.WRONG_GECKO
+        }
+
+        confirmed.add(cell)
+        return if (confirmed.size == puzzle.size) ActionFeedback.COMPLETED else ActionFeedback.GECKO_CONFIRMED
     }
 
     fun longPress(cell: Cell): ActionFeedback {
-        if (confirmed.contains(cell)) return ActionFeedback.HYPOTHESIS_CHANGED
+        if (puzzle.isGiven(cell) || confirmed.contains(cell)) return ActionFeedback.GIVEN_LOCKED
+        if (computeAutoCrosses().contains(cell)) return ActionFeedback.CROSS_BLOCKED
+
+        manualCrosses.remove(cell)
         val next = when (hypotheses[cell] ?: HypothesisMark.NONE) {
             HypothesisMark.NONE -> HypothesisMark.GHOST_GECKO
             HypothesisMark.GHOST_GECKO -> HypothesisMark.ALERT_GECKO
@@ -54,18 +76,6 @@ class GameEngine(val puzzle: Puzzle) {
         }
         customMarkers[cell] = marker
         return ActionFeedback.CUSTOM_MARKER_SET
-    }
-
-    private fun tryConfirmGecko(cell: Cell): ActionFeedback {
-        if (!puzzle.isSolution(cell)) {
-            mistakes += 1
-            manualCrosses.add(cell)
-            return ActionFeedback.WRONG_GECKO
-        }
-        confirmed.add(cell)
-        hypotheses.remove(cell)
-        manualCrosses.remove(cell)
-        return if (confirmed.size == puzzle.size) ActionFeedback.COMPLETED else ActionFeedback.GECKO_CONFIRMED
     }
 
     private fun computeAutoCrosses(): Set<Cell> {

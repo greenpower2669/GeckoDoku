@@ -20,8 +20,8 @@ jobs:
       - name: Build debug APK
         run: gradle :app:assembleDebug --no-daemon
       - name: Name APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk GeckoDoku-v0.1.0-dev.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk GeckoDoku-v0.2.0-dev.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: GeckoDoku-v0.1.0-dev-APK
-          path: GeckoDoku-v0.1.0-dev.apk
+          name: GeckoDoku-v0.2.0-dev-APK
+          path: GeckoDoku-v0.2.0-dev.apk

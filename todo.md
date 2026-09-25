@@ -1,40 +1,45 @@
 # TODO — GeckoDoku
 
-## Fait v0.1-dev
-- [x] Projet Android léger.
-- [x] Moteur de règles.
-- [x] Grille 5×5 démo.
-- [x] Vérifier et corriger la démo pour obtenir exactement une solution.
-- [x] Croix manuelles.
-- [x] Exclusions automatiques.
-- [x] Hypothèse gecko discrète.
-- [x] Gecko alerte clignotant.
-- [x] Palette de 10 repères.
-- [x] Gecko arc-en-ciel.
-- [x] FX audio sans asset.
-- [x] Interrupteur FX.
-- [x] Index de difficulté heuristique remplaçable.
-- [x] Séparation moteur / médias.
-- [x] Workflow GitHub Actions pour APK.
-- [x] FAB Copilot : ordre de mission + 4 mémoires synchronisés.
+## Fait v0.2.0-dev
+- [x] Séparer clic simple et vrai double-clic.
+- [x] Clic simple = croix uniquement.
+- [x] Double-clic = gecko uniquement.
+- [x] Givens verrouillés.
+- [x] Tailles 5×5 à 8×8.
+- [x] Difficultés Découverte / Facile / Réflexion / Expert.
+- [x] Générateur local de régions.
+- [x] Validation solution unique.
+- [x] Solveur humain.
+- [x] Singles ligne/colonne/zone.
+- [x] Interactions ligne/zone.
+- [x] X-Wing lignes/colonnes.
+- [x] Sélection automatique de givens par difficulté.
+- [x] Index difficulté basé sur trace logique.
+- [x] Stats locales SharedPreferences.
+- [x] Répartition stats par taille et difficulté.
+- [x] FX conservés.
+- [x] Architecture média riche future conservée.
+- [x] Ordres + brain + brainmap + debughistorical + todo synchronisés.
 
-## Validation suivante
-- [ ] Vérifier que le run GitHub Actions démarre.
-- [ ] Vérifier le résultat du build.
-- [ ] Récupérer GeckoDoku-v0.1.0-dev.apk.
-- [ ] Tester tap, croix→gecko, appui long, palette.
-- [ ] Tester distinction et volume FX.
-- [ ] Vérifier lisibilité et fatigue visuelle.
-- [ ] Améliorer accessibilité cellule par cellule.
+## Validation immédiate
+- [ ] Compiler v0.2.0-dev sur GitHub Actions.
+- [ ] Corriger toute erreur de compilation.
+- [ ] Récupérer APK v0.2.
+- [ ] Test téléphone : deux clics simples séparés ne posent jamais de gecko.
+- [ ] Test téléphone : vrai double-clic fiable.
+- [ ] Tester 5×5, 6×6, 7×7, 8×8.
+- [ ] Tester les quatre difficultés.
+- [ ] Vérifier qu'une grille n'arrive jamais bloquée sans chemin logique prévu.
+- [ ] Vérifier stats locales et temps moyen.
+- [ ] Vérifier confort sonore et visuel.
 
-## Moteur à venir
-- [ ] Générateur procédural.
-- [ ] Solveur générique.
-- [ ] UniqueSolutionValidator obligatoire dans le pipeline de génération.
-- [ ] Trace du chemin de résolution.
-- [ ] Caractéristiques objectives de difficulté.
-- [ ] Dataset local si Fab valide.
-- [ ] Petit modèle interne comparé à l'heuristique.
+## Moteur futur
+- [ ] Ajouter une vraie trace pédagogique pour Professeur Gecko.
+- [ ] Visualiser une technique X-Wing sur demande.
+- [ ] Enregistrer ressenti local trop facile / bien / trop dur.
+- [ ] Dataset local opt-in.
+- [ ] Modèle IA interne de difficulté comparé à l'heuristique.
+- [ ] Profils joueurs multiples.
 
 ## Habillage futur
 - [ ] Switch procédural / assets riches.

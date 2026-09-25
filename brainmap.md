@@ -1,54 +1,65 @@
-# Brainmap — GeckoDoku
+# Brainmap — GeckoDoku v0.2
 
 MainActivity
-├── Puzzle.demo5x5()
-│   └── carte de régions 5×5 à solution unique vérifiée
+├── réglage taille 5..8
+├── réglage GameDifficulty
+├── PuzzleGenerator.generate()
 ├── GameEngine
-│   ├── confirmed
-│   ├── manualCrosses
-│   ├── autoCrosses calculées
-│   ├── hypotheses
-│   └── customMarkers
 ├── GeckoBoardView
-│   ├── zones
-│   ├── frontières fortes
-│   ├── croix manuelles / auto
-│   ├── gecko procédural
-│   ├── gecko fantôme
-│   ├── gecko alerte
-│   └── repères personnels
+├── PlayerStatsStore
 ├── FxFeedback
-│   └── ToneFxFeedback
 └── DifficultyIndexer
-    ├── DifficultyFeatures
-    ├── DifficultyModel
-    └── HeuristicDifficultyModel
 
-## Build CI
-push main / workflow_dispatch
-→ GitHub Actions ubuntu-latest
-→ JDK 17
-→ Gradle 9.6.0
-→ :app:assembleDebug
-→ GeckoDoku-v0.1.0-dev.apk
-→ artefact GeckoDoku-v0.1.0-dev-APK
+PuzzleGenerator
+├── validPermutations()
+├── growRegions()
+├── countSolutions() == 1
+├── HumanSolver.selectGivens()
+└── fallback 5..8
+
+HumanSolver
+├── candidates
+├── ROW_SINGLE
+├── COLUMN_SINGLE
+├── REGION_SINGLE
+├── LOCKED_CANDIDATE
+└── X_WING
+
+GameEngine
+├── givens verrouillés
+├── confirmed
+├── manualCrosses
+├── autoCrosses
+├── hypotheses
+└── customMarkers
+
+GeckoBoardView
+├── onSingleTapConfirmed → croix
+├── onDoubleTap → gecko
+├── onLongPress → hypothèse/palette
+├── givens entourés
+└── rendu procédural
+
+PlayerStatsStore
+└── SharedPreferences local uniquement
+
+## Flux nouvelle grille
+taille + difficulté
+→ générateur
+→ unicité exhaustive
+→ sélection de givens
+→ validation HumanSolver
+→ GameEngine
+→ partie
+→ stats locales.
 
 ## Séparation critique
-Puzzle + GameEngine = logique pure.
-GeckoBoardView = rendu léger actuel.
-FxFeedback = port audio interchangeable.
-DifficultyModel = port de scoring interchangeable.
+Logique = PuzzleGenerator + HumanSolver + GameEngine.
+Rendu = GeckoBoardView.
+Audio = FxFeedback.
+Stats = PlayerStatsStore.
+Scoring = DifficultyModel.
+Les futurs AssetRenderer / AssetFx / VoiceFeedback ne doivent pas pénétrer le moteur logique.
 
-## Flux
-Touch → GeckoBoardView → MainActivity → GameEngine → ActionFeedback → FX + message accessible → rendu.
-Gecko confirmé → recalcul autoCrosses → ligne + colonne + zone + voisinage exclus.
-Long press hors grille → palette → sélection → prochain tap → customMarkers, sans effet logique.
-
-## Validation puzzle
-Énumérer les permutations d'une position par ligne et colonne → filtrer non-contact diagonal/adjacent → filtrer exactement un gecko par région → exiger exactement une solution.
-
-## Futur
-Generator → UniqueSolutionValidator → SolverTrace → DifficultyFeatures → DifficultyModel.
-SkinManager → ProceduralRenderer / AssetRenderer.
-Audio → ToneFxFeedback / AssetFxFeedback.
-EncouragementEngine → texte/TTS léger / voix enregistrées.
+## Build CI
+push main → GitHub Actions → JDK17 + Gradle9.6 → assembleDebug → GeckoDoku-v0.2.0-dev.apk.

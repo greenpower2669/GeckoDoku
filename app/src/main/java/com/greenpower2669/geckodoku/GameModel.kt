@@ -4,34 +4,47 @@ data class Cell(val row: Int, val col: Int) {
     fun index(size: Int): Int = row * size + col
 }
 
+enum class GameDifficulty(val label: String) {
+    DISCOVERY("Découverte"),
+    EASY("Facile"),
+    THINKING("Réflexion"),
+    EXPERT("Expert");
+
+    fun minimumGivens(size: Int): Int = when (this) {
+        DISCOVERY -> maxOf(2, size - 2)
+        EASY -> maxOf(1, size / 2)
+        THINKING -> 1
+        EXPERT -> 0
+    }
+
+    fun allowedTechnique(): SolveTechnique = when (this) {
+        DISCOVERY -> SolveTechnique.REGION_SINGLE
+        EASY -> SolveTechnique.LOCKED_CANDIDATE
+        THINKING -> SolveTechnique.LOCKED_CANDIDATE
+        EXPERT -> SolveTechnique.X_WING
+    }
+}
+
 data class Puzzle(
     val id: String,
     val size: Int,
     val regions: IntArray,
-    val solutionCols: IntArray
+    val solutionCols: IntArray,
+    val givens: Set<Cell> = emptySet(),
+    val difficulty: GameDifficulty = GameDifficulty.EASY,
+    val seed: Long = 0L
 ) {
     init {
+        require(size in 5..8)
         require(regions.size == size * size)
         require(solutionCols.size == size)
+        require(regions.toSet().size == size)
     }
 
     fun regionAt(cell: Cell): Int = regions[cell.index(size)]
     fun isSolution(cell: Cell): Boolean = solutionCols[cell.row] == cell.col
-
-    companion object {
-        fun demo5x5(): Puzzle = Puzzle(
-            id = "demo-5x5-unique-001",
-            size = 5,
-            regions = intArrayOf(
-                0, 0, 0, 1, 2,
-                0, 1, 1, 1, 2,
-                0, 1, 3, 2, 2,
-                3, 3, 3, 2, 4,
-                3, 4, 4, 4, 4
-            ),
-            solutionCols = intArrayOf(0, 2, 4, 1, 3)
-        )
-    }
+    fun isGiven(cell: Cell): Boolean = givens.contains(cell)
+    fun solutionCells(): List<Cell> = solutionCols.mapIndexed { row, col -> Cell(row, col) }
 }
 
 enum class HypothesisMark { NONE, GHOST_GECKO, ALERT_GECKO }
@@ -51,9 +64,12 @@ enum class CustomMarker(val label: String, val symbol: String) {
 
 enum class ActionFeedback {
     CROSS_SET,
+    CROSS_REMOVED,
     CROSS_BLOCKED,
+    GECKO_PRESENT,
     GECKO_CONFIRMED,
     GECKO_REMOVED,
+    GIVEN_LOCKED,
     WRONG_GECKO,
     HYPOTHESIS_CHANGED,
     CUSTOM_MARKER_SET,
@@ -63,6 +79,7 @@ enum class ActionFeedback {
 
 data class GameSnapshot(
     val confirmed: Set<Cell>,
+    val givens: Set<Cell>,
     val manualCrosses: Set<Cell>,
     val autoCrosses: Set<Cell>,
     val hypotheses: Map<Cell, HypothesisMark>,
