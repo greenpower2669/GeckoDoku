@@ -220,3 +220,12 @@
 - [ ] Mesurer impact APK / mémoire / décodage sur téléphone.
 - [ ] FUTUR : découpage des clips par timecodes, uniquement après validation séparée.
 - [ ] FUTUR : keycolor bleu GPU, uniquement après validation séparée.
+
+
+## Exécution GECKO-022 — TDD
+- [x] Créer la branche isolée `gecko-022-rich-media` depuis le HEAD stable `edbe4740d60716fa01a69c29ce8a51645e791abd`.
+- [x] Ajouter le test RED du scheduler des animations longues avant son implémentation.
+- [ ] Vérifier que la CI échoue pour la raison attendue : `RichMediaScheduler` absent.
+- [ ] Implémenter le sous-système média riche + keycolor bleu transparent.
+- [ ] Faire passer tests + APK + AAB sur GitHub Actions.
+- [ ] Fusionner seulement après CI verte ; validation visuelle Android restera humaine.
