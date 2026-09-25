@@ -1,0 +1,43 @@
+# Brainmap — GeckoDoku
+
+MainActivity
+├── Puzzle.demo5x5()
+├── GameEngine
+│   ├── confirmed
+│   ├── manualCrosses
+│   ├── autoCrosses calculées
+│   ├── hypotheses
+│   └── customMarkers
+├── GeckoBoardView
+│   ├── zones
+│   ├── frontières fortes
+│   ├── croix manuelles / auto
+│   ├── gecko procédural
+│   ├── gecko fantôme
+│   ├── gecko alerte
+│   └── repères personnels
+├── FxFeedback
+│   └── ToneFxFeedback
+└── DifficultyIndexer
+    ├── DifficultyFeatures
+    ├── DifficultyModel
+    └── HeuristicDifficultyModel
+
+## Séparation critique
+Puzzle + GameEngine = logique pure.
+GeckoBoardView = rendu léger actuel.
+FxFeedback = port audio interchangeable.
+DifficultyModel = port de scoring interchangeable.
+
+## Flux
+Touch → GeckoBoardView → MainActivity → GameEngine → ActionFeedback → FX + message accessible → rendu.
+
+Gecko confirmé → recalcul autoCrosses → ligne + colonne + zone + voisinage exclus.
+
+Long press hors grille → palette → sélection → prochain tap → customMarkers, sans effet logique.
+
+## Futur
+Generator → UniqueSolutionValidator → SolverTrace → DifficultyFeatures → DifficultyModel.
+SkinManager → ProceduralRenderer / AssetRenderer.
+Audio → ToneFxFeedback / AssetFxFeedback.
+EncouragementEngine → texte/TTS léger / voix enregistrées.
