@@ -22,12 +22,29 @@ object ProfessorGecko {
             cachedStepFits(step, snapshot.confirmed, excluded)
         }
 
-        val step = cached ?: HumanSolver.nextStep(
-            puzzle = puzzle,
-            confirmed = snapshot.confirmed,
-            excluded = excluded,
-            rules = SolverRules.FULL
-        ) ?: return null
+        val step =
+            cached
+                ?: HumanSolver.nextStep(
+                    puzzle = puzzle,
+                    confirmed = snapshot.confirmed,
+                    excluded = excluded,
+                    rules = SolverRules.FULL
+                )
+                ?: HypothesisSolver.nextHypothesisStep(
+                    puzzle = puzzle,
+                    confirmed = snapshot.confirmed,
+                    excluded = excluded,
+                    maxDepth =
+                        if (
+                            puzzle.difficulty ==
+                            GameDifficulty.INFERNAL
+                        ) {
+                            2
+                        } else {
+                            1
+                        }
+                )
+                ?: return null
 
         return ProfessorHint(
             step = step,
@@ -85,6 +102,13 @@ object ProfessorGecko {
                 "Prof Gecko : cherche le Gecko X-Wing sur " +
                     (step.axis ?: "les cases surlignées") + "."
 
+            SolveTechnique.HYPOTHESIS_TEST ->
+                "Prof Gecko : les déductions certaines sont épuisées. Testons les deux candidats de " +
+                    (step.axis ?: "cette paire") + "."
+
+            SolveTechnique.DOUBLE_HYPOTHESIS ->
+                "Prof Gecko : niveau Infernal… cette paire demande une hypothèse dans l'hypothèse. Suis bien les cases surlignées."
+
             SolveTechnique.GIVEN ->
                 "Prof Gecko : pars des geckos déjà donnés."
         }
@@ -113,6 +137,32 @@ object ProfessorGecko {
 
             SolveTechnique.GECKO_X_WING ->
                 "Deux geckos obligatoires sont enfermés dans les mêmes deux axes. On ne sait pas lequel prend quelle position, mais ces axes leur sont réservés : les autres candidats de ces axes sont impossibles."
+
+            SolveTechnique.HYPOTHESIS_TEST -> {
+                val bad = step.hypothesisRejected
+                if (bad != null) {
+                    "Si on suppose un gecko en ligne " +
+                        (bad.row + 1) +
+                        ", colonne " +
+                        (bad.col + 1) +
+                        ", les conséquences mènent à une contradiction. L'autre candidat est donc certain."
+                } else {
+                    "On teste une des deux possibilités. Une branche devient impossible, donc l'autre est forcée."
+                }
+            }
+
+            SolveTechnique.DOUBLE_HYPOTHESIS -> {
+                val bad = step.hypothesisRejected
+                if (bad != null) {
+                    "La première hypothèse en ligne " +
+                        (bad.row + 1) +
+                        ", colonne " +
+                        (bad.col + 1) +
+                        " ne se contredit qu'après un second test logique. Cette branche entière est impossible : l'autre candidat est forcé."
+                } else {
+                    "Il faut deux niveaux de test pour obtenir la contradiction. C'est une vraie déduction Infernal, pas un hasard."
+                }
+            }
 
             SolveTechnique.GIVEN ->
                 "Un gecko donné est certain. Ses exclusions servent de point de départ."

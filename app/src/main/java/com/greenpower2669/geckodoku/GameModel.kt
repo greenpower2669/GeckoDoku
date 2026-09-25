@@ -10,7 +10,9 @@ enum class GameDifficulty(val label: String) {
     THINKING("Réflexion"),
     HARD("Difficile"),
     EXPERT("Expert"),
-    DEMENTIAL("Démentiel");
+    DEMENTIAL("Démentiel"),
+    MISSION_IMPOSSIBLE("Mission Impossible"),
+    INFERNAL("Infernal");
 
     fun minimumGivens(size: Int): Int = when (this) {
         DISCOVERY -> maxOf(2, size / 2)
@@ -19,6 +21,8 @@ enum class GameDifficulty(val label: String) {
         HARD -> 0
         EXPERT -> 0
         DEMENTIAL -> 0
+        MISSION_IMPOSSIBLE -> 0
+        INFERNAL -> 0
     }
 }
 

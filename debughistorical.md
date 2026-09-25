@@ -83,3 +83,34 @@ Exposition de started_diff + completed_diff et affichage completionRate pour cha
 - vérifier que le Prof reconstruit correctement sa trace au chargement ;
 - vérifier que chaque replay/load compte bien comme nouvelle tentative ;
 - GECKO-012 difficulté reste ouvert et non corrigé par cette version.
+
+
+## 2026-09-25 — Niveaux au-delà du déterministe
+### Besoin
+Certaines fins de grille peuvent rester à deux possibilités après toutes les techniques, X-Wing compris. Le joueur souhaite tester les hypothèses plutôt que déclarer la grille insoluble.
+### Correction v0.6
+Ajout HypothesisSolver borné. Il ne brute-force pas la solution : il ne branche que sur des paires de deux candidats et exige une contradiction démontrable avant de forcer l'autre choix.
+Mission Impossible = une hypothèse.
+Infernal = deux hypothèses ou profondeur 2.
+### Vigilance
+Valider humainement que les contradictions et les textes du Prof sont naturels. Refuser les grilles nécessitant plus de profondeur.
+
+## 2026-09-25 — Prof sans bulle visuelle
+### Besoin
+Le texte d'indice devait ressembler à une parole du Prof en plus des repères sur la grille.
+### Correction v0.6
+ProfessorBubbleView, bulle BD accessible et temporaire, masquée dès que le joueur agit.
+
+## 2026-09-25 — Fin de partie trop sobre
+### Besoin
+Récompense visuelle proportionnelle à la difficulté.
+### Correction v0.6
+VictoryCelebrationView procédural, sans asset lourd. Confettis et feux d'artifice augmentent avec le niveau, sans stroboscope. Toucher ferme l'overlay.
+
+## Vigilances v0.6
+- génération Mission Impossible / Infernal peut être plus coûteuse, surtout 12×12 ;
+- tester que le Prof retrouve une hypothèse sur un état réellement bloqué ;
+- vérifier qu'aucune branche n'est rejetée sans contradiction ;
+- vérifier lisibilité de la bulle sur petit écran ;
+- vérifier overlay de victoire avec barres Android ;
+- GECKO-012 reste ouvert : classification Facile/X-Wing à auditer séparément.

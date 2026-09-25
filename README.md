@@ -55,3 +55,19 @@ GitHub Actions produit GeckoDoku-v0.4.0-dev.apk.
 - Nouvelle, Rejouer et Chargement journal comptent comme de nouvelles tentatives.
 - Tout reste local sur le téléphone.
 - GECKO-012 reste ouvert : le classement de difficulté doit encore être audité sur le cas 12×12 Facile ayant nécessité deux X-Wing.
+
+
+## v0.6.0-dev — Prof BD, hypothèses et célébrations
+- Deux niveaux ajoutés : Mission Impossible et Infernal.
+- Mission Impossible : les techniques déterministes sont épuisées et une hypothèse par contradiction est nécessaire.
+- Infernal : deux hypothèses sont nécessaires ou une contradiction demande une profondeur d'hypothèse 2.
+- Les hypothèses ne sont pas du hasard : le moteur cherche une ligne, colonne ou zone avec exactement deux candidats, teste les branches et n'accepte une conclusion que si une branche conduit à une contradiction logique.
+- Les étapes d'hypothèse sont enregistrées dans solverTrace et expliquées par Prof Gecko.
+- Prof Gecko affiche désormais son texte dans une bulle BD lisible, en plus des surlignages de cases.
+- La progression pédagogique reste : 1/3 où regarder, 2/3 pourquoi, 3/3 action.
+- À la victoire, un overlay stylisé affiche confettis + feux d'artifice sans stroboscope.
+- La célébration devient plus riche avec la difficulté.
+- Mission Impossible affiche « MISSION ACCOMPLIE ! ».
+- Infernal affiche « INFERNAL VAINCU ! » avec la célébration maximale.
+- L'animation est courte, progressive et peut être interrompue en touchant l'écran.
+- Les grilles Mission Impossible / Infernal sauvegardées reconstruisent leur trace d'hypothèses au chargement.

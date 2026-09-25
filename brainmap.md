@@ -94,3 +94,42 @@ Nouvelle / Rejouer / Journal load
 → fin réussie
 → recordComplete
 → taux = completed / started.
+
+
+HypothesisSolver
+├── HumanSolver FULL bloqué
+├── binaryChoices()
+│   ├── ligne = 2 candidats
+│   ├── colonne = 2 candidats
+│   └── zone = 2 candidats
+├── proveContradiction()
+│   ├── conflits de geckos
+│   ├── ligne sans candidat
+│   ├── colonne sans candidat
+│   └── zone sans candidat
+├── profondeur 1 → Mission Impossible
+└── profondeur/compte 2 → Infernal
+
+SolveStep v0.6
+├── hypothesisRejected
+└── hypothesisDepth
+
+DifficultyIndexer v0.6
+HumanSolver FULL
+├── solved → niveaux Découverte..Démentiel
+└── blocked
+    ├── HypothesisSolver(1,1) solved → Mission Impossible
+    ├── HypothesisSolver(2,2) solved → Infernal
+    └── sinon → hors contrat / rejet génération
+
+ProfessorGecko
+├── trace déterministe ou hypothèse
+├── ProfessorBubbleView
+└── surlignage GeckoBoardView
+
+Victoire
+completeGame()
+└── VictoryCelebrationView.start(difficulty)
+    ├── intensité croissante
+    ├── Mission accomplie
+    └── Infernal vaincu

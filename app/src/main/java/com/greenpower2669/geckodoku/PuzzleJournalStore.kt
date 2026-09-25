@@ -121,11 +121,28 @@ class PuzzleJournalStore(context: Context) {
         )
 
         val trace =
-            HumanSolver.analyze(
-                puzzle = base,
-                givens = base.givens,
-                rules = SolverRules.FULL
-            ).steps
+            when (difficulty) {
+                GameDifficulty.MISSION_IMPOSSIBLE ->
+                    HypothesisSolver.analyze(
+                        base,
+                        maxDepth = 1,
+                        maxHypothesisSteps = 1
+                    ).steps
+
+                GameDifficulty.INFERNAL ->
+                    HypothesisSolver.analyze(
+                        base,
+                        maxDepth = 2,
+                        maxHypothesisSteps = 2
+                    ).steps
+
+                else ->
+                    HumanSolver.analyze(
+                        puzzle = base,
+                        givens = base.givens,
+                        rules = SolverRules.FULL
+                    ).steps
+            }
 
         return base.copy(
             solverTrace = trace

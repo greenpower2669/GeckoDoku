@@ -7,7 +7,9 @@ enum class SolveTechnique(val label: String, val weight: Int) {
     REGION_SINGLE("Zone forcée", 6),
     REGION_LOCKED("Zone verrouillée ligne/colonne", 12),
     REGION_TOUCH_PROJECTION("Projection de zone", 18),
-    GECKO_X_WING("Gecko X-Wing", 30)
+    GECKO_X_WING("Gecko X-Wing", 30),
+    HYPOTHESIS_TEST("Hypothèse par contradiction", 45),
+    DOUBLE_HYPOTHESIS("Double hypothèse", 60)
 }
 
 data class SolverRules(
@@ -31,7 +33,9 @@ data class SolveStep(
     val sourceRegions: Set<Int> = emptySet(),
     val axis: String? = null,
     val beforeConfirmed: Set<Cell> = emptySet(),
-    val beforeExcluded: Set<Cell> = emptySet()
+    val beforeExcluded: Set<Cell> = emptySet(),
+    val hypothesisRejected: Cell? = null,
+    val hypothesisDepth: Int = 0
 ) {
     val actionCells: Set<Cell>
         get() = cell?.let { setOf(it) } ?: eliminated

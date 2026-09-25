@@ -98,3 +98,37 @@
 - [ ] Petit code de partage compact et vérifié.
 - [ ] Nom/note personnalisée d'une grille favorite.
 - [ ] Tags : pédagogique, X-Wing, projection, test.
+
+
+## Fait v0.6.0-dev
+- [x] Ajouter Mission Impossible.
+- [x] Ajouter Infernal.
+- [x] Ajouter SolveTechnique hypothèse simple et double.
+- [x] Brancher uniquement sur des unités à exactement 2 candidats.
+- [x] Détecter contradictions structurelles.
+- [x] Borner Mission à 1 hypothèse.
+- [x] Borner Infernal à 2 hypothèses/profondeur 2.
+- [x] Enregistrer candidat rejeté et profondeur dans SolveStep.
+- [x] Intégrer hypothèses au DifficultyIndexer.
+- [x] Intégrer hypothèses aux solverTrace.
+- [x] Reconstruire traces d'hypothèses depuis le journal.
+- [x] Prof Gecko explique les hypothèses.
+- [x] Ajouter ProfessorBubbleView.
+- [x] Ajouter VictoryCelebrationView.
+- [x] Intensité de célébration selon difficulté.
+- [x] Messages spéciaux Mission Impossible / Infernal.
+- [x] Célébration sans stroboscope et interrompable.
+- [x] Synchroniser ordre + 4 mémoires.
+
+## Validation v0.6
+- [ ] Compiler GitHub Actions.
+- [ ] Installer APK v0.6.
+- [ ] Vérifier les 8 niveaux dans le sélecteur et les stats.
+- [ ] Générer Mission Impossible et confirmer qu'une seule hypothèse est nécessaire.
+- [ ] Générer Infernal et confirmer deux hypothèses/profondeur 2.
+- [ ] Tester Prof 1/3, 2/3, 3/3 sur une hypothèse.
+- [ ] Vérifier bulle BD sur 5×5 et 12×12.
+- [ ] Terminer plusieurs difficultés et comparer les célébrations.
+- [ ] Vérifier absence de flash agressif.
+- [ ] Tester sauvegarde/rechargement d'une grille Mission/Infernal.
+- [ ] Mesurer temps de génération 12×12 haut niveau.

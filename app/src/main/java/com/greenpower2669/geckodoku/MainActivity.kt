@@ -7,8 +7,10 @@ import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.Gravity
+import android.view.View
 import android.view.WindowInsets
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import java.text.SimpleDateFormat
@@ -48,6 +50,12 @@ class MainActivity : Activity() {
 
     private lateinit var professorButton:
         Button
+
+    private lateinit var professorBubble:
+        ProfessorBubbleView
+
+    private lateinit var celebrationView:
+        VictoryCelebrationView
 
     private lateinit var saveButton:
         Button
@@ -142,6 +150,11 @@ class MainActivity : Activity() {
                     0,
                     dp(4)
                 )
+            }
+
+        professorBubble =
+            ProfessorBubbleView(this).apply {
+                visibility = View.GONE
             }
 
         status =
@@ -307,6 +320,12 @@ class MainActivity : Activity() {
         )
 
         root.addView(
+            professorBubble,
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+
+        root.addView(
             status,
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
@@ -424,6 +443,20 @@ class MainActivity : Activity() {
         )
 
         setContentView(root)
+
+        celebrationView =
+            VictoryCelebrationView(this)
+
+        addContentView(
+            celebrationView,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+
+        celebrationView.visibility =
+            View.GONE
 
         protectFromSystemBars(root)
         refreshGameUi()
@@ -747,6 +780,32 @@ class MainActivity : Activity() {
                         )
                     }
 
+                    if (
+                        report.features
+                            .hypothesisCount > 0
+                    ) {
+                        append(
+                            " • hypothèse "
+                        )
+                        append(
+                            report.features
+                                .hypothesisCount
+                        )
+
+                        if (
+                            report.features
+                                .hypothesisDepth > 1
+                        ) {
+                            append(
+                                " • profondeur "
+                            )
+                            append(
+                                report.features
+                                    .hypothesisDepth
+                            )
+                        }
+                    }
+
                     append(" • trace ")
                     append(
                         puzzle.solverTrace.size
@@ -997,17 +1056,28 @@ class MainActivity : Activity() {
             if (next == null) {
                 fx.blocked()
 
-                status.text =
+                val message =
                     if (
                         engine.snapshot()
                             .complete
                     ) {
-                        "Prof Gecko : la grille est déjà terminée 🦎"
+                        "La grille est déjà terminée, biloute 🦎"
                     } else {
-                        "Prof Gecko : je ne trouve plus de déduction sûre avec l'état actuel. Vérifie tes croix et tes hypothèses."
+                        "Je ne trouve plus de déduction sûre avec l'état actuel. Vérifie tes croix et tes hypothèses."
                     }
 
+                status.text =
+                    "Prof Gecko"
+
+                professorBubble
+                    .showMessage(message)
+
                 board.clearProfessorHint()
+
+                board.announceForAccessibility(
+                    message
+                )
+
                 return
             }
 
@@ -1030,12 +1100,20 @@ class MainActivity : Activity() {
 
         fx.hint()
 
-        status.text =
+        val message =
             when (professorLevel) {
                 1 -> hint.focusText
                 2 -> hint.explanationText
                 else -> hint.actionText
             }
+
+        professorBubble
+            .showMessage(message)
+
+        status.text =
+            "Prof Gecko • indice " +
+                professorLevel +
+                "/3"
 
         professorButton.text =
             when (professorLevel) {
@@ -1050,7 +1128,7 @@ class MainActivity : Activity() {
             }
 
         board.announceForAccessibility(
-            status.text
+            message
         )
     }
 
@@ -1067,6 +1145,12 @@ class MainActivity : Activity() {
         ) {
             professorButton.text =
                 "🧑‍🏫 Prof Gecko"
+        }
+
+        if (
+            ::professorBubble.isInitialized
+        ) {
+            professorBubble.hideMessage()
         }
     }
 
@@ -1094,8 +1178,16 @@ class MainActivity : Activity() {
         status.text =
             "Bravo ! Grille terminée 🦎"
 
+        if (
+            ::celebrationView.isInitialized
+        ) {
+            celebrationView.start(
+                puzzle.difficulty
+            )
+        }
+
         board.announceForAccessibility(
-            "Bravo, grille terminée."
+            "Bravo, grille terminée. Félicitations !"
         )
     }
 

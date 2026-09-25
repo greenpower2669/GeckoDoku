@@ -90,3 +90,25 @@ Rejouer ne génère rien : GameEngine est recréé sur le même Puzzle. Hypothè
 
 ## Statistiques par difficulté
 PlayerStatsStore conserve déjà started_diff_* et completed_diff_*. v0.5 expose DifficultyStats(started, completed, completionRate). L'écran Stats affiche pour chaque difficulté pourcentage et fraction completed/started. Un niveau sans tentative affiche « — » plutôt qu'un faux 0 %.
+
+
+## Hypothèses logiques v0.6
+HypothesisSolver intervient uniquement lorsque HumanSolver FULL ne fournit plus de déduction.
+Il construit des BinaryChoice uniquement sur :
+- une ligne non résolue avec exactement 2 candidats ;
+- une colonne non résolue avec exactement 2 candidats ;
+- une zone non résolue avec exactement 2 candidats.
+
+Pour chaque candidat, il simule les conséquences déterministes. Une branche est rejetée seulement si elle mène à une contradiction : conflit entre geckos, ligne sans candidat, colonne sans candidat ou zone sans candidat.
+
+maxDepth=1 + maxHypothesisSteps=1 définit Mission Impossible.
+maxDepth=2 + maxHypothesisSteps=2 définit Infernal.
+Une étape transporte hypothesisRejected et hypothesisDepth afin que le Prof explique la preuve.
+
+DifficultyIndexer essaie d'abord HumanSolver FULL. Seulement s'il bloque, il tente Mission puis Infernal. Une grille qui échoue encore à profondeur 2 n'est pas logicallySolvable dans le contrat actuel.
+
+## Professeur en bulle BD
+ProfessorBubbleView est une couche UI distincte. Elle affiche un fond clair, contour vert, petite queue de bulle, en-tête « Prof Gecko » et texte lisible. MainActivity affiche dans cette bulle focusText, explanationText puis actionText. Toute action joueur réinitialise et masque la bulle.
+
+## Célébration
+VictoryCelebrationView est un overlay procédural sans asset : fond translucide, confettis et particules radiales. Le nombre de salves et particules dépend de l'ordinal de GameDifficulty. Pas de stroboscope ; l'alpha des particules décroît progressivement. Durée environ 2,2 s + 0,32 s par niveau, toucher pour fermer.

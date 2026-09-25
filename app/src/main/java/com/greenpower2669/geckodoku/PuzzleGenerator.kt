@@ -97,14 +97,32 @@ object PuzzleGenerator {
     private fun attachTrace(
         puzzle: Puzzle
     ): Puzzle {
-        val analysis = HumanSolver.analyze(
-            puzzle = puzzle,
-            givens = puzzle.givens,
-            rules = SolverRules.FULL
-        )
+        val steps =
+            when (puzzle.difficulty) {
+                GameDifficulty.MISSION_IMPOSSIBLE ->
+                    HypothesisSolver.analyze(
+                        puzzle,
+                        maxDepth = 1,
+                        maxHypothesisSteps = 1
+                    ).steps
+
+                GameDifficulty.INFERNAL ->
+                    HypothesisSolver.analyze(
+                        puzzle,
+                        maxDepth = 2,
+                        maxHypothesisSteps = 2
+                    ).steps
+
+                else ->
+                    HumanSolver.analyze(
+                        puzzle = puzzle,
+                        givens = puzzle.givens,
+                        rules = SolverRules.FULL
+                    ).steps
+            }
 
         return puzzle.copy(
-            solverTrace = analysis.steps
+            solverTrace = steps
         )
     }
 
@@ -219,6 +237,20 @@ object PuzzleGenerator {
                     GameDifficulty.DEMENTIAL &&
                     f.xWingRequired &&
                     f.projectionRequired
+
+            GameDifficulty.MISSION_IMPOSSIBLE ->
+                report.ratedDifficulty ==
+                    GameDifficulty.MISSION_IMPOSSIBLE &&
+                    f.hypothesisCount == 1 &&
+                    f.hypothesisDepth <= 1
+
+            GameDifficulty.INFERNAL ->
+                report.ratedDifficulty ==
+                    GameDifficulty.INFERNAL &&
+                    (
+                        f.hypothesisCount >= 2 ||
+                        f.hypothesisDepth >= 2
+                    )
         }
     }
 
@@ -266,6 +298,29 @@ object PuzzleGenerator {
             GameDifficulty.DEMENTIAL ->
                 (if (f.xWingRequired) 0 else 35) +
                     (if (f.projectionRequired) 0 else 35)
+
+            GameDifficulty.MISSION_IMPOSSIBLE ->
+                if (
+                    f.hypothesisCount == 1 &&
+                    f.hypothesisDepth <= 1
+                ) {
+                    0
+                } else {
+                    45 +
+                        kotlin.math.abs(
+                            f.hypothesisCount - 1
+                        ) * 10
+                }
+
+            GameDifficulty.INFERNAL ->
+                if (
+                    f.hypothesisCount >= 2 ||
+                    f.hypothesisDepth >= 2
+                ) {
+                    0
+                } else {
+                    55
+                }
         }
 
         return d

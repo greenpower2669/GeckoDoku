@@ -84,3 +84,31 @@ Cas observé : grille 12×12 affichée Facile, trace 7, mais résolution humaine
 **État : Implémenté v0.5.0-dev, à tester.**
 
 Pour chaque difficulté mesurée, conserver parties lancées et parties terminées, puis afficher le pourcentage de réussite. Nouvelle grille, Rejouer et Chargement journal sont chacun une tentative distincte.
+
+
+## GECKO-015 — Célébration de victoire stylisée
+**État : Implémenté v0.6.0-dev, à tester.**
+
+À chaque grille terminée, afficher une célébration procédurale : confettis, salves colorées et message de félicitations. L'intensité augmente avec GameDifficulty. Aucun stroboscope ni flash plein écran agressif. Animation courte et interrompable par toucher.
+
+Découverte/Facile : célébration douce.
+Réflexion/Difficile : davantage de particules.
+Expert/Démentiel : plusieurs salves de feu d'artifice.
+Mission Impossible : « MISSION ACCOMPLIE ! ».
+Infernal : « INFERNAL VAINCU ! », célébration maximale.
+
+## GECKO-016 — Bulle BD du Professeur Gecko
+**État : Implémenté v0.6.0-dev, à tester.**
+
+Ajouter une bulle de bande dessinée dédiée, avec en-tête Prof Gecko et gros texte lisible. La bulle complète les surlignages et ne les remplace pas. Elle reprend les trois niveaux pédagogiques : où regarder, pourquoi, action.
+
+## GECKO-017 — Mission Impossible / Infernal
+**État : Implémenté v0.6.0-dev, à valider humainement.**
+
+Après Démentiel :
+- Mission Impossible : toutes les techniques déterministes, y compris Gecko X-Wing, bloquent ; une unique hypothèse par contradiction permet de poursuivre et terminer.
+- Infernal : Mission Impossible ne suffit pas ; deux hypothèses sont nécessaires ou une preuve demande une profondeur de branchement 2.
+
+Le moteur ne lit pas solutionCols pour choisir l'hypothèse. Il cherche un axe ou une zone réduit à exactement deux candidats, suppose chaque possibilité et déroule les conséquences. Une branche n'est rejetée que si une contradiction structurelle est démontrée. Prof Gecko doit pouvoir expliquer le candidat rejeté et le candidat forcé.
+
+Au-delà de deux hypothèses/profondeur 2, la grille est considérée hors contrat actuel et ne doit pas être proposée comme résoluble par ces niveaux.
