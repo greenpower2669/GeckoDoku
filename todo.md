@@ -251,3 +251,16 @@ Aucun ordre de mission actif actuellement.
 - [x] QuickTalkPresentationPolicy.
 - [ ] Câbler ChromaKeyVideoView.
 - [ ] Câbler MainActivity.
+
+
+<!-- GECKO-036-GREEN-RUNTIME-2026-09-27 -->
+## GECKO-036 étape 2
+- [x] PNG visible avant stop/remplacement vidéo.
+- [x] PNG conservé pendant prepare/hold.
+- [x] PNG masqué seulement après reveal/fresh frame réussi.
+- [x] FreshPlaybackFrameGate câblé.
+- [x] Renderer armé après START + VIDEO_RENDERING_START.
+- [x] ! → bulle visuelle-only + une QUICK_TALK.
+- [ ] Vérifier CI GREEN.
+- [ ] Bump v0.10.14-dev après GREEN.
+- [ ] Validation téléphone : zéro trou, zéro -38, bulle QUICK_TALK.

@@ -186,6 +186,12 @@ class MainActivity : Activity() {
     private val settingsMenuPolicy =
         SettingsMenuPolicy()
 
+    private val professorPortraitContinuityPolicy =
+        ProfessorPortraitContinuityPolicy()
+
+    private val quickTalkPresentationPolicy =
+        QuickTalkPresentationPolicy()
+
     private var professorVisualGeneration = 0
     private var professorVisualPreparing = false
     private var professorVisualPrepared = false
@@ -1881,6 +1887,21 @@ class MainActivity : Activity() {
     private fun showProfessorBubble(
         message: String
     ) {
+        showProfessorBubbleVisualOnly(
+            message
+        )
+
+        speakWithProfessorVisual(
+            text = message,
+            origin =
+                SpeechOrigin
+                    .PROF_BUTTON
+        )
+    }
+
+    private fun showProfessorBubbleVisualOnly(
+        message: String
+    ) {
         if (
             ::controlsPanel.isInitialized &&
             professorUiPolicy
@@ -1892,13 +1913,6 @@ class MainActivity : Activity() {
 
         professorBubble.showMessage(
             message
-        )
-
-        speakWithProfessorVisual(
-            text = message,
-            origin =
-                SpeechOrigin
-                    .PROF_BUTTON
         )
 
         professorBubble.bringToFront()
@@ -3737,17 +3751,24 @@ class MainActivity : Activity() {
         val line =
             PierreSmallTalk.lines[index]
 
+        val presentation =
+            quickTalkPresentationPolicy
+                .present(line)
+
         val accepted =
             speakWithProfessorVisual(
-                text = line,
+                text =
+                    presentation.bubbleText,
                 origin =
-                    SpeechOrigin.QUICK_TALK
+                    presentation.origin
             )
 
         if (accepted) {
+            showProfessorBubbleVisualOnly(
+                presentation.bubbleText
+            )
             status.text =
-                "Prof Gecko • " +
-                    line
+                presentation.statusText
         }
     }
 
@@ -3848,7 +3869,12 @@ class MainActivity : Activity() {
             onReady(ready)
         }
 
+        professorPortraitContinuityPolicy
+            .onPrepareStarted()
+        applyProfessorPortraitContinuity()
+        professorVideo.alpha = 0f
         professorVideo.stopPlayback()
+
         professorVideoMode =
             ProfessorVideoMode.SPEECH
         professorVideo.alpha = 0f
@@ -3881,6 +3907,9 @@ class MainActivity : Activity() {
                     false
                 professorVisualPrepared =
                     true
+                professorPortraitContinuityPolicy
+                    .onFirstFrameHeld()
+                applyProfessorPortraitContinuity()
 
                 MediaTrace.event(
                     source = "MainActivity",
@@ -3924,6 +3953,8 @@ class MainActivity : Activity() {
                     false
                 professorVisualPrepared =
                     false
+                professorPortraitContinuityPolicy
+                    .onVideoError()
                 restoreProfessorPngOnly()
                 deliver(false)
             }
@@ -3957,6 +3988,8 @@ class MainActivity : Activity() {
                     false
                 professorVisualPrepared =
                     false
+                professorPortraitContinuityPolicy
+                    .onTimeout()
                 professorVideo.stopPlayback()
                 restoreProfessorPngOnly()
                 deliver(false)
@@ -3984,11 +4017,9 @@ class MainActivity : Activity() {
                 .revealHeldFirstFrame()
 
         if (revealed) {
-            professorPortrait
-                .animate()
-                .cancel()
-            professorPortrait.visibility =
-                View.INVISIBLE
+            professorPortraitContinuityPolicy
+                .onRevealSucceeded()
+            applyProfessorPortraitContinuity()
 
             MediaTrace.event(
                 source = "MainActivity",
@@ -3999,11 +4030,43 @@ class MainActivity : Activity() {
                         .PROF_SPEECH
             )
         } else {
+            professorPortraitContinuityPolicy
+                .onRevealFailed()
             restoreProfessorPngOnly()
         }
     }
 
+    private fun applyProfessorPortraitContinuity() {
+        if (!::professorPortrait.isInitialized) {
+            return
+        }
+
+        professorPortrait
+            .animate()
+            .cancel()
+
+        professorPortrait.visibility =
+            if (
+                professorPortraitContinuityPolicy
+                    .portraitVisible
+            ) {
+                View.VISIBLE
+            } else {
+                View.INVISIBLE
+            }
+
+        if (
+            professorPortraitContinuityPolicy
+                .portraitVisible
+        ) {
+            professorPortrait.bringToFront()
+        }
+    }
+
     private fun restoreProfessorPngOnly() {
+        professorPortraitContinuityPolicy
+            .onRevealFailed()
+
         professorVideoMode =
             ProfessorVideoMode.NONE
 
@@ -4295,6 +4358,11 @@ class MainActivity : Activity() {
         }
 
         cancelProfessorIdleAnimation()
+
+        professorPortraitContinuityPolicy
+            .onPrepareStarted()
+        applyProfessorPortraitContinuity()
+        professorVideo.alpha = 0f
         professorVideo.stopPlayback()
 
         professorVideoMode =
@@ -4336,11 +4404,9 @@ class MainActivity : Activity() {
                     ProfessorVideoMode.SPEECH &&
                     professorSpeechActive
                 ) {
-                    professorPortrait
-                        .animate()
-                        .cancel()
-                    professorPortrait.visibility =
-                        View.INVISIBLE
+                    professorPortraitContinuityPolicy
+                        .onRevealSucceeded()
+                    applyProfessorPortraitContinuity()
                 }
             },
             onCompletion = {

@@ -196,3 +196,8 @@ GECKO-036 RED
 
 <!-- GECKO-036-GREEN-POLICIES-2026-09-27 -->
 ProfessorPortraitContinuityPolicy + FreshPlaybackFrameGate + QuickTalkPresentationPolicy → garde-fous runtime GECKO-036.
+
+
+<!-- GECKO-036-GREEN-RUNTIME-2026-09-27 -->
+PNG visible → video alpha0 → START(gen) → RENDERING_START(gen) → arm renderer(gen, clear stale) → fresh frame(gen) → hold → Pierre START → reveal → hide PNG.
+! → bubble visual-only + one QUICK_TALK speech.

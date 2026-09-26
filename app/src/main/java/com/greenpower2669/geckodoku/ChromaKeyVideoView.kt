@@ -34,8 +34,11 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 }
             },
             firstFrameRendered = {
+                    generation ->
                 post {
-                    handleFirstFrameRendered()
+                    handleFirstFrameRendered(
+                        generation
+                    )
                 }
             },
             rendererError = {
@@ -83,6 +86,12 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
     private var firstFrameHeld =
         false
+
+    private val freshPlaybackFrameGate =
+        FreshPlaybackFrameGate()
+
+    private var activePlaybackGeneration =
+        0L
 
     var logicalLayer: String =
         "UNSPECIFIED"
@@ -160,6 +169,10 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
         stopPlayback()
 
+        activePlaybackGeneration =
+            freshPlaybackFrameGate
+                .beginPlayback()
+
         this.muted = muted
         this.revealOnFirstFrame =
             revealOnFirstFrame
@@ -185,7 +198,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
             queueEvent {
                 chromaRenderer
-                    .armFirstFrameNotification()
+                    .cancelFirstFrameNotification()
             }
         } else {
             firstFrameGate.reset()
@@ -210,7 +223,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 onCompletion =
                     onCompletion,
                 onError = onError,
-                onStarted = onStarted
+                onStarted = onStarted,
+                generation =
+                    activePlaybackGeneration
             )
 
         startPendingPlayback()
@@ -399,6 +414,10 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                     if (muted) 0f else 1f
                 )
                 it.start()
+                freshPlaybackFrameGate
+                    .onPlayerStarted(
+                        request.generation
+                    )
                 firstFrameGate.onStarted()
                 request.onStarted()
             }
@@ -413,6 +432,18 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                     MediaPlayer
                         .MEDIA_INFO_VIDEO_RENDERING_START
                 ) {
+                    freshPlaybackFrameGate
+                        .onRenderingStart(
+                            request.generation
+                        )
+
+                    queueEvent {
+                        chromaRenderer
+                            .armFirstFrameNotification(
+                                request.generation
+                            )
+                    }
+
                     MediaTrace.event(
                         source =
                             traceSource(),
@@ -422,7 +453,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                             request.assetPath,
                         detail =
                             "extra=" +
-                                extra
+                                extra +
+                                " generation=" +
+                                request.generation
                     )
                 }
 
@@ -523,7 +556,38 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         }
     }
 
-    private fun handleFirstFrameRendered() {
+    private fun handleFirstFrameRendered(
+        generation: Long
+    ) {
+        if (
+            generation !=
+                activePlaybackGeneration ||
+            !freshPlaybackFrameGate
+                .onFrameRendered(
+                    generation
+                )
+        ) {
+            MediaTrace.event(
+                source = traceSource(),
+                event =
+                    "VIDEO_STALE_FRAME_IGNORED",
+                assetPath =
+                    firstFrameAssetPath
+                        ?: activeAssetPath,
+                detail =
+                    "generation=" +
+                        generation +
+                        " active=" +
+                        activePlaybackGeneration
+            )
+            return
+        }
+
+        queueEvent {
+            chromaRenderer
+                .cancelFirstFrameNotification()
+        }
+
         if (
             !revealOnFirstFrame ||
             !firstFrameGate.isArmed
@@ -607,6 +671,11 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         firstFrameCallback = null
         firstFrameAssetPath = null
 
+        freshPlaybackFrameGate
+            .cancel(
+                activePlaybackGeneration
+            )
+
         queueEvent {
             chromaRenderer
                 .cancelFirstFrameNotification()
@@ -628,7 +697,8 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         val assetPath: String,
         val onCompletion: () -> Unit,
         val onError: (String) -> Unit,
-        val onStarted: () -> Unit
+        val onStarted: () -> Unit,
+        val generation: Long
     )
 
     private class ChromaRenderer(
@@ -636,7 +706,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         private val surfaceReady:
             (SurfaceTexture) -> Unit,
         private val firstFrameRendered:
-            () -> Unit,
+            (Long) -> Unit,
         private val rendererError:
             (String) -> Unit
     ) : Renderer {
@@ -650,6 +720,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
         private var firstFrameNotificationArmed =
             false
+
+        private var firstFrameGeneration =
+            0L
 
         private var viewWidth = 1
         private var viewHeight = 1
@@ -912,11 +985,18 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             ) {
                 firstFrameNotificationArmed =
                     false
-                firstFrameRendered()
+                firstFrameRendered(
+                    firstFrameGeneration
+                )
             }
         }
 
-        fun armFirstFrameNotification() {
+        fun armFirstFrameNotification(
+            generation: Long
+        ) {
+            frameAvailable = false
+            firstFrameGeneration =
+                generation
             firstFrameNotificationArmed =
                 true
         }

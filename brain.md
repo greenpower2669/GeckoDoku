@@ -697,3 +697,8 @@ La continuité visuelle PNG→vidéo, l'identité de frame par playback et la s�
 <!-- GECKO-036-GREEN-POLICIES-2026-09-27 -->
 ## GECKO-036 policies
 Le portrait possède désormais un contrat explicite de continuité ; une frame vidéo n'est admissible qu'après START + VIDEO_RENDERING_START du playback courant ; QUICK_TALK possède une présentation distincte de son transport vocal.
+
+
+<!-- GECKO-036-GREEN-RUNTIME-2026-09-27 -->
+## GECKO-036 runtime
+Continuité PNG→vidéo : portrait visible avant stop/restart vidéo, pendant préparation et frame tenue ; masquage seulement après révélation réelle. Les frames sont associées à une génération de playback et ne sont admissibles qu'après START + VIDEO_RENDERING_START. QUICK_TALK sépare affichage de bulle et transport vocal.

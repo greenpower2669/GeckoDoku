@@ -897,3 +897,8 @@ Le log téléphone a révélé des FIRST_FRAME_HELD possibles avant START, compa
 <!-- GECKO-036-GREEN-POLICIES-2026-09-27 -->
 ## 2026-09-27 — policies GREEN
 Après RED #120, ajout des trois policies pures avant câblage Android.
+
+
+<!-- GECKO-036-GREEN-RUNTIME-2026-09-27 -->
+## 2026-09-27 — correction frame résiduelle / -38
+Le renderer était armé dès PLAY_REQUEST et le log montrait parfois FIRST_FRAME_HELD avant START. Correction : génération par playback, armement seulement après START + VIDEO_RENDERING_START, purge de frameAvailable à l'armement, callback taggé génération. UI : PNG conservé pendant toutes les transitions et QUICK_TALK déplacé dans la bulle sans double parole.

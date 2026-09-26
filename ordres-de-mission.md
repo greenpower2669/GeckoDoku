@@ -131,3 +131,8 @@ Trois contrats RED sont ajoutés avant production :
 <!-- GECKO-036-GREEN-POLICIES-2026-09-27 -->
 ## GREEN étape 1 — policies
 Ajout des policies de continuité portrait, validation de frame fraîche par génération de playback, et présentation QUICK_TALK bulle/status/origin unique.
+
+
+<!-- GECKO-036-GREEN-RUNTIME-2026-09-27 -->
+## GREEN étape 2 — runtime
+Prof.png est remis visible avant chaque transition vidéo Prof et reste visible pendant prepare/hold. Il n'est masqué qu'après reveal/fresh frame réussi. Le renderer est désormais armé uniquement après START + VIDEO_RENDERING_START de la génération courante, avec purge du flag frameAvailable résiduel. Le bouton ! utilise une bulle visuelle-only puis une unique parole QUICK_TALK.
