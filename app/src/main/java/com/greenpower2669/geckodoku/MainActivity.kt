@@ -100,6 +100,9 @@ class MainActivity : Activity() {
     private var celebrationUsesMusic =
         false
 
+    private val celebrationAudioPolicy =
+        CelebrationAudioPolicy()
+
     private val richMediaScheduler =
         RichMediaScheduler()
 
@@ -733,7 +736,14 @@ class MainActivity : Activity() {
 
                 onCelebrationStopped = {
                     fx.stopCelebration()
-                    gameAudio.stopMusic()
+
+                    if (
+                        celebrationAudioPolicy
+                            .stopMusicWhenVisualCelebrationStops
+                    ) {
+                        gameAudio.stopMusic()
+                    }
+
                     celebrationUsesMusic = false
                 }
             }

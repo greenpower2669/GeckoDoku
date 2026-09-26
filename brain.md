@@ -246,3 +246,11 @@ La palette de régions est centralisée dans `GeckoBoardPalette`. Le même entie
 
 ### Preuve CI GECKO-028
 GitHub Actions run #45 (`36213803733`) : tests unitaires + APK + AAB réussis sur le commit `6c0e602b607c352bb29bbf4aeca228d38ee4939b`. Version `0.10.4-dev`. La validation téléphone reste nécessaire pour juger la perception masculine du TTS installé et l'intégration visuelle du cache coloré.
+
+
+## GECKO-029 — fréquence accrue et musique de victoire indépendante
+Le Prof passe d'un idle 10–20 s à 2–3 s. Le timer reste volontairement indépendant de la visibilité de `ProfessorBubbleView`, donc le PNG du bouton continue ses micro-animations lorsque la bulle est ouverte. Seuls Anim OFF, pause/destroy, portrait invisible et célébration bloquent les animations idle.
+
+Le scheduler des longues actions Gecko conserve la même logique de sécurité mais change ses valeurs par défaut : 45 % de probabilité par événement éligible et cooldown 45 s au lieu de 12 % / 180 s.
+
+`CelebrationAudioPolicy` formalise le découplage son/visuel : la fin de `VictoryCelebrationView` ne stoppe plus le MP3 de célébration. Le lecteur MediaPlayer le laisse aller jusqu'à sa fin naturelle ; Nouvelle, FX OFF, pause ou destroy restent autorisés à l'arrêter.

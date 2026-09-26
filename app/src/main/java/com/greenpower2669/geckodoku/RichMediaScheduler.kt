@@ -1,8 +1,8 @@
 package com.greenpower2669.geckodoku
 
 class RichMediaScheduler(
-    private val cooldownMs: Long = 180_000L,
-    private val chancePercent: Int = 12
+    private val cooldownMs: Long = 45_000L,
+    private val chancePercent: Int = 45
 ) {
     private var lastAcceptedAt: Long? = null
 

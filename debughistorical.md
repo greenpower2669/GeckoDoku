@@ -316,3 +316,14 @@ Run #45 (`36213803733`) : succès complet. Palette/cache, stratégie TTS et time
 Retour téléphone : Prof encore trop peu animé, Gecko long encore trop rare, et musique de félicitations tronquée.
 
 Cause musique confirmée dans `MainActivity` : callback `VictoryCelebrationView.onCelebrationStopped` appelle `gameAudio.stopMusic()`, ce qui couple la durée visuelle à la durée du MP3. Décision : supprimer ce couplage ; seul le lecteur audio décide de la fin naturelle de la piste.
+
+
+### TDD RED GECKO-029
+Run #48 : RED attendu. Les nouveaux tests imposent Prof 2–3 s, Gecko 45 % / 45 s et une politique de célébration qui ne stoppe pas la musique à la fin visuelle. Échec observé sur `CelebrationAudioPolicy` absent.
+
+### Correctif GECKO-029
+- Prof idle : 2–3 s ;
+- aucune condition de blocage liée à la bulle Prof ;
+- scheduler Gecko par défaut : 45 % / 45 s ;
+- `onCelebrationStopped` ne coupe plus le MP3 lorsque la politique vaut false ;
+- la fin naturelle du MediaPlayer devient la fin normale de la musique de victoire.

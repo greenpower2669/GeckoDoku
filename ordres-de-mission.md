@@ -794,7 +794,7 @@ Le PNG Prof reste au premier plan du bouton. Ajouter plusieurs micro-animations 
 
 # GECKO-029 — PROF PLUS VIVANT, GECKO PLUS FRÉQUENT, MUSIQUE DE VICTOIRE NON TRONQUÉE
 **Demandeur / date :** Fab, 26/09/2026
-**Statut :** implémentation en cours sur `gecko-029-more-life-full-celebration`.
+**Statut :** implémentation GREEN en cours sur `gecko-029-more-life-full-celebration` ; CI puis validation téléphone requises.
 
 ## 1. Prof : idle 2–3 secondes
 Le Prof doit paraître beaucoup plus vivant :

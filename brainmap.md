@@ -452,3 +452,21 @@ Build GECKO-028
     ├── ProfessorIdleAnimationPolicyTest
     ├── APK v0.10.4-dev
     └── AAB v0.10.4-dev
+
+
+## GECKO-029
+Prof.png idle
+└── délai 2–3 s
+    ├── bulle ouverte : autorisé
+    ├── clic : immédiat + replanification
+    └── pause / Anim OFF / victoire : bloqué
+
+RichMediaScheduler Gecko
+├── chance = 45 %
+└── cooldown = 45 s
+
+Victoire
+├── VictoryCelebrationView finit
+│   └── stop FX procéduraux
+└── MP3 celebration continue
+    └── fin naturelle MediaPlayer

@@ -6,10 +6,10 @@ import org.junit.Test
 
 class ProfessorIdleAnimationPolicyTest {
     @Test
-    fun idleDelayIsAlwaysBetweenTenAndTwentySeconds() {
+    fun idleDelayIsAlwaysBetweenTwoAndThreeSeconds() {
         val p = ProfessorIdleAnimationPolicy()
-        assertEquals(10_000L, p.delayMs(0))
-        assertTrue(p.delayMs(Int.MAX_VALUE) in 10_000L..20_000L)
+        assertEquals(2_000L, p.delayMs(0))
+        assertTrue(p.delayMs(Int.MAX_VALUE) in 2_000L..3_000L)
     }
 
     @Test

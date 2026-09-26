@@ -7,8 +7,8 @@ enum class ProfessorAnimationAction {
 }
 
 class ProfessorIdleAnimationPolicy {
-    val minDelayMs: Long = 10_000L
-    val maxDelayMs: Long = 20_000L
+    val minDelayMs: Long = 2_000L
+    val maxDelayMs: Long = 3_000L
 
     fun delayMs(
         randomValue: Int

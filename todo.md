@@ -343,13 +343,13 @@
 
 
 ## GECKO-029
-- [ ] RED : Prof idle borné à 2–3 s.
-- [ ] RED : Gecko long action 45 % avec cooldown 45 s.
-- [ ] RED : politique victoire n'arrête pas la musique à la fin visuelle.
-- [ ] Passer idle Prof de 10–20 s à 2–3 s.
-- [ ] Confirmer animation Prof même bulle ouverte.
-- [ ] Passer scheduler Gecko à 45 % / 45 s.
-- [ ] Découpler fin visuelle de victoire et arrêt MP3.
-- [ ] Synchroniser brain/brainmap/debug/todo/ordre.
+- [x] RED : Prof idle borné à 2–3 s — run #48.
+- [x] RED : Gecko long action 45 % avec cooldown 45 s — run #48.
+- [x] RED : politique victoire n'arrête pas la musique à la fin visuelle — run #48.
+- [x] Passer idle Prof de 10–20 s à 2–3 s.
+- [x] Animation Prof maintenue lorsque la bulle est ouverte : aucune condition de blocage sur ProfessorBubbleView.
+- [x] Passer scheduler Gecko à 45 % / 45 s.
+- [x] Découpler fin visuelle de victoire et arrêt MP3 ; lecture jusqu'à fin naturelle.
+- [x] Synchroniser brain/brainmap/debug/todo/ordre.
 - [ ] CI tests + APK + AAB.
 - [ ] Validation téléphone.
