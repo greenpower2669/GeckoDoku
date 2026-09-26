@@ -649,7 +649,7 @@ Le premier build téléphone utilise les 13 fenêtres temporelles canoniques dir
 
 # GECKO-025 — GECKO_TR CANONIQUE + PROF ANIMÉ À CHAQUE INTERVENTION
 **Demandeur / date :** Fab, 26/09/2026  
-**Statut :** implémentation GECKO-025 en cours sur branche dédiée ; validation CI puis téléphone requise.
+**Statut :** implémenté et CI verte sur branche dédiée (run #33) ; validation téléphone requise.
 
 ## 1. Sprite Gecko canonique
 Fab confirme que `assets/gecko/Gecko_tr.png` est le PNG officiel déjà uploadé.

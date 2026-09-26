@@ -208,3 +208,7 @@ GitHub Actions run #28 (`36209229581`) sur `f7fd2a703913e636cddaab4f7fed49516431
 Fab confirme que `assets/gecko/Gecko_tr.png` était déjà le sprite transparent officiel. `AssetMediaCatalog.GECKO_PORTRAIT` pointe exclusivement vers ce fichier ; le petit `Gecko.png` ajouté pendant GECKO-024 est supprimé pour éliminer toute ambiguïté.
 
 L'animation du Prof n'utilise plus `RichMediaScheduler`. À chaque intervention Prof éligible, `ProfessorAnimationPolicy` autorise immédiatement `Prof_actions.mp4` dans le rectangle du portrait quand les animations sont ON, que le média n'est pas déjà occupé, qu'aucune hypothèse Prof n'attend sa seconde étape et qu'aucune célébration n'est visible. Texte et TTS restent immédiats et prioritaires.
+
+
+### Preuve CI GECKO-025
+GitHub Actions run #33 (`36210582662`) sur `8aaa06f95dd626a654a95a4b284280b43705a47c` : tests unitaires, APK et AAB réussis. Version produite : `0.10.1-dev`. Validation visuelle téléphone encore nécessaire pour confirmer le rendu réel de Gecko_tr et la fréquence d'animation Prof.

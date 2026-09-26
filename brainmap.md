@@ -356,3 +356,11 @@ Intervention Prof
     └── pas de célébration
         └── Prof_actions.mp4 localisé dans le portrait
             └── aucune probabilité / aucun cooldown
+
+
+Build GECKO-025
+└── run #33 vert
+    ├── AssetMediaCatalogTest
+    ├── ProfessorAnimationPolicyTest
+    ├── APK v0.10.1-dev
+    └── AAB v0.10.1-dev

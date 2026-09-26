@@ -233,3 +233,7 @@ Même retour : le Prof doit être davantage animé. Le scheduler partagé 12 % /
 
 ### TDD GECKO-025
 Run #32 : RED attendu. `AssetMediaCatalogTest` impose `gecko/Gecko_tr.png` et `ProfessorAnimationPolicyTest` échoue sur la classe absente. Le correctif introduit cette politique pure puis retire le gate aléatoire 12 % / 180 s du Prof. Le scheduler reste utilisé uniquement pour les actions Gecko occasionnelles.
+
+
+### GREEN GECKO-025
+Run #33 (`36210582662`) : succès complet après passage de Gecko_tr en sprite canonique et suppression du gate aléatoire du Prof. Les tests imposent le chemin `gecko/Gecko_tr.png` et la politique d'animation systématique sous conditions de priorité.

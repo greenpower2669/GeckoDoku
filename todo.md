@@ -298,5 +298,5 @@
 - [x] Supprimer le doublon `assets/gecko/Gecko.png`.
 - [x] Remplacer le scheduler aléatoire Prof par `ProfessorAnimationPolicy`, sans hasard/cooldown.
 - [x] Synchroniser brain/brainmap/debug/todo/ordre dans le même cycle.
-- [ ] CI tests + APK + AAB.
-- [ ] Validation téléphone.
+- [x] CI tests + APK + AAB — run #33 vert, version `0.10.1-dev`.
+- [ ] Validation téléphone — vérifier Gecko_tr affiché partout et Prof animé à chaque intervention éligible.
