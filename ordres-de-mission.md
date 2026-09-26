@@ -278,3 +278,8 @@ QUICK_TALK est une origine non préemptive. ProfessorSpeech expose canAccept(ori
 <!-- GECKO-035-GREEN-FIRST-FRAME-HOLD-2026-09-26 -->
 ## GREEN étape 4 — première frame tenue
 ChromaKeyVideoView peut maintenant préparer une frame fraîche, la garder cachée et mettre le MediaPlayer en pause. revealHeldFirstFrame() révèle alpha=1 et reprend la lecture. AssetAudioPlayer expose onStarted pour synchroniser les encouragements enregistrés.
+
+
+<!-- GECKO-035-GREEN-RUNTIME-2026-09-26 -->
+## GREEN étape 5 — runtime/UI
+MainActivity câble désormais pré-roll caché → frame tenue → demande voix → reveal au SPEAK_STARTED. Timeout/erreur repassent sur Prof.png et lancent quand même la voix. ! utilise les 100 phrases en QUICK_TALK. ⚙️ contient Son/Animations/Journal ; les anciens boutons Son/Anim quittent la barre. Journal consultable, sélectionnable, copiable et vidable. Encouragement enregistré anime aussi ProfParle et nettoie le visuel sur erreur audio.

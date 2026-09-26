@@ -160,3 +160,18 @@ Aucun ordre de mission actif actuellement.
 - [x] revealHeldFirstFrame.
 - [x] AssetAudioPlayer.onStarted.
 - [ ] Câbler MainActivity et UI.
+
+
+<!-- GECKO-035-GREEN-RUNTIME-2026-09-26 -->
+## GECKO-035 étape 5
+- [x] MediaTrace.install au boot.
+- [x] Wrapper commun des paroles Pierre.
+- [x] Pré-roll + timeout + fallback PNG.
+- [x] ! / QUICK_TALK.
+- [x] ⚙️ avec Son/Anim/Journal.
+- [x] Son/Anim retirés de row2.
+- [x] Consultation/copie/vidage journal.
+- [x] Encouragement enregistré animé + cleanup erreur.
+- [ ] CI GREEN runtime.
+- [ ] Bump v0.10.13-dev.
+- [ ] Test téléphone.

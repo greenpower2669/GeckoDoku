@@ -2,6 +2,9 @@ package com.greenpower2669.geckodoku
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.RectF
@@ -16,6 +19,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -50,7 +54,10 @@ class MainActivity : Activity() {
     private lateinit var info:
         TextView
 
-    private lateinit var soundButton:
+    private lateinit var settingsButton:
+        Button
+
+    private lateinit var quickTalkButton:
         Button
 
     private lateinit var sizeButton:
@@ -116,9 +123,6 @@ class MainActivity : Activity() {
     private lateinit var saveButton:
         Button
 
-    private lateinit var animationButton:
-        Button
-
     private lateinit var richMediaSettings:
         RichMediaSettings
 
@@ -170,6 +174,25 @@ class MainActivity : Activity() {
     private val pierreSmallTalkSelector =
         PierreSmallTalkSelector()
 
+    private val professorQuickTalkPolicy =
+        ProfessorQuickTalkPolicy()
+
+    private val professorSpeechLaunchPolicy =
+        ProfessorSpeechLaunchPolicy()
+
+    private val professorSpeechVisualPolicy =
+        ProfessorSpeechVisualPolicy()
+
+    private val settingsMenuPolicy =
+        SettingsMenuPolicy()
+
+    private var professorVisualGeneration = 0
+    private var professorVisualPreparing = false
+    private var professorVisualPrepared = false
+    private var suppressVisualForCurrentSpeech = false
+    private var professorVisualTimeout:
+        Runnable? = null
+
     private var lastBoardActionAtMs = 0L
     private var boardActionCount = 0
     private var ambientHelpOffered = false
@@ -213,6 +236,8 @@ class MainActivity : Activity() {
         super.onCreate(
             savedInstanceState
         )
+
+        MediaTrace.install(this)
 
         richMediaSettings =
             RichMediaSettings(this)
@@ -520,83 +545,29 @@ class MainActivity : Activity() {
                 }
             }
 
-        soundButton =
+        quickTalkButton =
             Button(this).apply {
-                text = "🔊 FX"
-                textSize = 15f
+                text = "!"
+                textSize = 20f
                 minHeight = dp(46)
+                contentDescription =
+                    "Faire parler Prof Gecko"
 
                 setOnClickListener {
-                    fx.enabled =
-                        !fx.enabled
-
-                    text =
-                        if (fx.enabled) {
-                            "🔊 FX"
-                        } else {
-                            "🔇 FX"
-                        }
-
-                    gameAudio.enabled = fx.enabled
-                    professorSpeech.enabled = fx.enabled
-
-                    if (::richMediaOverlay.isInitialized) {
-                        richMediaOverlay.setMuted(
-                            !fx.enabled
-                        )
-                    }
+                    speakQuickProfessorLine()
                 }
             }
 
-        animationButton =
+        settingsButton =
             Button(this).apply {
-                textSize = 13f
+                text = "⚙️"
+                textSize = 18f
                 minHeight = dp(46)
+                contentDescription =
+                    "Réglages"
 
                 setOnClickListener {
-                    richMediaSettings.enabled =
-                        !richMediaSettings.enabled
-
-                    updateAnimationButton()
-
-                    MediaTrace.event(
-                        source = "MainActivity",
-                        event = "ANIM_TOGGLE_USER",
-                        detail =
-                            "enabled=" +
-                                richMediaSettings.enabled
-                    )
-
-                    if (!richMediaSettings.enabled) {
-                        if (::richMediaOverlay.isInitialized) {
-                            richMediaOverlay.stop()
-                        }
-
-                        introPhase =
-                            IntroPhase.DONE
-                        applyProfessorIntroVisibility()
-                        stopProfessorButtonVideo()
-                    }
-
-                    if (richMediaSettings.enabled) {
-                        startTitleIdentityAnimation()
-
-                        if (professorSpeechActive) {
-                            startProfessorSpeechVideo()
-                        } else {
-                            scheduleProfessorIdleAnimation()
-                        }
-                    } else {
-                        stopTitleIdentityAnimation()
-                        cancelProfessorIdleAnimation()
-                    }
-
-                    status.text =
-                        if (richMediaSettings.enabled) {
-                            "Habillage animé activé 🎬"
-                        } else {
-                            "Habillage animé désactivé."
-                        }
+                    showSettings()
                 }
             }
 
@@ -855,7 +826,7 @@ class MainActivity : Activity() {
                 )
 
                 addView(
-                    soundButton,
+                    quickTalkButton,
                     LinearLayout.LayoutParams(
                         0,
                         LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -864,7 +835,7 @@ class MainActivity : Activity() {
                 )
 
                 addView(
-                    animationButton,
+                    settingsButton,
                     LinearLayout.LayoutParams(
                         0,
                         LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -1070,7 +1041,6 @@ class MainActivity : Activity() {
 
         protectFromSystemBars(root)
         refreshGameUi()
-        updateAnimationButton()
         applyProfessorIntroVisibility()
         scheduleProfessorIdleAnimation()
         resetProfessorAmbientState()
@@ -1924,7 +1894,7 @@ class MainActivity : Activity() {
             message
         )
 
-        professorSpeech.speak(
+        speakWithProfessorVisual(
             text = message,
             origin =
                 SpeechOrigin
@@ -2887,7 +2857,7 @@ class MainActivity : Activity() {
         message: String
     ) {
         val accepted =
-            professorSpeech.speak(
+            speakWithProfessorVisual(
                 text = message,
                 origin =
                     SpeechOrigin.AMBIENT
@@ -3035,17 +3005,215 @@ class MainActivity : Activity() {
         root.requestApplyInsets()
     }
 
-    private fun updateAnimationButton() {
-        if (!::animationButton.isInitialized) {
-            return
+    private fun toggleSoundSetting() {
+        fx.enabled =
+            !fx.enabled
+        gameAudio.enabled =
+            fx.enabled
+        professorSpeech.enabled =
+            fx.enabled
+
+        if (::richMediaOverlay.isInitialized) {
+            richMediaOverlay.setMuted(
+                !fx.enabled
+            )
         }
 
-        animationButton.text =
-            if (richMediaSettings.enabled) {
-                "🎬 Anim. ON"
+        status.text =
+            if (fx.enabled) {
+                "Son activé 🔊"
             } else {
-                "🎬 Anim. OFF"
+                "Son désactivé 🔇"
             }
+    }
+
+    private fun toggleAnimationSetting() {
+        richMediaSettings.enabled =
+            !richMediaSettings.enabled
+
+        MediaTrace.event(
+            source = "MainActivity",
+            event = "ANIM_TOGGLE_USER",
+            detail =
+                "enabled=" +
+                    richMediaSettings.enabled
+        )
+
+        if (!richMediaSettings.enabled) {
+            if (::richMediaOverlay.isInitialized) {
+                richMediaOverlay.stop()
+            }
+
+            introPhase =
+                IntroPhase.DONE
+            applyProfessorIntroVisibility()
+            stopProfessorButtonVideo()
+            stopTitleIdentityAnimation()
+            cancelProfessorIdleAnimation()
+        } else {
+            startTitleIdentityAnimation()
+            scheduleProfessorIdleAnimation()
+        }
+
+        status.text =
+            if (richMediaSettings.enabled) {
+                "Habillage animé activé 🎬"
+            } else {
+                "Habillage animé désactivé."
+            }
+    }
+
+    private fun showSettings() {
+        val entries =
+            settingsMenuPolicy.entries
+
+        val labels =
+            entries.map {
+                entry ->
+
+                when (entry) {
+                    SettingsEntry.SOUND ->
+                        if (fx.enabled) {
+                            "🔊 Son : ON"
+                        } else {
+                            "🔇 Son : OFF"
+                        }
+
+                    SettingsEntry.ANIMATIONS ->
+                        if (richMediaSettings.enabled) {
+                            "🎬 Animations : ON"
+                        } else {
+                            "🎬 Animations : OFF"
+                        }
+
+                    SettingsEntry.MEDIA_LOG ->
+                        "📋 Journal vidéo"
+                }
+            }.toTypedArray()
+
+        AlertDialog.Builder(this)
+            .setTitle("⚙️ Réglages")
+            .setItems(labels) {
+                    dialog,
+                    which ->
+
+                when (entries[which]) {
+                    SettingsEntry.SOUND -> {
+                        toggleSoundSetting()
+                        dialog.dismiss()
+                        showSettings()
+                    }
+
+                    SettingsEntry.ANIMATIONS -> {
+                        toggleAnimationSetting()
+                        dialog.dismiss()
+                        showSettings()
+                    }
+
+                    SettingsEntry.MEDIA_LOG -> {
+                        dialog.dismiss()
+                        showMediaLog()
+                    }
+                }
+            }
+            .setNegativeButton(
+                "Fermer",
+                null
+            )
+            .show()
+    }
+
+    private fun showMediaLog() {
+        val text =
+            MediaTrace.readPersistent()
+                .ifBlank {
+                    "Aucun événement vidéo enregistré."
+                }
+
+        val logView =
+            TextView(this).apply {
+                this.text = text
+                textSize = 15f
+                setTextIsSelectable(true)
+                setPadding(
+                    dp(16),
+                    dp(12),
+                    dp(16),
+                    dp(12)
+                )
+            }
+
+        val scroll =
+            ScrollView(this).apply {
+                addView(logView)
+            }
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Journal vidéo • " +
+                    MediaTrace
+                        .persistentFileName()
+            )
+            .setView(scroll)
+            .setPositiveButton(
+                "Fermer",
+                null
+            )
+            .setNeutralButton(
+                "Copier"
+            ) {
+                    _,
+                    _ ->
+
+                val clipboard =
+                    getSystemService(
+                        Context.CLIPBOARD_SERVICE
+                    ) as ClipboardManager
+
+                clipboard.setPrimaryClip(
+                    ClipData.newPlainText(
+                        "GeckoDoku journal vidéo",
+                        text
+                    )
+                )
+
+                status.text =
+                    "Journal vidéo copié."
+            }
+            .setNegativeButton(
+                "Vider"
+            ) {
+                    _,
+                    _ ->
+
+                confirmClearMediaLog()
+            }
+            .show()
+    }
+
+    private fun confirmClearMediaLog() {
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Vider le journal vidéo ?"
+            )
+            .setMessage(
+                "Les traces vidéo enregistrées sur ce téléphone seront effacées."
+            )
+            .setPositiveButton(
+                "Vider"
+            ) {
+                    _,
+                    _ ->
+
+                MediaTrace.clearPersistent()
+                status.text =
+                    "Journal vidéo vidé."
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
     }
 
     private fun playIntroIfEnabled() {
@@ -3554,6 +3722,320 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun speakQuickProfessorLine() {
+        val index =
+            professorQuickTalkPolicy
+                .chooseIndex(
+                    randomValue =
+                        Random.nextInt(),
+                    previousIndex =
+                        lastSmallTalkIndex
+                )
+
+        lastSmallTalkIndex = index
+
+        val line =
+            PierreSmallTalk.lines[index]
+
+        val accepted =
+            speakWithProfessorVisual(
+                text = line,
+                origin =
+                    SpeechOrigin.QUICK_TALK
+            )
+
+        if (accepted) {
+            status.text =
+                "Prof Gecko • " +
+                    line
+        }
+    }
+
+    private fun speakWithProfessorVisual(
+        text: String,
+        origin: SpeechOrigin,
+        onCompletion:
+            (() -> Unit)? = null
+    ): Boolean {
+        if (
+            !professorSpeech.canAccept(
+                origin
+            )
+        ) {
+            return false
+        }
+
+        if (
+            !professorSpeechVisualPolicy
+                .shouldAnimate(origin)
+        ) {
+            return professorSpeech.speak(
+                text = text,
+                origin = origin,
+                onCompletion =
+                    onCompletion
+            )
+        }
+
+        prepareProfessorSpeakingVisual {
+                visualReady ->
+
+            suppressVisualForCurrentSpeech =
+                !visualReady
+
+            val accepted =
+                professorSpeech.speak(
+                    text = text,
+                    origin = origin,
+                    onCompletion =
+                        onCompletion
+                )
+
+            if (!accepted) {
+                suppressVisualForCurrentSpeech =
+                    false
+                stopProfessorSpeechVideo()
+            }
+        }
+
+        return true
+    }
+
+    private fun prepareProfessorSpeakingVisual(
+        onReady: (Boolean) -> Unit
+    ) {
+        val eligible =
+            richMediaSettings.enabled &&
+                professorUiPolicy
+                    .playVideoInButton &&
+                ::professorVideo.isInitialized &&
+                introLifecyclePolicy
+                    .professorEligible(
+                        introPhase
+                    ) &&
+                !(
+                    ::celebrationView
+                        .isInitialized &&
+                        celebrationView
+                            .visibility ==
+                            View.VISIBLE
+                    )
+
+        if (!eligible) {
+            onReady(false)
+            return
+        }
+
+        cancelProfessorIdleAnimation()
+        cancelProfessorVisualTimeout()
+
+        val generation =
+            ++professorVisualGeneration
+
+        var readyDelivered = false
+
+        fun deliver(ready: Boolean) {
+            if (
+                readyDelivered ||
+                generation !=
+                    professorVisualGeneration
+            ) {
+                return
+            }
+
+            readyDelivered = true
+            cancelProfessorVisualTimeout()
+            onReady(ready)
+        }
+
+        professorVideo.stopPlayback()
+        professorVideoMode =
+            ProfessorVideoMode.SPEECH
+        professorVideo.alpha = 0f
+        professorVideo.visibility =
+            View.VISIBLE
+        professorVideo.bringToFront()
+
+        professorVisualPreparing = true
+        professorVisualPrepared = false
+
+        professorVideo.play(
+            assetPath =
+                AssetMediaCatalog
+                    .PROF_SPEECH,
+            muted = true,
+            holdOnFirstFrame = true,
+            onStarted = {
+                professorSpeechVideoFailed =
+                    false
+            },
+            onFirstFrameRendered = {
+                if (
+                    generation !=
+                    professorVisualGeneration
+                ) {
+                    return@play
+                }
+
+                professorVisualPreparing =
+                    false
+                professorVisualPrepared =
+                    true
+
+                MediaTrace.event(
+                    source = "MainActivity",
+                    event =
+                        "PROF_SPEECH_VIDEO_PREROLL_READY",
+                    assetPath =
+                        AssetMediaCatalog
+                            .PROF_SPEECH
+                )
+
+                deliver(true)
+            },
+            onCompletion = {
+                if (
+                    generation ==
+                    professorVisualGeneration &&
+                    professorSpeechActive
+                ) {
+                    startProfessorSpeechVideo()
+                }
+            },
+            onError = {
+                    message ->
+
+                professorSpeechVideoFailed =
+                    true
+
+                MediaTrace.event(
+                    source = "MainActivity",
+                    event =
+                        "PROF_SPEECH_VIDEO_FAILED",
+                    assetPath =
+                        AssetMediaCatalog
+                            .PROF_SPEECH,
+                    detail =
+                        "phase=preroll voiceContinues=true message=" +
+                            message
+                )
+
+                professorVisualPreparing =
+                    false
+                professorVisualPrepared =
+                    false
+                restoreProfessorPngOnly()
+                deliver(false)
+            }
+        )
+
+        val timeout =
+            Runnable {
+                if (
+                    generation !=
+                        professorVisualGeneration ||
+                    readyDelivered
+                ) {
+                    return@Runnable
+                }
+
+                MediaTrace.event(
+                    source = "MainActivity",
+                    event =
+                        "PROF_SPEECH_VIDEO_PREROLL_TIMEOUT",
+                    assetPath =
+                        AssetMediaCatalog
+                            .PROF_SPEECH,
+                    detail =
+                        "timeoutMs=" +
+                            professorSpeechLaunchPolicy
+                                .visualPrepareTimeoutMs +
+                            " voiceContinues=true"
+                )
+
+                professorVisualPreparing =
+                    false
+                professorVisualPrepared =
+                    false
+                professorVideo.stopPlayback()
+                restoreProfessorPngOnly()
+                deliver(false)
+            }
+
+        professorVisualTimeout = timeout
+
+        professorVideo.postDelayed(
+            timeout,
+            professorSpeechLaunchPolicy
+                .visualPrepareTimeoutMs
+        )
+    }
+
+    private fun revealPreparedProfessorSpeakingVisual() {
+        if (!professorVisualPrepared) {
+            return
+        }
+
+        professorVisualPrepared = false
+        professorVisualPreparing = false
+
+        val revealed =
+            professorVideo
+                .revealHeldFirstFrame()
+
+        if (revealed) {
+            professorPortrait
+                .animate()
+                .cancel()
+            professorPortrait.visibility =
+                View.INVISIBLE
+
+            MediaTrace.event(
+                source = "MainActivity",
+                event =
+                    "PROF_SPEECH_SYNC_REVEAL",
+                assetPath =
+                    AssetMediaCatalog
+                        .PROF_SPEECH
+            )
+        } else {
+            restoreProfessorPngOnly()
+        }
+    }
+
+    private fun restoreProfessorPngOnly() {
+        professorVideoMode =
+            ProfessorVideoMode.NONE
+
+        if (::professorVideo.isInitialized) {
+            professorVideo.alpha = 0f
+            professorVideo.visibility =
+                View.INVISIBLE
+        }
+
+        if (::professorPortrait.isInitialized) {
+            professorPortrait.visibility =
+                View.VISIBLE
+            professorPortrait.bringToFront()
+        }
+    }
+
+    private fun cancelProfessorVisualTimeout() {
+        val timeout =
+            professorVisualTimeout
+
+        if (
+            timeout != null &&
+            ::professorVideo.isInitialized
+        ) {
+            professorVideo.removeCallbacks(
+                timeout
+            )
+        }
+
+        professorVisualTimeout = null
+    }
+
     private fun playProfessorButtonVideo(): Boolean {
         if (
             !introLifecyclePolicy
@@ -3721,27 +4203,43 @@ class MainActivity : Activity() {
                     professorAmbientPolicy
                         .minimumAmbientGapMs
 
-            when (
-                professorSpeechVideoPolicy
-                    .onSpeechStarted(
-                        professorVideoMode
-                    )
+            if (professorVisualPrepared) {
+                revealPreparedProfessorSpeakingVisual()
+            } else if (
+                !suppressVisualForCurrentSpeech
             ) {
-                ProfessorSpeechVideoCommand
-                    .START_SPEECH_FROM_ZERO,
-                ProfessorSpeechVideoCommand
-                    .RESTART_SPEECH_FROM_ZERO ->
-                    startProfessorSpeechVideo()
+                when (
+                    professorSpeechVideoPolicy
+                        .onSpeechStarted(
+                            professorVideoMode
+                        )
+                ) {
+                    ProfessorSpeechVideoCommand
+                        .START_SPEECH_FROM_ZERO,
+                    ProfessorSpeechVideoCommand
+                        .RESTART_SPEECH_FROM_ZERO ->
+                        startProfessorSpeechVideo()
 
-                ProfessorSpeechVideoCommand
-                    .KEEP_PLAYING ->
-                    Unit
+                    ProfessorSpeechVideoCommand
+                        .KEEP_PLAYING ->
+                        Unit
 
-                ProfessorSpeechVideoCommand
-                    .STOP_SPEECH ->
-                    stopProfessorSpeechVideo()
+                    ProfessorSpeechVideoCommand
+                        .STOP_SPEECH ->
+                        stopProfessorSpeechVideo()
+                }
             }
         } else {
+            if (
+                professorVisualPreparing ||
+                professorVisualPrepared
+            ) {
+                return
+            }
+
+            suppressVisualForCurrentSpeech =
+                false
+
             if (
                 professorSpeechVideoPolicy
                     .onSpeechEnded(
@@ -3893,13 +4391,21 @@ class MainActivity : Activity() {
 
         professorVideoMode =
             ProfessorVideoMode.NONE
+        professorVisualGeneration += 1
+        professorVisualPreparing = false
+        professorVisualPrepared = false
+        cancelProfessorVisualTimeout()
         professorVideo.stopPlayback()
+        professorVideo.alpha = 0f
         professorVideo.visibility =
             View.INVISIBLE
         professorPortrait.visibility =
             View.VISIBLE
         professorPortrait.bringToFront()
-        scheduleProfessorIdleAnimation()
+
+        if (!professorSpeechActive) {
+            scheduleProfessorIdleAnimation()
+        }
     }
 
     private fun stopProfessorButtonVideo() {
@@ -4060,22 +4566,63 @@ class MainActivity : Activity() {
                     AssetAudioCatalog
                         .ENCOURAGEMENTS[index]
 
-                gameAudio
-                    .playVoiceSegment(
-                        assetPath =
-                            AssetAudioCatalog
-                                .ENCOURAGEMENT_MASTER,
-                        startMs =
-                            segment.startMs,
-                        endMs =
-                            segment.endMs,
-                        onCompletion =
-                            onFinished
-                    )
+                if (
+                    professorSpeechVisualPolicy
+                        .shouldAnimateRecordedEncouragement
+                ) {
+                    prepareProfessorSpeakingVisual {
+                            visualReady ->
+
+                        val started =
+                            gameAudio
+                                .playVoiceSegment(
+                                    assetPath =
+                                        AssetAudioCatalog
+                                            .ENCOURAGEMENT_MASTER,
+                                    startMs =
+                                        segment.startMs,
+                                    endMs =
+                                        segment.endMs,
+                                    onStarted = {
+                                        if (visualReady) {
+                                            revealPreparedProfessorSpeakingVisual()
+                                        }
+                                    },
+                                    onError = {
+                                        stopProfessorSpeechVideo()
+                                        onFinished?.invoke()
+                                    },
+                                    onCompletion = {
+                                        stopProfessorSpeechVideo()
+                                        onFinished?.invoke()
+                                    }
+                                )
+
+                        if (!started) {
+                            stopProfessorSpeechVideo()
+                            onFinished?.invoke()
+                        }
+                    }
+
+                    true
+                } else {
+                    gameAudio
+                        .playVoiceSegment(
+                            assetPath =
+                                AssetAudioCatalog
+                                    .ENCOURAGEMENT_MASTER,
+                            startMs =
+                                segment.startMs,
+                            endMs =
+                                segment.endMs,
+                            onCompletion =
+                                onFinished
+                        )
+                }
             }
 
             EncouragementSource.PIERRE -> {
-                professorSpeech.speak(
+                speakWithProfessorVisual(
                     origin =
                         SpeechOrigin
                             .ENCOURAGEMENT,
@@ -4124,7 +4671,7 @@ class MainActivity : Activity() {
             return
         }
 
-        professorSpeech.speak(
+        speakWithProfessorVisual(
             text =
                 PlayerStatsNarration.build(
                     statsStore.read()

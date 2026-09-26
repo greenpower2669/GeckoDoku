@@ -84,6 +84,7 @@ class AssetAudioPlayer(
         startMs: Int,
         endMs: Int,
         onStarted: (() -> Unit)? = null,
+        onError: (() -> Unit)? = null,
         onCompletion: (() -> Unit)? = null
     ): Boolean {
         if (
@@ -152,6 +153,7 @@ class AssetAudioPlayer(
                     failed, _, _ ->
                 if (voicePlayer === failed) {
                     finishVoice(false)
+                    onError?.invoke()
                 } else {
                     failed.release()
                 }
@@ -161,6 +163,7 @@ class AssetAudioPlayer(
             true
         } catch (_: Exception) {
             stopVoice()
+            onError?.invoke()
             false
         }
     }

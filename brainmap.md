@@ -147,3 +147,11 @@ SpeechOrigin + QUICK_TALK → ProfessorSpeechRequestPolicy → canAccept avant p
 
 <!-- GECKO-035-GREEN-FIRST-FRAME-HOLD-2026-09-26 -->
 ProfParle → draw fresh frame → pause hidden → audio START → revealHeldFirstFrame → resume.
+
+
+<!-- GECKO-035-GREEN-RUNTIME-2026-09-26 -->
+UI row2 → Nouvelle | Stats | ! | ⚙️
+⚙️ → Son / Animations / Journal vidéo
+Pierre → canAccept → pre-roll ProfParle → frame held → speak → SPEAK_STARTED → reveal
+video fail/timeout → PNG → speak
+recorded encouragement → same visual pre-roll → audio onStarted → reveal.

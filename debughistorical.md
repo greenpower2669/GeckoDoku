@@ -848,3 +848,8 @@ Ajout de canAccept pour éviter qu'un média se prépare pour une parole qui ser
 <!-- GECKO-035-GREEN-FIRST-FRAME-HOLD-2026-09-26 -->
 ## 2026-09-26 — frame tenue
 Le gate anti-flash est étendu avec un mode hold : première frame consommée OpenGL mais alpha 0 + player pause, puis révélation explicite au départ audio.
+
+
+<!-- GECKO-035-GREEN-RUNTIME-2026-09-26 -->
+## 2026-09-26 — GECKO-035 runtime câblé
+Le démarrage antérieur (voix puis vidéo) est remplacé pour les nouvelles demandes MainActivity par un pré-roll de ProfParle. Le fallback est volontairement un échec visuel seulement. Aucune callback vidéo n'appelle ProfessorSpeech.stop().

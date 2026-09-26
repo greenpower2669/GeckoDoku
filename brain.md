@@ -564,3 +564,8 @@ Le bouton ! utilise QUICK_TALK et ne préempte pas sauvagement une phrase active
 <!-- GECKO-035-GREEN-FIRST-FRAME-HOLD-2026-09-26 -->
 ## Pré-roll parlant
 La première frame de ProfParle peut être rendue hors écran puis tenue en pause. Sa révélation/reprise est indépendante du démarrage du player et peut donc être alignée sur le vrai départ audio.
+
+
+<!-- GECKO-035-GREEN-RUNTIME-2026-09-26 -->
+## GECKO-035 runtime
+Toutes les demandes Pierre de MainActivity passent par un wrapper visuel commun. Le média est préparé avant la voix, mais n'a aucun pouvoir de blocage : erreur ou timeout → PNG + voix. Le bouton ! est non préemptif. Les réglages Son/Animations sont regroupés sous ⚙️ avec accès au journal média.
