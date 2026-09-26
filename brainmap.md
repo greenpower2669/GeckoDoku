@@ -201,3 +201,7 @@ ProfessorPortraitContinuityPolicy + FreshPlaybackFrameGate + QuickTalkPresentati
 <!-- GECKO-036-GREEN-RUNTIME-2026-09-27 -->
 PNG visible → video alpha0 → START(gen) → RENDERING_START(gen) → arm renderer(gen, clear stale) → fresh frame(gen) → hold → Pierre START → reveal → hide PNG.
 ! → bubble visual-only + one QUICK_TALK speech.
+
+
+<!-- GECKO-036-V01014-CANDIDATE-2026-09-27 -->
+v0.10.14-dev → GECKO-036 candidate → CI finale → validation téléphone Fab.

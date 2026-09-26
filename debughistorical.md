@@ -902,3 +902,8 @@ Après RED #120, ajout des trois policies pures avant câblage Android.
 <!-- GECKO-036-GREEN-RUNTIME-2026-09-27 -->
 ## 2026-09-27 — correction frame résiduelle / -38
 Le renderer était armé dès PLAY_REQUEST et le log montrait parfois FIRST_FRAME_HELD avant START. Correction : génération par playback, armement seulement après START + VIDEO_RENDERING_START, purge de frameAvailable à l'armement, callback taggé génération. UI : PNG conservé pendant toutes les transitions et QUICK_TALK déplacé dans la bulle sans double parole.
+
+
+<!-- GECKO-036-V01014-CANDIDATE-2026-09-27 -->
+## 2026-09-27 — candidate GECKO-036
+#120 RED attendu ; #121 GREEN policies ; #122 GREEN runtime. Candidate v0.10.14-dev code 25 préparée pour validation finale CI puis téléphone.

@@ -702,3 +702,8 @@ Le portrait possède désormais un contrat explicite de continuité ; une frame 
 <!-- GECKO-036-GREEN-RUNTIME-2026-09-27 -->
 ## GECKO-036 runtime
 Continuité PNG→vidéo : portrait visible avant stop/restart vidéo, pendant préparation et frame tenue ; masquage seulement après révélation réelle. Les frames sont associées à une génération de playback et ne sont admissibles qu'après START + VIDEO_RENDERING_START. QUICK_TALK sépare affichage de bulle et transport vocal.
+
+
+<!-- GECKO-036-V01014-CANDIDATE-2026-09-27 -->
+## Référence candidate GECKO-036
+v0.10.14-dev porte la continuité Prof.png→ProfParle, le rejet des frames résiduelles par génération de playback et QUICK_TALK dans la bulle sans double parole.

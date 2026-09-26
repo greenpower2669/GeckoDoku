@@ -136,3 +136,8 @@ Ajout des policies de continuité portrait, validation de frame fraîche par gé
 <!-- GECKO-036-GREEN-RUNTIME-2026-09-27 -->
 ## GREEN étape 2 — runtime
 Prof.png est remis visible avant chaque transition vidéo Prof et reste visible pendant prepare/hold. Il n'est masqué qu'après reveal/fresh frame réussi. Le renderer est désormais armé uniquement après START + VIDEO_RENDERING_START de la génération courante, avec purge du flag frameAvailable résiduel. Le bouton ! utilise une bulle visuelle-only puis une unique parole QUICK_TALK.
+
+
+<!-- GECKO-036-V01014-CANDIDATE-2026-09-27 -->
+## Candidate téléphone v0.10.14-dev
+Après #120 RED attendu, #121 GREEN policies et #122 GREEN runtime : versionCode 25 / versionName 0.10.14-dev. CI finale versionnée requise avant livraison.

@@ -264,3 +264,16 @@ Aucun ordre de mission actif actuellement.
 - [ ] Vérifier CI GREEN.
 - [ ] Bump v0.10.14-dev après GREEN.
 - [ ] Validation téléphone : zéro trou, zéro -38, bulle QUICK_TALK.
+
+
+<!-- GECKO-036-V01014-CANDIDATE-2026-09-27 -->
+## Candidate v0.10.14-dev
+- [x] #120 RED attendu.
+- [x] #121 GREEN policies.
+- [x] #122 GREEN runtime.
+- [x] versionCode 25 / versionName 0.10.14-dev.
+- [ ] CI finale versionnée GREEN.
+- [ ] Fab : zéro trou visuel pendant pré-roll.
+- [ ] Fab : vérifier disparition du MediaPlayer -38.
+- [ ] Fab : phrases ! dans bulle, une seule voix.
+- [ ] Fab : grille toujours immuable.
