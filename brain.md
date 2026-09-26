@@ -254,3 +254,7 @@ Le Prof passe d'un idle 10–20 s à 2–3 s. Le timer reste volontairement ind�
 Le scheduler des longues actions Gecko conserve la même logique de sécurité mais change ses valeurs par défaut : 45 % de probabilité par événement éligible et cooldown 45 s au lieu de 12 % / 180 s.
 
 `CelebrationAudioPolicy` formalise le découplage son/visuel : la fin de `VictoryCelebrationView` ne stoppe plus le MP3 de célébration. Le lecteur MediaPlayer le laisse aller jusqu'à sa fin naturelle ; Nouvelle, FX OFF, pause ou destroy restent autorisés à l'arrêter.
+
+
+### Preuve CI GECKO-029
+GitHub Actions run #49 (`36215814330`) sur `f2ea4b0da5935dc1760831229ba8bd9540678c16` : suite de tests, APK et AAB réussis. Version `0.10.5-dev`. Validation téléphone encore requise pour la cadence ressentie des animations et la lecture complète du MP3 de victoire.

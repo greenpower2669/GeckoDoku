@@ -351,5 +351,5 @@
 - [x] Passer scheduler Gecko à 45 % / 45 s.
 - [x] Découpler fin visuelle de victoire et arrêt MP3 ; lecture jusqu'à fin naturelle.
 - [x] Synchroniser brain/brainmap/debug/todo/ordre.
-- [ ] CI tests + APK + AAB.
-- [ ] Validation téléphone.
+- [x] CI tests + APK + AAB — run #49 vert, version `0.10.5-dev`.
+- [ ] Validation téléphone : Prof 2–3 s même bulle ouverte, fréquence Gecko, musique victoire jusqu'à sa fin naturelle.

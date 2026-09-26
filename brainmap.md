@@ -470,3 +470,12 @@ Victoire
 │   └── stop FX procéduraux
 └── MP3 celebration continue
     └── fin naturelle MediaPlayer
+
+
+Build GECKO-029
+└── run #49 vert
+    ├── Prof idle 2–3 s
+    ├── Gecko scheduler 45 % / 45 s
+    ├── celebration audio policy
+    ├── APK v0.10.5-dev
+    └── AAB v0.10.5-dev

@@ -327,3 +327,7 @@ Run #48 : RED attendu. Les nouveaux tests imposent Prof 2–3 s, Gecko 45 % / 45
 - scheduler Gecko par défaut : 45 % / 45 s ;
 - `onCelebrationStopped` ne coupe plus le MP3 lorsque la politique vaut false ;
 - la fin naturelle du MediaPlayer devient la fin normale de la musique de victoire.
+
+
+### GREEN GECKO-029
+Run #49 (`36215814330`) : succès complet. Le test de régression confirme la politique de musique indépendante de la fin visuelle ; les tests de cadence Prof et Gecko passent avec les nouvelles valeurs.
