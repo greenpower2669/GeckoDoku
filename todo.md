@@ -375,19 +375,19 @@
 - [x] Relire ordre de mission + brain/brainmap/debughistorical/todo + build Android actuel.
 - [x] Vérifier Sherpa-ONNX v1.13.8 et API Kotlin actuelle.
 - [x] Choisir `fr_FR-siwis-low` + `fr_FR-siwis-medium` pour comparaison même voix.
-- [ ] RED : catalogue A/B et phrase commune.
-- [ ] RED : garantir release ancien Piper avant create nouveau.
-- [ ] Ajouter dépendance Sherpa-ONNX Android expérimentale.
-- [ ] Ajouter téléchargement/extraction CI des deux modèles officiels dans assets.
-- [ ] Créer API Kotlin commune `VoiceBenchmarkEngine`.
-- [ ] Implémenter AndroidTtsBenchmarkEngine.
-- [ ] Implémenter PiperVoiceBenchmarkEngine LOW/MEDIUM avec un seul modèle RAM.
-- [ ] Ajouter lecture audio Piper locale.
-- [ ] Ajouter métriques génération/chargement/taille/PSS approx.
-- [ ] Ajouter bouton temporaire 🧪 Voix A/B sans nouvelle rangée de layout.
-- [ ] Ajouter dialogue même phrase + 3 boutons.
-- [ ] Cleanup pause/destroy.
-- [ ] Vérifier que ProfessorSpeech n'est pas remplacé.
-- [ ] Synchroniser les 4 fichiers vivants et ordre dans chaque commit.
+- [x] RED : catalogue A/B et phrase commune — run #56.
+- [x] RED : garantir release ancien Piper avant create nouveau — run #56.
+- [x] Ajouter Sherpa-ONNX v1.13.8 via JitPack.
+- [x] CI : télécharger LOW/MEDIUM officiels, vérifier SHA-256, extraire dans assets.
+- [x] Créer API Kotlin commune `VoiceBenchmarkEngine`.
+- [x] Implémenter AndroidTtsBenchmarkEngine séparé de ProfessorSpeech.
+- [x] Implémenter PiperVoiceBenchmarkEngine partagé + PiperSingleModelSlot mono-modèle.
+- [x] Ajouter lecture PCM float locale via AudioTrack.
+- [x] Ajouter génération/chargement/taille/PSS approx + sample rate/durée Piper.
+- [x] Ajouter 🧪 Voix A/B comme 4e bouton de row3, sans nouvelle rangée.
+- [x] Ajouter dialogue même phrase + 3 boutons.
+- [x] Cleanup dismiss/pause/destroy.
+- [x] ProfessorSpeech reste inchangé et indépendant du benchmark.
+- [x] Synchroniser les 4 fichiers vivants + ordre dans le cycle GREEN.
 - [ ] CI tests + APK + AAB expérimental.
 - [ ] Test téléphone Fabrice avant toute décision de remplacement.

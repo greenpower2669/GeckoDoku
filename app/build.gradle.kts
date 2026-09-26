@@ -10,8 +10,8 @@ android {
         applicationId = "com.greenpower2669.geckodoku"
         minSdk = 26
         targetSdk = 36
-        versionCode = 17
-        versionName = "0.10.6-dev"
+        versionCode = 18
+        versionName = "0.10.7-voice-ab-exp"
     }
 
     sourceSets {
@@ -33,5 +33,8 @@ android {
 
 
 dependencies {
+    implementation(
+        "com.github.k2-fsa:sherpa-onnx:v1.13.8"
+    )
     testImplementation("junit:junit:4.13.2")
 }

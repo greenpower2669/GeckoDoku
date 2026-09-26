@@ -894,7 +894,7 @@ Si le MP4 ou le shader échoue :
 
 # GECKO-031 — TEST A/B TTS LOCAL ANDROID vs PIPER LOW vs PIPER MEDIUM
 **Demandeur / date :** Fab, 26/09/2026
-**Statut :** TDD en cours sur `gecko-031-voice-ab-experiment`. Build strictement expérimental.
+**Statut :** implémentation GREEN en cours sur `gecko-031-voice-ab-experiment`. Build strictement expérimental ; CI puis test téléphone requis.
 
 ## 0. Règle de non-régression
 Cette mission ne remplace pas la voix normale du Prof Gecko.

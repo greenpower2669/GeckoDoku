@@ -100,6 +100,9 @@ class MainActivity : Activity() {
     private lateinit var professorSpeech:
         ProfessorSpeech
 
+    private lateinit var voiceBenchmarkLab:
+        VoiceBenchmarkLab
+
     private val encouragementSelector =
         EncouragementSelector()
 
@@ -163,6 +166,9 @@ class MainActivity : Activity() {
 
         professorSpeech =
             ProfessorSpeech(this)
+
+        voiceBenchmarkLab =
+            VoiceBenchmarkLab(this)
 
         statsStore =
             PlayerStatsStore(this)
@@ -417,6 +423,19 @@ class MainActivity : Activity() {
 
                 setOnClickListener {
                     showJournal()
+                }
+            }
+
+        val voiceAbButton =
+            Button(this).apply {
+                text = "🧪 Voix A/B"
+                textSize = 13f
+                minHeight = dp(46)
+                contentDescription =
+                    "Test expérimental des voix locales"
+
+                setOnClickListener {
+                    showVoiceBenchmark()
                 }
             }
 
@@ -683,6 +702,15 @@ class MainActivity : Activity() {
 
                 addView(
                     journalButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
+                )
+
+                addView(
+                    voiceAbButton,
                     LinearLayout.LayoutParams(
                         0,
                         LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -2773,6 +2801,233 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun showVoiceBenchmark() {
+        val content =
+            LinearLayout(this).apply {
+                orientation =
+                    LinearLayout.VERTICAL
+
+                setPadding(
+                    dp(18),
+                    dp(8),
+                    dp(18),
+                    dp(8)
+                )
+            }
+
+        val intro =
+            TextView(this).apply {
+                textSize = 17f
+                setTextColor(Color.BLACK)
+                text =
+                    "Build expérimentale : " +
+                        "la voix normale du Prof " +
+                        "n'est pas remplacée.\n\n" +
+                        "Même phrase pour les 3 :\n« " +
+                        VoiceBenchmarkCatalog
+                            .TEST_PHRASE +
+                        " »\n\n" +
+                        "LOW : " +
+                        formatModelSize(
+                            VoiceBenchmarkCatalog
+                                .piper(
+                                    VoiceBenchmarkVariant
+                                        .PIPER_LOW
+                                )
+                                .modelSizeBytes
+                        ) +
+                        " • MEDIUM : " +
+                        formatModelSize(
+                            VoiceBenchmarkCatalog
+                                .piper(
+                                    VoiceBenchmarkVariant
+                                        .PIPER_MEDIUM
+                                )
+                                .modelSizeBytes
+                        )
+            }
+
+        val results =
+            TextView(this).apply {
+                textSize = 16f
+                setTextColor(
+                    Color.DKGRAY
+                )
+                setPadding(
+                    0,
+                    dp(10),
+                    0,
+                    dp(8)
+                )
+                text =
+                    "Mesures : temps de génération, " +
+                        "chargement Piper et mémoire PSS approximative."
+            }
+
+        content.addView(intro)
+        content.addView(results)
+
+        VoiceBenchmarkVariant.entries
+            .forEach {
+                variant ->
+
+                val button =
+                    Button(this).apply {
+                        text = variant.label
+                        textSize = 16f
+                        minHeight = dp(54)
+
+                        setOnClickListener {
+                            isEnabled = false
+
+                            results.append(
+                                "\n\n" +
+                                    variant.label +
+                                    " : génération…"
+                            )
+
+                            voiceBenchmarkLab.run(
+                                variant =
+                                    variant,
+                                callback = {
+                                    result ->
+
+                                    isEnabled = true
+
+                                    results.append(
+                                        "\n" +
+                                            formatVoiceBenchmarkResult(
+                                                result
+                                            )
+                                    )
+                                }
+                            )
+                        }
+                    }
+
+                content.addView(
+                    button,
+                    LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams
+                            .MATCH_PARENT,
+                        LinearLayout.LayoutParams
+                            .WRAP_CONTENT
+                    )
+                )
+            }
+
+        val dialog =
+            AlertDialog.Builder(this)
+                .setTitle(
+                    "🧪 Voix locales A/B"
+                )
+                .setView(content)
+                .setNegativeButton(
+                    "Fermer",
+                    null
+                )
+                .create()
+
+        dialog.setOnDismissListener {
+            voiceBenchmarkLab
+                .stopExperiment()
+        }
+
+        dialog.show()
+    }
+
+    private fun formatVoiceBenchmarkResult(
+        result: VoiceBenchmarkResult
+    ): String {
+        val error =
+            result.error
+
+        if (error != null) {
+            return "❌ " +
+                error
+        }
+
+        val metrics =
+            result.metrics
+                ?: return "❌ Aucun résultat."
+
+        val parts =
+            mutableListOf<String>()
+
+        parts +=
+            "✅ génération " +
+                metrics.generationMs +
+                " ms"
+
+        metrics.loadMs?.let {
+            loadMs ->
+
+            parts +=
+                if (
+                    metrics.modelLoadedNow ==
+                    true
+                ) {
+                    "chargement modèle " +
+                        loadMs +
+                        " ms"
+                } else {
+                    "modèle déjà chargé"
+                }
+        }
+
+        metrics.modelSizeBytes
+            ?.let {
+                parts +=
+                    "modèle " +
+                        formatModelSize(it)
+            }
+
+        metrics.approximatePssDeltaKb
+            ?.let {
+                delta ->
+
+                parts +=
+                    "ΔPSS ≈ " +
+                        String.format(
+                            Locale.FRANCE,
+                            "%.1f Mo",
+                            delta / 1024.0
+                        )
+            }
+
+        metrics.sampleRate
+            ?.let {
+                parts +=
+                    "audio " +
+                        it +
+                        " Hz"
+            }
+
+        metrics.audioDurationMs
+            ?.let {
+                parts +=
+                    "durée " +
+                        String.format(
+                            Locale.FRANCE,
+                            "%.2f s",
+                            it / 1000.0
+                        )
+            }
+
+        return parts.joinToString(
+            " • "
+        )
+    }
+
+    private fun formatModelSize(
+        bytes: Long
+    ): String =
+        String.format(
+            Locale.FRANCE,
+            "%.1f Mo",
+            bytes / 1_000_000.0
+        )
+
     override fun onResume() {
         super.onResume()
         scheduleProfessorIdleAnimation()
@@ -2792,6 +3047,10 @@ class MainActivity : Activity() {
 
         if (::professorSpeech.isInitialized) {
             professorSpeech.stop()
+        }
+
+        if (::voiceBenchmarkLab.isInitialized) {
+            voiceBenchmarkLab.stopExperiment()
         }
 
         super.onPause()
@@ -2815,6 +3074,10 @@ class MainActivity : Activity() {
 
         if (::professorSpeech.isInitialized) {
             professorSpeech.release()
+        }
+
+        if (::voiceBenchmarkLab.isInitialized) {
+            voiceBenchmarkLab.release()
         }
 
         fx.release()

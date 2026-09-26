@@ -535,3 +535,32 @@ CI
 ├── récupère les archives Piper officielles
 ├── extrait dans assets/tts/piper/{low,medium}
 └── build APK/AAB contenant les deux modèles
+
+
+### GECKO-031 — implémentation
+row3 existante
+├── Rejouer
+├── Sauver
+├── Journal
+└── 🧪 Voix A/B
+    └── AlertDialog
+        ├── même phrase
+        ├── AndroidTtsBenchmarkEngine
+        ├── PiperVoiceBenchmarkEngine(LOW)
+        └── PiperVoiceBenchmarkEngine(MEDIUM)
+
+Piper partagé
+└── single-thread executor
+    └── PiperModelManager
+        └── PiperSingleModelSlot<OfflineTts>
+            ├── LOW
+            └── MEDIUM
+            switch = release ancien → create nouveau
+
+Audio
+├── Android → WAV cache + MediaPlayer
+└── Piper → GeneratedAudio + AudioTrack PCM float
+
+Lifecycle
+├── dismiss/pause → stop + release Piper programmé
+└── destroy → shutdown ressources benchmark

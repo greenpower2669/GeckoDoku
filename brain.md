@@ -285,3 +285,13 @@ Architecture prévue :
 - `AndroidTtsBenchmarkEngine` : référence Android séparée du Prof ;
 - dialogue temporaire dans MainActivity ;
 - métriques génération / modèle / PSS approximatif.
+
+
+### Implémentation GECKO-031
+Le benchmark dispose d'un contrat `VoiceBenchmarkEngine.synthesizeAndPlay(text, callback)` commun. Android TTS et les deux profils Piper sont sélectionnés par `VoiceBenchmarkVariant`.
+
+LOW et MEDIUM instancient la même classe `PiperVoiceBenchmarkEngine` et partagent un seul `PiperModelManager` + un seul executor série. `PiperSingleModelSlot` libère explicitement l'OfflineTts courant avant création d'un profil différent. La fermeture du dialogue, pause et destroy demandent la libération du modèle expérimental.
+
+Piper génère en mémoire puis joue via AudioTrack PCM float. Android TTS synthétise la même phrase vers un WAV temporaire puis la joue via MediaPlayer. Les métriques incluent temps de génération ; Piper ajoute temps de chargement, taille ONNX, fréquence/durée et ΔPSS approximatif.
+
+Le bouton temporaire est ajouté à row3 comme quatrième enfant afin de ne créer aucune nouvelle rangée et de ne pas réduire la hauteur de grille par ajout vertical.

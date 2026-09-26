@@ -372,3 +372,16 @@ Recherche amont :
 - LOW/MEDIUM siwis utilisent le même speaker/famille, ce qui évite de confondre qualité et timbre.
 
 Risque principal : charger simultanément deux modèles natifs ONNX. Garde-fou imposé par contrat + test : release de l'ancien avant création du suivant.
+
+
+### TDD RED GECKO-031
+Run #56 échoue comme prévu à la compilation des tests : `VoiceBenchmarkVariant`, `VoiceBenchmarkCatalog` et `PiperSingleModelSlot` sont absents. Le test prouve donc que le contrat A/B et le garde-fou mono-modèle ne préexistaient pas.
+
+### Implémentation GREEN GECKO-031
+- Sherpa-ONNX v1.13.8 via JitPack ;
+- CI télécharge les deux archives officielles Piper et vérifie leurs SHA-256 avant extraction ;
+- les modèles sont injectés sous `assets/tts/piper/low` et `medium` uniquement pendant la construction de l'artefact ;
+- interface Kotlin unique pour le benchmark ;
+- slot mono-modèle : release ancien avant create nouveau ;
+- Android TTS reste séparé de `ProfessorSpeech` ;
+- UI A/B ne modifie pas le flux normal du Prof.
