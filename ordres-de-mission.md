@@ -1472,3 +1472,48 @@ Le prochain correctif devra regrouper :
 - intro 2 à restaurer ;
 - conflit Prof/animation à diagnostiquer ;
 tout en préservant les deux missions icône déjà validées.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-GRID-GECKO-ANIM-2026-09-26 -->
+# GECKO-033 — RETOUR TÉLÉPHONE : RÉGRESSION ANIMATIONS GECKO SUR LA GRILLE
+**Retour Fab — 26/09/2026.**
+**Statut : documentation uniquement. Aucun code maintenant.**
+
+## Symptôme observé
+Dans v0.10.9-dev, les animations Gecko associées aux cases de la grille ont disparu / ne se déclenchent plus comme avant.
+
+Ce n’était **pas** la demande de Fab.
+
+La demande initiale était uniquement :
+> conserver les animations Gecko, mais couper leur son embarqué.
+
+## Contrat à restaurer
+Les animations visuelles Gecko de gameplay doivent être **remises exactement dans leur fonctionnement visuel antérieur**, notamment :
+- apparition d’un Gecko sur une case ;
+- disparition/retrait d’un Gecko ;
+- actions longues / petites animations Gecko déjà prévues sur la grille ;
+- masque/cadrage/couleur de fond de case déjà validés ;
+- déclenchements et probabilités déjà validés avant GECKO-033.
+
+### Audio
+Pour ces animations Gecko de gameplay :
+- **vidéo visible : OUI** ;
+- **animation complète : OUI** ;
+- **audio embarqué de la vidéo : NON / toujours muet** ;
+- ne pas supprimer, sauter ou remplacer l’animation pour obtenir le silence ;
+- le mute doit être appliqué au player/audio uniquement.
+
+### À ne pas confondre avec les intros
+- `IntroGeckoGD.mp4` : exception, son embarqué à conserver lorsque l’audio est actif ;
+- `Gecko_Intro.mp4` : doit revenir en seconde intro selon son contrat ;
+- animations Gecko de grille : visibles et animées, mais muettes.
+
+## Vigilance de régression
+Le prochain correctif doit vérifier séparément :
+1. média Gecko bien lancé ;
+2. rendu vidéo bien visible au-dessus de la bonne case ;
+3. piste audio effectivement à zéro ;
+4. aucune interaction du mute avec `play()`, `onStarted`, `onCompletion` ou l’enchaînement des animations ;
+5. aucun impact sur la géométrie de la grille.
+
+**Ne pas coder avant la fin de la série de tests téléphone de Fab.**

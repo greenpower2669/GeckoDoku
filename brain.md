@@ -421,3 +421,15 @@ Point ouvert :
 - le Prof et une animation semblent s’interrompre mutuellement ;
 - causalité non déterminée ;
 - prochain audit : tracer les transitions et appels play/stop entre INTRO, PROF_ACTION, PROF_SPEECH et GECKO_ACTION avant de modifier la priorité.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-GRID-GECKO-ANIM-2026-09-26 -->
+## GECKO-033 — régression Gecko grille
+Validation fonctionnelle corrigée :
+- les animations Gecko de gameplay doivent rester présentes et visibles ;
+- seule leur piste audio embarquée doit être coupée ;
+- apparition, disparition et actions longues doivent retrouver leur comportement antérieur ;
+- le mute ne doit jamais empêcher `play()`, masquer la vidéo ou supprimer le callback de fin ;
+- `IntroGeckoGD.mp4` reste une exception audio et doit conserver son son.
+
+Aucun correctif runtime lancé pour l’instant : Fab poursuit ses tests téléphone.

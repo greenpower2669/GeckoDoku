@@ -510,3 +510,17 @@
 - [ ] Vérifier l’arbitrage du player/host partagé avant toute correction.
 - [ ] Regrouper ce diagnostic avec les deux bugs intro déjà relevés après la fin de la série de tests de Fab.
 - [ ] Aucun code avant nouvel ordre de Fab.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-GRID-GECKO-ANIM-2026-09-26 -->
+## GECKO-033 — régression animations Gecko grille
+- [ ] BUG : restaurer les animations Gecko visuelles sur la grille.
+- [ ] Restaurer apparition Gecko sur case.
+- [ ] Restaurer disparition/retrait Gecko sur case.
+- [ ] Restaurer actions longues Gecko et leurs déclenchements antérieurs.
+- [ ] Préserver masque/cadrage/couleur de case déjà validés.
+- [ ] Garder l’audio embarqué de toutes ces animations à 0.
+- [ ] Vérifier par RED que `mustMute=true` n’empêche jamais la lecture visuelle.
+- [ ] Vérifier que mute n’affecte ni `play()`, ni visibilité, ni `onStarted`, ni `onCompletion`.
+- [ ] Conserver l’exception sonore de `IntroGeckoGD.mp4`.
+- [ ] Aucun code avant nouvel ordre de Fab après sa série de tests.

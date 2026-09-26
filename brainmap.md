@@ -777,3 +777,24 @@ Arbitrage média à auditer
 └── GECKO_ACTION
     └── symptôme : une transition semble interrompre une autre
         └── cause inconnue → tracer play/stop avant correction
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-GRID-GECKO-ANIM-2026-09-26 -->
+## GECKO-033 — Gecko grille : image OUI, son NON
+Animation Gecko gameplay
+├── play vidéo : OUI
+├── rendu sur bonne case : OUI
+├── masque/cadrage/couleur validés : À PRÉSERVER
+├── apparition : OUI
+├── disparition : OUI
+├── action longue : OUI
+└── audio embarqué : TOUJOURS MUET
+
+Important
+├── mute ≠ stop
+├── mute ≠ skip
+├── mute ≠ hide
+└── mute ≠ suppression du callback completion
+
+IntroGeckoGD.mp4
+└── exception : audio embarqué autorisé

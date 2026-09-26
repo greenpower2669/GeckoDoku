@@ -504,3 +504,18 @@ Ne pas corriger à l’aveugle. Lors du prochain cycle :
 4. seulement ensuite ajuster la priorité/arbitrage.
 
 Vigilance : préserver les deux icônes validées et les règles de cycle de vie `ProfParle.mp4` déjà contractualisées.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-GRID-GECKO-ANIM-2026-09-26 -->
+## 2026-09-26 — v0.10.9-dev : régression animations Gecko de grille
+Retour téléphone Fab : les animations Gecko sur la grille ne sont plus présentes comme attendu.
+
+La demande GECKO-033 était seulement de **muter leur audio**, jamais de supprimer leur rendu ou leur déclenchement.
+
+Hypothèse à auditer au prochain cycle, sans la considérer encore comme cause prouvée :
+- la nouvelle politique de mute ou l’arbitrage média peut avoir affecté le chemin de lecture lui-même ;
+- vérifier séparément `play`, visibilité, busy state, callback de fin et volume du player.
+
+Référence stable à retrouver : comportement visuel pré-GECKO-033 des animations apparition/disparition/action longue, avec uniquement l’audio vidéo forcé à zéro.
+
+Ne pas corriger avant la fin des retours téléphone en cours.
