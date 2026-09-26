@@ -549,3 +549,8 @@ La priorité durable est déjà définie : Pierre est fonctionnel, la vidéo est
 <!-- GECKO-035-GREEN-POLICIES-2026-09-26 -->
 ## Contrat Pierre prioritaire
 La policy GECKO-035 affirme qu'une panne vidéo ne peut jamais autoriser l'arrêt de Pierre. Timeout de pré-roll prévu : 900 ms, puis voix avec PNG.
+
+
+<!-- GECKO-035-GREEN-LOG-2026-09-26 -->
+## Journal média durable
+Le diagnostic média possède deux sorties : Logcat GeckoDokuMediaTrace et fichier interne geckodoku-media.log, borné à 256 KiB. Une erreur du journal ne doit jamais perturber le jeu.

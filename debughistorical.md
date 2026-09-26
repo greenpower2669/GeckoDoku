@@ -833,3 +833,8 @@ Avant production, ouverture d'un RED sur priorité voix, habillage de toutes les
 <!-- GECKO-035-GREEN-POLICIES-2026-09-26 -->
 ## 2026-09-26 — GECKO-035 policies
 Après RED #108, ajout des policies pures avant câblage Android.
+
+
+<!-- GECKO-035-GREEN-LOG-2026-09-26 -->
+## 2026-09-26 — journal persistant
+Ajout d'un sink fichier borné et tolérant aux erreurs en complément de Logcat.

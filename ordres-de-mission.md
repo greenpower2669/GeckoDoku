@@ -263,3 +263,8 @@ Tests de contrat ajoutés avant production :
 <!-- GECKO-035-GREEN-POLICIES-2026-09-26 -->
 ## GREEN étape 1 — policies
 Policies pures ajoutées : priorité voix/fallback PNG, habillage de toutes les paroles, contenu ⚙️ et sélection ! sans reflow.
+
+
+<!-- GECKO-035-GREEN-LOG-2026-09-26 -->
+## GREEN étape 2 — journal média
+MediaTrace conserve Logcat et écrit aussi dans geckodoku-media.log. Le fichier est borné à 256 KiB, lisible et vidable sans jamais affecter le jeu en cas d'erreur I/O.

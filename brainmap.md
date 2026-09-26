@@ -135,3 +135,7 @@ GECKO-035 RED
 
 <!-- GECKO-035-GREEN-POLICIES-2026-09-26 -->
 GECKO-035 policies → Launch / Visual / Settings / QuickTalk.
+
+
+<!-- GECKO-035-GREEN-LOG-2026-09-26 -->
+MediaTrace → Logcat + PersistentMediaLog(geckodoku-media.log, 256 KiB).

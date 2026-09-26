@@ -136,3 +136,12 @@ Aucun ordre de mission actif actuellement.
 - [x] ProfessorQuickTalkPolicy.
 - [ ] PersistentMediaLog / MediaTrace.
 - [ ] Câblage voix/vidéo/UI.
+
+
+<!-- GECKO-035-GREEN-LOG-2026-09-26 -->
+## GECKO-035 étape 2
+- [x] PersistentMediaLog.
+- [x] Rotation 256 KiB.
+- [x] MediaTrace Logcat + fichier.
+- [ ] Installer MediaTrace au démarrage UI.
+- [ ] Consultation/copie/clear via ⚙️.
