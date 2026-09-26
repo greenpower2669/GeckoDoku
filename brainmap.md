@@ -748,3 +748,12 @@ Logs :
 `cacheDir/temp/log.txt`
 → pointeur vers
 `cacheDir/temp/video-error-log.txt`.
+
+
+## État vérifié
+`530108ace8ce583e079d1ae113b26548e85a6006`
+→ tests unitaires Android PASS
+→ APK debug PASS
+→ AAB debug PASS
+→ artefact `GeckoDoku-v0.10.8-dev-Android`
+→ validation téléphone encore requise pour la composition Surface et le retry réel.

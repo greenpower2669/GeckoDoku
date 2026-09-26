@@ -389,3 +389,12 @@ Correctif appliqué dans le même cycle :
 `setZOrderMediaOverlay(true)` + fond transparent, suppression du verrou permanent, récupération différenciée MediaPlayer/renderer et journalisation temporaire. Le shader chroma key reste inchangé.
 
 Validation restante : CI Android puis test téléphone du fond noir et de la reprise après erreur.
+
+
+## Vérification du correctif vidéo Prof
+Le commit `530108ace8ce583e079d1ae113b26548e85a6006` a été testé par GitHub Actions.
+Résultats : `:app:testDebugUnitTest`, `:app:assembleDebug` et `:app:bundleDebug` réussis.
+Workflow : https://github.com/greenpower2669/GeckoDoku/actions/runs/36254021447
+Artefact : https://github.com/greenpower2669/GeckoDoku/actions/runs/36254021447/artifacts/10909438639
+
+La preuve CI confirme compilation et tests unitaires, pas le comportement de composition graphique sur appareil Samsung. La validation téléphone reste nécessaire pour confirmer la disparition du rectangle noir et la reprise après erreur.

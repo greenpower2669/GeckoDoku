@@ -482,3 +482,15 @@ Récupération :
 - journal détaillé dans `cacheDir/temp/video-error-log.txt` et pointeur dans `cacheDir/temp/log.txt`.
 
 Preuve restante : tests CI puis test Samsung réel. Si le noir persiste, prochaine hypothèse ciblée = composition `GLSurfaceView` elle-même, avec migration du Prof intégré vers `TextureView/EGL`, sans altérer le chroma key.
+
+
+## Vérification fraîche du correctif vidéo Prof
+Commit testé : `530108ace8ce583e079d1ae113b26548e85a6006`.
+Workflow : https://github.com/greenpower2669/GeckoDoku/actions/runs/36254021447
+Résultat : succès complet.
+- `:app:testDebugUnitTest` : PASS ;
+- `:app:assembleDebug` : PASS ;
+- `:app:bundleDebug` : PASS ;
+- artefact Android produit.
+
+Aucune erreur de compilation ou de test n'a été reproduite. Le risque restant est spécifique au rendu/compositeur Android réel : seul le test téléphone peut confirmer que le rectangle noir a disparu. La récupération après erreur doit aussi être vérifiée physiquement.

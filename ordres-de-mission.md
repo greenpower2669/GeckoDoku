@@ -23,8 +23,8 @@ Deux causes distinctes sont traitées :
 - [x] Écrire les erreurs dans `cacheDir/temp/video-error-log.txt`.
 - [x] Écrire aussi dans `cacheDir/temp/log.txt` une ligne `[VIDEO ERROR] Voir temp/video-error-log.txt`.
 - [x] Ajouter un test unitaire de classification erreur MediaPlayer vs erreur renderer.
-- [ ] Exécuter les tests unitaires Android sur le commit de correction.
-- [ ] Construire APK/AAB.
+- [x] Exécuter les tests unitaires Android sur le commit de correction.
+- [x] Construire APK/AAB.
 - [ ] Test téléphone Fab : vérifier disparition du rectangle noir.
 - [ ] Test téléphone Fab : provoquer/observer une erreur vidéo puis vérifier que le Prof repart au clic suivant.
 - [ ] Si `setZOrderMediaOverlay(true)` laisse encore un rectangle noir sur Samsung, ne pas retoucher le shader : préparer alors une migration ciblée du Prof intégré vers `TextureView/EGL`.
@@ -37,3 +37,14 @@ Deux causes distinctes sont traitées :
 - Ne pas introduire de verrou permanent après une erreur vidéo.
 - Pas de refonte du lecteur tant que le correctif de composition n'a pas été testé sur téléphone.
 - FAB Copilot : toute intervention de code synchronise `brain.md`, `brainmap.md`, `debughistorical.md` et `todo.md`.
+
+
+## Vérification Sol
+- [x] Commit de code testé : `530108ace8ce583e079d1ae113b26548e85a6006`.
+- [x] Workflow GitHub Actions : https://github.com/greenpower2669/GeckoDoku/actions/runs/36254021447
+- [x] `:app:testDebugUnitTest` réussi.
+- [x] `:app:assembleDebug` réussi.
+- [x] `:app:bundleDebug` réussi.
+- [x] Artefact Android produit : https://github.com/greenpower2669/GeckoDoku/actions/runs/36254021447/artifacts/10909438639
+- [ ] Validation finale sur téléphone par Fab : rectangle noir disparu.
+- [ ] Validation finale sur téléphone par Fab : une erreur vidéo ne bloque plus les lectures suivantes du Prof.
