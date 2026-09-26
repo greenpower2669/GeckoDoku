@@ -395,16 +395,16 @@
 
 ## GECKO-032 — Pierre UPMC Medium
 - [x] Vérifier le mapping officiel UPMC Medium : Jessica sid 0, Pierre sid 1.
-- [ ] RED : verrouiller modèle UPMC Medium + sid 1.
-- [ ] RED : verrouiller coexistence encouragement enregistré + Pierre.
-- [ ] RED : verrouiller format du résumé stats.
-- [ ] Retirer bouton/dialogue A/B.
-- [ ] Retirer LOW + Siwis Medium de la CI et des assets générés.
-- [ ] Garder uniquement UPMC Medium.
-- [ ] Remplacer ProfessorSpeech par Piper Pierre + fallback Android.
-- [ ] Ajouter encouragements complémentaires Pierre.
-- [ ] Ajouter callback de fin musique d'ouverture.
-- [ ] Annoncer stats après musique d'ouverture.
-- [ ] Synchroniser brain/brainmap/debug/todo/ordre.
+- [x] RED : verrouiller modèle UPMC Medium + sid 1 — run #60.
+- [x] RED : coexistence encouragement enregistré + Pierre — run #60.
+- [x] RED : format du résumé stats — run #60.
+- [x] Retirer bouton/dialogue A/B.
+- [x] Retirer LOW + Siwis Medium de la CI et des assets générés.
+- [x] Garder uniquement UPMC Medium, archive SHA-256 vérifiée en CI.
+- [x] ProfessorSpeech devient Piper Pierre sid 1 + fallback Android.
+- [x] Ajouter encouragements complémentaires Pierre en 50/50 avec les clips existants.
+- [x] Ajouter callback de fin musique d'ouverture.
+- [x] Annoncer stats après musique d'ouverture via PlayerStatsNarration.
+- [x] Synchroniser brain/brainmap/debug/todo/ordre dans le cycle GREEN.
 - [ ] CI tests + APK + AAB.
 - [ ] Fusion main après preuve verte.

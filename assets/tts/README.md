@@ -1,18 +1,20 @@
-# TTS expérimental GeckoDoku
+# Voix locale GeckoDoku
 
-Ce dossier ne contient pas les gros modèles dans Git.
+Le laboratoire A/B GECKO-031 est terminé.
 
-La CI expérimentale GECKO-031 télécharge et vérifie :
-- `vits-piper-fr_FR-siwis-low`
-- `vits-piper-fr_FR-siwis-medium`
+La voix locale retenue est :
+- modèle Piper : `fr_FR-upmc-medium`
+- locuteur : **Pierre**
+- `sid = 1`
+- `sid = 0` correspond à Jessica
+- runtime : Sherpa-ONNX v1.13.8
 
-Puis elle les extrait dans :
-- `assets/tts/piper/low/`
-- `assets/tts/piper/medium/`
+Le gros modèle n'est pas commité dans Git. La CI télécharge l'archive officielle, vérifie son SHA-256 puis l'embarque sous `assets/tts/piper/pierre/`.
 
-Les deux modèles sont embarqués dans l'APK/AAB expérimental et fonctionnent hors ligne à l'exécution.
+Archive :
+`vits-piper-fr_FR-upmc-medium.tar.bz2`
 
-Sherpa-ONNX : v1.13.8, Apache-2.0.
-Voix Piper Siwis : français fr_FR ; dataset indiqué CC-BY 4.0 dans les model cards Piper.
+SHA-256 :
+`e9830a331a16f6cc5ef3116a287065e015d3495c3f56b974889a266da7f89a7f`
 
-Aucun de ces moteurs ne remplace encore la voix runtime de Prof Gecko.
+Le TTS Android reste uniquement un fallback en cas d'échec de Piper.

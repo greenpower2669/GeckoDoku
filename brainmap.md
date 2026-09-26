@@ -611,3 +611,22 @@ Nouvelle grille
 CI
 ├── Sherpa AAR
 └── UPMC Medium seulement
+
+
+### GECKO-032 — implémentation
+Prof Gecko texte
+└── ProfessorSpeech
+    ├── PierrePiperSpeechEngine
+    │   └── UPMC Medium / sid 1
+    └── AndroidProfessorSpeech fallback
+
+Gecko confirmé
+└── EncouragementSourcePolicy 50/50
+    ├── RECORDED → master MP3 segment
+    └── PIERRE → phrase TTS locale
+
+Nouvelle grille
+└── LEVEL_START MediaPlayer
+    └── completion callback
+        └── PlayerStatsNarration
+            └── ProfessorSpeech/Pierre

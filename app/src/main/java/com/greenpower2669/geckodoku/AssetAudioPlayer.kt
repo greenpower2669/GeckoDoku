@@ -25,7 +25,8 @@ class AssetAudioPlayer(
         }
 
     fun playMusic(
-        assetPath: String
+        assetPath: String,
+        onCompletion: (() -> Unit)? = null
     ): Boolean {
         if (!enabled) return false
         stopMusic()
@@ -39,17 +40,35 @@ class AssetAudioPlayer(
                 ) it.start()
             }
             player.setOnCompletionListener {
-                if (musicPlayer === it) {
+                val invoke =
+                    musicPlayer === it
+
+                if (invoke) {
                     musicPlayer = null
                 }
+
                 it.release()
+
+                if (invoke) {
+                    onCompletion?.invoke()
+                }
             }
             player.setOnErrorListener {
                     failed, _, _ ->
-                if (musicPlayer === failed) {
+
+                val invoke =
+                    musicPlayer === failed
+
+                if (invoke) {
                     musicPlayer = null
                 }
+
                 failed.release()
+
+                if (invoke) {
+                    onCompletion?.invoke()
+                }
+
                 true
             }
             player.prepareAsync()

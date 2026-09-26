@@ -28,52 +28,41 @@ jobs:
           echo "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96  app/libs/sherpa-onnx-1.13.8.aar" | sha256sum -c -
           test -s app/libs/sherpa-onnx-1.13.8.aar
 
-      - name: Prepare Piper LOW + MEDIUM assets
+      - name: Prepare Piper UPMC Medium Pierre asset
         shell: bash
         run: |
           set -euo pipefail
           work="$(mktemp -d)"
-          low="$work/low.tar.bz2"
-          medium="$work/medium.tar.bz2"
+          archive="$work/upmc-medium.tar.bz2"
 
           curl --fail --location --retry 3 \
-            -o "$low" \
-            "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-fr_FR-siwis-low.tar.bz2"
-          curl --fail --location --retry 3 \
-            -o "$medium" \
-            "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-fr_FR-siwis-medium.tar.bz2"
+            -o "$archive" \
+            "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-fr_FR-upmc-medium.tar.bz2"
 
-          echo "3d69170c160c8375c4123901a72a3845222b39456d39ab74f5bbd7310952b5af  $low" | sha256sum -c -
-          echo "375909aa30842b3a4efa10b1beb1d761af792960ae6873b4d53889f96c66195b  $medium" | sha256sum -c -
+          echo "e9830a331a16f6cc5ef3116a287065e015d3495c3f56b974889a266da7f89a7f  $archive" | sha256sum -c -
 
-          tar -xjf "$low" -C "$work"
-          tar -xjf "$medium" -C "$work"
+          tar -xjf "$archive" -C "$work"
 
           rm -rf assets/tts/piper
           mkdir -p assets/tts/piper
 
-          mv "$work/vits-piper-fr_FR-siwis-low" \
-            assets/tts/piper/low
-          mv "$work/vits-piper-fr_FR-siwis-medium" \
-            assets/tts/piper/medium
+          mv "$work/vits-piper-fr_FR-upmc-medium" \
+            assets/tts/piper/pierre
 
-          test -f assets/tts/piper/low/fr_FR-siwis-low.onnx
-          test -f assets/tts/piper/low/tokens.txt
-          test -d assets/tts/piper/low/espeak-ng-data
-          test -f assets/tts/piper/medium/fr_FR-siwis-medium.onnx
-          test -f assets/tts/piper/medium/tokens.txt
-          test -d assets/tts/piper/medium/espeak-ng-data
+          test -f assets/tts/piper/pierre/fr_FR-upmc-medium.onnx
+          test -f assets/tts/piper/pierre/tokens.txt
+          test -d assets/tts/piper/pierre/espeak-ng-data
 
-          du -sh assets/tts/piper/low assets/tts/piper/medium
+          du -sh assets/tts/piper/pierre
       - name: Test and build Android
         run: gradle :app:testDebugUnitTest :app:assembleDebug :app:bundleDebug --no-daemon
       - name: Name APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk GeckoDoku-v0.10.7-voice-ab-exp.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk GeckoDoku-v0.10.8-dev.apk
       - name: Name AAB
-        run: cp app/build/outputs/bundle/debug/app-debug.aab GeckoDoku-v0.10.7-voice-ab-exp.aab
+        run: cp app/build/outputs/bundle/debug/app-debug.aab GeckoDoku-v0.10.8-dev.aab
       - uses: actions/upload-artifact@v4
         with:
-          name: GeckoDoku-v0.10.7-voice-ab-exp-Android
+          name: GeckoDoku-v0.10.8-dev-Android
           path: |
-            GeckoDoku-v0.10.7-voice-ab-exp.apk
-            GeckoDoku-v0.10.7-voice-ab-exp.aab
+            GeckoDoku-v0.10.8-dev.apk
+            GeckoDoku-v0.10.8-dev.aab

@@ -323,3 +323,11 @@ Le laboratoire A/B, LOW et Siwis MEDIUM sont retirés. `ProfessorSpeech` devient
 Les encouragements existants restent disponibles. Une politique de source choisit entre audio enregistré et encouragement synthétisé par Pierre. La voix de Pierre ne remplace donc pas les clips existants.
 
 La musique de début de niveau devient séquencée avec l'annonce stats : MediaPlayer termine d'abord la musique, puis `ProfessorSpeech` prononce un résumé généré depuis `PlayerStatsStore.read()`.
+
+
+### Implémentation GECKO-032
+`ProfessorSpeech` est désormais une façade avec chemin nominal `PierrePiperSpeechEngine` et secours `AndroidProfessorSpeech`. Pierre utilise toujours `sid=1`. Le modèle est chargé paresseusement sur un executor dédié et conservé tant que l'Activity vit ; aucun second modèle Piper n'existe.
+
+Les encouragements alternent aléatoirement à parts égales entre les 13 segments enregistrés et une liste complémentaire de phrases Pierre. Le cas 1–2 geckos restants bénéficie d'une phrase Pierre dédiée.
+
+`AssetAudioPlayer.playMusic()` accepte un callback de fin. Pour `LEVEL_START`, ce callback construit `PlayerStatsNarration` depuis les stats locales et fait parler Pierre. Le callback est retiré si la musique est interrompue par une nouvelle grille, empêchant une annonce obsolète.

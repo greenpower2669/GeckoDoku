@@ -411,3 +411,15 @@ Décision : repartir de la branche A/B verte #59, supprimer tout l'UI/labo de be
 
 ### GECKO-032 — activation CI
 La branche GECKO-032 a été ajoutée explicitement au déclencheur GitHub Actions afin que le RED TDD puisse s'exécuter avant le code.
+
+
+### TDD RED GECKO-032
+Run #60 échoue comme prévu sur les symboles absents `PierreVoiceConfig`, `EncouragementSourcePolicy`, `EncouragementSource`, `PierreEncouragements` et `PlayerStatsNarration`. Les tests verrouillent donc avant implémentation le sid Pierre, la coexistence des sources d'encouragement et le résumé statistiques.
+
+### Correctif GECKO-032
+- retrait UI/classes/tests du laboratoire A/B ;
+- UPMC Medium seul, sid 1 ;
+- ProfessorSpeech Piper-first avec fallback Android ;
+- VoicePcmPlayer supporte un callback de fin ;
+- encouragements enregistrés conservés + Pierre ajouté ;
+- musique de niveau suivie d'une annonce stats, jamais superposée.

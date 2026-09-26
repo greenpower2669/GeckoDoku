@@ -19,7 +19,8 @@ class VoicePcmPlayer {
     @Synchronized
     fun play(
         samples: FloatArray,
-        sampleRate: Int
+        sampleRate: Int,
+        onCompletion: (() -> Unit)? = null
     ) {
         stop()
 
@@ -27,6 +28,7 @@ class VoicePcmPlayer {
             samples.isEmpty() ||
             sampleRate <= 0
         ) {
+            onCompletion?.invoke()
             return
         }
 
@@ -109,12 +111,10 @@ class VoicePcmPlayer {
             Runnable {
                 synchronized(this) {
                     if (track === next) {
-                        releaseTrack(
-                            next
-                        )
+                        releaseTrack(next)
                         track = null
-                        releaseRunnable =
-                            null
+                        releaseRunnable = null
+                        onCompletion?.invoke()
                     }
                 }
             }
