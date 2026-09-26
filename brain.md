@@ -364,3 +364,13 @@ Le contrat GECKO-033 est étendu sans modification runtime dans ce cycle.
 - La source de vérité des banalités est la banque **exactement 100 répliques** ajoutée à `ordres-de-mission.md`, avec anti-répétition et cooldown.
 - Référence scientifique des phrases : adhérence sèche des geckos principalement par forces de van der Waals via setae/spatulae ; ne pas présenter l’effet Casimir comme mécanisme d’adhérence.
 - Tout reste **à implémenter** après RED TDD. Aucun code applicatif n’est modifié par ce commit documentaire.
+
+
+<!-- GECKO-033-PROFPARLE-SPEECH-LIFECYCLE-2026-09-26 -->
+### GECKO-033 — cycle de vie ProfParle piloté par la parole
+`ProfParle.mp4` est désormais contractuellement lié à l’état réel de la synthèse vocale Pierre :
+- début parole → démarrer/réutiliser la vidéo ;
+- parole toujours active → conserver l’instance en cours ;
+- fin/annulation/échec de parole → stopper la vidéo immédiatement et restaurer `Prof.png` ;
+- nouvelle parole après arrêt → relancer la vidéo depuis t=0.
+La durée nominale ~30 s du média n’est plus une durée d’affichage imposée.

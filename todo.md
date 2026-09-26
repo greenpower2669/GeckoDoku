@@ -448,3 +448,15 @@
 - [ ] Synchroniser les 5 fichiers vivants dans le même commit que le code.
 - [ ] CI tests + APK + AAB verte.
 - [ ] Validation téléphone Fab.
+
+
+<!-- GECKO-033-PROFPARLE-SPEECH-LIFECYCLE-2026-09-26 -->
+## GECKO-033 — précision RED ProfParle / Sherpa
+- [x] Documenter arrêt immédiat de `ProfParle.mp4` à la fin réelle de la parole Sherpa/Piper.
+- [x] Documenter restauration de `Prof.png` après arrêt de parole.
+- [x] Documenter arrêt aussi sur annulation/échec de parole.
+- [x] Documenter relance depuis t=0 lors d’une nouvelle parole après arrêt.
+- [ ] RED : vérifier que speechEnd stoppe ProfParle.
+- [ ] RED : vérifier que speechCancel/speechError stoppent ProfParle.
+- [ ] RED : vérifier qu’une nouvelle parole après arrêt redémarre ProfParle à t=0.
+- [ ] RED : vérifier qu’une phrase enchaînée sans arrêt ne crée pas une seconde instance.

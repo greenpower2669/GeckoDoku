@@ -456,3 +456,12 @@ Nouvelles décisions Fab, documentaires uniquement :
 7. **Risque régression géométrique** : médaillon, vidéo ProfParle et intros sont overlays/transforms ; aucune mesure de grille ne doit changer.
 
 Aucun bug n’est déclaré corrigé par ce commit : il s’agit d’un verrouillage de contrat avant RED TDD.
+
+
+<!-- GECKO-033-PROFPARLE-SPEECH-LIFECYCLE-2026-09-26 -->
+## 2026-09-26 — GECKO-033 précision ProfParle : fin liée à Sherpa
+Risque identifié : laisser `ProfParle.mp4` continuer ~30 s après une phrase courte donnerait l’impression que Pierre parle encore alors que Sherpa est silencieux.
+
+Décision Fab : la vidéo de parole suit le **cycle réel de la voix**. Elle démarre avec la parole, peut être réutilisée tant que la parole reste active, mais doit être stoppée dès la fin/annulation/échec de la synthèse. Une parole ultérieure relance le média depuis t=0.
+
+Cette décision remplace explicitement l’ancienne formulation qui laissait la vidéo aller à sa fin naturelle après la fin de la voix.

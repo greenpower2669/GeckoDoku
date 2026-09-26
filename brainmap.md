@@ -707,3 +707,17 @@ Pierre / ProfessorSpeech sid=1
 │
 Intro
 └── IntroGeckoGD.mp4 → Gecko_Intro.mp4 → jeu déjà prêt
+
+
+<!-- GECKO-033-PROFPARLE-SPEECH-LIFECYCLE-2026-09-26 -->
+## GECKO-033 — ProfParle lifecycle
+ProfessorSpeech / Sherpa Pierre
+├── speechStart
+│   └── ProfParle inactive → play t=0
+├── speechContinues / phrase suivante sans silence
+│   └── ProfParle active → reuse current playback
+├── speechEnd / cancel / error
+│   └── stop ProfParle immediately
+│       └── restore Prof.png
+└── next speech after stop
+    └── play ProfParle from t=0

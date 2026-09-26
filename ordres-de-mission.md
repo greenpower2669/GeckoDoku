@@ -1359,3 +1359,18 @@ GECKO-033 ne sera déclarée terminée qu’après :
 - CI tests + APK + AAB verte ;
 - APK/AAB correctement nommés avec l’icône GeckoDoku ;
 - validation téléphone par Fab de l’icône, du médaillon, des deux intros, de la voix Pierre + ProfParle, du silence des animations Gecko et du comportement non envahissant des interventions spontanées.
+
+
+<!-- GECKO-033-PROFPARLE-SPEECH-LIFECYCLE-2026-09-26 -->
+## GECKO-033 — précision cycle de vie ProfParle
+Décision Fab : `ProfParle.mp4` doit suivre **la durée réelle de la parole de Pierre**, et non continuer jusqu’à la fin naturelle de ses ~30 secondes.
+
+Règle runtime cible :
+1. juste avant le démarrage effectif d’une parole Sherpa/Piper de Pierre, lancer `ProfParle.mp4` depuis t=0 si elle n’est pas déjà active ;
+2. si une nouvelle phrase s’enchaîne alors que Pierre parle encore et que `ProfParle.mp4` tourne, réutiliser la lecture en cours sans créer de seconde instance ;
+3. dès que le moteur de parole signale la fin effective de la parole / plus aucun audio Sherpa en cours, **stopper immédiatement `ProfParle.mp4`** et restaurer `Prof.png` ;
+4. si Pierre reparle après cet arrêt, relancer `ProfParle.mp4` depuis t=0 ;
+5. si la parole est interrompue, annulée, mise en pause ou échoue, arrêter également `ProfParle.mp4` et revenir au fallback visuel ;
+6. la vidéo reste muette ; seule la voix Sherpa/Piper est audible.
+
+Conséquence : l’ancienne règle « laisser ProfParle aller jusqu’à sa fin naturelle après la fin de la voix » est **remplacée** par ce contrat piloté par l’état réel de `ProfessorSpeech`/Sherpa.
