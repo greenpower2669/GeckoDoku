@@ -702,3 +702,14 @@ Le problème actif devient exclusivement la famille animations/sprites vidéo, j
 Pour réduire le bruit documentaire, les fichiers vivants `ordres-de-mission.md`, `brain.md`, `brainmap.md` et `todo.md` ont été réinitialisés autour de cet état courant. `debughistorical.md` conserve l'historique détaillé antérieur.
 
 Aucun code de production modifié dans ce cycle.
+
+
+<!-- GECKO-033-SPRITES-RED-TRANSPARENCY-RETRY-2026-09-26 -->
+## 2026-09-26 — correction d'une hypothèse technique du brain
+L'interdiction précédente de `setZOrderOnTop(true)` venait d'une hypothèse de conflit SurfaceView, pas d'une exigence utilisateur.
+
+Après passage à `setZOrderMediaOverlay(true)`, le test téléphone v0.10.10-dev montre des rectangles noirs derrière les vidéos Prof et Gecko, alors que le shader clear alpha=0, EGL alpha=8 et PixelFormat.TRANSLUCENT sont déjà présents.
+
+Ruling : le contrat durable est « transparence + coexistence », pas « MediaOverlay à tout prix ». Le RED exige maintenant une stratégie de composition transparente, tout en conservant les lecteurs/sessions indépendants.
+
+Deuxième RED : un `professorSpeechVideoFailed` ancien ne doit pas bloquer la phrase suivante.

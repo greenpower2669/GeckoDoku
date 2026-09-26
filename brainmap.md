@@ -40,3 +40,15 @@ onError
 → PNG malgré Pierre actif
 
 À corriger après RED/logs, sans toucher aux intros validées.
+
+
+<!-- GECKO-033-SPRITES-RED-TRANSPARENCY-RETRY-2026-09-26 -->
+## RED courant
+Rendu transparent
+├── résultat requis : alpha réel / pas de noir
+├── MediaOverlay actuel : suspect téléphone
+└── stratégie OnTop : à retester avec multi-sessions indépendantes
+
+ProfParle
+├── erreur tentative N → PNG fallback
+└── tentative N+1 → DOIT pouvoir retenter ProfParle

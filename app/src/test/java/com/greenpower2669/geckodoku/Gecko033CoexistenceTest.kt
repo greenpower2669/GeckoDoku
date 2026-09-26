@@ -172,15 +172,31 @@ class Gecko033CoexistenceTest {
     }
 
     @Test
-    fun surfacePolicyAvoidsGlobalOnTopSurface() {
+    fun transparentKeyedSurfaceUsesTopCompositionInsteadOfOpaqueMediaOverlay() {
         val policy =
             VideoSurfaceLayerPolicy()
 
-        assertFalse(
+        assertTrue(
             policy.useZOrderOnTop
         )
-        assertTrue(
+        assertFalse(
             policy.useMediaOverlay
+        )
+    }
+
+    @Test
+    fun previousSpeechVideoFailureDoesNotBlockNextPhraseRetry() {
+        val policy =
+            ProfessorSpeechVideoStartPolicy()
+
+        assertTrue(
+            policy.canStart(
+                animationsEnabled = true,
+                playVideoInButton = true,
+                viewReady = true,
+                speechActive = true,
+                previousAttemptFailed = true
+            )
         )
     }
 }

@@ -39,3 +39,15 @@
 - [ ] Build Android GREEN.
 - [ ] APK + AAB.
 - [ ] Test téléphone Fab.
+
+
+<!-- GECKO-033-SPRITES-RED-TRANSPARENCY-RETRY-2026-09-26 -->
+## Cycle RED sprites
+- [x] Réaffirmer le rôle durable de brain.md.
+- [x] RED : composition transparente attendue au lieu du MediaOverlay noir observé.
+- [x] RED : échec ProfParle précédent n'interdit pas le retry suivant.
+- [ ] Observer RED CI pour les bonnes raisons.
+- [ ] Corriger minimalement la composition Surface.
+- [ ] Supprimer le latch permanent ProfParle via une politique de démarrage testée.
+- [ ] Conserver coexistence multi-sessions.
+- [ ] Build + APK/AAB + validation téléphone.

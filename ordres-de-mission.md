@@ -231,3 +231,16 @@ Ne pas toucher aux intros validées pour faire passer artificiellement le correc
 ## CONTRAT COURT
 
 **Intro 1 et Intro 2 sont VALIDÉES et gelées. Le chantier actif est maintenant la restauration des animations/sprites vidéo : transparence correcte, aucun fond noir, ProfParle fiable, Gecko visible mais muet, et vraie coexistence des lecteurs.**
+
+
+<!-- GECKO-033-SPRITES-RED-TRANSPARENCY-RETRY-2026-09-26 -->
+## Cycle RED — transparence + retry ProfParle
+Nouvelles preuves téléphone :
+- Intro 1/2 restent gelées et ne sont pas concernées.
+- Les rectangles noirs touchent Prof et Gecko, donc le rendu transparent commun est prioritaire.
+- Le changement vers `setZOrderMediaOverlay(true)` est désormais suspect : l'ancien `setZOrderOnTop(true)` produisait le chroma transparent avant la refonte multi-sessions.
+- Cette règle est technique, pas fonctionnelle : la coexistence reste obligatoire même si la stratégie de composition doit être corrigée.
+
+RED ajouté :
+1. une surface chroma transparente doit choisir la composition permettant réellement l'alpha, et non le MediaOverlay opaque constaté sur téléphone ;
+2. un échec précédent de `ProfParle.mp4` ne doit jamais interdire la tentative de la phrase suivante.
