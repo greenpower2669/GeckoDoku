@@ -314,3 +314,13 @@
 - [x] Mettre à jour brain/brainmap/debug/todo/ordre dans le même cycle.
 - [x] CI tests + APK + AAB — run #37 vert, artefact `GeckoDoku-v0.10.2-dev-Android`.
 - [ ] Validation téléphone : grille inchangée visuellement à l'ouverture/fermeture du Prof ; contrôler aussi le léger débordement et la micro-animation du PNG.
+
+
+## GECKO-027 — Prof au premier plan
+- [ ] RED : verrouiller portraitElevation > buttonElevation.
+- [ ] Neutraliser le StateListAnimator / élévation automatique du Button Prof.
+- [ ] Donner au PNG Prof une élévation explicite >= 16 dp.
+- [ ] Appeler bringToFront avant chaque micro-animation.
+- [ ] Synchroniser brain/brainmap/debug/todo/ordre.
+- [ ] CI tests + APK + AAB.
+- [ ] Validation téléphone : bouton toujours derrière Prof, animé ou non.

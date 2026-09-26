@@ -24,4 +24,18 @@ class ProfessorUiPolicyTest {
         assertEquals(58, policy.buttonHostHeightDp)
         assertEquals(10, policy.buttonPortraitOverhangDp)
     }
+
+    @Test
+    fun professorPortraitAlwaysStaysAboveButtonSurface() {
+        val policy = ProfessorUiPolicy()
+
+        assertEquals(0, policy.buttonElevationDp)
+        assertTrue(
+            policy.portraitElevationDp >
+                policy.buttonElevationDp
+        )
+        assertTrue(
+            policy.portraitElevationDp >= 16
+        )
+    }
 }

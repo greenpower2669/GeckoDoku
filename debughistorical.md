@@ -264,3 +264,14 @@ Run #36 (`36211900132`) échoue volontairement sur `Unresolved reference 'Profes
 
 ### GREEN GECKO-026
 Run #37 (`36212085221`) termine en succès complet. Le build compile après suppression de la vidéo Prof dans la bulle, déplacement du PNG dans le bouton et maintien permanent du panneau de contrôles dans le layout. La CI valide la structure et les tests ; seul le téléphone peut confirmer le symptôme visuel initial.
+
+
+## 2026-09-26 — GECKO-027 bouton devant Prof
+### Symptôme
+Sur téléphone, le rectangle du bouton passe visuellement devant le PNG Prof.
+
+### Cause probable
+Le PNG est ajouté après le Button dans le FrameLayout, mais un Button Android peut disposer d'une élévation/StateListAnimator qui modifie son Z lors des états pressés. L'ordre d'ajout seul n'est donc pas une garantie suffisante.
+
+### Stratégie
+Test RED sur une politique d'élévation explicite, puis Button à Z neutre et portrait avec Z supérieur + `bringToFront()` avant animation.
