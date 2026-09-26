@@ -519,3 +519,19 @@ Hypothèse à auditer au prochain cycle, sans la considérer encore comme cause 
 Référence stable à retrouver : comportement visuel pré-GECKO-033 des animations apparition/disparition/action longue, avec uniquement l’audio vidéo forcé à zéro.
 
 Ne pas corriger avant la fin des retours téléphone en cours.
+
+
+<!-- GECKO-033-MEDIA-TRACE-PROF-AFTER-INTRO1-2026-09-26 -->
+## 2026-09-26 — instrumentation média avant correction
+Fab constate que le Prof apparaît trop tôt et demande de conserver des logs détaillés de lancement/arrêt des vidéos pour diagnostiquer le conflit même si une cause semble rapidement trouvée.
+
+Ce cycle est volontairement **diagnostic seulement** :
+- aucune correction de priorité ;
+- aucune correction de mute ;
+- aucune correction d’enchaînement intro ;
+- aucune correction de visibilité Prof ;
+- aucune correction des animations Gecko grille.
+
+Le tag `GeckoDokuMediaTrace` enregistre l’ordre réel des événements afin d’identifier les conflits entre INTRO, GECKO_ACTION, PROF_ACTION et PROF_SPEECH.
+
+Nouvelle chronologie cible à respecter ensuite : Prof absent pendant la première intro ; première intro avec son ; Prof seulement après sa fin ; pas de chevauchement audio intro 1 → intro 2.

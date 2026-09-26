@@ -798,3 +798,29 @@ Important
 
 IntroGeckoGD.mp4
 └── exception : audio embarqué autorisé
+
+
+<!-- GECKO-033-MEDIA-TRACE-PROF-AFTER-INTRO1-2026-09-26 -->
+## GECKO-033 — MediaTrace
+GeckoDokuMediaTrace
+├── ChromaKeyVideoView
+│   ├── PLAY_REQUEST / START
+│   ├── STOP / COMPLETE
+│   ├── SET_MUTED
+│   └── ERROR / EXCEPTION / RELEASE
+├── RichMediaOverlay
+│   ├── PLAY_ACCEPT
+│   ├── PLAY_REJECT_BUSY
+│   └── FINISH_COMPLETE / FINISH_STOPPED
+└── MainActivity
+    ├── INTRO_STEP_REQUEST / ACCEPTED / REJECTED / FINISHED
+    ├── GECKO_CELL_VIDEO_ACCEPTED / REJECTED / SKIPPED
+    ├── PROF_ACTION_REQUEST
+    ├── PROF_SPEECH_STATE
+    └── PROF_SPEECH_VIDEO_REQUEST / PROF_VIDEO_STOP_ALL
+
+Chronologie cible :
+IntroGeckoGD visible + audible + Prof caché
+→ fin propre audio intro 1
+→ Gecko_Intro
+→ Prof éligible après intro 1.

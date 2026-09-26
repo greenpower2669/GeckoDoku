@@ -58,6 +58,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
     private var muted = false
 
+    private var activeAssetPath:
+        String? = null
+
     init {
         setEGLContextClientVersion(2)
         setEGLConfigChooser(
@@ -87,6 +90,25 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         onError: (String) -> Unit,
         onStarted: () -> Unit = {}
     ) {
+        MediaTrace.event(
+            source =
+                "ChromaKey@" +
+                    Integer.toHexString(
+                        System.identityHashCode(
+                            this
+                        )
+                    ),
+            event = "PLAY_REQUEST",
+            assetPath = assetPath,
+            detail =
+                "muted=" +
+                    muted +
+                    " hadPlayer=" +
+                    (player != null) +
+                    " hadPending=" +
+                    (pendingPlayback != null)
+        )
+
         stopPlayback()
 
         this.muted = muted
@@ -113,6 +135,22 @@ class ChromaKeyVideoView @JvmOverloads constructor(
     fun setMuted(
         value: Boolean
     ) {
+        MediaTrace.event(
+            source =
+                "ChromaKey@" +
+                    Integer.toHexString(
+                        System.identityHashCode(
+                            this
+                        )
+                    ),
+            event = "SET_MUTED",
+            assetPath =
+                activeAssetPath,
+            detail =
+                "muted=" +
+                    value
+        )
+
         muted = value
 
         player?.setVolume(
@@ -122,6 +160,35 @@ class ChromaKeyVideoView @JvmOverloads constructor(
     }
 
     fun stopPlayback() {
+        val pendingAsset =
+            pendingPlayback
+                ?.assetPath
+
+        if (
+            player != null ||
+            pendingAsset != null ||
+            activeAssetPath != null
+        ) {
+            MediaTrace.event(
+                source =
+                    "ChromaKey@" +
+                        Integer.toHexString(
+                            System.identityHashCode(
+                                this
+                            )
+                        ),
+                event = "STOP",
+                assetPath =
+                    activeAssetPath
+                        ?: pendingAsset,
+                detail =
+                    "player=" +
+                        (player != null) +
+                        " pending=" +
+                        (pendingAsset != null)
+            )
+        }
+
         pendingPlayback = null
 
         val current = player
@@ -138,9 +205,24 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
             current.release()
         }
+
+        activeAssetPath = null
     }
 
     fun release() {
+        MediaTrace.event(
+            source =
+                "ChromaKey@" +
+                    Integer.toHexString(
+                        System.identityHashCode(
+                            this
+                        )
+                    ),
+            event = "RELEASE",
+            assetPath =
+                activeAssetPath
+        )
+
         stopPlayback()
         queueEvent {
             chromaRenderer.releaseSurfaceTexture()
@@ -197,6 +279,25 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             }
 
             mediaPlayer.setOnPreparedListener {
+                activeAssetPath =
+                    request.assetPath
+
+                MediaTrace.event(
+                    source =
+                        "ChromaKey@" +
+                            Integer.toHexString(
+                                System.identityHashCode(
+                                    this
+                                )
+                            ),
+                    event = "START",
+                    assetPath =
+                        request.assetPath,
+                    detail =
+                        "muted=" +
+                            muted
+                )
+
                 it.setVolume(
                     if (muted) 0f else 1f,
                     if (muted) 0f else 1f
@@ -207,7 +308,21 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
             mediaPlayer.setOnCompletionListener {
                 if (player === it) {
+                    MediaTrace.event(
+                        source =
+                            "ChromaKey@" +
+                                Integer.toHexString(
+                                    System.identityHashCode(
+                                        this
+                                    )
+                                ),
+                        event = "COMPLETE",
+                        assetPath =
+                            request.assetPath
+                    )
+
                     player = null
+                    activeAssetPath = null
                     it.release()
                     request.onCompletion()
                 }
@@ -223,6 +338,26 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 }
 
                 failedPlayer.release()
+
+                MediaTrace.event(
+                    source =
+                        "ChromaKey@" +
+                            Integer.toHexString(
+                                System.identityHashCode(
+                                    this
+                                )
+                            ),
+                    event = "ERROR",
+                    assetPath =
+                        request.assetPath,
+                    detail =
+                        "what=" +
+                            what +
+                            " extra=" +
+                            extra
+                )
+
+                activeAssetPath = null
 
                 request.onError(
                     "MediaPlayer error " +
@@ -240,6 +375,22 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         } catch (error: Exception) {
             player?.release()
             player = null
+            activeAssetPath = null
+
+            MediaTrace.event(
+                source =
+                    "ChromaKey@" +
+                        Integer.toHexString(
+                            System.identityHashCode(
+                                this
+                            )
+                        ),
+                event = "EXCEPTION",
+                assetPath =
+                    request.assetPath,
+                detail =
+                    error.message
+            )
 
             request.onError(
                 "Unable to play " +

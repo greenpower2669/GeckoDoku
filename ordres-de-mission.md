@@ -1517,3 +1517,37 @@ Le prochain correctif doit vérifier séparément :
 5. aucun impact sur la géométrie de la grille.
 
 **Ne pas coder avant la fin de la série de tests téléphone de Fab.**
+
+
+<!-- GECKO-033-MEDIA-TRACE-PROF-AFTER-INTRO1-2026-09-26 -->
+# GECKO-033 — DIAGNOSTIC MÉDIA + CHRONOLOGIE PROF / INTRO
+**Décision Fab — 26/09/2026.**
+Ce cycle ajoute uniquement des **logs de diagnostic média**. Il ne corrige pas encore les régressions observées.
+
+## Chronologie cible à respecter au prochain correctif
+1. `IntroGeckoGD.mp4` démarre en premier.
+2. Pendant toute cette première intro, **le Prof ne doit pas apparaître** et aucune animation Prof ne doit se lancer.
+3. `IntroGeckoGD.mp4` doit conserver **son audio embarqué** lorsque l’audio est activé.
+4. À la transition vers la seconde intro, l’audio de l’intro 1 doit être terminé proprement et ne pas déborder.
+5. Le Prof devient éligible **seulement après la fin de la première intro**, donc à partir du début de la seconde partie de l’intro / suite de l’expérience.
+6. `Gecko_Intro.mp4` doit bien se lancer après `IntroGeckoGD.mp4`.
+7. Si `Gecko_Intro.mp4` possède son propre audio, il doit rester indépendant de l’audio de l’intro 1 : aucun chevauchement involontaire.
+
+## Logs à conserver même si la cause paraît trouvée
+Tag Logcat unique : `GeckoDokuMediaTrace`.
+
+Tracer :
+- `PLAY_REQUEST`, `START`, `STOP`, `COMPLETE`, `ERROR`, `EXCEPTION`, `RELEASE` ;
+- `SET_MUTED` ;
+- acceptation overlay `PLAY_ACCEPT` ;
+- refus overlay `PLAY_REJECT_BUSY` avec média déjà actif ;
+- étape intro demandée/acceptée/refusée/terminée ;
+- animation Gecko de case acceptée/refusée/skippée ;
+- demande `Prof_actions.mp4` ;
+- passage parole Pierre active/inactive ;
+- demande `ProfParle.mp4` ;
+- arrêt global du player Prof.
+
+But : reconstruire exactement **qui lance quoi, qui stoppe quoi et quel média bloque lequel**.
+
+Aucune correction fonctionnelle n’est incluse dans ce cycle de logs.

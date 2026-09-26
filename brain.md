@@ -433,3 +433,15 @@ Validation fonctionnelle corrigée :
 - `IntroGeckoGD.mp4` reste une exception audio et doit conserver son son.
 
 Aucun correctif runtime lancé pour l’instant : Fab poursuit ses tests téléphone.
+
+
+<!-- GECKO-033-MEDIA-TRACE-PROF-AFTER-INTRO1-2026-09-26 -->
+## GECKO-033 — instrumentation média
+Ajout d’un `MediaTrace` central sous le tag `GeckoDokuMediaTrace`, avec compteur séquentiel et timestamp monotone. Il trace le cycle réel des players et les refus pour état busy.
+
+Chronologie cible documentée mais non corrigée dans ce cycle :
+- Prof invisible pendant toute `IntroGeckoGD.mp4` ;
+- intro 1 audible ;
+- audio intro 1 terminé avant intro 2 ;
+- Prof éligible seulement après intro 1 ;
+- `Gecko_Intro.mp4` doit suivre sans être supprimée par un média Prof.

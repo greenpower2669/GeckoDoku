@@ -2780,6 +2780,25 @@ class MainActivity : Activity() {
     private fun playIntroStep(
         index: Int
     ) {
+        MediaTrace.event(
+            source = "MainActivity",
+            event = "INTRO_STEP_REQUEST",
+            assetPath =
+                IntroSequencePolicy
+                    .assets
+                    .getOrNull(index),
+            detail =
+                "index=" +
+                    index +
+                    " overlayBusy=" +
+                    (
+                        ::richMediaOverlay
+                            .isInitialized &&
+                            richMediaOverlay
+                                .isBusy
+                        )
+        )
+
         if (
             !richMediaSettings.enabled ||
             index !in
@@ -2790,11 +2809,12 @@ class MainActivity : Activity() {
             return
         }
 
-        richMediaOverlay.play(
-            kind = RichMediaKind.INTRO,
-            assetPath =
-                IntroSequencePolicy
-                    .assets[index],
+        val accepted =
+            richMediaOverlay.play(
+                kind = RichMediaKind.INTRO,
+                assetPath =
+                    IntroSequencePolicy
+                        .assets[index],
             muted =
                 GeckoMediaAudioPolicy
                     .mustMute(
@@ -2804,10 +2824,37 @@ class MainActivity : Activity() {
             titleText = "GeckoDoku",
             skippable = true,
             onFinished = {
+                MediaTrace.event(
+                    source = "MainActivity",
+                    event = "INTRO_STEP_FINISHED",
+                    assetPath =
+                        IntroSequencePolicy
+                            .assets[index],
+                    detail =
+                        "index=" +
+                            index
+                )
+
                 playIntroStep(
                     index + 1
                 )
             }
+        )
+
+        MediaTrace.event(
+            source = "MainActivity",
+            event =
+                if (accepted) {
+                    "INTRO_STEP_ACCEPTED"
+                } else {
+                    "INTRO_STEP_REJECTED"
+                },
+            assetPath =
+                IntroSequencePolicy
+                    .assets[index],
+            detail =
+                "index=" +
+                    index
         )
     }
 
@@ -2816,12 +2863,37 @@ class MainActivity : Activity() {
         cell: Cell,
         onFinished: (() -> Unit)? = null
     ) {
+        val celebrationVisible =
+            ::celebrationView.isInitialized &&
+                celebrationView.visibility ==
+                    View.VISIBLE
+
         if (!richMediaSettings.enabled ||
             !::richMediaOverlay.isInitialized ||
             richMediaOverlay.isBusy ||
-            (::celebrationView.isInitialized &&
-                celebrationView.visibility == View.VISIBLE)
+            celebrationVisible
         ) {
+            MediaTrace.event(
+                source = "MainActivity",
+                event = "GECKO_CELL_VIDEO_SKIPPED",
+                detail =
+                    "kind=" +
+                        kind +
+                        " animEnabled=" +
+                        richMediaSettings.enabled +
+                        " overlayInit=" +
+                        ::richMediaOverlay
+                            .isInitialized +
+                        " overlayBusy=" +
+                        (
+                            ::richMediaOverlay
+                                .isInitialized &&
+                                richMediaOverlay
+                                    .isBusy
+                            ) +
+                        " celebration=" +
+                        celebrationVisible
+            )
             return
         }
 
@@ -2866,21 +2938,38 @@ class MainActivity : Activity() {
                 )
             }
 
-        richMediaOverlay.play(
-            kind = kind,
+        val accepted =
+            richMediaOverlay.play(
+                kind = kind,
+                assetPath = asset,
+                muted =
+                    GeckoMediaAudioPolicy
+                        .mustMute(kind),
+                target = target,
+                titleText = null,
+                skippable = false,
+                maskTarget = maskTarget,
+                maskColor =
+                    board.cellBackgroundColor(
+                        cell
+                    ),
+                onFinished = onFinished
+            )
+
+        MediaTrace.event(
+            source = "MainActivity",
+            event =
+                if (accepted) {
+                    "GECKO_CELL_VIDEO_ACCEPTED"
+                } else {
+                    "GECKO_CELL_VIDEO_REJECTED"
+                },
             assetPath = asset,
-            muted =
-                GeckoMediaAudioPolicy
-                    .mustMute(kind),
-            target = target,
-            titleText = null,
-            skippable = false,
-            maskTarget = maskTarget,
-            maskColor =
-                board.cellBackgroundColor(
+            detail =
+                "kind=" +
+                    kind +
+                    " cell=" +
                     cell
-                ),
-            onFinished = onFinished
         )
     }
 
@@ -3095,6 +3184,19 @@ class MainActivity : Activity() {
     }
 
     private fun playProfessorButtonVideo(): Boolean {
+        MediaTrace.event(
+            source = "MainActivity",
+            event = "PROF_ACTION_REQUEST",
+            assetPath =
+                AssetMediaCatalog
+                    .PROF_LONG_ACTIONS,
+            detail =
+                "mode=" +
+                    professorVideoMode +
+                    " speechActive=" +
+                    professorSpeechActive
+        )
+
         if (
             !richMediaSettings.enabled ||
             !professorUiPolicy.playVideoInButton ||
@@ -3206,6 +3308,19 @@ class MainActivity : Activity() {
     private fun handleProfessorSpeakingChanged(
         speaking: Boolean
     ) {
+        MediaTrace.event(
+            source = "MainActivity",
+            event = "PROF_SPEECH_STATE",
+            assetPath =
+                AssetMediaCatalog
+                    .PROF_SPEECH,
+            detail =
+                "speaking=" +
+                    speaking +
+                    " previousMode=" +
+                    professorVideoMode
+        )
+
         professorSpeechActive =
             speaking
 
@@ -3260,6 +3375,19 @@ class MainActivity : Activity() {
     }
 
     private fun startProfessorSpeechVideo() {
+        MediaTrace.event(
+            source = "MainActivity",
+            event = "PROF_SPEECH_VIDEO_REQUEST",
+            assetPath =
+                AssetMediaCatalog
+                    .PROF_SPEECH,
+            detail =
+                "mode=" +
+                    professorVideoMode +
+                    " speechActive=" +
+                    professorSpeechActive
+        )
+
         if (
             !richMediaSettings.enabled ||
             !professorUiPolicy
@@ -3355,6 +3483,16 @@ class MainActivity : Activity() {
     }
 
     private fun stopProfessorButtonVideo() {
+        MediaTrace.event(
+            source = "MainActivity",
+            event = "PROF_VIDEO_STOP_ALL",
+            detail =
+                "previousMode=" +
+                    professorVideoMode +
+                    " speechActive=" +
+                    professorSpeechActive
+        )
+
         professorVideoMode =
             ProfessorVideoMode.NONE
 

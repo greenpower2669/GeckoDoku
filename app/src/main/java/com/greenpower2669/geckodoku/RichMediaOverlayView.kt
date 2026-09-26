@@ -54,6 +54,10 @@ class RichMediaOverlayView @JvmOverloads constructor(
 
     private var activeKind:
         RichMediaKind? = null
+
+    private var activeAssetPath:
+        String? = null
+
     private var activeCompletion:
         (() -> Unit)? = null
 
@@ -113,9 +117,44 @@ class RichMediaOverlayView @JvmOverloads constructor(
         maskColor: Int = Color.WHITE,
         onFinished: (() -> Unit)? = null
     ): Boolean {
-        if (isBusy) return false
+        val effectiveMuted =
+            muted ||
+                GeckoMediaAudioPolicy
+                    .mustMute(kind)
+
+        if (isBusy) {
+            MediaTrace.event(
+                source = "Overlay",
+                event = "PLAY_REJECT_BUSY",
+                assetPath = assetPath,
+                detail =
+                    "requestedKind=" +
+                        kind +
+                        " activeKind=" +
+                        activeKind +
+                        " activeAsset=" +
+                        activeAssetPath
+            )
+            return false
+        }
+
+        MediaTrace.event(
+            source = "Overlay",
+            event = "PLAY_ACCEPT",
+            assetPath = assetPath,
+            detail =
+                "kind=" +
+                    kind +
+                    " requestedMuted=" +
+                    muted +
+                    " effectiveMuted=" +
+                    effectiveMuted +
+                    " skippable=" +
+                    skippable
+        )
 
         activeKind = kind
+        activeAssetPath = assetPath
         activeCompletion = onFinished
 
         setBackgroundColor(
@@ -157,9 +196,7 @@ class RichMediaOverlayView @JvmOverloads constructor(
         videoView.play(
             assetPath = assetPath,
             muted =
-                muted ||
-                    GeckoMediaAudioPolicy
-                        .mustMute(kind),
+                effectiveMuted,
             onCompletion = {
                 finishActive(true)
             },
@@ -184,12 +221,33 @@ class RichMediaOverlayView @JvmOverloads constructor(
     }
 
     fun stop() {
+        MediaTrace.event(
+            source = "Overlay",
+            event = "STOP_REQUEST",
+            assetPath =
+                activeAssetPath,
+            detail =
+                "activeKind=" +
+                    activeKind
+        )
+
         finishActive(false)
     }
 
     fun release() {
+        MediaTrace.event(
+            source = "Overlay",
+            event = "RELEASE",
+            assetPath =
+                activeAssetPath,
+            detail =
+                "activeKind=" +
+                    activeKind
+        )
+
         activeCompletion = null
         activeKind = null
+        activeAssetPath = null
         videoView.release()
         maskView.visibility = GONE
         setBackgroundColor(Color.TRANSPARENT)
@@ -201,8 +259,28 @@ class RichMediaOverlayView @JvmOverloads constructor(
     ) {
         if (!isBusy) return
         val completion = activeCompletion
+        val finishedKind = activeKind
+        val finishedAsset =
+            activeAssetPath
+
+        MediaTrace.event(
+            source = "Overlay",
+            event =
+                if (invokeCompletion) {
+                    "FINISH_COMPLETE"
+                } else {
+                    "FINISH_STOPPED"
+                },
+            assetPath =
+                finishedAsset,
+            detail =
+                "kind=" +
+                    finishedKind
+        )
+
         activeCompletion = null
         activeKind = null
+        activeAssetPath = null
         videoView.stopPlayback()
         titleView.text = ""
         titleView.visibility = GONE

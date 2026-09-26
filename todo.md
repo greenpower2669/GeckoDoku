@@ -524,3 +524,19 @@
 - [ ] Vérifier que mute n’affecte ni `play()`, ni visibilité, ni `onStarted`, ni `onCompletion`.
 - [ ] Conserver l’exception sonore de `IntroGeckoGD.mp4`.
 - [ ] Aucun code avant nouvel ordre de Fab après sa série de tests.
+
+
+<!-- GECKO-033-MEDIA-TRACE-PROF-AFTER-INTRO1-2026-09-26 -->
+## GECKO-033 — logs diagnostic média
+- [x] Ajouter `GeckoDokuMediaTrace` central horodaté et numéroté.
+- [x] Tracer ChromaKey play/start/stop/complete/error/mute.
+- [x] Tracer overlay acceptation/refus busy.
+- [x] Tracer étapes intro.
+- [x] Tracer demandes Prof action / ProfParle et état parole.
+- [x] Tracer animations Gecko de case acceptées/refusées/skippées.
+- [ ] CORRECTION FUTURE : Prof invisible pendant toute `IntroGeckoGD.mp4`.
+- [ ] CORRECTION FUTURE : Prof éligible seulement après fin intro 1.
+- [ ] CORRECTION FUTURE : restaurer son intro 1 sans chevauchement vers intro 2.
+- [ ] CORRECTION FUTURE : restaurer `Gecko_Intro.mp4`.
+- [ ] CORRECTION FUTURE : restaurer animations Gecko grille visibles mais muettes.
+- [ ] Exploiter les logs téléphone avant de modifier l’arbitrage.
