@@ -295,3 +295,9 @@ LOW et MEDIUM instancient la même classe `PiperVoiceBenchmarkEngine` et partage
 Piper génère en mémoire puis joue via AudioTrack PCM float. Android TTS synthétise la même phrase vers un WAV temporaire puis la joue via MediaPlayer. Les métriques incluent temps de génération ; Piper ajoute temps de chargement, taille ONNX, fréquence/durée et ΔPSS approximatif.
 
 Le bouton temporaire est ajouté à row3 comme quatrième enfant afin de ne créer aucune nouvelle rangée et de ne pas réduire la hauteur de grille par ajout vertical.
+
+
+### GECKO-031 — correction intégration native
+La dépendance Sherpa-ONNX expérimentale n'utilise finalement pas JitPack : cette coordonnée apporte le JAR JVM en plus de l'AAR Android et produit des classes dupliquées. La CI récupère désormais uniquement l'AAR Android officiel v1.13.8, vérifie son SHA-256 et le place dans `app/libs` avant Gradle. `app/build.gradle.kts` référence ce fichier local temporaire.
+
+Les métriques PSS utilisent `Long`, conformément au type Android actuel de `Debug.getPss()`.

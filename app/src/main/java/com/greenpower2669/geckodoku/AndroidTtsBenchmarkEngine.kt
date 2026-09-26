@@ -37,7 +37,7 @@ class AndroidTtsBenchmarkEngine(
     private data class Pending(
         val id: String,
         val startedNs: Long,
-        val beforePssKb: Int,
+        val beforePssKb: Long,
         val callback:
             (VoiceBenchmarkResult) -> Unit,
         val file: File

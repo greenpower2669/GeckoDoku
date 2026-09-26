@@ -96,7 +96,7 @@ data class VoiceBenchmarkMetrics(
     val loadMs: Long? = null,
     val modelLoadedNow: Boolean? = null,
     val modelSizeBytes: Long? = null,
-    val approximatePssDeltaKb: Int? = null,
+    val approximatePssDeltaKb: Long? = null,
     val sampleRate: Int? = null,
     val audioDurationMs: Long? = null
 )

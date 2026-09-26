@@ -34,7 +34,9 @@ android {
 
 dependencies {
     implementation(
-        "com.github.k2-fsa:sherpa-onnx:v1.13.8"
+        files(
+            "libs/sherpa-onnx-1.13.8.aar"
+        )
     )
     testImplementation("junit:junit:4.13.2")
 }

@@ -17,7 +17,7 @@ data class PiperGeneratedVoice(
     val loadMs: Long,
     val modelLoadedNow: Boolean,
     val modelSizeBytes: Long,
-    val approximatePssDeltaKb: Int
+    val approximatePssDeltaKb: Long
 )
 
 class PiperModelManager(
@@ -29,7 +29,7 @@ class PiperModelManager(
     private data class LoadedPiper(
         val tts: OfflineTts,
         val loadMs: Long,
-        val baselinePssKb: Int
+        val baselinePssKb: Long
     )
 
     private val slot =

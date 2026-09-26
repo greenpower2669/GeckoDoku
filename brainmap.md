@@ -564,3 +564,13 @@ Audio
 Lifecycle
 ├── dismiss/pause → stop + release Piper programmé
 └── destroy → shutdown ressources benchmark
+
+
+GECKO-031 dependency path
+GitHub release v1.13.8
+└── sherpa-onnx-1.13.8.aar
+    ├── SHA-256 vérifié en CI
+    └── app/libs/sherpa-onnx-1.13.8.aar
+        └── Gradle implementation(files(...))
+
+Aucun sherpa-onnx-jvm.jar dans l'APK Android.

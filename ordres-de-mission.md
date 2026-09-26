@@ -974,3 +974,16 @@ Références officielles :
 - fermeture/pause/destroy libèrent les ressources expérimentales ;
 - tests unitaires + APK + AAB verts ;
 - Fabrice teste sur téléphone et choisit ensuite LOW/MEDIUM/Android.
+
+
+### Correctif CI GECKO-031 — dépendance Android native
+Le premier GREEN run #57 a validé le téléchargement et les SHA-256 des deux modèles Piper, puis a échoué à la compilation pour deux causes isolées :
+1. la coordonnée JitPack tirait simultanément `sherpa-onnx-jvm-v1.13.8.jar` et `sherpa-onnx-v1.13.8.aar`, créant des classes dupliquées ;
+2. `Debug.getPss()` est typé `Long` sur le SDK utilisé alors que les métriques expérimentales utilisaient `Int`.
+
+Décision :
+- ne plus utiliser JitPack ;
+- télécharger l'AAR Android officiel `sherpa-onnx-1.13.8.aar` depuis la release v1.13.8 ;
+- vérifier son SHA-256 officiel `633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96` ;
+- l'injecter sous `app/libs/` pendant la CI ;
+- stocker les métriques PSS en `Long`.

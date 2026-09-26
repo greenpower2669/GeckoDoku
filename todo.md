@@ -377,8 +377,8 @@
 - [x] Choisir `fr_FR-siwis-low` + `fr_FR-siwis-medium` pour comparaison même voix.
 - [x] RED : catalogue A/B et phrase commune — run #56.
 - [x] RED : garantir release ancien Piper avant create nouveau — run #56.
-- [x] Ajouter Sherpa-ONNX v1.13.8 via JitPack.
-- [x] CI : télécharger LOW/MEDIUM officiels, vérifier SHA-256, extraire dans assets.
+- [x] Sherpa-ONNX v1.13.8 : abandon JitPack après run #57 (JAR JVM + AAR dupliqués) ; utiliser uniquement l'AAR Android officiel vérifié.
+- [x] CI : télécharger LOW/MEDIUM officiels, vérifier SHA-256, extraire dans assets — étape validée run #57.
 - [x] Créer API Kotlin commune `VoiceBenchmarkEngine`.
 - [x] Implémenter AndroidTtsBenchmarkEngine séparé de ProfessorSpeech.
 - [x] Implémenter PiperVoiceBenchmarkEngine partagé + PiperSingleModelSlot mono-modèle.

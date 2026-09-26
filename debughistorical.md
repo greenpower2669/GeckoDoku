@@ -385,3 +385,13 @@ Run #56 échoue comme prévu à la compilation des tests : `VoiceBenchmarkVarian
 - slot mono-modèle : release ancien avant create nouveau ;
 - Android TTS reste séparé de `ProfessorSpeech` ;
 - UI A/B ne modifie pas le flux normal du Prof.
+
+
+### Run #57 — échec GREEN analysé
+L'étape `Prepare Piper LOW + MEDIUM assets` est verte : archives téléchargées, checksums vérifiés et chemins modèle/tokens/espeak-ng-data confirmés.
+
+La compilation échoue ensuite sur :
+- classes Sherpa dupliquées entre `sherpa-onnx-jvm-v1.13.8.jar` et `sherpa-onnx-v1.13.8.aar` apportés ensemble par JitPack ;
+- quatre incompatibilités `Long -> Int` autour de `Debug.getPss()`.
+
+Cause racine dépendance : mauvais mode d'intégration Android, pas défaut Piper. Correctif : AAR officiel seul + PSS en Long.
