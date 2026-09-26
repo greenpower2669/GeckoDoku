@@ -721,3 +721,30 @@ ProfessorSpeech / Sherpa Pierre
 │       └── restore Prof.png
 └── next speech after stop
     └── play ProfParle from t=0
+
+
+## Vidéo Prof — chaîne corrigée
+`MainActivity.playProfessorButtonVideo()`
+→ `ChromaKeyVideoView.play()`
+→ MediaPlayer
+→ SurfaceTexture
+→ shader chroma key
+→ alpha transparent
+→ `GLSurfaceView` en media overlay, fond transparent.
+
+Erreur MediaPlayer
+→ release player
+→ portrait restauré
+→ pas de verrou permanent
+→ prochain clic autorisé.
+
+Erreur renderer
+→ log temporaire
+→ release ancienne vue
+→ nouvelle `ChromaKeyVideoView`
+→ prochain clic autorisé.
+
+Logs :
+`cacheDir/temp/log.txt`
+→ pointeur vers
+`cacheDir/temp/video-error-log.txt`.

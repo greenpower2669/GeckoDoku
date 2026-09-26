@@ -1,6 +1,7 @@
 package com.greenpower2669.geckodoku
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.SurfaceTexture
 import android.media.MediaPlayer
@@ -71,7 +72,11 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         holder.setFormat(
             PixelFormat.TRANSLUCENT
         )
-        setZOrderOnTop(true)
+        // Keep the chroma-key surface inside Android's media-overlay
+        // composition instead of forcing a separate top-most surface.
+        // The shader already writes transparent alpha for keyed blue.
+        setZOrderMediaOverlay(true)
+        setBackgroundColor(Color.TRANSPARENT)
         setRenderer(chromaRenderer)
         renderMode = RENDERMODE_WHEN_DIRTY
         preserveEGLContextOnPause = true

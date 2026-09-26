@@ -374,3 +374,18 @@ Le contrat GECKO-033 est étendu sans modification runtime dans ce cycle.
 - fin/annulation/échec de parole → stopper la vidéo immédiatement et restaurer `Prof.png` ;
 - nouvelle parole après arrêt → relancer la vidéo depuis t=0.
 La durée nominale ~30 s du média n’est plus une durée d’affichage imposée.
+
+
+## Validation Fab — correctif vidéo Prof — 26 septembre 2026
+Fab a validé le diagnostic suivant :
+- le chroma key bleu est fonctionnel ; le rectangle noir ne doit pas être corrigé en modifiant le shader ou les seuils ;
+- le suspect prioritaire est la composition Android de la `GLSurfaceView`, en particulier `setZOrderOnTop(true)` ;
+- le verrou `professorVideoFailed` expliquait qu'une première erreur condamne ensuite toutes les lectures Prof ;
+- une erreur MediaPlayer doit rester récupérable par release + prochain clic ;
+- une erreur renderer/shader/texture externe justifie la recréation ciblée de la vue vidéo ;
+- les erreurs doivent être tracées dans `cacheDir/temp/video-error-log.txt` avec un pointeur dans `cacheDir/temp/log.txt`.
+
+Correctif appliqué dans le même cycle :
+`setZOrderMediaOverlay(true)` + fond transparent, suppression du verrou permanent, récupération différenciée MediaPlayer/renderer et journalisation temporaire. Le shader chroma key reste inchangé.
+
+Validation restante : CI Android puis test téléphone du fond noir et de la reprise après erreur.

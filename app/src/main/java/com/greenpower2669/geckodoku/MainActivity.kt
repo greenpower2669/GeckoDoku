@@ -8,6 +8,7 @@ import android.graphics.RectF
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.WindowInsets
@@ -16,6 +17,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -65,9 +67,6 @@ class MainActivity : Activity() {
         ChromaKeyVideoView
 
     private var professorVideoPlaying =
-        false
-
-    private var professorVideoFailed =
         false
 
     private lateinit var screenRoot:
@@ -492,17 +491,7 @@ class MainActivity : Activity() {
             }
 
         professorVideo =
-            ChromaKeyVideoView(this).apply {
-                visibility = View.INVISIBLE
-                importantForAccessibility =
-                    View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                isClickable = false
-                elevation =
-                    dp(
-                        professorUiPolicy
-                            .portraitElevationDp + 4
-                    ).toFloat()
-            }
+            createProfessorVideoView()
 
         professorButtonHost =
             FrameLayout(this).apply {
@@ -2519,12 +2508,171 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun createProfessorVideoView():
+        ChromaKeyVideoView =
+        ChromaKeyVideoView(this).apply {
+            visibility = View.INVISIBLE
+            importantForAccessibility =
+                View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            isClickable = false
+            elevation =
+                dp(
+                    professorUiPolicy
+                        .portraitElevationDp + 4
+                ).toFloat()
+        }
+
+    private fun recreateProfessorVideoView() {
+        if (
+            !::professorButtonHost.isInitialized ||
+            !::professorVideo.isInitialized
+        ) {
+            return
+        }
+
+        val previous =
+            professorVideo
+        val previousIndex =
+            professorButtonHost.indexOfChild(
+                previous
+            )
+        val previousLayout =
+            previous.layoutParams
+
+        previous.release()
+        professorButtonHost.removeView(
+            previous
+        )
+
+        professorVideo =
+            createProfessorVideoView()
+
+        if (previousLayout != null) {
+            professorButtonHost.addView(
+                professorVideo,
+                previousIndex
+                    .coerceAtLeast(0),
+                previousLayout
+            )
+        } else {
+            val portraitSize =
+                dp(
+                    professorUiPolicy
+                        .buttonHostHeightDp +
+                        professorUiPolicy
+                            .buttonPortraitOverhangDp
+                )
+
+            professorButtonHost.addView(
+                professorVideo,
+                FrameLayout.LayoutParams(
+                    portraitSize,
+                    portraitSize
+                ).apply {
+                    gravity =
+                        Gravity.START or
+                            Gravity.BOTTOM
+                    leftMargin = dp(8)
+                }
+            )
+        }
+
+        professorVideo.visibility =
+            View.INVISIBLE
+
+        if (::professorPortrait.isInitialized) {
+            professorPortrait.visibility =
+                View.VISIBLE
+            professorPortrait.bringToFront()
+        }
+    }
+
+    private fun writeProfessorVideoError(
+        assetPath: String,
+        message: String,
+        rendererFailure: Boolean
+    ) {
+        val stamp =
+            SimpleDateFormat(
+                "yyyy-MM-dd HH:mm:ss.SSS",
+                Locale.US
+            ).format(Date())
+
+        val detail =
+            buildString {
+                append(stamp)
+                append(" VIDEO ERROR\n")
+                append("asset=")
+                append(assetPath)
+                append('\n')
+                append("message=")
+                append(message)
+                append('\n')
+                append("rendererFailure=")
+                append(rendererFailure)
+                append('\n')
+                append("professorVideoPlaying=")
+                append(professorVideoPlaying)
+                append('\n')
+                append("action=")
+                append(
+                    if (rendererFailure) {
+                        "release_and_recreate_view_retry_allowed"
+                    } else {
+                        "release_player_restore_portrait_retry_allowed"
+                    }
+                )
+                append("\n\n")
+            }
+
+        try {
+            val tempDirectory =
+                File(
+                    cacheDir,
+                    "temp"
+                )
+
+            if (
+                !tempDirectory.exists() &&
+                !tempDirectory.mkdirs()
+            ) {
+                throw IllegalStateException(
+                    "Unable to create temp log directory"
+                )
+            }
+
+            File(
+                tempDirectory,
+                "video-error-log.txt"
+            ).appendText(detail)
+
+            File(
+                tempDirectory,
+                "log.txt"
+            ).appendText(
+                stamp +
+                    " [VIDEO ERROR] Voir " +
+                    "temp/video-error-log.txt\n"
+            )
+        } catch (error: Exception) {
+            Log.w(
+                "GeckoDokuVideo",
+                "Unable to write video error log",
+                error
+            )
+        }
+
+        Log.w(
+            "GeckoDokuVideo",
+            detail
+        )
+    }
+
     private fun playProfessorButtonVideo(): Boolean {
         if (
             !richMediaSettings.enabled ||
             !professorUiPolicy.playVideoInButton ||
-            !::professorVideo.isInitialized ||
-            professorVideoFailed
+            !::professorVideo.isInitialized
         ) {
             return false
         }
@@ -2572,10 +2720,29 @@ class MainActivity : Activity() {
                     failed = false
                 )
             },
-            onError = {
+            onError = { message ->
+                val rendererFailure =
+                    ProfessorVideoRecoveryPolicy
+                        .requiresViewRecreation(
+                            message
+                        )
+
+                writeProfessorVideoError(
+                    assetPath =
+                        AssetMediaCatalog
+                            .PROF_LONG_ACTIONS,
+                    message = message,
+                    rendererFailure =
+                        rendererFailure
+                )
+
                 finishProfessorButtonVideo(
                     failed = true
                 )
+
+                if (rendererFailure) {
+                    recreateProfessorVideoView()
+                }
             }
         )
 
@@ -2586,10 +2753,6 @@ class MainActivity : Activity() {
         failed: Boolean
     ) {
         professorVideoPlaying = false
-
-        if (failed) {
-            professorVideoFailed = true
-        }
 
         if (::professorVideo.isInitialized) {
             professorVideo.stopPlayback()

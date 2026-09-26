@@ -465,3 +465,20 @@ Risque identifié : laisser `ProfParle.mp4` continuer ~30 s après une phrase co
 Décision Fab : la vidéo de parole suit le **cycle réel de la voix**. Elle démarre avec la parole, peut être réutilisée tant que la parole reste active, mais doit être stoppée dès la fin/annulation/échec de la synthèse. Une parole ultérieure relance le média depuis t=0.
 
 Cette décision remplace explicitement l’ancienne formulation qui laissait la vidéo aller à sa fin naturelle après la fin de la voix.
+
+
+## GECKO — fond noir Prof et verrou après erreur — diagnostic validé
+Observation téléphone : bonne animation Prof sélectionnée, keycolor bleu effectivement supprimé, mais rectangle noir de composition visible.
+
+Cause exclue à ce stade : shader chroma key cassé. Le shader produit déjà un alpha nul pour le bleu et la surface demande un buffer RGBA translucide.
+
+Cause prioritaire corrigée : `ChromaKeyVideoView` utilisait `setZOrderOnTop(true)`, donc une surface Android top-most séparée pouvait être composée avec un fond noir sur certains appareils. Correctif minimal : `setZOrderMediaOverlay(true)` + `Color.TRANSPARENT`, sans toucher au shader.
+
+Deuxième cause démontrée : `MainActivity` positionnait `professorVideoFailed=true` après la première erreur puis refusait toutes les futures lectures. Ce verrou permanent a été supprimé.
+
+Récupération :
+- erreur MediaPlayer → release/restauration portrait/retry autorisé ;
+- erreur renderer connue → recréation ciblée de la vue ;
+- journal détaillé dans `cacheDir/temp/video-error-log.txt` et pointeur dans `cacheDir/temp/log.txt`.
+
+Preuve restante : tests CI puis test Samsung réel. Si le noir persiste, prochaine hypothèse ciblée = composition `GLSurfaceView` elle-même, avec migration du Prof intégré vers `TextureView/EGL`, sans altérer le chroma key.
