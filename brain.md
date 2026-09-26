@@ -337,3 +337,7 @@ Les encouragements alternent aléatoirement à parts égales entre les 13 segmen
 GitHub Actions run #61 (`36232826836`) sur `8aae5460caebf5d1f6d25b023e7a5b698ce2f917` : AAR Sherpa vérifié, archive UPMC Medium vérifiée, tests unitaires réussis, APK et AAB construits. Artefact `GeckoDoku-v0.10.8-dev-Android` id `10903700375`, taille ZIP APK+AAB `286519230` octets.
 
 Le laboratoire A/B précédent produisait ~317,1 Mo pour le même ZIP double-artifact ; la suppression de LOW + Siwis Medium réduit déjà la distribution de test tout en conservant uniquement Pierre UPMC Medium.
+
+
+### Preuve finale main GECKO-032
+Après fast-forward sans conflit, GitHub Actions run #63 (`36233134204`) sur `main` termine SUCCESS. Artefact `GeckoDoku-v0.10.8-dev-Android` id `10903207369`, taille ZIP APK+AAB `286519227` octets. La voix nominale est désormais UPMC Medium / Pierre sid 1 ; Android TTS n'est qu'un fallback.

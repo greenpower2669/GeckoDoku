@@ -641,3 +641,12 @@ Build GECKO-032
     ├── stats narration test
     ├── APK v0.10.8-dev
     └── AAB v0.10.8-dev
+
+
+Main GECKO-032
+└── run #63 SUCCESS
+    ├── Pierre UPMC Medium sid 1
+    ├── encouragements enregistrés + Pierre
+    ├── stats après musique d'ouverture
+    ├── APK v0.10.8-dev
+    └── AAB v0.10.8-dev

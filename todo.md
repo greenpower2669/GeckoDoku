@@ -407,4 +407,6 @@
 - [x] Annoncer stats après musique d'ouverture via PlayerStatsNarration.
 - [x] Synchroniser brain/brainmap/debug/todo/ordre dans le cycle GREEN.
 - [x] CI tests + APK + AAB — run #61 SUCCESS, artefact `GeckoDoku-v0.10.8-dev-Android`.
-- [ ] Fusion main après run documentaire vert, puis build final depuis main.
+- [x] Fusion main fast-forward sans conflit ; run final #63 SUCCESS.
+
+- [ ] Validation téléphone v0.10.8-dev : confirmer timbre Pierre sid 1, encouragements mixtes et annonce stats après musique.

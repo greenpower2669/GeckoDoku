@@ -427,3 +427,7 @@ Run #60 échoue comme prévu sur les symboles absents `PierreVoiceConfig`, `Enco
 
 ### GREEN GECKO-032 — run #61
 Le premier GREEN complet de Pierre termine en SUCCESS. Aucun modèle LOW/Siwis n'est préparé par la CI. L'artefact double APK+AAB passe d'environ 317,1 Mo (A/B) à 286,5 Mo. Le test `PierreVoiceConfigTest` verrouille UPMC Medium et `sid=1`.
+
+
+### MAIN GREEN GECKO-032
+Run #63 (`36233134204`) sur main : SUCCESS complet. La branche n'avait aucun commit concurrent sur main (fast-forward). Le runtime final n'embarque qu'UPMC Medium ; les modèles du laboratoire A/B ne sont plus préparés.

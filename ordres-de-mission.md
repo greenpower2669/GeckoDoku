@@ -991,7 +991,7 @@ Décision :
 
 # GECKO-032 — PIERRE UPMC MEDIUM DEVIENT LA VOIX LOCALE DU PROF
 **Demandeur / date :** Fab, 26/09/2026
-**Statut :** implémenté sur branche, CI GREEN run #61 ; fusion main et validation téléphone requises.
+**Statut :** livré sur `main`, CI finale #63 GREEN ; validation téléphone de Pierre et des annonces stats requise.
 
 ## 0. Décision après test A/B
 Fab valide le principe Piper MEDIUM et demande la voix masculine Pierre.
