@@ -574,3 +574,8 @@ Toutes les demandes Pierre de MainActivity passent par un wrapper visuel commun.
 <!-- GECKO-035-V01013-CANDIDATE-2026-09-26 -->
 ## Référence candidate GECKO-035
 v0.10.13-dev porte le pré-roll ProfParle avant voix, fallback PNG sans punir Pierre, ! quick talk, ⚙️ Son/Animations/Journal et journal média persistant.
+
+
+<!-- GECKO-035-CI115-GREEN-2026-09-26 -->
+## Preuve technique GECKO-035
+Run #115 GREEN complet pour v0.10.13-dev. Cette preuve valide la cohérence logicielle/build ; la synchro perceptuelle, l'ergonomie ⚙️/! et les scénarios de panne vidéo restent à valider sur téléphone par Fab.

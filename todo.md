@@ -187,3 +187,15 @@ Aucun ordre de mission actif actuellement.
 - [ ] Test téléphone : panne vidéo n'empêche jamais Pierre.
 - [ ] Test téléphone : ! / ⚙️ / journal.
 - [ ] Test téléphone : grille toujours immuable.
+
+
+<!-- GECKO-035-CI115-GREEN-2026-09-26 -->
+## GECKO-035 après #115
+- [x] CI finale versionnée GREEN.
+- [x] APK/AAB produits.
+- [ ] Fab : tester synchro Pierre / ProfParle.
+- [ ] Fab : tester ! avec plusieurs phrases.
+- [ ] Fab : tester ⚙️ Son / Animations / Journal.
+- [ ] Fab : tester consultation / copie / vidage du journal.
+- [ ] Fab : confirmer que Pierre continue si ProfParle échoue.
+- [ ] Fab : confirmer grille immuable.

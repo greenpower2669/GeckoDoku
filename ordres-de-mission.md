@@ -288,3 +288,8 @@ MainActivity câble désormais pré-roll caché → frame tenue → demande voix
 <!-- GECKO-035-V01013-CANDIDATE-2026-09-26 -->
 ## Candidate téléphone v0.10.13-dev
 Après GREEN #114 du runtime GECKO-035 : versionCode 24 / versionName 0.10.13-dev. CI finale versionnée requise avant livraison.
+
+
+<!-- GECKO-035-CI115-GREEN-2026-09-26 -->
+## Preuve CI finale
+Run #115 : SUCCESS complet sur v0.10.13-dev (versionCode 24), avec tests, assembleDebug, bundleDebug et upload artifact. Mission reste ouverte jusqu'à validation téléphone Fab.

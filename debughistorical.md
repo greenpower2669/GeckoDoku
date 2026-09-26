@@ -858,3 +858,8 @@ Le démarrage antérieur (voix puis vidéo) est remplacé pour les nouvelles dem
 <!-- GECKO-035-V01013-CANDIDATE-2026-09-26 -->
 ## 2026-09-26 — candidate GECKO-035
 #108 RED attendu. Étapes intermédiaires et #114 GREEN complet avant bump. Candidate v0.10.13-dev code 24 préparée pour CI finale.
+
+
+<!-- GECKO-035-CI115-GREEN-2026-09-26 -->
+## 2026-09-26 — #115 GREEN
+Candidate v0.10.13-dev : tests + APK + AAB + artifact réussis. Ne pas confondre cette preuve CI avec une validation téléphone de la synchro audio/vidéo.
