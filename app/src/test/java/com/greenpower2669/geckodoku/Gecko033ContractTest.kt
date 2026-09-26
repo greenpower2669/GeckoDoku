@@ -26,7 +26,6 @@ class Gecko033ContractTest {
     @Test
     fun everyGeckoVideoIsMutedEvenWhenFxIsOn() {
         listOf(
-            RichMediaKind.INTRO,
             RichMediaKind.GECKO_APPEARANCE,
             RichMediaKind.GECKO_DISAPPEARANCE,
             RichMediaKind.GECKO_LONG_ACTION
@@ -38,6 +37,13 @@ class Gecko033ContractTest {
                     .mustMute(kind)
             )
         }
+
+        assertFalse(
+            GeckoMediaAudioPolicy
+                .mustMute(
+                    RichMediaKind.INTRO
+                )
+        )
 
         assertFalse(
             GeckoMediaAudioPolicy

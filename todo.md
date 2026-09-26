@@ -598,3 +598,18 @@
 - [ ] Test téléphone : nouvel appui Prof pendant parole → seule interruption volontaire acceptée.
 - [ ] Aucun correctif runtime avant nouvel ordre explicite de Fab.
 
+
+
+<!-- GECKO-033-COEXISTENCE-RED-2026-09-26 -->
+## GECKO-033 — TDD coexistence
+- [x] Annuler la piste « une seule vidéo / différer Gecko ».
+- [x] Ajouter RED parole par origine/priorité.
+- [x] Ajouter RED actions joueur n’arrêtent pas Pierre.
+- [x] Ajouter RED deux sessions vidéo simultanées et fin indépendante.
+- [x] Ajouter RED Intro 1 audible si FX ON.
+- [x] Ajouter RED Prof interdit pendant Intro 1, autorisé après.
+- [x] Ajouter RED politique SurfaceView sans ZOrderOnTop global.
+- [ ] Observer RED CI pour la bonne raison.
+- [ ] Implémenter coexistence minimale après RED.
+- [ ] CI tests + APK + AAB.
+- [ ] Validation téléphone avec GeckoDokuMediaTrace.

@@ -1769,3 +1769,22 @@ Ajouter :
 
 **Aucun correctif runtime avant nouvel ordre explicite de Fab.**
 
+
+
+<!-- GECKO-033-COEXISTENCE-RED-2026-09-26 -->
+## GECKO-033 — CONTRAT PRIORITAIRE COEXISTENCE RÉELLE
+Le nouvel ordre Fab remplace explicitement l’ancienne piste documentaire « arbitre une seule vidéo / différer Gecko ». Cette piste est **annulée**.
+
+Contrat prioritaire :
+- une animation ne coupe pas Pierre ;
+- Pierre ne verrouille pas globalement les animations ;
+- `ProfParle.mp4` suit uniquement l’état réel de parole ;
+- Gecko apparition/disparition/action longue peut coexister avec Pierre/ProfParle ;
+- plusieurs lecteurs/surfaces doivent être indépendants, sans stop croisé ;
+- `clearProfessorSession()` doit nettoyer l’état pédagogique sans arrêter la voix ;
+- `closeProfessorBubble()` masque la bulle sans arrêter Pierre ;
+- origines parole : PROF_BUTTON / AMBIENT / STATS / END_GAME ;
+- PROF_BUTTON peut remplacer ; AMBIENT/STATS ne préemptent pas ;
+- Intro 1 audible si FX ON ; Intro 1 → Intro 2 séquentiel ;
+- Prof non éligible pendant Intro 1, mais l’architecture reste concurrente hors cette règle narrative ;
+- le × est explicite : skip de la séquence d’intro entière, conformément au contrat d’accessibilité historique.

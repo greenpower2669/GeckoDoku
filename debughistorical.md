@@ -590,3 +590,15 @@ Côté voix, aucune gestion de focus audio n'a été trouvée dans `VoicePcmPlay
 
 Décision fonctionnelle Fab : Pierre ne doit jamais être interrompu par une action normale ou un média. Seuls un nouvel appui Prof et la séquence finale peuvent volontairement remplacer sa phrase, hors arrêt utilisateur/lifecycle.
 
+
+
+<!-- GECKO-033-COEXISTENCE-RED-2026-09-26 -->
+## 2026-09-26 — correction de direction avant code
+L’audit précédent proposait un arbitre « une vidéo à la fois » et le différé des animations Gecko. Fab rejette explicitement cette solution car elle masque le défaut de coexistence.
+
+Cycle RED ouvert avant toute production :
+- politique de parole par origine ;
+- actions normales sans arrêt voix ;
+- registre de sessions vidéo indépendantes ;
+- Intro 1 sonore et Prof non éligible pendant Intro 1 ;
+- politique SurfaceView sans `setZOrderOnTop(true)` global.
