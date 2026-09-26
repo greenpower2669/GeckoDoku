@@ -907,3 +907,8 @@ Le renderer était armé dès PLAY_REQUEST et le log montrait parfois FIRST_FRAM
 <!-- GECKO-036-V01014-CANDIDATE-2026-09-27 -->
 ## 2026-09-27 — candidate GECKO-036
 #120 RED attendu ; #121 GREEN policies ; #122 GREEN runtime. Candidate v0.10.14-dev code 25 préparée pour validation finale CI puis téléphone.
+
+
+<!-- GECKO-036-CI123-GREEN-2026-09-27 -->
+## 2026-09-27 — #123 GREEN
+Candidate v0.10.14-dev : tests + APK + AAB + artifact réussis après correction continuité PNG, génération de frame et bulle QUICK_TALK.

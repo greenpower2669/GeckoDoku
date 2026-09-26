@@ -141,3 +141,8 @@ Prof.png est remis visible avant chaque transition vidéo Prof et reste visible 
 <!-- GECKO-036-V01014-CANDIDATE-2026-09-27 -->
 ## Candidate téléphone v0.10.14-dev
 Après #120 RED attendu, #121 GREEN policies et #122 GREEN runtime : versionCode 25 / versionName 0.10.14-dev. CI finale versionnée requise avant livraison.
+
+
+<!-- GECKO-036-CI123-GREEN-2026-09-27 -->
+## Preuve CI finale versionnée
+Run #123 : SUCCESS complet sur v0.10.14-dev (versionCode 25), avec tests, APK, AAB et artifact. Mission reste ouverte pour validation téléphone Fab.

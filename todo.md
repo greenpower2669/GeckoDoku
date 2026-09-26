@@ -277,3 +277,14 @@ Aucun ordre de mission actif actuellement.
 - [ ] Fab : vérifier disparition du MediaPlayer -38.
 - [ ] Fab : phrases ! dans bulle, une seule voix.
 - [ ] Fab : grille toujours immuable.
+
+
+<!-- GECKO-036-CI123-GREEN-2026-09-27 -->
+## GECKO-036 après #123
+- [x] CI finale versionnée GREEN.
+- [x] APK/AAB produits.
+- [ ] Fab : confirmer Prof.png visible pendant toute l'attente.
+- [ ] Fab : confirmer absence d'erreur MediaPlayer -38 lors des répétitions/remplacements.
+- [ ] Fab : confirmer les 100 phrases dans la bulle.
+- [ ] Fab : confirmer une seule voix QUICK_TALK par appui.
+- [ ] Fab : confirmer grille immuable.

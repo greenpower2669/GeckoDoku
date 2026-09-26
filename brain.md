@@ -707,3 +707,8 @@ Continuité PNG→vidéo : portrait visible avant stop/restart vidéo, pendant p
 <!-- GECKO-036-V01014-CANDIDATE-2026-09-27 -->
 ## Référence candidate GECKO-036
 v0.10.14-dev porte la continuité Prof.png→ProfParle, le rejet des frames résiduelles par génération de playback et QUICK_TALK dans la bulle sans double parole.
+
+
+<!-- GECKO-036-CI123-GREEN-2026-09-27 -->
+## Preuve technique GECKO-036
+Run #123 GREEN complet pour v0.10.14-dev. Le contrat logiciel/build est validé ; le téléphone de Fab reste l'autorité finale pour continuité PNG→vidéo, disparition du -38 et affichage QUICK_TALK dans la bulle.

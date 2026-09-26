@@ -205,3 +205,7 @@ PNG visible → video alpha0 → START(gen) → RENDERING_START(gen) → arm ren
 
 <!-- GECKO-036-V01014-CANDIDATE-2026-09-27 -->
 v0.10.14-dev → GECKO-036 candidate → CI finale → validation téléphone Fab.
+
+
+<!-- GECKO-036-CI123-GREEN-2026-09-27 -->
+v0.10.14-dev → CI #123 GREEN → APK/AAB → validation téléphone en attente.
