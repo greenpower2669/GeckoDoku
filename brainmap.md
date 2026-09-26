@@ -650,3 +650,25 @@ Main GECKO-032
     ├── stats après musique d'ouverture
     ├── APK v0.10.8-dev
     └── AAB v0.10.8-dev
+
+
+## GECKO-033 — cible future (non codée)
+Ouverture application
+├── IntroGeckoGD.mp4
+├── Gecko_Intro.mp4
+└── jeu déjà prêt derrière
+
+Titre haut écran
+├── IconGeckoGD.png
+└── texte GeckoDoku
+    └── aucun impact sur taille de grille
+
+ProfessorSpeech / Pierre sid 1
+└── avant parole → ProfParle.mp4
+    ├── déjà en cours ? réutiliser
+    ├── terminé ? relancer t=0
+    └── audio vidéo muet
+        └── voix = Piper Pierre
+
+Prof_actions.mp4
+└── reste réservé aux actions générales du Prof

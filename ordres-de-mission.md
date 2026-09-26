@@ -1050,3 +1050,86 @@ LOW et Siwis MEDIUM sont absents de l'artefact final.
 - aucune régression grille, animations, victoire ou Prof ;
 - tests + APK/AAB verts ;
 - fichiers FAB Copilot synchronisés.
+
+
+# GECKO-033 — NOUVELLE IDENTITÉ INTRO / ICÔNE + ANIMATION PROF PARLANTE
+**Demandeur / date :** Fab, 26/09/2026
+**Statut :** mission préparée uniquement. **Aucun code exécuté dans ce cycle.**
+
+## 0. Assets déjà uploadés sur main
+Les trois assets sont présents dans le dépôt et leurs rôles sont désormais figés :
+- `assets/prof/ProfParle.mp4` — animation du Prof quand Pierre parle ;
+- `assets/gecko/IntroGeckoGD.mp4` — nouvelle première séquence d'introduction ;
+- `assets/gecko/IconGeckoGD.png` — identité graphique GeckoDoku / icône.
+
+Ne pas renommer, réencoder ni déplacer ces fichiers sans nouvelle instruction de Fab.
+
+## 1. ProfParle.mp4 — animation synchronisée avec Pierre
+Quand `ProfessorSpeech` fait parler Pierre :
+1. lancer `assets/prof/ProfParle.mp4` **juste avant** le début de la synthèse/lecture vocale ;
+2. afficher cette vidéo dans la zone visuelle du Prof déjà prévue au premier plan, jamais dans la bulle pédagogique ;
+3. la bulle reste calme : texte + croix + TTS, sans vidéo interne ;
+4. la grille et les contrôles restent strictement immuables.
+
+### Réutilisation pendant les ~30 secondes
+`ProfParle.mp4` dure environ 30 secondes.
+- si Pierre reparle alors que `ProfParle.mp4` est déjà en cours, **réutiliser la lecture en cours** ;
+- ne pas redémarrer la vidéo à t=0 à chaque phrase ;
+- ne pas empiler une seconde instance ;
+- si la vidéo est terminée et que Pierre reparle plus tard, relancer depuis t=0 ;
+- si la parole finit avant la vidéo, laisser l'animation aller à sa fin naturelle sauf priorité supérieure / arrêt Activity / Anim OFF ;
+- si vidéo absente ou illisible, Pierre parle quand même et le PNG Prof reste le fallback.
+
+L'audio embarqué éventuel de la vidéo doit rester muet : la voix vient de Pierre via Sherpa-ONNX/Piper.
+
+## 2. IntroGeckoGD.mp4 — nouvelle première intro
+La séquence d'ouverture devient :
+1. `assets/gecko/IntroGeckoGD.mp4`
+2. puis l'intro existante actuelle `assets/gecko/Gecko_Intro.mp4`
+3. puis révélation du jeu déjà prêt derrière.
+
+Règles :
+- les deux vidéos sont des overlays, jamais des éléments de layout ;
+- aucune grille ne doit être recréée entre les deux vidéos ;
+- un skip/fermeture accessible doit pouvoir sortir proprement de la séquence ;
+- Anim OFF conserve l'accès direct au jeu comme aujourd'hui ;
+- ne pas découper ni réencoder `IntroGeckoGD.mp4` sans nouvelle mission.
+
+## 3. IconGeckoGD.png — icône officielle et présence près du titre
+`assets/gecko/IconGeckoGD.png` devient la source graphique à utiliser pour :
+- l'icône de l'APK/application Android ;
+- un petit visuel GeckoDoku placé **en haut de l'écran, près du titre**.
+
+Règles UI :
+- le visuel près du titre doit respecter les proportions du PNG ;
+- il ne doit pas pousser ou redimensionner la grille ;
+- garder un contraste lisible et une taille raisonnable ;
+- l'accessibilité du titre reste prioritaire ;
+- pour l'icône Android, générer les ressources launcher nécessaires à partir de cette source sans partager ni altérer l'original.
+
+## 4. Non-régression
+GECKO-033 ne doit pas casser les éléments validés précédemment :
+- Pierre = UPMC Medium, `sid=1` ;
+- encouragements enregistrés + encouragements Pierre ;
+- annonce des stats après la musique d'ouverture ;
+- vraie animation `Prof_actions.mp4` déjà restaurée pour les actions du Prof ;
+- bulle Prof flottante ;
+- Prof devant son bouton ;
+- grille immuable ;
+- animations Gecko et musique de victoire.
+
+### Distinction impérative entre les deux vidéos Prof
+- `Prof_actions.mp4` = actions/animations générales du Prof ;
+- `ProfParle.mp4` = animation **spécifique à la parole de Pierre**.
+
+Ne jamais confondre ni substituer les deux assets.
+
+## 5. Critères d'acceptation futurs
+- parler avec Pierre déclenche/reprend correctement `ProfParle.mp4` ;
+- plusieurs phrases pendant la même fenêtre ~30 s réutilisent la vidéo en cours ;
+- intro = `IntroGeckoGD.mp4` puis `Gecko_Intro.mp4` ;
+- `IconGeckoGD.png` = icône APK/app + visuel près du titre ;
+- aucun re-layout de grille ;
+- assets manquants = fallback propre ;
+- fichiers FAB Copilot synchronisés avec le code dans le même commit lors de l'implémentation ;
+- tests + APK/AAB verts avant fusion.

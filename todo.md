@@ -410,3 +410,20 @@
 - [x] Fusion main fast-forward sans conflit ; run final #63 SUCCESS.
 
 - [ ] Validation téléphone v0.10.8-dev : confirmer timbre Pierre sid 1, encouragements mixtes et annonce stats après musique.
+
+
+## GECKO-033 — intro / icône / ProfParle
+- [x] Vérifier les trois assets uploadés sur `main`.
+- [x] Figé : `ProfParle.mp4` = animation spécifique pendant la parole de Pierre.
+- [x] Figé : si `ProfParle.mp4` tourne déjà, la réutiliser sans restart.
+- [x] Figé : `IntroGeckoGD.mp4` passe avant `Gecko_Intro.mp4`.
+- [x] Figé : `IconGeckoGD.png` = source icône Android + visuel près du titre.
+- [ ] Implémenter un contrôleur ProfParle indépendant de la bulle.
+- [ ] Lancer ProfParle juste avant la parole Piper Pierre.
+- [ ] Garantir une seule instance vidéo et réutilisation pendant lecture active.
+- [ ] Ajouter IntroGeckoGD dans la chaîne d'intro avant Gecko_Intro.
+- [ ] Générer les ressources launcher Android depuis IconGeckoGD.
+- [ ] Ajouter IconGeckoGD près du titre sans re-layout de grille.
+- [ ] Tests de non-régression grille / Prof / intro / fallback.
+- [ ] Synchroniser les 4 fichiers vivants avec le code dans le même commit.
+- [ ] CI APK/AAB avant fusion.

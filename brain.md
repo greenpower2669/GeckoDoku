@@ -341,3 +341,13 @@ Le laboratoire A/B précédent produisait ~317,1 Mo pour le même ZIP double-art
 
 ### Preuve finale main GECKO-032
 Après fast-forward sans conflit, GitHub Actions run #63 (`36233134204`) sur `main` termine SUCCESS. Artefact `GeckoDoku-v0.10.8-dev-Android` id `10903207369`, taille ZIP APK+AAB `286519227` octets. La voix nominale est désormais UPMC Medium / Pierre sid 1 ; Android TTS n'est qu'un fallback.
+
+
+## GECKO-033 — mission préparée, non implémentée
+Trois assets uploadés par Fab sont désormais contractualisés sans changement de runtime :
+- `ProfParle.mp4` : animation spécifique à la parole de Pierre ; lecture lancée juste avant la voix et réutilisée si déjà en cours pendant sa fenêtre ~30 s ;
+- `IntroGeckoGD.mp4` : première intro, placée avant `Gecko_Intro.mp4` ;
+- `IconGeckoGD.png` : source de l'icône Android et petit visuel près du titre.
+
+Important : `Prof_actions.mp4` reste l'animation générale du Prof. `ProfParle.mp4` est exclusivement l'animation de parole.
+Aucun code n'a été modifié dans le cycle de préparation GECKO-033.

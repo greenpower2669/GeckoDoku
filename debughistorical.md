@@ -431,3 +431,14 @@ Le premier GREEN complet de Pierre termine en SUCCESS. Aucun modèle LOW/Siwis n
 
 ### MAIN GREEN GECKO-032
 Run #63 (`36233134204`) sur main : SUCCESS complet. La branche n'avait aucun commit concurrent sur main (fast-forward). Le runtime final n'embarque qu'UPMC Medium ; les modèles du laboratoire A/B ne sont plus préparés.
+
+
+## 2026-09-26 — GECKO-033 assets uploadés / rôles figés
+Fab a uploadé sur `main` :
+- `assets/prof/ProfParle.mp4` ;
+- `assets/gecko/IntroGeckoGD.mp4` ;
+- `assets/gecko/IconGeckoGD.png`.
+
+Risque identifié : confusion entre `ProfParle.mp4` et `Prof_actions.mp4`, ou redémarrage de la vidéo de parole à chaque phrase. Décision figée : `ProfParle.mp4` accompagne uniquement la parole de Pierre et, si elle est déjà active pendant sa durée ~30 s, la nouvelle phrase réutilise la lecture courante au lieu de repartir de zéro.
+
+Aucun code n'a été modifié dans ce cycle ; il s'agit uniquement d'une préparation de mission et de passation.
