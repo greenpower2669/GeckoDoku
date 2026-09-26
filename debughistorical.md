@@ -407,3 +407,7 @@ La taille importante de l'artefact (~317,1 Mo ZIP APK+AAB) est attendue pour cet
 Fab choisit la voix masculine Pierre. Vérification externe : le catalogue Piper `fr_FR-upmc-medium` déclare 2 speakers, `jessica:0` et `pierre:1`. Le modèle Siwis du benchmark précédent n'était donc pas le bon modèle final pour Pierre.
 
 Décision : repartir de la branche A/B verte #59, supprimer tout l'UI/labo de benchmark et réduire l'artefact à Sherpa + UPMC Medium. Ajouter un test explicite sid=1 pour éviter une régression silencieuse vers Jessica.
+
+
+### GECKO-032 — activation CI
+La branche GECKO-032 a été ajoutée explicitement au déclencheur GitHub Actions afin que le RED TDD puisse s'exécuter avant le code.
