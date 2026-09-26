@@ -873,3 +873,45 @@ Pierre audio
 → AudioTrack séparé
 
 Donc : arrivée tardive animation Gecko ≠ remplacement différé ; rechercher d'abord stop explicite voix ou préemption par nouveau speak.
+
+<!-- GECKO-033-AUDIT-PRIORITY-ARBITRATION-2026-09-26 -->
+## GECKO-033 — priorité voix / conflit intro
+
+Démarrage Activity
+→ scheduleProfessorIdleAnimation (2–3 s)
+→ playIntroIfEnabled
+   → Intro 1
+      → EOF → Intro 2
+
+PROBLÈME :
+scheduleProfessorIdleAnimation
+→ runProfessorIdleAnimation
+→ ne teste PAS richMediaOverlay.isBusy
+→ playProfessorButtonVideo
+→ Prof_actions ~30 s
+→ second ChromaKeyVideoView + second MediaPlayer
+→ chevauchement possible avec Intro 1 puis Intro 2
+
+ChromaKeyVideoView
+→ GLSurfaceView
+→ setZOrderOnTop(true)
+→ deux instances simultanées = compositing/ressources vidéo potentiellement fragiles
+
+Contrat futur :
+INTRO_ACTIVE
+→ bloque Prof action / ProfParle / Gecko vidéos / paroles ambiantes
+→ Intro 1 puis Intro 2
+→ libération seulement après fin/skip défini
+
+Pierre
+→ phrase active = verrou audio prioritaire
+→ action joueur : nettoyage UI Prof SANS stop voix
+→ nouvel appui Prof : remplacement autorisé
+→ fin de partie : transition autorisée
+→ ambient/stats : jamais de préemption
+
+Si animation de case pendant Pierre
+→ état GameEngine immédiat
+→ média décoratif différé ou arbitré
+→ jamais professorSpeech.stop pour faire place à la vidéo.
+

@@ -471,3 +471,18 @@ Chaînes distinctes :
 Sur action manuelle, `clearProfessorSession()` → `closeProfessorBubble()` → `professorSpeech.stop()` précède la mutation et la demande vidéo. Cela peut produire exactement le ressenti « la vidéo coupe Pierre » alors que Pierre est arrêté explicitement avant son démarrage visible.
 
 Le lecteur vidéo Prof partagé ACTION/SPEECH reste distinct de l'AudioTrack de Pierre. Une nouvelle `ProfessorSpeech.speak()`, en revanche, préempte explicitement la phrase précédente.
+
+<!-- GECKO-033-AUDIT-PRIORITY-ARBITRATION-2026-09-26 -->
+## GECKO-033 — contrat de non-interruption Pierre et arbitre média
+Pierre est désormais un flux prioritaire : une phrase commencée ne doit pas être arrêtée par une action normale de grille ni par un média décoratif. Exceptions : nouvelle pression Prof, séquence de fin de partie, FX OFF explicite et lifecycle Activity.
+
+Le futur design doit séparer fermeture visuelle de la bulle et arrêt de la voix. `clearProfessorSession()` ne doit plus entraîner automatiquement `professorSpeech.stop()` lors d'un tap/double-tap/appui long.
+
+Cause probable intro : l'idle Prof est planifié avant l'intro et `runProfessorIdleAnimation()` ne teste pas `richMediaOverlay.isBusy`. `Prof_actions.mp4` peut donc démarrer 2–3 s après le lancement et chevaucher `IntroGeckoGD.mp4`. Le Prof et l'overlay utilisent deux `ChromaKeyVideoView`/MediaPlayer distincts, chacun avec `setZOrderOnTop(true)`.
+
+Les deux intros elles-mêmes sont séquencées sur le même overlay : Intro 2 n'est demandée qu'après callback de fin d'Intro 1. Le skip actuel arrête toutefois la séquence sans passer à l'étape suivante.
+
+Aucun `requestAudioFocus()` n'est présent dans les lecteurs audités ; ne pas attribuer la coupure de Pierre à une règle audio Android avant preuve par logs.
+
+Futur : verrou `INTRO_ACTIVE`, politique de priorité des paroles par origine et arbitre vidéo unique pour empêcher les médias décoratifs de concurrencer Pierre/les intros.
+

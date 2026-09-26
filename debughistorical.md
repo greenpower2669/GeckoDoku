@@ -569,3 +569,24 @@ Particularité à ne pas mélanger :
 - apparition posée par le Prof ne déclenche pas d'action longue.
 
 Cause racine non encore déclarée tant que le scénario téléphone exact n'est pas corrélé aux logs.
+
+<!-- GECKO-033-AUDIT-PRIORITY-ARBITRATION-2026-09-26 -->
+## 2026-09-26 — nouvelle cause probable : Prof idle concurrent avec les intros
+Audit du code GECKO-033 après retour Fab.
+
+Découverte :
+- l'idle Prof est planifié dans `onCreate` avant l'appel différé à `playIntroIfEnabled()` ;
+- il déclenche rapidement (~2–3 s) ;
+- `runProfessorIdleAnimation()` ne considère pas `richMediaOverlay.isBusy` comme blocage ;
+- `playProfessorButtonVideo()` peut donc lancer `Prof_actions.mp4` pendant l'intro ;
+- vidéo Prof et intro utilisent deux `ChromaKeyVideoView`, donc deux `MediaPlayer`/GLSurfaceView ;
+- les deux vues utilisent `setZOrderOnTop(true)`.
+
+Cette concurrence est plus cohérente avec « Prof apparaît trop tôt » et « intro 2 disparue » qu'une Intro 2 volontairement jouée en arrière-plan. Intro 2 est appelée seulement après le callback de fin d'Intro 1.
+
+Autre anomalie : le × de l'overlay appelle `stop()` avec `invokeCompletion=false`; sauter Intro 1 arrête donc toute la chaîne au lieu de lancer Intro 2.
+
+Côté voix, aucune gestion de focus audio n'a été trouvée dans `VoicePcmPlayer`, `AssetAudioPlayer` ou `ChromaKeyVideoView`. La coupure observée reste d'abord expliquée par nos `professorSpeech.stop()` explicites et la préemption de `ProfessorSpeech.speak()`.
+
+Décision fonctionnelle Fab : Pierre ne doit jamais être interrompu par une action normale ou un média. Seuls un nouvel appui Prof et la séquence finale peuvent volontairement remplacer sa phrase, hors arrêt utilisateur/lifecycle.
+

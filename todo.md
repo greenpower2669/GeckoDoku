@@ -572,3 +572,29 @@
 - [ ] Exploiter GeckoDokuMediaTrace sur les scénarios ci-dessus.
 - [ ] Si nécessaire, ajouter plus tard logs voix avec origine et raison de stop.
 - [ ] Aucun correctif runtime avant nouvel ordre de Fab.
+
+<!-- GECKO-033-AUDIT-PRIORITY-ARBITRATION-2026-09-26 -->
+## GECKO-033 — correctifs à préparer après audit, sans coder maintenant
+- [x] Établir le contrat : Pierre ne doit pas être interrompu par les actions normales de grille.
+- [x] Identifier que `clearProfessorSession → closeProfessorBubble → professorSpeech.stop` viole ce contrat.
+- [x] Identifier que `ProfessorSpeech.speak` remplace systématiquement toute phrase active.
+- [x] Vérifier absence de `requestAudioFocus()` dans les lecteurs audités.
+- [x] Vérifier que Intro 1 et Intro 2 sont séquencées sur le même overlay.
+- [x] Identifier le bug de concurrence : idle Prof planifié pendant l'intro sans test `richMediaOverlay.isBusy`.
+- [x] Identifier deux lecteurs vidéo/GLSurfaceView possibles en parallèle : professorVideo + richMediaOverlay.
+- [x] Identifier `setZOrderOnTop(true)` sur chaque `ChromaKeyVideoView` comme point de vigilance.
+- [x] Identifier que le × de l'intro arrête actuellement toute la chaîne au lieu d'avancer à l'intro suivante.
+- [ ] FUTUR CODE : séparer nettoyage UI Prof / état pédagogique / interruption voix.
+- [ ] FUTUR CODE : politique de parole par origine et priorité ; seul PROF_BUTTON / END_GAME peuvent remplacer une phrase active.
+- [ ] FUTUR CODE : pendant INTRO_ACTIVE bloquer complètement Prof idle/action/speech vidéo et autres médias.
+- [ ] FUTUR CODE : ajouter arbitre vidéo pour éviter deux décodages keycolor concurrents.
+- [ ] FUTUR CODE : décider comportement exact du × : passer étape courante ou passer toute la séquence.
+- [ ] FUTUR CODE : si Pierre parle et qu'une animation de case est demandée, conserver l'état logique immédiat et différer le média décoratif sans couper Pierre.
+- [ ] FUTUR TRACE : SPEAK_REQUEST(origin), SPEAK_STARTED, SPEAK_STOP(reason/caller), SPEAK_COMPLETED.
+- [ ] FUTUR TRACE : état arbitre média + refus/différé avec raison.
+- [ ] Test téléphone : vérifier qu'aucun Prof_actions ne démarre pendant Intro 1/2.
+- [ ] Test téléphone : vérifier Intro 1 → Intro 2 sans chevauchement ni Prof visible.
+- [ ] Test téléphone : Pierre parle → action joueur → parole continue jusqu'au bout.
+- [ ] Test téléphone : nouvel appui Prof pendant parole → seule interruption volontaire acceptée.
+- [ ] Aucun correctif runtime avant nouvel ordre explicite de Fab.
+

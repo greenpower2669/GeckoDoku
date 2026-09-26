@@ -1698,3 +1698,74 @@ Ajouter si nécessaire une trace dédiée à la voix :
 afin de corréler exactement la coupure audio avec les événements vidéo.
 
 **Aucun code correctif avant nouvel ordre de Fab.**
+
+<!-- GECKO-033-AUDIT-PRIORITY-ARBITRATION-2026-09-26 -->
+## GECKO-033 — PRIORITÉ ABSOLUE À LA PAROLE DE PIERRE / ARBITRAGE MÉDIA — SANS CODE
+
+### Contrat voix validé par Fab
+Quand Pierre a commencé une phrase, sa voix doit aller jusqu'à sa fin naturelle.
+
+Une parole Pierre ne peut être interrompue volontairement que par :
+- une nouvelle pression explicite du joueur sur le bouton Prof ;
+- la transition / l'encouragement final de fin de partie ;
+- les arrêts techniques explicites indispensables : FX coupé par l'utilisateur ou Activity réellement quittée/pausée/détruite.
+
+Une action normale sur la grille, une apparition/disparition Gecko, une animation longue, une banalité ambiante ou une annonce de statistiques ne doivent jamais appeler indirectement ou directement `professorSpeech.stop()` pendant la phrase.
+
+### Correctif architectural à préparer
+Séparer obligatoirement :
+1. fermeture/nettoyage visuel de la bulle Prof ;
+2. nettoyage de l'état pédagogique/hypothèse ;
+3. interruption volontaire de la voix.
+
+Aujourd'hui `clearProfessorSession()` appelle `closeProfessorBubble()`, qui appelle `professorSpeech.stop()`. Cette chaîne viole le nouveau contrat lorsqu'elle est déclenchée par tap/double-tap/appui long.
+
+`ProfessorSpeech.speak()` préempte aussi toute phrase déjà active. Prévoir une politique par origine :
+- PROF_BUTTON : remplacement autorisé ;
+- END_GAME : transition autorisée ;
+- AMBIENT / SMALL_TALK / STATS / encouragement non final : aucune préemption ; ignorer ou différer jusqu'à ce que Pierre soit libre.
+
+### Piste Android audio
+Conserver l'hypothèse Fab, mais ne pas « désactiver une propriété native » à l'aveugle : les lecteurs audités n'appellent actuellement aucun `requestAudioFocus()`. La coupure observée est donc d'abord à chercher dans nos `stop()` explicites et dans l'arbitrage des médias.
+
+### Cause supplémentaire très crédible : Prof vidéo actif pendant l'intro
+Au démarrage :
+- l'idle Prof est planifié AVANT l'intro ;
+- il devient éligible après ~2–3 s ;
+- `runProfessorIdleAnimation()` ne bloque pas lorsque `richMediaOverlay.isBusy` ;
+- `playProfessorButtonVideo()` peut donc lancer `Prof_actions.mp4` pendant `IntroGeckoGD.mp4`.
+
+Prof et intro utilisent deux `ChromaKeyVideoView` distincts, donc deux `MediaPlayer` + deux `GLSurfaceView`. Chaque vue utilise `setZOrderOnTop(true)`. Deux surfaces « on top » simultanées peuvent provoquer un ordre visuel fragile et une concurrence de décodage.
+
+Comme `Prof_actions.mp4` dure ~30 s, une animation Prof démarrée 2–3 s après une intro 1 d'environ 30 s peut encore être active quand l'intro 2 démarre. Cette chronologie correspond aux symptômes Prof trop tôt + intro 2 masquée/perturbée.
+
+### Contrat intro à imposer
+Pendant toute la séquence Intro 1 + Intro 2 :
+- verrou exclusif `INTRO_ACTIVE` ;
+- aucun Prof_actions, ProfParle, Gecko vidéo de case ou longue ;
+- aucune parole ambiante/stats ;
+- Prof visuellement inactif jusqu'à la fin de la séquence.
+
+Les deux intros sont déjà séquencées sur le même `richMediaOverlay` : Intro 2 n'est appelée qu'après le callback de fin d'Intro 1, donc elle n'est pas volontairement lancée en arrière-plan par `IntroSequencePolicy`.
+
+Attention : le bouton × appelle actuellement `stop()` sans callback de completion. Sauter Intro 1 arrête donc toute la chaîne au lieu de lancer Intro 2. Décider explicitement si × signifie « passer cette intro » ou « passer toutes les intros ».
+
+### Arbitrage vidéo futur
+Priorités proposées :
+1. INTRO exclusive ;
+2. ProfParle pendant Pierre ;
+3. apparition/disparition de case ;
+4. Prof_actions / Gecko_actions seulement quand tout est libre.
+
+Si Pierre parle et qu'une animation de case est demandée : état logique immédiat, animation décorative différée si nécessaire, mais jamais de `professorSpeech.stop()` pour faire place à la vidéo.
+
+### Traces avant correction
+Ajouter :
+- `SPEAK_REQUEST(origin, replaceAllowed)`
+- `SPEAK_STARTED(origin)`
+- `SPEAK_STOP(reason, caller)`
+- `SPEAK_COMPLETED(origin)`
+- état arbitre média `INTRO_ACTIVE / PROF_SPEECH_VIDEO / PROF_ACTION / CELL / LONG_ACTION`.
+
+**Aucun correctif runtime avant nouvel ordre explicite de Fab.**
+
