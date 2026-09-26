@@ -892,3 +892,8 @@ Correction attendue : séparer affichage de bulle et transport vocal, puis affic
 <!-- GECKO-036-RED-2026-09-27 -->
 ## 2026-09-27 — GECKO-036 RED
 Le log téléphone a révélé des FIRST_FRAME_HELD possibles avant START, compatible avec une frame SurfaceTexture résiduelle. RED ajouté pour interdire toute frame antérieure au START + VIDEO_RENDERING_START du playback courant.
+
+
+<!-- GECKO-036-GREEN-POLICIES-2026-09-27 -->
+## 2026-09-27 — policies GREEN
+Après RED #120, ajout des trois policies pures avant câblage Android.

@@ -692,3 +692,8 @@ L'affichage de la bulle et le déclenchement vocal doivent être séparables afi
 <!-- GECKO-036-RED-2026-09-27 -->
 ## Garde-fou GECKO-036 en cours
 La continuité visuelle PNG→vidéo, l'identité de frame par playback et la séparation bulle/voix QUICK_TALK sont maintenant protégées par un cycle TDD dédié.
+
+
+<!-- GECKO-036-GREEN-POLICIES-2026-09-27 -->
+## GECKO-036 policies
+Le portrait possède désormais un contrat explicite de continuité ; une frame vidéo n'est admissible qu'après START + VIDEO_RENDERING_START du playback courant ; QUICK_TALK possède une présentation distincte de son transport vocal.

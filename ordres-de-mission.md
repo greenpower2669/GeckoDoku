@@ -126,3 +126,8 @@ Trois contrats RED sont ajoutés avant production :
 - portrait PNG visible jusqu'à révélation vidéo réellement réussie et restauré sur toute erreur ;
 - une frame résiduelle d'un playback précédent ne peut jamais valider le pré-roll du playback courant ;
 - le bouton ! présente la phrase dans la bulle, garde un status court et n'émet qu'une seule requête QUICK_TALK.
+
+
+<!-- GECKO-036-GREEN-POLICIES-2026-09-27 -->
+## GREEN étape 1 — policies
+Ajout des policies de continuité portrait, validation de frame fraîche par génération de playback, et présentation QUICK_TALK bulle/status/origin unique.

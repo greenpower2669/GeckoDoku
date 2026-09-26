@@ -192,3 +192,7 @@ GECKO-036 RED
 ├── ProfessorPortraitContinuityPolicy
 ├── FreshPlaybackFrameGate
 └── QuickTalkPresentationPolicy
+
+
+<!-- GECKO-036-GREEN-POLICIES-2026-09-27 -->
+ProfessorPortraitContinuityPolicy + FreshPlaybackFrameGate + QuickTalkPresentationPolicy → garde-fous runtime GECKO-036.

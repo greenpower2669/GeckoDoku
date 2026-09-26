@@ -242,3 +242,12 @@ Aucun ordre de mission actif actuellement.
 - [ ] Câbler ChromaKeyVideoView avec génération fraîche.
 - [ ] CI GREEN.
 - [ ] Candidate téléphone.
+
+
+<!-- GECKO-036-GREEN-POLICIES-2026-09-27 -->
+## GECKO-036 étape 1
+- [x] ProfessorPortraitContinuityPolicy.
+- [x] FreshPlaybackFrameGate.
+- [x] QuickTalkPresentationPolicy.
+- [ ] Câbler ChromaKeyVideoView.
+- [ ] Câbler MainActivity.
