@@ -1063,3 +1063,22 @@ onCreate
 → Prof INVISIBLE
 → Intro 1
 → Intro 2 / Prof éligible.
+
+
+<!-- GECKO-033-PROF-LOCAL-PREEMPTION-2026-09-26 -->
+## GECKO-033 — slot vidéo Prof
+Prof slot
+├── PROF_ACTION = Prof_actions.mp4
+└── PROF_SPEECH = ProfParle.mp4
+    └── priorité locale supérieure à PROF_ACTION
+
+Règle :
+Pierre START
+→ stop local PROF_ACTION si actif
+→ start PROF_SPEECH
+→ Gecko sessions continuent en parallèle
+→ Pierre COMPLETE
+→ stop PROF_SPEECH
+→ portrait normal
+
+Aucun stop croisé vers les sessions Gecko.

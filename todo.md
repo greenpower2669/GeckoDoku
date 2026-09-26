@@ -685,3 +685,15 @@
 - [ ] Télécharger APK final et test téléphone Fab.
 - [ ] Vérifier Intro 1 son + Intro 2 + Prof après Intro 1.
 - [ ] Vérifier coexistence ProfParle + animations Gecko grâce aux logs.
+
+
+<!-- GECKO-033-PROF-LOCAL-PREEMPTION-2026-09-26 -->
+## GECKO-033 — ProfParle priorité locale
+- [ ] BUG : si Pierre parle alors que `Prof_actions.mp4` joue, basculer immédiatement vers `ProfParle.mp4`.
+- [ ] Autoriser explicitement PROF_SPEECH à préempter PROF_ACTION dans le slot Prof.
+- [ ] Interdire l'inverse tant que Pierre parle.
+- [ ] Vérifier qu'aucune session Gecko n'est stoppée par cette bascule locale.
+- [ ] Ajouter test : PROF_ACTION active + SPEAK_STARTED → PROF_ACTION stop local + PROF_SPEECH start.
+- [ ] Ajouter test : Gecko active + bascule PROF_ACTION→PROF_SPEECH → Gecko reste active.
+- [ ] Conserver les logs `PROF_ACTION_REQUEST`, `PROF_SPEECH_STATE`, `PROF_SPEECH_VIDEO_REQUEST`, `PROF_VIDEO_STOP_ALL`.
+- [ ] Aucun code avant nouvel ordre explicite de Fab.

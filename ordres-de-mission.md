@@ -1870,3 +1870,45 @@ Correction racine :
 - le Prof reste donc inéligible/caché dès le premier frame jusqu’à la fin naturelle ou au skip d’Intro 1.
 
 La build de validation est renommée `v0.10.10-dev` / versionCode 21 pour la distinguer de la v0.10.9-dev observée sur téléphone.
+
+
+<!-- GECKO-033-PROF-LOCAL-PREEMPTION-2026-09-26 -->
+# GECKO-033 — EXCEPTION AUTORISÉE : PRIORITÉ LOCALE DE PROF_PARLE SUR PROF_ACTIONS
+**Retour Fab — 26/09/2026.**
+**Statut : contrat documentaire. Aucun code dans ce cycle.**
+
+## Observation téléphone
+Pendant une intervention du Prof, la bulle pédagogique et la voix peuvent être actives alors que `ProfParle.mp4` n'est pas lancé : une autre vidéo locale du Prof, typiquement `Prof_actions.mp4`, est encore en cours.
+
+## Règle corrigée
+La coexistence reste la règle générale, MAIS il existe une exception **strictement locale à la zone vidéo du Prof** :
+
+- si `Prof_actions.mp4` joue ;
+- et que Pierre commence réellement à parler ;
+- alors `Prof_actions.mp4` PEUT et DOIT être interrompu ;
+- puis `ProfParle.mp4` démarre immédiatement pour représenter la parole réelle.
+
+Cette coupure est autorisée car `Prof_actions.mp4` est une animation visuelle muette/non parlante et occupe le même rôle visuel local que `ProfParle.mp4`.
+
+## Interdictions
+Cette exception ne doit jamais devenir un arbitre global :
+- démarrer `ProfParle.mp4` ne stoppe PAS une animation Gecko de grille ;
+- une animation Gecko ne stoppe PAS `ProfParle.mp4` ;
+- `Prof_actions.mp4` ne doit jamais reprendre ou remplacer `ProfParle.mp4` tant que Pierre parle réellement ;
+- la fin d'une vidéo Gecko ne modifie pas l'état du player Prof ;
+- la fin d'une animation Prof ne modifie pas les autres sessions vidéo.
+
+## Priorité locale du slot Prof
+Dans le slot visuel du Prof uniquement :
+`PROF_SPEECH (ProfParle.mp4)` > `PROF_ACTION (Prof_actions.mp4)`.
+
+À l'extérieur de ce slot, coexistence normale avec les autres animations.
+
+## Cycle de vie attendu
+1. `Prof_actions.mp4` joue éventuellement.
+2. Pierre commence réellement sa phrase.
+3. Stop local de `Prof_actions.mp4`.
+4. Start `ProfParle.mp4`.
+5. Pierre continue à parler : `ProfParle.mp4` reste/reboucle si nécessaire.
+6. Pierre termine : stop `ProfParle.mp4`, retour au portrait normal.
+7. Les animations Gecko concurrentes continuent indépendamment durant tout ce cycle.

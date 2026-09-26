@@ -653,3 +653,17 @@ La disparition précédente de `Gecko_Intro.mp4` est également couverte par un 
 Le premier `createPuzzle(recordStart=true)` est appelé avant construction de `richMediaOverlay`. Le câblage initial avait placé `introPhase = DONE` dans `startPuzzle()` sans distinguer ce bootstrap d’une vraie nouvelle grille utilisateur.
 
 Correction : terminer l’intro dans `startPuzzle()` uniquement lorsque l’overlay existe déjà. Cette condition différencie proprement bootstrap et navigation runtime.
+
+
+<!-- GECKO-033-PROF-LOCAL-PREEMPTION-2026-09-26 -->
+## 2026-09-26 — ProfParle absent pendant parole : exception locale clarifiée
+Capture téléphone : le Prof affiche une animation visuelle dans son slot alors que la bulle pédagogique est active ; `ProfParle.mp4` n'est pas forcément celui affiché.
+
+Fab précise que la seule préemption vidéo supplémentaire autorisée est locale :
+- `ProfParle.mp4` peut interrompre `Prof_actions.mp4` au moment où Pierre commence réellement à parler ;
+- cette règle ne s'étend pas aux animations Gecko.
+
+À vérifier au prochain correctif :
+- état `professorVideoMode` au `SPEAK_STARTED` ;
+- si ACTION → STOP local puis START SPEECH ;
+- jamais de stop sur `RichMediaOverlayView` ou sessions Gecko.

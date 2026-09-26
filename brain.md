@@ -587,3 +587,12 @@ Correction racine :
 - le Prof reste donc inéligible/caché dès le premier frame jusqu’à la fin naturelle ou au skip d’Intro 1.
 
 La build de validation est renommée `v0.10.10-dev` / versionCode 21 pour la distinguer de la v0.10.9-dev observée sur téléphone.
+
+
+<!-- GECKO-033-PROF-LOCAL-PREEMPTION-2026-09-26 -->
+## GECKO-033 — priorité locale du slot Prof
+Exception à la coexistence : le slot vidéo du Prof est exclusif entre `Prof_actions.mp4` et `ProfParle.mp4`.
+
+Quand la parole réelle démarre, `ProfParle.mp4` préempte localement `Prof_actions.mp4`. Cette préemption ne concerne aucune autre session Gecko/intro/décorative.
+
+Tant que Pierre parle, `Prof_actions.mp4` ne peut pas reprendre la main. `ProfParle.mp4` s'arrête uniquement quand la parole réelle se termine ou lors d'une interruption explicitement autorisée.
