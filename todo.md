@@ -33,3 +33,24 @@
 ### Mission
 Aucun ordre de mission actif actuellement.
 `ordres-de-mission.md` doit rester vide jusqu'au prochain ordre explicite de Fab.
+
+
+<!-- GECKO-034-FIRST-FRAME-GATE-2026-09-26 -->
+## GECKO-034 — supprimer le flash noir de première frame
+- [ ] RED : une nouvelle session vidéo démarre cachée.
+- [ ] RED : `onPrepared` ne rend pas la vidéo visible.
+- [ ] RED : appel de `start()` ne rend pas la vidéo visible.
+- [ ] RED : première frame réellement rendue → vidéo visible.
+- [ ] RED : erreur avant première frame → session fermée sans affichage noir.
+- [ ] RED : complete avant première frame → jamais visible.
+- [ ] RED : état de visibilité indépendant pour chaque session.
+- [ ] Brancher le callback `MEDIA_INFO_VIDEO_RENDERING_START` ou équivalent fiable.
+- [ ] Garder `ChromaKeyVideoView` / Surface caché tant que la première frame n'est pas rendue.
+- [ ] Ajouter logs `VIDEO_VISIBILITY_ARMED`, `VIDEO_FIRST_FRAME`, `VIDEO_VISIBLE`, `VIDEO_ABORT_BEFORE_FIRST_FRAME`.
+- [ ] Ne pas introduire de temporisation arbitraire.
+- [ ] Ne pas toucher aux intros validées.
+- [ ] Ne pas modifier ZOrderOnTop / alpha / shader chroma hors nécessité démontrée.
+- [ ] Ne pas modifier la coexistence multi-sessions.
+- [ ] Build APK/AAB après GREEN.
+- [ ] Validation téléphone : aucun flash noir au démarrage Prof.
+- [ ] Validation téléphone : aucun flash noir au démarrage Gecko.
