@@ -92,6 +92,17 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             setZOrderMediaOverlay(true)
         }
 
+        MediaTrace.event(
+            source = traceSource(),
+            event = "SURFACE_POLICY",
+            detail =
+                "onTop=" +
+                    layerPolicy.useZOrderOnTop +
+                    " mediaOverlay=" +
+                    layerPolicy.useMediaOverlay +
+                    " pixelFormat=TRANSLUCENT alphaBits=8"
+        )
+
         setRenderer(chromaRenderer)
         renderMode = RENDERMODE_WHEN_DIRTY
         preserveEGLContextOnPause = true

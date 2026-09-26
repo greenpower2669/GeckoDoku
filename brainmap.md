@@ -64,3 +64,19 @@ attempt N ERROR
 → retry ProfParle
 → START réussi
 → flag diagnostic=false
+
+
+<!-- GECKO-033-TRANSPARENT-SURFACE-GREEN-2026-09-26 -->
+## Surface chroma corrigée
+ChromaKeyVideoView instance N
+├── EGL RGBA 8/8/8/8
+├── PixelFormat.TRANSLUCENT
+├── glClear alpha=0
+├── shader blue-key alpha
+├── ZOrderOnTop=true
+└── MediaOverlay=false
+
+Multi-session reste :
+session A → view/player A
+session B → view/player B
+aucun stop croisé.

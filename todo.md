@@ -61,3 +61,18 @@
 - [x] Réinitialiser le flag au prochain START réussi.
 - [ ] Observer le prochain RED sur la stratégie de transparence.
 - [ ] Corriger le rectangle noir.
+
+
+<!-- GECKO-033-TRANSPARENT-SURFACE-GREEN-2026-09-26 -->
+## GREEN transparence
+- [x] RED #95 isolé : 43 tests, 1 échec surface.
+- [x] Restaurer ZOrderOnTop pour la transparence.
+- [x] Désactiver MediaOverlay par défaut.
+- [x] Conserver alpha EGL / TRANSLUCENT / shader.
+- [x] Conserver multi-sessions indépendantes.
+- [x] Ajouter log SURFACE_POLICY.
+- [ ] Vérifier suite complète GREEN.
+- [ ] Bump version APK de test.
+- [ ] Validation téléphone : fond noir Prof disparu.
+- [ ] Validation téléphone : fond noir Gecko disparu.
+- [ ] Validation téléphone : ProfParle retry fonctionnel.

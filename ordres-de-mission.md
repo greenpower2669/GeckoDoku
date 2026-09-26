@@ -259,3 +259,20 @@ Une nouvelle policy `ProfessorSpeechVideoStartPolicy` autorise le lancement selo
 
 Une erreur précédente n'est pas un critère de refus.
 Au démarrage réussi suivant, le flag est remis à false.
+
+
+<!-- GECKO-033-TRANSPARENT-SURFACE-GREEN-2026-09-26 -->
+## GREEN 2 — composition transparente restaurée
+RED #95 : 43 tests, 1 seul échec, précisément `transparentKeyedSurfaceUsesTopCompositionInsteadOfOpaqueMediaOverlay`.
+
+Correction minimale :
+- `VideoSurfaceLayerPolicy.useZOrderOnTop = true` ;
+- `useMediaOverlay = false` ;
+- conservation de `PixelFormat.TRANSLUCENT` ;
+- conservation de l'EGL RGBA 8/8/8/8 ;
+- conservation du clear OpenGL alpha 0 et du blending ;
+- conservation intégrale des sessions vidéo indépendantes.
+
+Important : cela ne réintroduit PAS un arbitre vidéo global. Chaque animation garde son propre `ChromaKeyVideoView` / `MediaPlayer`; seul le mode de composition Android de la surface redevient celui capable d'afficher l'alpha observé historiquement.
+
+Ajout log `SURFACE_POLICY` par instance.

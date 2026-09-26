@@ -60,3 +60,17 @@ Une erreur de `ProfParle.mp4` est **locale à la tentative courante** :
 - un succès ultérieur efface l'état d'erreur diagnostic.
 
 Jamais de latch permanent de désactivation.
+
+
+<!-- GECKO-033-TRANSPARENT-SURFACE-GREEN-2026-09-26 -->
+## Invariant durable — transparence SurfaceView
+Pour le renderer GLSurfaceView actuel, la composition transparente validable doit utiliser :
+- EGL alpha 8 bits ;
+- holder TRANSLUCENT ;
+- clear alpha=0 ;
+- shader alpha chroma ;
+- composition ZOrderOnTop.
+
+`setZOrderMediaOverlay(true)` a produit des rectangles noirs sur téléphone et n'est plus la stratégie par défaut.
+
+Cette décision n'affecte pas l'invariant de coexistence : les sessions et players restent indépendants.

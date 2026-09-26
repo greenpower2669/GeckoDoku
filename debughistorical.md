@@ -722,3 +722,13 @@ RED #94 : `ProfessorSpeechVideoStartPolicy` manquante.
 Cause corrigée : `professorSpeechVideoFailed` était utilisé comme garde persistante dans `startProfessorSpeechVideo()`. Un seul onError condamnait donc toutes les phrases suivantes.
 
 Correction : policy de démarrage fondée uniquement sur l'état courant ; ancien échec conservé pour log mais ignoré comme verrou. Le flag est réinitialisé au prochain démarrage vidéo réussi.
+
+
+<!-- GECKO-033-TRANSPARENT-SURFACE-GREEN-2026-09-26 -->
+## 2026-09-26 — RED #95 confirme la régression de composition
+Après GREEN retry ProfParle, la suite compile et exécute 43 tests. Un seul échoue :
+`transparentKeyedSurfaceUsesTopCompositionInsteadOfOpaqueMediaOverlay`.
+
+Le code avant régression GECKO-033 utilisait directement `setZOrderOnTop(true)`, en plus de PixelFormat.TRANSLUCENT et EGL alpha. La refonte coexistence avait remplacé cela par MediaOverlay.
+
+Correction : restaurer OnTop pour l'alpha tout en gardant la nouvelle architecture multi-sessions. Ceci sépare clairement deux dimensions qui avaient été confondues : composition SurfaceView et arbitrage des players.
