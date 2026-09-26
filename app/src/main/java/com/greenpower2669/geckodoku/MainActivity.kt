@@ -2,6 +2,7 @@ package com.greenpower2669.geckodoku
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.RectF
 import android.os.Build
@@ -12,6 +13,7 @@ import android.view.View
 import android.view.WindowInsets
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import java.text.SimpleDateFormat
@@ -52,6 +54,12 @@ class MainActivity : Activity() {
 
     private lateinit var professorButton:
         Button
+
+    private lateinit var professorButtonHost:
+        FrameLayout
+
+    private lateinit var professorPortrait:
+        ImageView
 
     private lateinit var screenRoot:
         FrameLayout
@@ -95,8 +103,8 @@ class MainActivity : Activity() {
     private val richMediaScheduler =
         RichMediaScheduler()
 
-    private val professorAnimationPolicy =
-        ProfessorAnimationPolicy()
+    private val professorUiPolicy =
+        ProfessorUiPolicy()
 
     private var selectedSize = 5
 
@@ -147,6 +155,8 @@ class MainActivity : Activity() {
             LinearLayout(this).apply {
                 orientation =
                     LinearLayout.VERTICAL
+                clipChildren = false
+                clipToPadding = false
 
                 setPadding(
                     dp(8),
@@ -383,13 +393,97 @@ class MainActivity : Activity() {
         professorButton =
             Button(this).apply {
                 text =
-                    "🧑‍🏫 Prof Gecko"
+                    "Prof Gecko"
 
                 textSize = 16f
-                minHeight = dp(50)
+                minHeight =
+                    dp(
+                        professorUiPolicy
+                            .buttonHostHeightDp
+                    )
+
+                gravity =
+                    Gravity.CENTER_VERTICAL
+
+                setPadding(
+                    dp(86),
+                    0,
+                    dp(16),
+                    0
+                )
 
                 setOnClickListener {
                     showProfessorHint()
+                }
+            }
+
+        professorPortrait =
+            ImageView(this).apply {
+                scaleType =
+                    ImageView.ScaleType
+                        .FIT_CENTER
+
+                importantForAccessibility =
+                    View.IMPORTANT_FOR_ACCESSIBILITY_NO
+
+                contentDescription = null
+                isClickable = false
+
+                try {
+                    context.assets.open(
+                        AssetMediaCatalog
+                            .PROF_PORTRAIT
+                    ).use {
+                        setImageBitmap(
+                            BitmapFactory
+                                .decodeStream(it)
+                        )
+                    }
+                } catch (_: Exception) {
+                    visibility =
+                        View.INVISIBLE
+                }
+            }
+
+        professorButtonHost =
+            FrameLayout(this).apply {
+                clipChildren = false
+                clipToPadding = false
+
+                addView(
+                    professorButton,
+                    FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams
+                            .MATCH_PARENT,
+                        FrameLayout.LayoutParams
+                            .MATCH_PARENT
+                    )
+                )
+
+                if (
+                    professorUiPolicy
+                        .showPortraitInButton
+                ) {
+                    val portraitSize =
+                        dp(
+                            professorUiPolicy
+                                .buttonHostHeightDp +
+                                professorUiPolicy
+                                    .buttonPortraitOverhangDp
+                        )
+
+                    addView(
+                        professorPortrait,
+                        FrameLayout.LayoutParams(
+                            portraitSize,
+                            portraitSize
+                        ).apply {
+                            gravity =
+                                Gravity.START or
+                                    Gravity.BOTTOM
+                            leftMargin = dp(8)
+                        }
+                    )
                 }
             }
 
@@ -538,15 +632,21 @@ class MainActivity : Activity() {
         )
 
         root.addView(
-            professorButton,
+            professorButtonHost,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+                dp(
+                    professorUiPolicy
+                        .buttonHostHeightDp
+                )
             )
         )
 
         screenRoot =
             FrameLayout(this).apply {
+                clipChildren = false
+                clipToPadding = false
+
                 addView(
                     root,
                     FrameLayout.LayoutParams(
@@ -1220,6 +1320,7 @@ class MainActivity : Activity() {
 
     private fun showProfessorHint() {
         professorUsed = true
+        animateProfessorButtonPortrait()
 
         val pending =
             pendingProfessorHypothesis
@@ -1427,10 +1528,12 @@ class MainActivity : Activity() {
         message: String
     ) {
         if (
-            ::controlsPanel.isInitialized
+            ::controlsPanel.isInitialized &&
+            professorUiPolicy
+                .keepControlsVisibleWhileBubbleOpen
         ) {
             controlsPanel.visibility =
-                View.GONE
+                View.VISIBLE
         }
 
         professorBubble.showMessage(
@@ -1453,9 +1556,6 @@ class MainActivity : Activity() {
 
         screenRoot.post {
             positionProfessorBubble()
-            screenRoot.post {
-                maybePlayProfessorLongAction()
-            }
         }
     }
 
@@ -1471,7 +1571,9 @@ class MainActivity : Activity() {
         }
 
         if (
-            ::controlsPanel.isInitialized
+            ::controlsPanel.isInitialized &&
+            professorUiPolicy
+                .keepControlsVisibleWhileBubbleOpen
         ) {
             controlsPanel.visibility =
                 View.VISIBLE
@@ -2152,88 +2254,36 @@ class MainActivity : Activity() {
         )
     }
 
-    private fun maybePlayProfessorLongAction() {
-        val celebrationVisible =
-            ::celebrationView.isInitialized &&
-                celebrationView.visibility ==
-                    View.VISIBLE
-
-        val mediaBusy =
-            !::richMediaOverlay.isInitialized ||
-                richMediaOverlay.isBusy
-
-        val shouldPlay =
-            professorAnimationPolicy
-                .shouldAnimate(
-                    animationsEnabled =
-                        richMediaSettings.enabled,
-                    mediaBusy = mediaBusy,
-                    hypothesisPending =
-                        pendingProfessorHypothesis !=
-                            null,
-                    celebrationVisible =
-                        celebrationVisible
-                )
-
-        if (!shouldPlay) {
-            return
-        }
-
-        val screenRect =
-            professorBubble
-                .portraitRectOnScreen()
-
+    private fun animateProfessorButtonPortrait() {
         if (
-            screenRect.width() <= 0f ||
-            screenRect.height() <= 0f
+            !::professorPortrait.isInitialized ||
+            !professorUiPolicy
+                .animatePortraitOnInteraction ||
+            professorPortrait.visibility !=
+                View.VISIBLE
         ) {
             return
         }
 
-        val rootLocation = IntArray(2)
-        screenRoot.getLocationOnScreen(
-            rootLocation
-        )
-        val target =
-            RectF(screenRect).apply {
-                offset(
-                    -rootLocation[0].toFloat(),
-                    -rootLocation[1].toFloat()
-                )
+        professorPortrait.animate().cancel()
+        professorPortrait.scaleX = 1f
+        professorPortrait.scaleY = 1f
+        professorPortrait.translationY = 0f
+
+        professorPortrait.animate()
+            .scaleX(1.07f)
+            .scaleY(1.07f)
+            .translationY(-dp(4).toFloat())
+            .setDuration(150L)
+            .withEndAction {
+                professorPortrait.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .translationY(0f)
+                    .setDuration(180L)
+                    .start()
             }
-
-        val started =
-            richMediaOverlay.play(
-                kind =
-                    RichMediaKind
-                        .PROF_LONG_ACTION,
-                assetPath =
-                    AssetMediaCatalog
-                        .PROF_LONG_ACTIONS,
-                muted = true,
-                target = target,
-                titleText = null,
-                skippable = true,
-                maskTarget = target,
-                maskColor =
-                    Color.rgb(
-                        255,
-                        252,
-                        224
-                    )
-            )
-
-        if (started) {
-            richMediaOverlay.bringToFront()
-
-            if (
-                ::celebrationView.isInitialized &&
-                celebrationView.visibility ==
-                    View.VISIBLE
-            ) {
-                celebrationView.bringToFront()
-            }
-        }
+            .start()
     }
 
     private fun handlePlayerGeckoConfirmed(

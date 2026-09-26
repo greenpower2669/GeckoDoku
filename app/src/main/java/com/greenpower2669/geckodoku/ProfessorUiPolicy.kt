@@ -1,0 +1,11 @@
+package com.greenpower2669.geckodoku
+
+data class ProfessorUiPolicy(
+    val keepControlsVisibleWhileBubbleOpen: Boolean = true,
+    val showPortraitInsideBubble: Boolean = false,
+    val playVideoInsideBubble: Boolean = false,
+    val showPortraitInButton: Boolean = true,
+    val animatePortraitOnInteraction: Boolean = true,
+    val buttonHostHeightDp: Int = 58,
+    val buttonPortraitOverhangDp: Int = 10
+)

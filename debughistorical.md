@@ -248,3 +248,15 @@ Sur téléphone, ouverture de la bulle Prof → recadrage visible de la grille.
 
 ### Décision
 Ne plus changer le flux de layout pour une bulle. La bulle reste enfant overlay de `screenRoot`. Prof.png sort de la bulle et devient décor du bouton Prof à taille de host fixe ; la vidéo Prof ne joue plus dans la bulle.
+
+
+### TDD RED GECKO-026
+Run #36 (`36211900132`) échoue volontairement sur `Unresolved reference 'ProfessorUiPolicy'`. Le test impose : contrôles visibles pendant la bulle, aucun portrait/vidéo dans la bulle, portrait visible et animé dans un host de bouton fixe 58 dp avec débordement 10 dp.
+
+### Correctif GECKO-026
+- suppression de `controlsPanel = GONE` à l'ouverture : cause racine du re-layout ;
+- `ProfessorBubbleView` simplifiée : aucun bitmap, aucune géométrie portrait, élévation flottante ;
+- suppression du lancement `Prof_actions.mp4` dans la bulle ;
+- `Prof.png` placé dans un host fixe autour du bouton avec clip désactivé ;
+- micro-animation locale par `scaleX/scaleY/translationY`, donc sans `requestLayout` ;
+- retrait de `ProfessorAnimationPolicy` et de son test, supersédés par GECKO-026.

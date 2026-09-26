@@ -212,3 +212,11 @@ L'animation du Prof n'utilise plus `RichMediaScheduler`. À chaque intervention 
 
 ### Preuve CI GECKO-025
 GitHub Actions run #33 (`36210582662`) sur `8aaa06f95dd626a654a95a4b284280b43705a47c` : tests unitaires, APK et AAB réussis. Version produite : `0.10.1-dev`. Validation visuelle téléphone encore nécessaire pour confirmer le rendu réel de Gecko_tr et la fréquence d'animation Prof.
+
+
+## GECKO-026 — Prof flottant sans reflow
+Le bug de cadrage n'était pas causé par le fait que `ProfessorBubbleView` soit dans `screenRoot` : elle était déjà en overlay. La cause était `controlsPanel.visibility = GONE` lors de l'ouverture. Comme `GeckoBoardView` occupe la hauteur restante avec `weight=1f`, Android recalculait sa hauteur et donc le rectangle de la grille.
+
+GECKO-026 interdit désormais tout retrait du layout lors d'une bulle Prof : les contrôles restent visibles, la bulle flotte au-dessus, et la grille conserve ses dimensions. `ProfessorBubbleView` ne contient plus aucun PNG ni animation Prof : seulement titre, texte, croix et TTS externe.
+
+`Prof.png` vit dans un `FrameLayout` de bouton à hauteur fixe (58 dp), avec 10 dp de débordement visuel autorisé vers le haut. Une micro-animation de scale/lift est appliquée au PNG à chaque interaction Prof via propriétés visuelles uniquement ; aucune mesure/layout n'est modifiée. `Prof_actions.mp4` n'est plus lancé depuis la bulle. La précédente `ProfessorAnimationPolicy` GECKO-025 est retirée du runtime.

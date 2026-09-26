@@ -364,3 +364,30 @@ Build GECKO-025
     ├── ProfessorAnimationPolicyTest
     ├── APK v0.10.1-dev
     └── AAB v0.10.1-dev
+
+
+## GECKO-026
+LinearLayout racine (dimensions stables)
+├── titre / info / statut
+├── GeckoBoardView (weight=1, ne change jamais pendant Prof)
+├── controlsPanel (reste VISIBLE)
+└── professorButtonHost (hauteur fixe 58 dp)
+    ├── Button texte
+    └── Prof.png décoratif
+        ├── dépassement visuel 10 dp
+        └── micro-animation transform uniquement
+
+screenRoot overlay
+├── jeu normal
+├── RichMediaOverlayView
+├── ProfessorBubbleView flottante
+│   ├── titre
+│   ├── texte
+│   └── croix
+│   (aucun PNG/MP4 Prof)
+└── VictoryCelebrationView
+
+showProfessorBubble()
+├── ne touche jamais au flux de layout
+├── TTS immédiat
+└── positionProfessorBubble() seulement

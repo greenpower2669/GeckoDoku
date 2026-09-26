@@ -304,13 +304,13 @@
 
 ## GECKO-026 — bulle flottante / Prof dans bouton
 - [x] Identifier la cause racine du recadrage : `controlsPanel = GONE` libère de la hauteur pour la grille pondérée.
-- [ ] RED : verrouiller la politique UI « contrôles visibles + aucun Prof dans bulle + PNG vivant dans bouton ».
-- [ ] Supprimer tout changement de visibilité de `controlsPanel` lors de la bulle.
-- [ ] Retirer Prof.png de `ProfessorBubbleView`.
-- [ ] Supprimer le déclenchement de `Prof_actions.mp4` dans la bulle.
-- [ ] Ajouter Prof.png dans un host de bouton à hauteur fixe, légèrement débordant.
-- [ ] Ajouter une micro-animation locale du PNG au clic Prof sans toucher au layout.
-- [ ] Retirer le runtime `ProfessorAnimationPolicy` devenu obsolète par GECKO-026.
-- [ ] Mettre à jour brain/brainmap/debug/todo/ordre dans le même cycle.
+- [x] RED : verrouiller la politique UI — run #36 échoue sur `ProfessorUiPolicy` absent.
+- [x] Supprimer tout changement de visibilité destructif de `controlsPanel` lors de la bulle ; il reste visible.
+- [x] Retirer Prof.png de `ProfessorBubbleView`.
+- [x] Supprimer le déclenchement de `Prof_actions.mp4` dans la bulle.
+- [x] Ajouter Prof.png dans un host de bouton 58 dp, avec débordement visuel 10 dp.
+- [x] Ajouter une micro-animation locale du PNG au clic Prof via transform uniquement.
+- [x] Retirer le runtime `ProfessorAnimationPolicy` devenu obsolète par GECKO-026.
+- [x] Mettre à jour brain/brainmap/debug/todo/ordre dans le même cycle.
 - [ ] CI tests + APK + AAB.
 - [ ] Validation téléphone : grille inchangée pixel pour pixel à l'ouverture/fermeture du Prof.

@@ -1,8 +1,6 @@
 package com.greenpower2669.geckodoku
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -34,9 +32,6 @@ class ProfessorBubbleView @JvmOverloads constructor(
             strokeWidth = dp(2.2f)
         }
 
-    private val imagePaint =
-        Paint(Paint.ANTI_ALIAS_FLAG)
-
     private val closeFillPaint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.rgb(38, 88, 55)
@@ -67,22 +62,12 @@ class ProfessorBubbleView @JvmOverloads constructor(
     private val closeRect =
         RectF()
 
-    private val professorBitmap: Bitmap? =
-        try {
-            context.assets.open(
-                AssetMediaCatalog.PROF_PORTRAIT
-            ).use {
-                BitmapFactory.decodeStream(it)
-            }
-        } catch (_: Exception) {
-            null
-        }
-
     private var message =
         ""
 
     init {
         isClickable = true
+        elevation = dp(8f)
         importantForAccessibility =
             IMPORTANT_FOR_ACCESSIBILITY_YES
     }
@@ -128,7 +113,7 @@ class ProfessorBubbleView @JvmOverloads constructor(
             )
 
         val desired =
-            dp(92f).toInt() +
+            dp(58f).toInt() +
                 body.height +
                 dp(18f).toInt()
 
@@ -263,21 +248,10 @@ class ProfessorBubbleView @JvmOverloads constructor(
             closeTextPaint
         )
 
-        val portrait = portraitRect(rect)
-
-        professorBitmap?.let { bitmap ->
-            canvas.drawBitmap(
-                bitmap,
-                null,
-                portrait,
-                imagePaint
-            )
-        }
-
         canvas.drawText(
             "Prof Gecko",
-            portrait.right + dp(8f),
-            rect.top + dp(28f),
+            rect.left + dp(14f),
+            rect.top + dp(24f),
             titlePaint
         )
 
@@ -294,40 +268,11 @@ class ProfessorBubbleView @JvmOverloads constructor(
         canvas.save()
         canvas.translate(
             rect.left + dp(14f),
-            rect.top + dp(72f)
+            rect.top + dp(38f)
         )
         body.draw(canvas)
         canvas.restore()
     }
-
-    fun portraitRectOnScreen(): RectF {
-        val margin = dp(8f)
-        val bubbleRect =
-            RectF(
-                margin,
-                margin,
-                width - margin,
-                height - margin - dp(14f)
-            )
-        val result = portraitRect(bubbleRect)
-        val location = IntArray(2)
-        getLocationOnScreen(location)
-        result.offset(
-            location[0].toFloat(),
-            location[1].toFloat()
-        )
-        return result
-    }
-
-    private fun portraitRect(
-        bubbleRect: RectF
-    ): RectF =
-        RectF(
-            bubbleRect.left + dp(10f),
-            bubbleRect.top + dp(8f),
-            bubbleRect.left + dp(62f),
-            bubbleRect.top + dp(60f)
-        )
 
     private fun makeLayout(
         text: String,
