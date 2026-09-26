@@ -270,9 +270,9 @@ screenRoot
 
 
 ## Encouragement audio GECKO-023 — cible
-assets/Voix_encouragements.mp3 (master 14,441 s)
+assets/audio/encouragements/master/Voix_encouragements.mp3 (master 14,441 s)
 └── découpage préparatoire, jamais au runtime
-    └── assets/voice/encouragements/
+    └── assets/audio/encouragements/clips/
         └── 13 clips courts
 
 GameEngine
@@ -295,3 +295,16 @@ Dernier gecko
 
 Habillage animé
 └── sans effet sur les voix d'encouragement
+
+
+Audio autonomes
+assets/audio/
+├── intro/
+│   └── jungle intro GeckoD.mp3
+├── celebration/
+│   └── jungle cebration GeckoD.mp3
+└── encouragements/
+    ├── master/
+    │   └── Voix_encouragements.mp3
+    └── clips/
+        └── futur : 13 clips GECKO-023

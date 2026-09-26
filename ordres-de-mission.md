@@ -443,7 +443,7 @@ Le lot sera considéré valide lorsque :
 # GECKO-023 — VOIX D'ENCOURAGEMENT À CHAQUE NOUVEAU GECKO
 **Demandeur / date :** Fab, 26/09/2026  
 **Statut :** mission figée, **à implémenter ultérieurement**.  
-**Source maître :** `assets/Voix_encouragements.mp3` — durée mesurée 14,441 s.
+**Source maître :** `assets/audio/encouragements/master/Voix_encouragements.mp3` — durée mesurée 14,441 s.
 
 ## 0. Intention
 À chaque **nouveau gecko correctement trouvé par le joueur**, GeckoDoku joue une courte phrase française d'encouragement choisie de façon aléatoire. Cette voix est un retour positif purement sonore : elle ne modifie jamais la logique, le score, la difficulté, les statistiques ni l'état du puzzle.
@@ -472,8 +472,8 @@ Les fenêtres ci-dessous incluent une petite marge de sécurité autour de la pa
 **Important :** le clip 13 contient volontairement la pause entre « Ça » et « c'était vraiment bon ». Elle doit être conservée ; ne pas le redécouper en deux phrases.
 
 ## 2. Organisation des assets
-- conserver `assets/Voix_encouragements.mp3` comme master ;
-- créer les dérivés sous `assets/voice/encouragements/` ;
+- conserver `assets/audio/encouragements/master/Voix_encouragements.mp3` comme master ;
+- créer les dérivés sous `assets/audio/encouragements/clips/` ;
 - ne pas remplacer le master par les clips ;
 - le catalogue des clips devient la seule source de vérité pour le runtime ;
 - le découpage se fait une fois lors de la préparation des assets, pas en temps réel pendant la partie.
@@ -552,3 +552,13 @@ Le système reçoit uniquement un événement « gecko joueur nouvellement confi
 - FX contrôle les voix ;
 - jeu et logique totalement indépendants de l'audio ;
 - master original conservé.
+
+
+### Rangement audio effectué — 26/09/2026
+Sans code applicatif, les trois MP3 ont été classés par rôle, sans réencodage ni modification binaire :
+- `assets/audio/intro/jungle intro GeckoD.mp3` ;
+- `assets/audio/celebration/jungle cebration GeckoD.mp3` ;
+- `assets/audio/encouragements/master/Voix_encouragements.mp3`.
+
+Les futurs 13 clips GECKO-023 seront placés sous `assets/audio/encouragements/clips/`.
+Cette réorganisation ne donne encore aucun rôle runtime aux deux morceaux jungle et n'active pas GECKO-023 : elle prépare uniquement les assets pendant que Fab teste la v0.9.

@@ -173,8 +173,18 @@ Les médias racine `assets/` sont empaquetés par le sourceSet Android sans dupl
 
 
 ## Voix d'encouragement — mission GECKO-023
-Le master `assets/Voix_encouragements.mp3` contient 13 phrases courtes. La mission GECKO-023 prévoit de le conserver intact et de générer 13 clips séparés sous `assets/voice/encouragements/`. Une voix est déclenchée uniquement après confirmation correcte d'un **nouveau gecko par le joueur**, jamais pour une action Prof, une erreur, une croix ou un retrait. Le même gecko ne doit pas être félicité deux fois dans une tentative après retrait/repose.
+Le master `assets/audio/encouragements/master/Voix_encouragements.mp3` contient 13 phrases courtes. La mission GECKO-023 prévoit de le conserver intact et de générer 13 clips séparés sous `assets/audio/encouragements/clips/`. Une voix est déclenchée uniquement après confirmation correcte d'un **nouveau gecko par le joueur**, jamais pour une action Prof, une erreur, une croix ou un retrait. Le même gecko ne doit pas être félicité deux fois dans une tentative après retrait/repose.
 
 Le choix est aléatoire sans répétition immédiate. « Tu y es presque » est conditionné à 1–2 geckos restants. Les voix suivent FX ON/OFF mais restent indépendantes du switch Habillage animé. Le dernier gecko reçoit lui aussi un encouragement ; un futur son de victoire est séquencé après la courte phrase pour éviter la cacophonie. L'audio reste décoratif et ne peut jamais influencer GameEngine, stats ou difficulté.
 
 Les timecodes canoniques de découpe sont stockés dans `ordres-de-mission.md`. Statut : **à implémenter**.
+
+
+## Organisation audio physique
+Les fichiers audio autonomes sont classés sous `assets/audio/` :
+- `intro/` pour le morceau d'introduction futur ;
+- `celebration/` pour le morceau de célébration futur ;
+- `encouragements/master/` pour le master vocal intact ;
+- `encouragements/clips/` réservé aux 13 dérivés GECKO-023.
+
+Ce rangement n'active aucun comportement à lui seul. Les vidéos MP4 conservent leur audio embarqué et restent sous `assets/gecko/` et `assets/prof/`.

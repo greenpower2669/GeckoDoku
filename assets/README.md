@@ -48,3 +48,14 @@ Le son embarqué des vidéos respecte le réglage FX.
 
 ## Keycolor bleu
 Le fond bleu des vidéos riches est supprimé au runtime par shader GPU OpenGL ES : dominance bleue → transparence, transition douce et réduction des franges bleues. Les seuils sont réglables dans `AssetMediaCatalog`. En cas d'échec du shader ou du décodage, l'overlay disparaît et le jeu procédural continue.
+
+
+## audio/
+
+Les MP3 autonomes sont rangés par rôle sans réencodage :
+- `audio/intro/jungle intro GeckoD.mp3` : source musicale d'introduction, rôle runtime encore non activé ;
+- `audio/celebration/jungle cebration GeckoD.mp3` : source musicale de célébration, rôle runtime encore non activé ;
+- `audio/encouragements/master/Voix_encouragements.mp3` : master vocal intact de 14,441 s ;
+- `audio/encouragements/clips/` : réservé aux 13 clips courts GECKO-023 à produire ultérieurement.
+
+Le rangement des MP3 n'ajoute aucun code et ne modifie pas le comportement de la v0.9 en cours de test.

@@ -245,13 +245,13 @@
 
 
 ## Synchronisation main pendant GECKO-022
-- [x] Synchroniser les trois MP3 ajoutés directement sur `main` pendant le développement (`jungle intro GeckoD.mp3`, `jungle cebration GeckoD.mp3`, `Voix_encouragements.mp3`) sans les modifier ni leur inventer un rôle runtime.
+- [x] Ranger les trois MP3 sans réencodage : `assets/audio/intro/jungle intro GeckoD.mp3`, `assets/audio/celebration/jungle cebration GeckoD.mp3`, `assets/audio/encouragements/master/Voix_encouragements.mp3` ; aucun rôle runtime ajouté pendant le test v0.9.
 
 
 ## GECKO-023 — Voix d'encouragement
-- [x] Analyser le master `assets/Voix_encouragements.mp3` et mesurer sa durée : 14,441 s.
+- [x] Analyser le master `assets/audio/encouragements/master/Voix_encouragements.mp3` et mesurer sa durée : 14,441 s.
 - [x] Identifier les 13 phrases et figer les timecodes sûrs dans `ordres-de-mission.md`.
-- [ ] Découper les 13 clips sous `assets/voice/encouragements/` en conservant le master intact.
+- [ ] Découper les 13 clips sous `assets/audio/encouragements/clips/` en conservant le master intact.
 - [ ] Ajouter EncouragementCatalog / Selector / Player (noms finaux à confirmer lors de l'implémentation).
 - [ ] Déclencher uniquement après un nouveau gecko correctement confirmé par le joueur.
 - [ ] Empêcher le redéclenchement sur la même cellule dans une tentative.

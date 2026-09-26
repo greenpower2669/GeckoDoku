@@ -180,7 +180,7 @@ GitHub Actions run #15 (`36203684907`) sur commit `e9dbfa394246f6ba0f552ef69ff3d
 
 ## 2026-09-26 — Banque vocale d'encouragement
 ### Source observée
-`assets/Voix_encouragements.mp3`, durée mesurée 14,441 s, contient 13 phrases séparées par des silences nets. La dernière phrase contient une pause interne volontaire après « Ça » et ne doit pas être scindée.
+`assets/audio/encouragements/master/Voix_encouragements.mp3`, durée mesurée 14,441 s, contient 13 phrases séparées par des silences nets. La dernière phrase contient une pause interne volontaire après « Ça » et ne doit pas être scindée.
 
 ### Décision GECKO-023
 Ne pas piloter un MP3 long avec des seeks/timers à chaque coup. Conserver le master et produire 13 clips courts déterministes à partir des timecodes canoniques de l'ordre de mission. Lecture seulement après un nouveau gecko correctement confirmé par le joueur, avec anti-répétition et garde contextuelle pour « Tu y es presque ».
@@ -192,3 +192,7 @@ Ne pas piloter un MP3 long avec des seeks/timers à chaque coup. Conserver le ma
 - ne pas mélanger voix d'encouragement et futur son de victoire ;
 - FX OFF doit rester réellement silencieux ;
 - audio absent = aucun impact logique.
+
+
+### Rangement physique des MP3 — sans code
+Pendant le test téléphone v0.9, Fab demande uniquement de préparer GECKO-023 et de ranger les assets audio. Les trois blobs MP3 sont déplacés sans réencodage ni changement de contenu vers `assets/audio/`, classés en `intro/`, `celebration/` et `encouragements/master/`. Aucun fichier Kotlin/Gradle n'est modifié pour ce rangement.
