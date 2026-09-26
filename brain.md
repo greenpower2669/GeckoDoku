@@ -518,3 +518,7 @@ Après RED #83, implémentation minimale des contrats purs :
 - `GeckoMediaAudioPolicy` : INTRO n’est plus forcée muette ; les animations Gecko de gameplay restent muettes.
 
 Cette étape ne prétend pas encore avoir câblé le runtime Android : intégration MainActivity/ProfessorSpeech/RichMediaOverlay/ChromaKey reste à faire.
+
+
+<!-- GECKO-033-POLICY-COMPILE-FIX-2026-09-26 -->
+GECKO-033 — correction compile GREEN 1 : `GeckoMediaAudioPolicy` traite maintenant explicitement `INTRO -> false` (pas de mute forcé), après échec #84 « when non exhaustif ». Aucun autre comportement n’est modifié dans ce correctif.

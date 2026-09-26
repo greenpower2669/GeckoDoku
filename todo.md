@@ -628,3 +628,8 @@
 - [ ] Remplacer overlay mono-session par sessions indépendantes.
 - [ ] Câbler intro/Prof/skip.
 - [ ] CI finale + APK/AAB.
+
+
+<!-- GECKO-033-POLICY-COMPILE-FIX-2026-09-26 -->
+- [x] Corriger #84 : `GeckoMediaAudioPolicy` exhaustif avec `INTRO -> false`.
+- [ ] Revalider les politiques pures avant câblage Android.

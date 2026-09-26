@@ -607,3 +607,8 @@ Cycle RED ouvert avant toute production :
 <!-- GECKO-033-COEXISTENCE-POLICY-GREEN-2026-09-26 -->
 ## 2026-09-26 — GREEN policies après RED #83
 Les politiques pures de coexistence et priorité parole ont été introduites après l’échec attendu de #83. Aucun arbitre mono-vidéo n’est ajouté. L’intégration runtime reste volontairement séparée pour pouvoir isoler les régressions.
+
+
+<!-- GECKO-033-POLICY-COMPILE-FIX-2026-09-26 -->
+## 2026-09-26 — #84 échec compile ciblé
+Cause : suppression de INTRO de la branche mute sans branche explicite false dans le `when`. Correctif minimal : INTRO rejoint PROF_LONG_ACTION côté `false`. Ce changement correspond au RED « Intro 1 audible si FX ON ».

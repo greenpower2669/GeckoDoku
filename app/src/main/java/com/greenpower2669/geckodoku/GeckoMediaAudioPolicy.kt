@@ -9,6 +9,7 @@ object GeckoMediaAudioPolicy {
             RichMediaKind.GECKO_DISAPPEARANCE,
             RichMediaKind.GECKO_LONG_ACTION -> true
 
+            RichMediaKind.INTRO,
             RichMediaKind.PROF_LONG_ACTION -> false
         }
 }
