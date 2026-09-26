@@ -540,3 +540,16 @@
 - [ ] CORRECTION FUTURE : restaurer `Gecko_Intro.mp4`.
 - [ ] CORRECTION FUTURE : restaurer animations Gecko grille visibles mais muettes.
 - [ ] Exploiter les logs téléphone avant de modifier l’arbitrage.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-ANIM-OFF-UNEXPECTED-2026-09-26 -->
+## GECKO-033 — Anim OFF inattendu
+- [ ] BUG/ENQUÊTE : déterminer pourquoi Anim. s’est retrouvé OFF sans action identifiée.
+- [ ] Vérifier valeur par défaut de `RichMediaSettings.enabled` : ON si aucune préférence utilisateur.
+- [ ] Inventorier toutes les écritures de `RichMediaSettings.enabled`.
+- [ ] Ajouter log ancienne valeur → nouvelle valeur + origine pour chaque écriture.
+- [ ] Ajouter log de la valeur chargée au démarrage.
+- [ ] Vérifier SharedPreferences / persistance après mise à jour APK.
+- [ ] Vérifier pause/reprise, recréation Activity et redémarrage.
+- [ ] Vérifier qu’aucune erreur/conflit vidéo ne force Anim OFF.
+- [ ] Ne pas corriger avant nouvel ordre de Fab.

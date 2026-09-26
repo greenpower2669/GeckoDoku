@@ -824,3 +824,17 @@ IntroGeckoGD visible + audible + Prof caché
 → fin propre audio intro 1
 → Gecko_Intro
 → Prof éligible après intro 1.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-ANIM-OFF-UNEXPECTED-2026-09-26 -->
+## GECKO-033 — état Anim inattendu
+RichMediaSettings.enabled
+├── démarrage
+│   ├── préférence existante → restaurer choix utilisateur
+│   └── aucune préférence → ON par défaut
+├── bouton Anim
+│   └── seul chemin normal de bascule ON/OFF
+└── erreurs/conflits média
+    └── NE DOIVENT PAS forcer OFF
+
+Symptôme téléphone : Anim observé OFF sans origine connue → tracer lecture/écriture + lifecycle.

@@ -535,3 +535,16 @@ Ce cycle est volontairement **diagnostic seulement** :
 Le tag `GeckoDokuMediaTrace` enregistre l’ordre réel des événements afin d’identifier les conflits entre INTRO, GECKO_ACTION, PROF_ACTION et PROF_SPEECH.
 
 Nouvelle chronologie cible à respecter ensuite : Prof absent pendant la première intro ; première intro avec son ; Prof seulement après sa fin ; pas de chevauchement audio intro 1 → intro 2.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-ANIM-OFF-UNEXPECTED-2026-09-26 -->
+## 2026-09-26 — Anim passé OFF sans cause identifiée
+Fab observe que l’habillage animé s’est retrouvé désactivé pendant les tests téléphone, sans avoir identifié l’action déclenchante.
+
+Ne pas attribuer prématurément ce symptôme au conflit Prof/intro/Gecko. Les causes possibles incluent préférence persistée, valeur par défaut, lifecycle Android, action utilisateur involontaire ou écriture indésirable depuis un chemin d’erreur.
+
+Prochain diagnostic :
+- inventorier toutes les écritures de `RichMediaSettings.enabled` ;
+- tracer chargement initial + source ;
+- vérifier qu’aucun échec vidéo ne modifie ce réglage ;
+- vérifier comportement après mise à jour APK et recréation Activity.

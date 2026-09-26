@@ -1551,3 +1551,38 @@ Tracer :
 But : reconstruire exactement **qui lance quoi, qui stoppe quoi et quel média bloque lequel**.
 
 Aucune correction fonctionnelle n’est incluse dans ce cycle de logs.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-ANIM-OFF-UNEXPECTED-2026-09-26 -->
+# GECKO-033 — RETOUR TÉLÉPHONE : HABILLAGE ANIMÉ PASSÉ SUR OFF SANS CAUSE IDENTIFIÉE
+**Retour Fab — 26/09/2026.**
+**Statut : documentation uniquement. Aucun code maintenant.**
+
+## Symptôme
+Pendant le test téléphone de v0.10.9-dev / branche GECKO-033, le bouton **Anim.** s’est retrouvé sur **OFF** sans que Fab ait identifié l’action qui l’a provoqué.
+
+À ce stade, **ne pas affirmer la cause**.
+
+Hypothèses à auditer :
+- état `RichMediaSettings.enabled` persisté d’un précédent lancement ;
+- valeur par défaut incorrecte au premier lancement / après mise à jour ;
+- appui accidentel non remarqué ;
+- code qui écrit `enabled = false` lors d’une erreur média, d’un conflit ou d’un cycle pause/reprise ;
+- restauration d’état Android / SharedPreferences après crash ou redémarrage ;
+- autre conflit indirect lié aux players vidéo.
+
+## Contrat attendu
+- **Anim. doit être ON par défaut** sur une installation / configuration neuve, sauf choix explicite de l’utilisateur ;
+- une erreur de lecture vidéo, un conflit de player ou un média manquant **ne doit jamais désactiver globalement Anim.** ;
+- `Anim. OFF` doit résulter uniquement d’une action utilisateur explicite ou d’un réglage persistant déjà choisi par lui ;
+- le bouton doit toujours refléter l’état réel de `RichMediaSettings.enabled`.
+
+## Diagnostic demandé
+Au prochain audit :
+1. tracer chaque écriture de `RichMediaSettings.enabled` avec ancienne/nouvelle valeur et origine ;
+2. tracer la valeur chargée au démarrage ;
+3. vérifier la valeur par défaut en absence de préférence enregistrée ;
+4. vérifier pause/reprise, crash/restart, rotation/recréation Activity et mise à jour APK ;
+5. confirmer qu’aucun chemin d’erreur média n’écrit `enabled = false`.
+
+Ne pas corriger avant la fin de la série de tests téléphone de Fab.

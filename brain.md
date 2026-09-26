@@ -445,3 +445,15 @@ Chronologie cible documentée mais non corrigée dans ce cycle :
 - audio intro 1 terminé avant intro 2 ;
 - Prof éligible seulement après intro 1 ;
 - `Gecko_Intro.mp4` doit suivre sans être supprimée par un média Prof.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-ANIM-OFF-UNEXPECTED-2026-09-26 -->
+## GECKO-033 — Anim OFF inattendu
+Retour téléphone : `RichMediaSettings.enabled` / bouton Anim. a été observé sur OFF sans action identifiée.
+
+Contrat :
+- ON par défaut si aucun choix utilisateur n’existe ;
+- erreurs/conflits vidéo ne doivent jamais désactiver globalement l’habillage animé ;
+- OFF uniquement par action utilisateur explicite ou préférence persistée antérieure.
+
+Cause non déterminée. Ajouter au prochain audit un log de chaque lecture/écriture de `RichMediaSettings.enabled`.
