@@ -476,3 +476,14 @@ GECKO-033 RED complémentaire : l’ordre `IntroGeckoGD.mp4` → `Gecko_Intro.mp
 
 ## 2026-09-26 — GECKO-033 RED validé, implémentation poussée
 Runs #73 (`36237890947`) et #74 (`36238120422`) ont échoué à `:app:compileDebugUnitTestKotlin` exactement sur les références GECKO-033 volontairement absentes : constantes nouveaux assets, politiques audio/ProfParle/intro/titre, Prof ambiant et catalogue 100 phrases. Le code de production est ajouté seulement après cette preuve RED. Prochaine étape : observer le run GREEN complet ; en cas d’échec, corriger la cause racine et synchroniser les cinq fichiers dans le même cycle.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-INTRO-2026-09-26 -->
+## 2026-09-26 — v0.10.9-dev téléphone : régression intro
+CI #75 était GREEN côté tests/build/APK/AAB, mais la validation téléphone révèle deux régressions fonctionnelles :
+1. **Audio intro 1 coupé** : `IntroGeckoGD.mp4` a été absorbé par la politique « toutes vidéos Gecko muettes ». C’est incorrect pour cette intro : Fab veut son audio embarqué.
+2. **Intro 2 disparue** : `Gecko_Intro.mp4` ne se lance pas après `IntroGeckoGD.mp4` sur téléphone malgré le contrat de séquence.
+
+Important : ne pas conclure la cause racine de l’intro 2 avant audit. Le build GREEN ne valide pas la chaîne comportementale réelle sur appareil.
+
+Décision : aucun code maintenant ; accumuler les autres retours téléphone de Fab, puis ouvrir un nouveau cycle RED ciblé.

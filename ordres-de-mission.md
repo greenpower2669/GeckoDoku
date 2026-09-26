@@ -1397,3 +1397,39 @@ Le code GECKO-033 est branché sur `gecko-033-identity-prof-life` :
 - version cible `0.10.9-dev`.
 
 La mission reste en validation CI : aucune déclaration GREEN finale avant tests + APK + AAB.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-INTRO-2026-09-26 -->
+# GECKO-033 — RETOUR TÉLÉPHONE v0.10.9-dev : INTROS
+**Retour Fab — 26/09/2026.**
+**Statut : documentation uniquement. Aucun code ne doit être modifié avant la suite des tests téléphone de Fab.**
+
+## Bug observé 1 — son de la première intro coupé
+Dans l’APK v0.10.9-dev testée sur téléphone :
+- `IntroGeckoGD.mp4` se lance mais son audio embarqué est coupé ;
+- **Fab veut conserver le son de cette première intro**.
+
+### Nouvelle règle audio prioritaire
+La règle générale « vidéos Gecko muettes » reçoit l’exception explicite suivante :
+- `IntroGeckoGD.mp4` = **SON EMBARQUÉ AUTORISÉ / À CONSERVER** lorsque FX/audio est activé ;
+- animations Gecko de gameplay = restent muettes ;
+- `ProfParle.mp4` = reste toujours muet ;
+- les musiques générales/victoire restent indépendantes.
+
+Cette exception remplace toute formulation précédente qui rendait l’intro 1 systématiquement muette.
+
+## Bug observé 2 — seconde intro absente
+Dans le même test téléphone :
+- la première intro apparaît ;
+- **`Gecko_Intro.mp4` ne se lance plus ensuite**.
+
+### Contrat à restaurer
+Séquence obligatoire :
+`IntroGeckoGD.mp4` (avec son) → `Gecko_Intro.mp4` → jeu déjà prêt derrière.
+
+La fin naturelle de l’intro 1 doit déclencher l’intro 2.
+Le bouton Skip reste accessible et doit quitter proprement la séquence d’intro sans recréer la grille.
+
+## Gel temporaire
+Fab poursuit ses tests de v0.10.9-dev.
+**Ne rien corriger/coder pour l’instant** : attendre les autres observations afin de regrouper proprement le prochain cycle RED → correction.

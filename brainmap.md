@@ -744,3 +744,21 @@ Le code GECKO-033 est branché sur `gecko-033-identity-prof-life` :
 - version cible `0.10.9-dev`.
 
 La mission reste en validation CI : aucune déclaration GREEN finale avant tests + APK + AAB.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-INTRO-2026-09-26 -->
+## GECKO-033 — retour téléphone intros
+Intro chain
+├── IntroGeckoGD.mp4
+│   ├── visible : OUI
+│   └── audio embarqué : DOIT ÊTRE AUDIBLE si audio actif
+├── fin naturelle
+│   └── Gecko_Intro.mp4 : DOIT SE LANCER
+└── jeu déjà prêt derrière
+
+Audio policy
+├── intro 1 Gecko : exception → son conservé
+├── animations Gecko gameplay : muettes
+└── ProfParle.mp4 : muet
+
+État : bugs constatés sur v0.10.9-dev ; correction gelée pendant poursuite des tests Fab.

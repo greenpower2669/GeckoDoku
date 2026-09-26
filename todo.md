@@ -486,3 +486,15 @@
 - [ ] Revue finale de branche.
 - [ ] Fusion vers main uniquement après GREEN.
 - [ ] Validation téléphone Fab.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-INTRO-2026-09-26 -->
+## GECKO-033 — retours téléphone v0.10.9-dev
+- [x] CI #75 GREEN : tests + APK + AAB.
+- [x] Test téléphone commencé par Fab.
+- [ ] BUG : restaurer le son embarqué de `IntroGeckoGD.mp4` quand l’audio est actif.
+- [ ] BUG : restaurer `Gecko_Intro.mp4` après la fin naturelle de `IntroGeckoGD.mp4`.
+- [ ] Ajouter un RED ciblé sur l’exception audio de l’intro 1.
+- [ ] Ajouter un RED ciblé sur l’enchaînement réel intro 1 → intro 2.
+- [ ] Ne rien coder avant la fin de la prochaine série de retours téléphone de Fab.
+- [ ] Reprendre ensuite les corrections dans un seul cycle synchronisé FAB Copilot.
