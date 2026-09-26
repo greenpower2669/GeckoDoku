@@ -612,3 +612,9 @@ Les politiques pures de coexistence et priorité parole ont été introduites ap
 <!-- GECKO-033-POLICY-COMPILE-FIX-2026-09-26 -->
 ## 2026-09-26 — #84 échec compile ciblé
 Cause : suppression de INTRO de la branche mute sans branche explicite false dans le `when`. Correctif minimal : INTRO rejoint PROF_LONG_ACTION côté `false`. Ce changement correspond au RED « Intro 1 audible si FX ON ».
+
+
+<!-- GECKO-033-SPEECH-RUNTIME-GREEN-2026-09-26 -->
+## 2026-09-26 — séparation état pédagogique / bulle / transport voix
+Cause racine de la coupure sur action normale : `clearProfessorSession → closeProfessorBubble → professorSpeech.stop`.
+Correction : `closeProfessorBubble` n’arrête plus le moteur vocal. Les arrêts transport sont maintenant explicites et tracés par raison/caller. Les requêtes basses priorité sont rejetées plutôt que préempter la parole.

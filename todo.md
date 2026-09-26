@@ -633,3 +633,14 @@
 <!-- GECKO-033-POLICY-COMPILE-FIX-2026-09-26 -->
 - [x] Corriger #84 : `GeckoMediaAudioPolicy` exhaustif avec `INTRO -> false`.
 - [ ] Revalider les politiques pures avant câblage Android.
+
+
+<!-- GECKO-033-SPEECH-RUNTIME-GREEN-2026-09-26 -->
+## GECKO-033 — runtime parole
+- [x] Câbler origines parole dans MainActivity.
+- [x] Supprimer arrêt implicite voix de `closeProfessorBubble()`.
+- [x] Garder `clearProfessorSession()` sans coupure Pierre.
+- [x] PROF_BUTTON remplace explicitement ; AMBIENT/STATS/ENCOURAGEMENT n’interrompent pas.
+- [x] Arrêts puzzle/fin/FX/lifecycle explicitement tracés.
+- [x] Ajouter logs SPEAK_* avec origin/reason/caller.
+- [ ] Vérifier CI de ce câblage avant coexistence vidéo.

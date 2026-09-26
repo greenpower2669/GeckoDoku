@@ -1032,7 +1032,13 @@ class MainActivity : Activity() {
         }
 
         if (::professorSpeech.isInitialized) {
-            professorSpeech.stop()
+            professorSpeech.stop(
+                reason =
+                    SpeechStopReason
+                        .PUZZLE_RESET,
+                caller =
+                    "MainActivity.startPuzzle"
+            )
         }
 
         gameStartedAt =
@@ -1819,7 +1825,10 @@ class MainActivity : Activity() {
         )
 
         professorSpeech.speak(
-            message
+            text = message,
+            origin =
+                SpeechOrigin
+                    .PROF_BUTTON
         )
 
         professorBubble.bringToFront()
@@ -1842,10 +1851,6 @@ class MainActivity : Activity() {
             ::professorBubble.isInitialized
         ) {
             professorBubble.hideMessage()
-        }
-
-        if (::professorSpeech.isInitialized) {
-            professorSpeech.stop()
         }
 
         if (
@@ -1935,6 +1940,16 @@ class MainActivity : Activity() {
 
         if (::richMediaOverlay.isInitialized) {
             richMediaOverlay.stop()
+        }
+
+        if (::professorSpeech.isInitialized) {
+            professorSpeech.stop(
+                reason =
+                    SpeechStopReason
+                        .END_GAME,
+                caller =
+                    "MainActivity.completeGame"
+            )
         }
 
         clearProfessorSession()
@@ -2507,6 +2522,7 @@ class MainActivity : Activity() {
         if (
             !fx.enabled ||
             professorSpeechActive ||
+            professorSpeech.isBusy ||
             !hasWindowFocus() ||
             engine.snapshot().complete ||
             pendingProfessorHypothesis !=
@@ -2630,7 +2646,9 @@ class MainActivity : Activity() {
     ) {
         val accepted =
             professorSpeech.speak(
-                message
+                text = message,
+                origin =
+                    SpeechOrigin.AMBIENT
             )
 
         if (!accepted) {
@@ -3650,6 +3668,9 @@ class MainActivity : Activity() {
 
             EncouragementSource.PIERRE -> {
                 professorSpeech.speak(
+                    origin =
+                        SpeechOrigin
+                            .ENCOURAGEMENT,
                     text =
                         PierreEncouragements
                             .choose(
@@ -3696,9 +3717,12 @@ class MainActivity : Activity() {
         }
 
         professorSpeech.speak(
-            PlayerStatsNarration.build(
-                statsStore.read()
-            )
+            text =
+                PlayerStatsNarration.build(
+                    statsStore.read()
+                ),
+            origin =
+                SpeechOrigin.STATS
         )
     }
 
@@ -3740,7 +3764,13 @@ class MainActivity : Activity() {
         }
 
         if (::professorSpeech.isInitialized) {
-            professorSpeech.stop()
+            professorSpeech.stop(
+                reason =
+                    SpeechStopReason
+                        .LIFECYCLE_PAUSE,
+                caller =
+                    "MainActivity.onPause"
+            )
         }
 
         super.onPause()

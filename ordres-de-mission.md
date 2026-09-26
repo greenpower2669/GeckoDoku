@@ -1805,3 +1805,17 @@ Cette étape ne prétend pas encore avoir câblé le runtime Android : intégrat
 
 <!-- GECKO-033-POLICY-COMPILE-FIX-2026-09-26 -->
 GECKO-033 — correction compile GREEN 1 : `GeckoMediaAudioPolicy` traite maintenant explicitement `INTRO -> false` (pas de mute forcé), après échec #84 « when non exhaustif ». Aucun autre comportement n’est modifié dans ce correctif.
+
+
+<!-- GECKO-033-SPEECH-RUNTIME-GREEN-2026-09-26 -->
+## GECKO-033 — étape GREEN 2 : runtime parole Pierre
+Câblage runtime effectué après validation #85 des policies :
+- `ProfessorSpeech.speak` reçoit désormais une origine ;
+- PROF_BUTTON et END_GAME peuvent remplacer une parole active ;
+- AMBIENT / STATS / ENCOURAGEMENT sont refusés si Pierre a déjà une parole en cours ou en préparation ;
+- `clearProfessorSession()` continue à nettoyer l’état pédagogique mais ne provoque plus d’arrêt voix via la fermeture de bulle ;
+- `closeProfessorBubble()` masque uniquement la bulle et ne tue plus Pierre ;
+- arrêts explicites uniquement sur puzzle reset, fin de partie, FX OFF, pause/release lifecycle ;
+- logs `SPEAK_REQUEST`, `SPEAK_STARTED`, `SPEAK_REJECT_BUSY`, `SPEAK_STOP(reason, caller)`, `SPEAK_COMPLETED`.
+
+Conséquence attendue : simple tap, double tap, croix, ajout/retrait Gecko et changement visuel ne coupent plus une phrase de Pierre déjà commencée.
