@@ -331,3 +331,9 @@ La musique de début de niveau devient séquencée avec l'annonce stats : MediaP
 Les encouragements alternent aléatoirement à parts égales entre les 13 segments enregistrés et une liste complémentaire de phrases Pierre. Le cas 1–2 geckos restants bénéficie d'une phrase Pierre dédiée.
 
 `AssetAudioPlayer.playMusic()` accepte un callback de fin. Pour `LEVEL_START`, ce callback construit `PlayerStatsNarration` depuis les stats locales et fait parler Pierre. Le callback est retiré si la musique est interrompue par une nouvelle grille, empêchant une annonce obsolète.
+
+
+### Preuve CI GECKO-032
+GitHub Actions run #61 (`36232826836`) sur `8aae5460caebf5d1f6d25b023e7a5b698ce2f917` : AAR Sherpa vérifié, archive UPMC Medium vérifiée, tests unitaires réussis, APK et AAB construits. Artefact `GeckoDoku-v0.10.8-dev-Android` id `10903700375`, taille ZIP APK+AAB `286519230` octets.
+
+Le laboratoire A/B précédent produisait ~317,1 Mo pour le même ZIP double-artifact ; la suppression de LOW + Siwis Medium réduit déjà la distribution de test tout en conservant uniquement Pierre UPMC Medium.

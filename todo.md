@@ -406,5 +406,5 @@
 - [x] Ajouter callback de fin musique d'ouverture.
 - [x] Annoncer stats après musique d'ouverture via PlayerStatsNarration.
 - [x] Synchroniser brain/brainmap/debug/todo/ordre dans le cycle GREEN.
-- [ ] CI tests + APK + AAB.
-- [ ] Fusion main après preuve verte.
+- [x] CI tests + APK + AAB — run #61 SUCCESS, artefact `GeckoDoku-v0.10.8-dev-Android`.
+- [ ] Fusion main après run documentaire vert, puis build final depuis main.

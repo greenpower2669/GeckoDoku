@@ -423,3 +423,7 @@ Run #60 échoue comme prévu sur les symboles absents `PierreVoiceConfig`, `Enco
 - VoicePcmPlayer supporte un callback de fin ;
 - encouragements enregistrés conservés + Pierre ajouté ;
 - musique de niveau suivie d'une annonce stats, jamais superposée.
+
+
+### GREEN GECKO-032 — run #61
+Le premier GREEN complet de Pierre termine en SUCCESS. Aucun modèle LOW/Siwis n'est préparé par la CI. L'artefact double APK+AAB passe d'environ 317,1 Mo (A/B) à 286,5 Mo. Le test `PierreVoiceConfigTest` verrouille UPMC Medium et `sid=1`.

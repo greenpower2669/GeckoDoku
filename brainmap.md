@@ -630,3 +630,14 @@ Nouvelle grille
     └── completion callback
         └── PlayerStatsNarration
             └── ProfessorSpeech/Pierre
+
+
+Build GECKO-032
+└── run #61 SUCCESS
+    ├── Sherpa AAR SHA OK
+    ├── UPMC Medium SHA OK
+    ├── Pierre sid 1 test
+    ├── encouragement source policy test
+    ├── stats narration test
+    ├── APK v0.10.8-dev
+    └── AAB v0.10.8-dev
