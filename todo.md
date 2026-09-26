@@ -245,4 +245,4 @@
 
 
 ## Synchronisation main pendant GECKO-022
-- [x] Synchroniser les deux MP3 ajoutés directement sur `main` pendant le développement (`jungle intro GeckoD.mp3`, `jungle cebration GeckoD.mp3`) sans les modifier ni leur inventer un rôle runtime.
+- [x] Synchroniser les trois MP3 ajoutés directement sur `main` pendant le développement (`jungle intro GeckoD.mp3`, `jungle cebration GeckoD.mp3`, `Voix_encouragements.mp3`) sans les modifier ni leur inventer un rôle runtime.
