@@ -163,6 +163,9 @@ class RichMediaOverlayView @JvmOverloads constructor(
             "media-" +
                 (++nextSessionId)
 
+        val gatePresentation =
+            kind != RichMediaKind.INTRO
+
         val maskView =
             if (maskTarget != null) {
                 View(context).apply {
@@ -171,6 +174,12 @@ class RichMediaOverlayView @JvmOverloads constructor(
                     )
                     importantForAccessibility =
                         IMPORTANT_FOR_ACCESSIBILITY_NO
+                    alpha =
+                        if (gatePresentation) {
+                            0f
+                        } else {
+                            1f
+                        }
                     applyBounds(
                         this,
                         maskTarget
@@ -191,6 +200,12 @@ class RichMediaOverlayView @JvmOverloads constructor(
                     importantForAccessibility =
                         IMPORTANT_FOR_ACCESSIBILITY_NO
                     isClickable = false
+                    alpha =
+                        if (gatePresentation) {
+                            0f
+                        } else {
+                            1f
+                        }
                     applyBounds(
                         this,
                         target
@@ -249,6 +264,25 @@ class RichMediaOverlayView @JvmOverloads constructor(
         videoView.play(
             assetPath = assetPath,
             muted = effectiveMuted,
+            revealOnFirstFrame =
+                gatePresentation,
+            onFirstFrameRendered = {
+                session.maskView
+                    ?.alpha = 1f
+
+                MediaTrace.event(
+                    source = "Overlay",
+                    event =
+                        "SESSION_FIRST_FRAME_VISIBLE",
+                    assetPath =
+                        assetPath,
+                    detail =
+                        "id=" +
+                            sessionId +
+                            " kind=" +
+                            kind
+                )
+            },
             onStarted = {
                 MediaTrace.event(
                     source = "Overlay",

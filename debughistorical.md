@@ -811,3 +811,10 @@ Audit avant code :
 - la grille est encore directement ajoutée au `LinearLayout` en `height=0, weight=1f`, donc une variation d'un sibling peut modifier sa hauteur.
 
 Décision : tester séparément le gate de frame et la géométrie de grille avant production.
+
+
+<!-- GECKO-034-GREEN-FIRST-FRAME-FLOATING-BOARD-2026-09-26 -->
+## 2026-09-26 — GECKO-034 après RED #103
+RED #103 : échec attendu uniquement sur FirstFrameVisibilityGate / BoardGeometryPolicy absents.
+
+Correction : gate de frame fraîche réellement dessinée OpenGL, abort avant révélation, masks/portrait synchronisés ; grille réelle sortie du LinearLayout weight=1 vers couche flottante screenRoot avec ancre de réservation et géométrie figée par fenêtre.

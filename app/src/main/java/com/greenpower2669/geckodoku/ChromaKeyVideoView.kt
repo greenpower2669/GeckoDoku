@@ -33,6 +33,11 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                     startPendingPlayback()
                 }
             },
+            firstFrameRendered = {
+                post {
+                    handleFirstFrameRendered()
+                }
+            },
             rendererError = {
                 message ->
                 post {
@@ -59,6 +64,18 @@ class ChromaKeyVideoView @JvmOverloads constructor(
     private var muted = false
 
     private var activeAssetPath:
+        String? = null
+
+    private val firstFrameGate =
+        FirstFrameVisibilityGate()
+
+    private var revealOnFirstFrame =
+        false
+
+    private var firstFrameCallback:
+        (() -> Unit)? = null
+
+    private var firstFrameAssetPath:
         String? = null
 
     var logicalLayer: String =
@@ -116,7 +133,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         muted: Boolean,
         onCompletion: () -> Unit,
         onError: (String) -> Unit,
-        onStarted: () -> Unit = {}
+        onStarted: () -> Unit = {},
+        revealOnFirstFrame: Boolean = true,
+        onFirstFrameRendered: () -> Unit = {}
     ) {
         MediaTrace.event(
             source =
@@ -135,6 +154,38 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         stopPlayback()
 
         this.muted = muted
+        this.revealOnFirstFrame =
+            revealOnFirstFrame
+        firstFrameCallback =
+            onFirstFrameRendered
+        firstFrameAssetPath =
+            assetPath
+
+        if (revealOnFirstFrame) {
+            firstFrameGate.arm()
+            alpha = 0f
+
+            MediaTrace.event(
+                source = traceSource(),
+                event =
+                    "VIDEO_VISIBILITY_ARMED",
+                assetPath = assetPath,
+                detail = "alpha=0"
+            )
+
+            queueEvent {
+                chromaRenderer
+                    .armFirstFrameNotification()
+            }
+        } else {
+            firstFrameGate.reset()
+            alpha = 1f
+
+            queueEvent {
+                chromaRenderer
+                    .cancelFirstFrameNotification()
+            }
+        }
 
         val failure = rendererFailure
 
@@ -178,6 +229,10 @@ class ChromaKeyVideoView @JvmOverloads constructor(
     }
 
     fun stopPlayback() {
+        abortFirstFrameReveal(
+            "stop"
+        )
+
         val pendingAsset =
             pendingPlayback
                 ?.assetPath
@@ -289,6 +344,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             mediaPlayer.setOnPreparedListener {
                 activeAssetPath =
                     request.assetPath
+                firstFrameGate.onPrepared()
 
                 MediaTrace.event(
                     source =
@@ -305,8 +361,35 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                     if (muted) 0f else 1f,
                     if (muted) 0f else 1f
                 )
-                request.onStarted()
                 it.start()
+                firstFrameGate.onStarted()
+                request.onStarted()
+            }
+
+            mediaPlayer.setOnInfoListener {
+                    _,
+                    what,
+                    extra ->
+
+                if (
+                    what ==
+                    MediaPlayer
+                        .MEDIA_INFO_VIDEO_RENDERING_START
+                ) {
+                    MediaTrace.event(
+                        source =
+                            traceSource(),
+                        event =
+                            "VIDEO_RENDERING_START_SIGNAL",
+                        assetPath =
+                            request.assetPath,
+                        detail =
+                            "extra=" +
+                                extra
+                    )
+                }
+
+                false
             }
 
             mediaPlayer.setOnCompletionListener {
@@ -326,6 +409,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
                     player = null
                     activeAssetPath = null
+                    abortFirstFrameReveal(
+                        "complete_before_first_frame"
+                    )
                     it.release()
                     request.onCompletion()
                 }
@@ -356,6 +442,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 )
 
                 activeAssetPath = null
+                abortFirstFrameReveal(
+                    "media_error_before_first_frame"
+                )
 
                 request.onError(
                     "MediaPlayer error " +
@@ -374,6 +463,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             player?.release()
             player = null
             activeAssetPath = null
+            abortFirstFrameReveal(
+                "exception_before_first_frame"
+            )
 
             MediaTrace.event(
                 source =
@@ -391,6 +483,77 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                     ": " +
                     (error.message ?: "unknown error")
             )
+        }
+    }
+
+    private fun handleFirstFrameRendered() {
+        if (
+            !revealOnFirstFrame ||
+            !firstFrameGate.isArmed
+        ) {
+            return
+        }
+
+        firstFrameGate
+            .onFirstFrameRendered()
+
+        if (!firstFrameGate.isVisible) {
+            return
+        }
+
+        val asset =
+            firstFrameAssetPath
+                ?: activeAssetPath
+
+        MediaTrace.event(
+            source = traceSource(),
+            event = "VIDEO_FIRST_FRAME",
+            assetPath = asset,
+            detail = "glFrameDrawn=true"
+        )
+
+        alpha = 1f
+
+        MediaTrace.event(
+            source = traceSource(),
+            event = "VIDEO_VISIBLE",
+            assetPath = asset,
+            detail = "alpha=1"
+        )
+
+        val callback =
+            firstFrameCallback
+
+        firstFrameCallback = null
+        firstFrameAssetPath = null
+        callback?.invoke()
+    }
+
+    private fun abortFirstFrameReveal(
+        reason: String
+    ) {
+        if (firstFrameGate.isArmed) {
+            firstFrameGate.abort()
+
+            MediaTrace.event(
+                source = traceSource(),
+                event =
+                    "VIDEO_ABORT_BEFORE_FIRST_FRAME",
+                assetPath =
+                    firstFrameAssetPath
+                        ?: activeAssetPath,
+                detail =
+                    "reason=" +
+                        reason
+            )
+        }
+
+        firstFrameCallback = null
+        firstFrameAssetPath = null
+
+        queueEvent {
+            chromaRenderer
+                .cancelFirstFrameNotification()
         }
     }
 
@@ -416,6 +579,8 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         private val requestFrame: () -> Unit,
         private val surfaceReady:
             (SurfaceTexture) -> Unit,
+        private val firstFrameRendered:
+            () -> Unit,
         private val rendererError:
             (String) -> Unit
     ) : Renderer {
@@ -426,6 +591,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
         @Volatile
         private var frameAvailable = false
+
+        private var firstFrameNotificationArmed =
+            false
 
         private var viewWidth = 1
         private var viewHeight = 1
@@ -555,6 +723,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             val texture =
                 surfaceTexture ?: return
 
+            var consumedFreshFrame =
+                false
+
             if (frameAvailable) {
                 try {
                     texture.updateTexImage()
@@ -562,6 +733,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                         textureMatrix
                     )
                     frameAvailable = false
+                    consumedFreshFrame = true
                 } catch (_: Exception) {
                     return
                 }
@@ -677,6 +849,25 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             GLES20.glDisableVertexAttribArray(
                 textureHandle
             )
+
+            if (
+                consumedFreshFrame &&
+                firstFrameNotificationArmed
+            ) {
+                firstFrameNotificationArmed =
+                    false
+                firstFrameRendered()
+            }
+        }
+
+        fun armFirstFrameNotification() {
+            firstFrameNotificationArmed =
+                true
+        }
+
+        fun cancelFirstFrameNotification() {
+            firstFrameNotificationArmed =
+                false
         }
 
         fun setVideoSize(

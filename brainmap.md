@@ -99,3 +99,18 @@ Grille
 → capture rectangle initial
 → même fenêtre : rectangle figé
 → fenêtre réellement redimensionnée : nouvel ancrage autorisé
+
+
+<!-- GECKO-034-GREEN-FIRST-FRAME-FLOATING-BOARD-2026-09-26 -->
+## GECKO-034 implémenté
+root → boardAnchor seulement
+screenRoot → GeckoBoardView flottante → géométrie figée par fenêtre
+
+vidéo non-intro
+→ alpha 0
+→ start
+→ SurfaceTexture frame
+→ updateTexImage
+→ glDrawArrays
+→ firstFrameRendered
+→ alpha 1

@@ -125,3 +125,14 @@ Deux causes sont désormais séparées :
 RED :
 - `FirstFrameVisibilityGate` : invisible jusqu'à la première frame rendue, abort irréversible pour la tentative ;
 - `BoardGeometryPolicy` : fige le rectangle de la grille tant que les dimensions de fenêtre restent identiques, et autorise un nouvel ancrage uniquement lors d'un vrai changement de fenêtre.
+
+
+<!-- GECKO-034-GREEN-FIRST-FRAME-FLOATING-BOARD-2026-09-26 -->
+## GREEN implémenté — à valider CI/téléphone
+- vidéos non-intro alpha 0 jusqu'à une frame SurfaceTexture fraîche réellement dessinée par OpenGL ;
+- stop/error/complete avant la première frame = aucune révélation ;
+- mask Gecko et portrait Prof suivent la première frame ;
+- chemin des intros laissé inchangé ;
+- la vraie GeckoBoardView sort du LinearLayout pondéré ;
+- un boardAnchor transparent réserve l'espace ;
+- BoardGeometryPolicy fige le rectangle dans la même fenêtre et réancre seulement sur resize/insets.

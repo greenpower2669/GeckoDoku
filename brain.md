@@ -512,3 +512,10 @@ Une animation non-intro ne doit devenir visible qu'après consommation/rendu d'u
 
 ## Invariant de grille flottante
 L'espace de layout peut conserver une ancre, mais la vue de grille réelle doit être indépendante des variations relatives des textes/contrôles. Tant que la fenêtre ne change pas, son rectangle reste figé.
+
+
+<!-- GECKO-034-GREEN-FIRST-FRAME-FLOATING-BOARD-2026-09-26 -->
+## Implémentation durable GECKO-034
+La vraie grille est une couche flottante de screenRoot. Le LinearLayout ne contient plus que son anchor de réservation. Son rectangle est figé tant que la fenêtre ne change pas.
+
+Les vidéos non-intro sont révélées par alpha après draw OpenGL d'une frame fraîche ; prepared/start seuls ne suffisent jamais.

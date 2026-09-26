@@ -38,6 +38,12 @@ class MainActivity : Activity() {
     private lateinit var board:
         GeckoBoardView
 
+    private lateinit var boardAnchor:
+        View
+
+    private val boardGeometryPolicy =
+        BoardGeometryPolicy()
+
     private lateinit var status:
         TextView
 
@@ -439,6 +445,35 @@ class MainActivity : Activity() {
                 }
             }
 
+        boardAnchor =
+            View(this).apply {
+                importantForAccessibility =
+                    View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                isClickable = false
+                setBackgroundColor(
+                    Color.TRANSPARENT
+                )
+
+                addOnLayoutChangeListener {
+                        _,
+                        _,
+                        _,
+                        _,
+                        _,
+                        _,
+                        _,
+                        _,
+                        _ ->
+
+                    if (
+                        ::screenRoot
+                            .isInitialized
+                    ) {
+                        positionFloatingBoard()
+                    }
+                }
+            }
+
         sizeButton =
             Button(this).apply {
                 textSize = 15f
@@ -764,7 +799,7 @@ class MainActivity : Activity() {
         )
 
         root.addView(
-            board,
+            boardAnchor,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 0,
@@ -936,6 +971,33 @@ class MainActivity : Activity() {
                     }
                 )
             }
+
+        screenRoot.addView(
+            board,
+            1,
+            FrameLayout.LayoutParams(
+                1,
+                1
+            ).apply {
+                gravity =
+                    Gravity.TOP or
+                        Gravity.START
+            }
+        )
+
+        screenRoot.addOnLayoutChangeListener {
+                _,
+                _,
+                _,
+                _,
+                _,
+                _,
+                _,
+                _,
+                _ ->
+
+            positionFloatingBoard()
+        }
 
         richMediaOverlay =
             RichMediaOverlayView(this).apply {
@@ -1901,6 +1963,112 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun positionFloatingBoard() {
+        if (
+            !::screenRoot.isInitialized ||
+            !::boardAnchor.isInitialized ||
+            !::board.isInitialized ||
+            screenRoot.width <= 0 ||
+            screenRoot.height <= 0 ||
+            boardAnchor.width <= 0 ||
+            boardAnchor.height <= 0
+        ) {
+            return
+        }
+
+        val rootLocation =
+            IntArray(2)
+
+        val anchorLocation =
+            IntArray(2)
+
+        screenRoot.getLocationOnScreen(
+            rootLocation
+        )
+
+        boardAnchor.getLocationOnScreen(
+            anchorLocation
+        )
+
+        val proposed =
+            BoardGeometry(
+                left =
+                    anchorLocation[0] -
+                        rootLocation[0],
+                top =
+                    anchorLocation[1] -
+                        rootLocation[1],
+                width =
+                    boardAnchor.width,
+                height =
+                    boardAnchor.height
+            )
+
+        val geometry =
+            boardGeometryPolicy.resolve(
+                windowWidth =
+                    screenRoot.width,
+                windowHeight =
+                    screenRoot.height,
+                proposed =
+                    proposed
+            )
+
+        val params =
+            board.layoutParams
+                as? FrameLayout.LayoutParams
+                ?: FrameLayout.LayoutParams(
+                    geometry.width,
+                    geometry.height
+                )
+
+        val changed =
+            params.leftMargin !=
+                geometry.left ||
+                params.topMargin !=
+                    geometry.top ||
+                params.width !=
+                    geometry.width ||
+                params.height !=
+                    geometry.height
+
+        if (changed) {
+            params.width =
+                geometry.width
+            params.height =
+                geometry.height
+            params.leftMargin =
+                geometry.left
+            params.topMargin =
+                geometry.top
+            params.gravity =
+                Gravity.TOP or
+                    Gravity.START
+
+            board.layoutParams =
+                params
+
+            MediaTrace.event(
+                source = "MainActivity",
+                event =
+                    "BOARD_GEOMETRY_ANCHORED",
+                detail =
+                    "left=" +
+                        geometry.left +
+                        " top=" +
+                        geometry.top +
+                        " width=" +
+                        geometry.width +
+                        " height=" +
+                        geometry.height +
+                        " window=" +
+                        screenRoot.width +
+                        "x" +
+                        screenRoot.height
+            )
+        }
+    }
+
     private fun positionProfessorBubble() {
         if (
             professorBubble.visibility !=
@@ -2818,6 +2986,17 @@ class MainActivity : Activity() {
                     base + bars.right,
                     base + bars.bottom
                 )
+
+                boardGeometryPolicy.reset()
+
+                if (
+                    ::screenRoot.isInitialized &&
+                    ::boardAnchor.isInitialized
+                ) {
+                    view.post {
+                        positionFloatingBoard()
+                    }
+                }
             } else {
                 @Suppress(
                     "DEPRECATION"
@@ -2837,6 +3016,17 @@ class MainActivity : Activity() {
                         insets
                             .systemWindowInsetBottom
                 )
+
+                boardGeometryPolicy.reset()
+
+                if (
+                    ::screenRoot.isInitialized &&
+                    ::boardAnchor.isInitialized
+                ) {
+                    view.post {
+                        positionFloatingBoard()
+                    }
+                }
             }
 
             insets
@@ -3415,6 +3605,7 @@ class MainActivity : Activity() {
 
         professorVideoMode =
             ProfessorVideoMode.ACTION
+        professorVideo.alpha = 0f
         professorVideo.visibility =
             View.VISIBLE
         professorVideo.bringToFront()
@@ -3431,7 +3622,7 @@ class MainActivity : Activity() {
             muted =
                 professorUiPolicy
                     .muteProfVideoEmbeddedAudio,
-            onStarted = {
+            onFirstFrameRendered = {
                 if (
                     professorVideoMode ==
                     ProfessorVideoMode.ACTION
@@ -3610,6 +3801,7 @@ class MainActivity : Activity() {
 
         professorVideoMode =
             ProfessorVideoMode.SPEECH
+        professorVideo.alpha = 0f
         professorVideo.visibility =
             View.VISIBLE
         professorVideo.bringToFront()
@@ -3639,6 +3831,8 @@ class MainActivity : Activity() {
                         "retryRecovered=true"
                 )
 
+            },
+            onFirstFrameRendered = {
                 if (
                     professorVideoMode ==
                     ProfessorVideoMode.SPEECH &&

@@ -80,3 +80,20 @@ Aucun ordre de mission actif actuellement.
 - [ ] Révéler mask/portrait seulement à la première frame.
 - [ ] Sortir la grille réelle du LinearLayout pondéré vers une couche flottante ancrée.
 - [ ] Conserver un slot de réservation sans déplacer la grille réelle.
+
+
+<!-- GECKO-034-GREEN-FIRST-FRAME-FLOATING-BOARD-2026-09-26 -->
+## GECKO-034 — GREEN implémenté
+- [x] FirstFrameVisibilityGate.
+- [x] Révélation après frame OpenGL fraîche.
+- [x] Abort sans flash avant première frame.
+- [x] Mask Gecko synchronisé.
+- [x] Portrait Prof conservé jusqu'à première frame.
+- [x] Intro non modifiée par le gate.
+- [x] BoardGeometryPolicy.
+- [x] Board réelle flottante + anchor de réservation.
+- [x] Rectangle figé dans une même fenêtre.
+- [ ] CI GREEN.
+- [ ] APK/AAB.
+- [ ] Validation téléphone flash noir.
+- [ ] Validation téléphone géométrie grille.
