@@ -733,7 +733,7 @@ Le PNG transparent `assets/prof/Prof.png` est déplacé visuellement vers le bou
 
 # GECKO-027 — PROF TOUJOURS AU PREMIER PLAN DU BOUTON
 **Demandeur / date :** Fab, 26/09/2026  
-**Statut :** implémentation en cours sur branche `gecko-027-prof-foreground`.
+**Statut :** implémentation GREEN en cours sur branche `gecko-027-prof-foreground` ; CI puis validation téléphone requises.
 
 ## 0. Bug téléphone
 Le bouton Prof est visuellement dessiné devant le PNG du Prof. Le PNG est bien ajouté après le bouton dans le `FrameLayout`, mais le `Button` Android possède sa propre élévation / animation d'état et peut repasser au-dessus dans l'ordre Z.

@@ -7,5 +7,7 @@ data class ProfessorUiPolicy(
     val showPortraitInButton: Boolean = true,
     val animatePortraitOnInteraction: Boolean = true,
     val buttonHostHeightDp: Int = 58,
-    val buttonPortraitOverhangDp: Int = 10
+    val buttonPortraitOverhangDp: Int = 10,
+    val buttonElevationDp: Int = 0,
+    val portraitElevationDp: Int = 18
 )

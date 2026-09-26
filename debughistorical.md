@@ -275,3 +275,13 @@ Le PNG est ajouté après le Button dans le FrameLayout, mais un Button Android 
 
 ### Stratégie
 Test RED sur une politique d'élévation explicite, puis Button à Z neutre et portrait avec Z supérieur + `bringToFront()` avant animation.
+
+
+### TDD RED GECKO-027
+Run #40 échoue comme prévu : `ProfessorUiPolicyTest` référence `buttonElevationDp` et `portraitElevationDp` absents. Cela verrouille le besoin de Z explicite avant implémentation.
+
+### Correctif GECKO-027
+- Button Prof : `stateListAnimator=null`, élévation 0 dp, translationZ 0 ;
+- Prof.png : élévation 18 dp ;
+- `bringToFront()` après insertion dans le host et avant chaque micro-animation ;
+- aucune modification de taille/position du host ni de la grille.

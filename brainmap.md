@@ -399,3 +399,19 @@ Build GECKO-026
     ├── suite existante
     ├── APK v0.10.2-dev
     └── AAB v0.10.2-dev
+
+
+## GECKO-027
+professorButtonHost
+├── Button
+│   ├── elevation = 0 dp
+│   ├── stateListAnimator = null
+│   └── surface tactile + texte
+└── Prof.png
+    ├── elevation = 18 dp
+    ├── bringToFront après ajout
+    └── bringToFront avant chaque micro-animation
+        └── scale/translationY uniquement
+
+Résultat attendu
+└── Button jamais devant Prof, même pendant press/animation

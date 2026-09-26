@@ -405,6 +405,14 @@ class MainActivity : Activity() {
                 gravity =
                     Gravity.CENTER_VERTICAL
 
+                stateListAnimator = null
+                elevation =
+                    dp(
+                        professorUiPolicy
+                            .buttonElevationDp
+                    ).toFloat()
+                translationZ = 0f
+
                 setPadding(
                     dp(86),
                     0,
@@ -428,6 +436,11 @@ class MainActivity : Activity() {
 
                 contentDescription = null
                 isClickable = false
+                elevation =
+                    dp(
+                        professorUiPolicy
+                            .portraitElevationDp
+                    ).toFloat()
 
                 try {
                     context.assets.open(
@@ -484,6 +497,8 @@ class MainActivity : Activity() {
                             leftMargin = dp(8)
                         }
                     )
+
+                    professorPortrait.bringToFront()
                 }
             }
 
@@ -2266,6 +2281,12 @@ class MainActivity : Activity() {
         }
 
         professorPortrait.animate().cancel()
+        professorPortrait.bringToFront()
+        professorPortrait.elevation =
+            dp(
+                professorUiPolicy
+                    .portraitElevationDp
+            ).toFloat()
         professorPortrait.scaleX = 1f
         professorPortrait.scaleY = 1f
         professorPortrait.translationY = 0f

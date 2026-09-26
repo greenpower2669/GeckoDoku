@@ -224,3 +224,9 @@ GECKO-026 interdit désormais tout retrait du layout lors d'une bulle Prof : les
 
 ### Preuve CI GECKO-026
 GitHub Actions run #37 (`36212085221`) sur `f555102094cda6a21ed7812dae247748329ea62d` : tests unitaires + APK + AAB réussis. Artefact : `GeckoDoku-v0.10.2-dev-Android` id `10896251661`. La validation téléphone doit encore confirmer visuellement que la grille ne change plus de cadre à l'ouverture/fermeture de la bulle.
+
+
+## GECKO-027 — Prof réellement au premier plan
+Le simple ordre d'ajout dans le FrameLayout ne suffit pas avec un `Button` Android, car son StateListAnimator peut modifier son Z lors des états pressés. Le host Prof neutralise désormais le Z du bouton (`stateListAnimator=null`, élévation 0 dp) et impose au PNG une élévation dédiée de 18 dp.
+
+Après insertion du portrait, puis avant chaque micro-animation, `bringToFront()` est appelé. L'animation continue d'utiliser uniquement scale/translationY ; l'élévation du portrait est réaffirmée avant animation. Aucun paramètre de layout n'est modifié.

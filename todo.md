@@ -317,10 +317,10 @@
 
 
 ## GECKO-027 — Prof au premier plan
-- [ ] RED : verrouiller portraitElevation > buttonElevation.
-- [ ] Neutraliser le StateListAnimator / élévation automatique du Button Prof.
-- [ ] Donner au PNG Prof une élévation explicite >= 16 dp.
-- [ ] Appeler bringToFront avant chaque micro-animation.
-- [ ] Synchroniser brain/brainmap/debug/todo/ordre.
+- [x] RED : verrouiller portraitElevation > buttonElevation — run #40.
+- [x] Neutraliser le StateListAnimator / élévation automatique du Button Prof.
+- [x] Donner au PNG Prof une élévation explicite de 18 dp.
+- [x] Appeler bringToFront après ajout et avant chaque micro-animation.
+- [x] Synchroniser brain/brainmap/debug/todo/ordre.
 - [ ] CI tests + APK + AAB.
 - [ ] Validation téléphone : bouton toujours derrière Prof, animé ou non.
