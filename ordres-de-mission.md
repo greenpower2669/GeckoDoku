@@ -118,3 +118,11 @@ Prévoir une séparation propre :
 - origin reste QUICK_TALK ;
 - fermeture bulle ≠ stop Pierre ;
 - rectangle de grille inchangé.
+
+
+<!-- GECKO-036-RED-2026-09-27 -->
+## TDD RED ouvert
+Trois contrats RED sont ajoutés avant production :
+- portrait PNG visible jusqu'à révélation vidéo réellement réussie et restauré sur toute erreur ;
+- une frame résiduelle d'un playback précédent ne peut jamais valider le pré-roll du playback courant ;
+- le bouton ! présente la phrase dans la bulle, garde un status court et n'émet qu'une seule requête QUICK_TALK.

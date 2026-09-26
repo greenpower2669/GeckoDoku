@@ -887,3 +887,8 @@ Piège identifié avant correction :
 La réutiliser telle quelle pour QUICK_TALK provoquerait potentiellement une seconde demande de parole.
 
 Correction attendue : séparer affichage de bulle et transport vocal, puis afficher la phrase dans la bulle tout en conservant une seule parole QUICK_TALK.
+
+
+<!-- GECKO-036-RED-2026-09-27 -->
+## 2026-09-27 — GECKO-036 RED
+Le log téléphone a révélé des FIRST_FRAME_HELD possibles avant START, compatible avec une frame SurfaceTexture résiduelle. RED ajouté pour interdire toute frame antérieure au START + VIDEO_RENDERING_START du playback courant.

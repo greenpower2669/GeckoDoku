@@ -687,3 +687,8 @@ Une pression sur `!` doit :
 - utiliser ProfParle/fallback selon le contrat média courant.
 
 L'affichage de la bulle et le déclenchement vocal doivent être séparables afin d'éviter toute double parole. La bulle reste un overlay sans effet sur la géométrie du plateau.
+
+
+<!-- GECKO-036-RED-2026-09-27 -->
+## Garde-fou GECKO-036 en cours
+La continuité visuelle PNG→vidéo, l'identité de frame par playback et la séparation bulle/voix QUICK_TALK sont maintenant protégées par un cycle TDD dédié.

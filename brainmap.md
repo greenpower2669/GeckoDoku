@@ -185,3 +185,10 @@ Prof.png VISIBLE
     → ProfParle / PNG fallback
 
 NE PAS utiliser le chemin showProfessorBubble qui reparle en PROF_BUTTON sans séparation visuel/voix.
+
+
+<!-- GECKO-036-RED-2026-09-27 -->
+GECKO-036 RED
+├── ProfessorPortraitContinuityPolicy
+├── FreshPlaybackFrameGate
+└── QuickTalkPresentationPolicy

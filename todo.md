@@ -228,3 +228,17 @@ Aucun ordre de mission actif actuellement.
 - [ ] Conserver fermeture bulle sans arrêt voix.
 - [ ] Conserver géométrie de grille immuable.
 - [ ] Validation téléphone : phrase des 100 visible dans la bulle.
+
+
+<!-- GECKO-036-RED-2026-09-27 -->
+## GECKO-036 — RED
+- [x] RED continuité Prof.png.
+- [x] RED restauration PNG après erreur.
+- [x] RED frame résiduelle / génération playback.
+- [x] RED ! → bulle + une seule QUICK_TALK.
+- [ ] Vérifier RED CI.
+- [ ] GREEN policies.
+- [ ] Câbler MainActivity.
+- [ ] Câbler ChromaKeyVideoView avec génération fraîche.
+- [ ] CI GREEN.
+- [ ] Candidate téléphone.
