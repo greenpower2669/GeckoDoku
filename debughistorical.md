@@ -331,3 +331,14 @@ Run #48 : RED attendu. Les nouveaux tests imposent Prof 2–3 s, Gecko 45 % / 45
 
 ### GREEN GECKO-029
 Run #49 (`36215814330`) : succès complet. Le test de régression confirme la politique de musique indépendante de la fin visuelle ; les tests de cadence Prof et Gecko passent avec les nouvelles valeurs.
+
+
+## 2026-09-26 — GECKO-030 régression vraie vidéo Prof
+### Preuve asset
+Le fichier ré-envoyé par Fab `14126.mp4` a le git blob SHA-1 `87c72def4f7c79b7c7c35ed254e3380ac5a7c0db`, exactement égal au blob de `assets/prof/Prof_actions.mp4` sur main. L'asset n'a donc jamais été perdu.
+
+### Root cause historique
+Le commit GECKO-025 `8aaa06f...` lançait `Prof_actions.mp4` à chaque intervention éligible. Le commit GECKO-026 `f555102...` a explicitement supprimé `maybePlayProfessorLongAction()`, retiré `ProfessorAnimationPolicy` et remplacé la vidéo par une micro-animation PNG. Cette décision a satisfait le déplacement hors bulle mais a supprimé, à tort, les vraies animations demandées.
+
+### Correctif visé
+Restaurer exactement le MP4 complet mais dans le bouton, via un ChromaKeyVideoView local et indépendant de la bulle/grille.

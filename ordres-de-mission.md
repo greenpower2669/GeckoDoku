@@ -826,3 +826,67 @@ Le MP3 `audio/celebration/jungle cebration GeckoD.mp3` ne doit plus être arrêt
 - musique victoire non tronquée par la fin visuelle ;
 - tests + APK/AAB verts ;
 - validation téléphone Fab.
+
+
+# GECKO-030 — RESTAURATION DES VRAIES ANIMATIONS PROF
+**Demandeur / date :** Fab, 26/09/2026
+**Statut :** investigation terminée, TDD en cours sur `gecko-030-restore-prof-video`.
+
+## 0. Régression confirmée
+Le fichier fourni à nouveau par Fab, `14126.mp4`, est exactement le même blob que `assets/prof/Prof_actions.mp4` dans Git :
+- taille : 2 717 098 octets ;
+- blob Git : `87c72def4f7c79b7c7c35ed254e3380ac5a7c0db` ;
+- SHA-256 du fichier fourni : `12a186ff1984870265fb96891014cd0855cfd1e41499e33133e997e050545567` ;
+- vidéo : H.264 640×640, 30 fps, 30,070 s + AAC.
+
+Historique :
+- GECKO-025 / commit `8aaa06f95dd626a654a95a4b284280b43705a47c` : le vrai `Prof_actions.mp4` était joué ;
+- GECKO-026 / commit `f555102094cda6a21ed7812dae247748329ea62d` : le runtime vidéo Prof a été supprimé et remplacé par de simples transformations du PNG.
+Cette substitution est la régression à corriger.
+
+## 1. Emplacement restauré, sans réintroduire l'ancien défaut
+Fab ne veut pas la vidéo dans la bulle pédagogique.
+Le vrai `Prof_actions.mp4` doit jouer **dans la zone du bouton Prof**, devant le bouton, à l'emplacement du portrait :
+- bouton et grille restent à géométrie fixe ;
+- bulle reste calme : texte + croix + TTS, aucune vidéo ;
+- `Prof.png` est l'état de repos ;
+- pendant la vidéo, la vidéo chroma-key remplace visuellement le PNG ;
+- fin/erreur → retour automatique au PNG ;
+- le bouton reste cliquable.
+
+## 2. Déclenchement
+- clic Prof : lancer immédiatement la vraie vidéo si elle n'est pas déjà en lecture ;
+- après 2–3 s d'inactivité : lancer la vraie vidéo ;
+- bulle ouverte : animation toujours autorisée dans le bouton ;
+- si la vidéo est déjà en cours : ne pas la relancer ni l'empiler ;
+- Anim OFF / pause / destroy : arrêter proprement et restaurer le PNG.
+
+## 3. Lecture exacte
+- utiliser `assets/prof/Prof_actions.mp4` entier ;
+- t=0 → EOF naturel (~30,070 s) ;
+- aucun timecode, aucun découpage, aucune boucle interne ;
+- audio embarqué muet, car le TTS Prof et les FX restent gérés séparément ;
+- le bleu reste transparent via le même ChromaKeyVideoView corrigé.
+
+## 4. Isolation
+La vidéo Prof du bouton utilise son propre `ChromaKeyVideoView` local au `professorButtonHost`.
+Elle ne doit pas monopoliser `RichMediaOverlayView`, afin que les animations de cases Gecko gardent leur système propre.
+Aucune modification du moteur logique.
+
+## 5. Fallback
+Si le MP4 ou le shader échoue :
+- revenir immédiatement à `Prof.png` ;
+- garder le texte/TTS ;
+- utiliser éventuellement la petite micro-animation PNG comme fallback visuel ;
+- jeu inchangé.
+
+## 6. Critères
+- vraies animations de `14126.mp4 / Prof_actions.mp4` visibles ;
+- vidéo devant le bouton, jamais dans la bulle ;
+- lecture complète 30,070 s ;
+- déclenchement clic + idle 2–3 s ;
+- bulle ouverte n'empêche pas l'animation ;
+- PNG restauré après fin/erreur/arrêt ;
+- aucune modification de grille/layout ;
+- tests + APK/AAB verts ;
+- validation téléphone Fab.

@@ -21,6 +21,9 @@ class ProfessorUiPolicyTest {
 
         assertTrue(policy.showPortraitInButton)
         assertTrue(policy.animatePortraitOnInteraction)
+        assertTrue(policy.playVideoInButton)
+        assertTrue(policy.playProfVideoFromStartToEnd)
+        assertTrue(policy.muteProfVideoEmbeddedAudio)
         assertEquals(58, policy.buttonHostHeightDp)
         assertEquals(10, policy.buttonPortraitOverhangDp)
     }
