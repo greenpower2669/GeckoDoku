@@ -74,3 +74,10 @@ Pour le renderer GLSurfaceView actuel, la composition transparente validable doi
 `setZOrderMediaOverlay(true)` a produit des rectangles noirs sur téléphone et n'est plus la stratégie par défaut.
 
 Cette décision n'affecte pas l'invariant de coexistence : les sessions et players restent indépendants.
+
+
+<!-- GECKO-033-SPRITES-V01011-VERIFY-2026-09-26 -->
+## Référence de validation v0.10.11-dev
+Le correctif sprites candidat est identifié v0.10.11-dev.
+Les intros validées restent un invariant de non-régression.
+La validation téléphone reste nécessaire pour confirmer la composition SurfaceView réelle : la CI prouve le contrat logiciel, pas le rendu matériel Android.

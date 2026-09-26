@@ -732,3 +732,12 @@ Après GREEN retry ProfParle, la suite compile et exécute 43 tests. Un seul éc
 Le code avant régression GECKO-033 utilisait directement `setZOrderOnTop(true)`, en plus de PixelFormat.TRANSLUCENT et EGL alpha. La refonte coexistence avait remplacé cela par MediaOverlay.
 
 Correction : restaurer OnTop pour l'alpha tout en gardant la nouvelle architecture multi-sessions. Ceci sépare clairement deux dimensions qui avaient été confondues : composition SurfaceView et arbitrage des players.
+
+
+<!-- GECKO-033-SPRITES-V01011-VERIFY-2026-09-26 -->
+## 2026-09-26 — TDD sprites jusqu'au GREEN #96
+- Run #94 : RED attendu, compilation test échoue sur `ProfessorSpeechVideoStartPolicy` absente.
+- Après implémentation retry, run #95 : tests exécutés, 43 tests dont un seul RED sur la politique SurfaceView.
+- Après restauration de la composition transparente, run #96 : SUCCESS complet, y compris tests, assembleDebug, bundleDebug et upload artifact.
+
+Le rendu réel noir/transparence reste à confirmer sur téléphone.

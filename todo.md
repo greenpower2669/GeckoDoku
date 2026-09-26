@@ -76,3 +76,18 @@
 - [ ] Validation téléphone : fond noir Prof disparu.
 - [ ] Validation téléphone : fond noir Gecko disparu.
 - [ ] Validation téléphone : ProfParle retry fonctionnel.
+
+
+<!-- GECKO-033-SPRITES-V01011-VERIFY-2026-09-26 -->
+## Candidate v0.10.11-dev
+- [x] #94 RED ProfParle retry.
+- [x] #95 RED transparence isolée.
+- [x] #96 GREEN complet.
+- [x] Bump versionCode 22 / versionName 0.10.11-dev.
+- [x] Renommer APK/AAB workflow v0.10.11-dev.
+- [ ] CI finale v0.10.11-dev GREEN.
+- [ ] Test téléphone : rectangle noir Prof.
+- [ ] Test téléphone : rectangle noir Gecko.
+- [ ] Test téléphone : ProfParle.
+- [ ] Test téléphone : Gecko animations muettes.
+- [ ] Revalider intros sans modification.

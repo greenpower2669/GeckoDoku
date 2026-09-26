@@ -276,3 +276,22 @@ Correction minimale :
 Important : cela ne réintroduit PAS un arbitre vidéo global. Chaque animation garde son propre `ChromaKeyVideoView` / `MediaPlayer`; seul le mode de composition Android de la surface redevient celui capable d'afficher l'alpha observé historiquement.
 
 Ajout log `SURFACE_POLICY` par instance.
+
+
+<!-- GECKO-033-SPRITES-V01011-VERIFY-2026-09-26 -->
+## Build téléphone — v0.10.11-dev
+Preuves TDD :
+- #94 RED : policy ProfParle retry absente ;
+- GREEN retry implémenté ;
+- #95 RED : 43 tests, 1 seul échec sur la composition transparente ;
+- GREEN surface implémenté ;
+- #96 SUCCESS complet : tests + APK + AAB + artifact.
+
+La build téléphone suivante est identifiée `0.10.11-dev` / versionCode 22.
+Objectifs de validation téléphone :
+1. aucun rectangle noir derrière Prof ;
+2. aucun rectangle noir derrière Gecko ;
+3. ProfParle visible dès Pierre START ;
+4. ProfParle retenté à une phrase ultérieure après éventuelle erreur ;
+5. animations Gecko visibles et muettes ;
+6. intros 1/2 inchangées et toujours validées.

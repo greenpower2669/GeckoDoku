@@ -80,3 +80,16 @@ Multi-session reste :
 session A → view/player A
 session B → view/player B
 aucun stop croisé.
+
+
+<!-- GECKO-033-SPRITES-V01011-VERIFY-2026-09-26 -->
+## Validation candidate
+v0.10.11-dev
+├── retry ProfParle
+├── ZOrderOnTop + alpha transparent
+├── multi-sessions conservées
+└── téléphone Fab
+    ├── noir Prof ?
+    ├── noir Gecko ?
+    ├── ProfParle ?
+    └── intros toujours OK ?
