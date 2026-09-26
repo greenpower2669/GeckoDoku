@@ -469,3 +469,6 @@ Cette décision remplace explicitement l’ancienne formulation qui laissait la 
 
 ## GECKO-033 — RED attendu
 Les tests de contrat sont volontairement ajoutés avant les classes de production. Échec attendu : références GECKO-033 non résolues, prouvant que les tests pincent bien le comportement nouveau avant implémentation.
+
+
+GECKO-033 RED complémentaire : l’ordre `IntroGeckoGD.mp4` → `Gecko_Intro.mp4` est désormais verrouillé par test avant code.

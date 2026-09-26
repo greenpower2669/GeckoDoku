@@ -468,3 +468,5 @@
 - [x] Ajouter les tests RED du contrat GECKO-033.
 - [ ] Observer CI RED pour références production absentes.
 - [ ] Implémenter uniquement après RED confirmé.
+
+- [x] RED complété : ordre IntroGeckoGD → Gecko_Intro explicitement testé avant implémentation.

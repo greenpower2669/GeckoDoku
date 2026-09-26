@@ -102,6 +102,18 @@ class Gecko033ContractTest {
         )
     }
 
+
+    @Test
+    fun introSequenceStartsWithGdThenKeepsExistingIntro() {
+        assertEquals(
+            listOf(
+                AssetMediaCatalog.GECKO_INTRO_GD,
+                AssetMediaCatalog.GECKO_INTRO
+            ),
+            IntroSequencePolicy.assets
+        )
+    }
+
     @Test
     fun titleIdentityIsOverlayOnlyAndNeverUsesIntroVideo() {
         val policy =

@@ -379,3 +379,6 @@ La durée nominale ~30 s du média n’est plus une durée d’affichage imposé
 ## GECKO-033 — RED TDD démarré sur branche isolée
 Branche : `gecko-033-identity-prof-life`.
 Le cycle RED ajoute uniquement les tests de contrat GECKO-033 et l’activation CI de cette branche. Les tests exigent les constantes assets, le mute Gecko, le cycle ProfParle ↔ parole réelle, l’identité du titre, le catalogue 100 phrases et les seuils du Prof ambiant avant toute implémentation.
+
+
+GECKO-033 RED complémentaire : l’ordre `IntroGeckoGD.mp4` → `Gecko_Intro.mp4` est désormais verrouillé par test avant code.
