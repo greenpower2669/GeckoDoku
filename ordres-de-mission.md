@@ -790,3 +790,39 @@ Le PNG Prof reste au premier plan du bouton. Ajouter plusieurs micro-animations 
 - pause/destroy retire les callbacks ;
 - tests + APK/AAB verts ;
 - validation téléphone Fab.
+
+
+# GECKO-029 — PROF PLUS VIVANT, GECKO PLUS FRÉQUENT, MUSIQUE DE VICTOIRE NON TRONQUÉE
+**Demandeur / date :** Fab, 26/09/2026
+**Statut :** implémentation en cours sur `gecko-029-more-life-full-celebration`.
+
+## 1. Prof : idle 2–3 secondes
+Le Prof doit paraître beaucoup plus vivant :
+- délai d'inactivité entre deux micro-animations : 2 000 à 3 000 ms ;
+- le timer reste actif même si la bulle Prof est ouverte ;
+- la bulle ne bloque jamais l'animation du PNG dans le bouton ;
+- clic Prof = animation immédiate + replanification du prochain idle ;
+- Anim OFF / pause / destroy = aucun callback.
+
+## 2. Gecko : animations longues plus fréquentes
+Les actions longues Gecko restent complètes et non découpées mais deviennent nettement plus fréquentes :
+- probabilité par événement éligible : 45 % ;
+- cooldown partagé : 45 secondes ;
+- toujours une seule vidéo riche à la fois ;
+- pas pendant victoire / média actif / hypothèse Prof critique / partie terminée ;
+- la grille et les coordonnées restent immuables.
+
+## 3. Musique de félicitations
+Le MP3 `audio/celebration/jungle cebration GeckoD.mp3` ne doit plus être arrêté par la fin de l'animation visuelle de célébration.
+- fin de `VictoryCelebrationView` = arrêt des FX procéduraux uniquement ;
+- le MP3 continue jusqu'à sa fin naturelle ;
+- Nouvelle / FX OFF / pause / destroy peuvent toujours l'arrêter proprement ;
+- absence ou erreur MP3 = jeu inchangé.
+
+## 4. Critères
+- idle Prof toujours 2–3 s ;
+- fonctionne même bulle ouverte ;
+- Gecko long action : 45 % / 45 s ;
+- musique victoire non tronquée par la fin visuelle ;
+- tests + APK/AAB verts ;
+- validation téléphone Fab.

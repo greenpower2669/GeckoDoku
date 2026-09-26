@@ -310,3 +310,9 @@ Run #44 échoue sur les nouvelles classes/politiques absentes, conformément au 
 
 ### GREEN GECKO-028
 Run #45 (`36213803733`) : succès complet. Palette/cache, stratégie TTS et timer Prof compilent avec la suite existante. Limite explicitement conservée : le genre des voix TTS dépend du moteur installé ; la sélection masculine est préférentielle, avec fallback vocal grave.
+
+
+## 2026-09-26 — GECKO-029
+Retour téléphone : Prof encore trop peu animé, Gecko long encore trop rare, et musique de félicitations tronquée.
+
+Cause musique confirmée dans `MainActivity` : callback `VictoryCelebrationView.onCelebrationStopped` appelle `gameAudio.stopMusic()`, ce qui couple la durée visuelle à la durée du MP3. Décision : supprimer ce couplage ; seul le lecteur audio décide de la fin naturelle de la piste.

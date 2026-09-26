@@ -340,3 +340,16 @@
 - [x] Synchroniser les fichiers vivants FAB Copilot.
 - [x] CI tests + APK + AAB — run #45 vert, version `0.10.4-dev`.
 - [ ] Validation téléphone : couleur/inset du cache, voix Prof, animation clic et idle 10–20 s.
+
+
+## GECKO-029
+- [ ] RED : Prof idle borné à 2–3 s.
+- [ ] RED : Gecko long action 45 % avec cooldown 45 s.
+- [ ] RED : politique victoire n'arrête pas la musique à la fin visuelle.
+- [ ] Passer idle Prof de 10–20 s à 2–3 s.
+- [ ] Confirmer animation Prof même bulle ouverte.
+- [ ] Passer scheduler Gecko à 45 % / 45 s.
+- [ ] Découpler fin visuelle de victoire et arrêt MP3.
+- [ ] Synchroniser brain/brainmap/debug/todo/ordre.
+- [ ] CI tests + APK + AAB.
+- [ ] Validation téléphone.
