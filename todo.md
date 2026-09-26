@@ -613,3 +613,18 @@
 - [ ] Implémenter coexistence minimale après RED.
 - [ ] CI tests + APK + AAB.
 - [ ] Validation téléphone avec GeckoDokuMediaTrace.
+
+
+<!-- GECKO-033-COEXISTENCE-POLICY-GREEN-2026-09-26 -->
+## GECKO-033 — étape GREEN 1
+- [x] RED #83 observé pour références coexistence absentes.
+- [x] Ajouter politique priorité parole.
+- [x] Ajouter politique actions normales sans stop voix.
+- [x] Ajouter registre multi-sessions indépendant.
+- [x] Ajouter cycle intro + éligibilité narrative Prof.
+- [x] Retirer INTRO du mute forcé.
+- [x] Ajouter politique SurfaceView sans ZOrderOnTop global.
+- [ ] Câbler ProfessorSpeech et MainActivity.
+- [ ] Remplacer overlay mono-session par sessions indépendantes.
+- [ ] Câbler intro/Prof/skip.
+- [ ] CI finale + APK/AAB.

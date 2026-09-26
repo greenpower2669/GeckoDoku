@@ -943,3 +943,16 @@ RichMediaOverlay multi-sessions
 ChromaKeyVideoView par session
 +
 IntroLifecyclePolicy narrative, sans mutex vidéo global.
+
+
+<!-- GECKO-033-COEXISTENCE-POLICY-GREEN-2026-09-26 -->
+## GECKO-033 — étape GREEN 1 : politiques pures
+Après RED #83, implémentation minimale des contrats purs :
+- `SpeechOrigin` + `ProfessorSpeechRequestPolicy` : PROF_BUTTON/END_GAME peuvent remplacer ; AMBIENT/STATS/ENCOURAGEMENT ne préemptent pas ;
+- `ProfessorSessionPolicy` : actions normales joueur ne demandent jamais l’arrêt voix ;
+- `RichMediaPlaybackRegistry` : plusieurs sessions actives simultanément et fin indépendante ;
+- `IntroLifecyclePolicy` : Intro 1 → Intro 2 → DONE, Prof interdit seulement pendant Intro 1, skip → DONE ;
+- `VideoSurfaceLayerPolicy` : abandon du ZOrderOnTop global au profit du media overlay ;
+- `GeckoMediaAudioPolicy` : INTRO n’est plus forcée muette ; les animations Gecko de gameplay restent muettes.
+
+Cette étape ne prétend pas encore avoir câblé le runtime Android : intégration MainActivity/ProfessorSpeech/RichMediaOverlay/ChromaKey reste à faire.

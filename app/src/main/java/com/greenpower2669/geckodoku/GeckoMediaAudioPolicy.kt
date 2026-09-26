@@ -5,7 +5,6 @@ object GeckoMediaAudioPolicy {
         kind: RichMediaKind
     ): Boolean =
         when (kind) {
-            RichMediaKind.INTRO,
             RichMediaKind.GECKO_APPEARANCE,
             RichMediaKind.GECKO_DISAPPEARANCE,
             RichMediaKind.GECKO_LONG_ACTION -> true

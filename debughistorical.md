@@ -602,3 +602,8 @@ Cycle RED ouvert avant toute production :
 - registre de sessions vidéo indépendantes ;
 - Intro 1 sonore et Prof non éligible pendant Intro 1 ;
 - politique SurfaceView sans `setZOrderOnTop(true)` global.
+
+
+<!-- GECKO-033-COEXISTENCE-POLICY-GREEN-2026-09-26 -->
+## 2026-09-26 — GREEN policies après RED #83
+Les politiques pures de coexistence et priorité parole ont été introduites après l’échec attendu de #83. Aucun arbitre mono-vidéo n’est ajouté. L’intégration runtime reste volontairement séparée pour pouvoir isoler les régressions.
