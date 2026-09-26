@@ -174,3 +174,14 @@ Prof.png VISIBLE
 → revealHeldFirstFrame()
    ├── success → masquer Prof.png
    └── failure/timeout/error → garder Prof.png
+
+
+<!-- GECKO-036-QUICK-TALK-BUBBLE-2026-09-27 -->
+! 
+→ ProfessorQuickTalkPolicy
+→ PierreSmallTalk[line]
+├── ProfessorBubbleView.showMessage(line) [visuel seulement]
+└── speakWithProfessorVisual(line, QUICK_TALK) [une seule voix]
+    → ProfParle / PNG fallback
+
+NE PAS utiliser le chemin showProfessorBubble qui reparle en PROF_BUTTON sans séparation visuel/voix.

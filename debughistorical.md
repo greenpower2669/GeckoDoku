@@ -872,3 +872,18 @@ Retour téléphone Fab sur v0.10.13-dev : le délai de synchronisation est jugé
 Diagnostic fonctionnel : la transition PNG → vidéo masque parfois le fallback statique avant que la vidéo ne soit effectivement révélée.
 
 Correction demandée : conserver `Prof.png` jusqu'à la réussite effective de `revealHeldFirstFrame()`.
+
+
+<!-- GECKO-036-QUICK-TALK-BUBBLE-2026-09-27 -->
+## 2026-09-27 — QUICK_TALK affiché au mauvais endroit
+Captures téléphone : les phrases du bouton `!` apparaissent dans le texte de statut au-dessus de la grille au lieu de la bulle Prof.
+
+Cause code vérifiée :
+`speakQuickProfessorLine()` écrit actuellement
+`status.text = "Prof Gecko • " + line`.
+
+Piège identifié avant correction :
+`showProfessorBubble(message)` ne fait pas qu'afficher ; elle appelle aussi `speakWithProfessorVisual(... PROF_BUTTON)`.
+La réutiliser telle quelle pour QUICK_TALK provoquerait potentiellement une seconde demande de parole.
+
+Correction attendue : séparer affichage de bulle et transport vocal, puis afficher la phrase dans la bulle tout en conservant une seule parole QUICK_TALK.

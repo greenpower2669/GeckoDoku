@@ -215,3 +215,16 @@ Aucun ordre de mission actif actuellement.
 - [ ] GREEN minimal sans toucher à la priorité Pierre.
 - [ ] CI GREEN + APK/AAB.
 - [ ] Validation téléphone : aucun trou visuel.
+
+
+<!-- GECKO-036-QUICK-TALK-BUBBLE-2026-09-27 -->
+## GECKO-036 — bouton ! / bulle
+- [ ] RED : phrase QUICK_TALK affichée dans ProfessorBubbleView.
+- [ ] RED : phrase complète non affichée dans status.
+- [ ] RED : une seule requête de parole par appui sur !.
+- [ ] RED : origin conservée QUICK_TALK.
+- [ ] Séparer helper bulle visuel et helper bulle + parole si nécessaire.
+- [ ] Conserver anti-répétition des 100 phrases.
+- [ ] Conserver fermeture bulle sans arrêt voix.
+- [ ] Conserver géométrie de grille immuable.
+- [ ] Validation téléphone : phrase des 100 visible dans la bulle.

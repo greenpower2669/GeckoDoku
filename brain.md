@@ -674,3 +674,16 @@ Fab impose une continuité visuelle stricte entre le portrait statique et ProfPa
 
 En cas de timeout, erreur ou reveal impossible, le PNG reste visible.
 Cette exigence ne change pas la priorité de Pierre et ne doit pas modifier la géométrie de la grille.
+
+
+<!-- GECKO-036-QUICK-TALK-BUBBLE-2026-09-27 -->
+## Contrat durable — QUICK_TALK dans la bulle
+Les 100 phrases déclenchées par `!` appartiennent à la bulle de dialogue du Prof, pas à la ligne d'état au-dessus de la grille.
+
+Une pression sur `!` doit :
+- choisir une phrase `PierreSmallTalk` ;
+- l'afficher dans `ProfessorBubbleView` ;
+- la faire prononcer une seule fois avec `SpeechOrigin.QUICK_TALK` ;
+- utiliser ProfParle/fallback selon le contrat média courant.
+
+L'affichage de la bulle et le déclenchement vocal doivent être séparables afin d'éviter toute double parole. La bulle reste un overlay sans effet sur la géométrie du plateau.

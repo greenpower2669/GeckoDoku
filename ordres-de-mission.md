@@ -76,3 +76,45 @@ Le Prof doit toujours être représenté visuellement :
 ## Contrat court
 
 **Prof.png reste visible jusqu'au moment exact où ProfParle est réellement révélé.**
+
+
+<!-- GECKO-036-QUICK-TALK-BUBBLE-2026-09-27 -->
+# Extension GECKO-036 — les 100 phrases doivent vivre dans la bulle Prof
+
+Retour téléphone Fab confirmé par captures :
+- le bouton `!` fait bien parler une phrase de `PierreSmallTalk` ;
+- mais le texte complet apparaît actuellement dans la ligne `status` au-dessus de la grille ;
+- la phrase doit apparaître dans la vraie bulle de dialogue `ProfessorBubbleView`.
+
+## Comportement cible du bouton !
+
+Séquence :
+`! → choisir phrase → ouvrir/mettre à jour bulle Prof → préparer ProfParle → Pierre parle → animation synchronisée`
+
+Règles :
+- la bulle affiche exactement la phrase choisie ;
+- la phrase complète ne doit plus être injectée dans `status.text` ;
+- `status` peut rester générique (`Prof Gecko`) ou conserver son rôle d'état court ;
+- la bulle est un overlay et ne doit jamais déplacer/redimensionner la grille ;
+- la fermeture manuelle de la bulle ne coupe pas Pierre ;
+- l'anti-répétition des 100 phrases reste inchangé.
+
+## Garde-fou important : aucune double parole
+
+La méthode actuelle `showProfessorBubble(message)` affiche la bulle **et appelle aussi la parole avec origin PROF_BUTTON**.
+
+Le bouton `!` parle déjà via `speakWithProfessorVisual(..., QUICK_TALK)`.
+
+Donc la correction ne doit **pas** appeler directement l'actuel `showProfessorBubble(message)` après avoir lancé QUICK_TALK, sinon Pierre risquerait de parler deux fois / de remplacer sa propre phrase.
+
+Prévoir une séparation propre :
+- affichage seul de la bulle (ex. helper visuel dédié) ;
+- parole déclenchée exactement une seule fois avec `SpeechOrigin.QUICK_TALK`.
+
+## RED supplémentaires
+- `!` accepté → phrase visible dans ProfessorBubbleView ;
+- phrase complète absente de `status.text` ;
+- une seule demande de parole pour une pression sur `!` ;
+- origin reste QUICK_TALK ;
+- fermeture bulle ≠ stop Pierre ;
+- rectangle de grille inchangé.
