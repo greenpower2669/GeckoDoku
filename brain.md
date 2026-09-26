@@ -198,3 +198,7 @@ La grille est immuable pendant les médias. RichMediaOverlayView porte un masque
 ProfessorBubbleView utilise Prof.png statiquement. Prof_actions.mp4 est localisé sur le portrait, avec audio vidéo muet pour laisser la voix TTS française du Prof prioritaire.
 
 AssetAudioPlayer sépare musique et voix. Nouvelle → musique intro ; victoire → musique celebration. GECKO-023 utilise dans ce build les timecodes canoniques du master par seek Android 26+ ; le découpage physique en 13 clips reste une étape de durcissement ouverte.
+
+
+### Preuve CI v0.10
+GitHub Actions run #28 (`36209229581`) sur `f7fd2a703913e636cddaab4f7fed4951643146de` : tests unitaires + APK + AAB réussis. Artefact `GeckoDoku-v0.10.0-dev-Android` id `10894193799`. La validation visuelle/audio sur téléphone reste requise.

@@ -219,3 +219,7 @@ Le test RED run #25 échoue exactement sur les deux classes absentes attendues. 
 
 ### Échec compilation run #26 — portrait Prof
 Le premier GREEN a atteint la compilation Kotlin puis s'est arrêté sur `ProfessorBubbleView.kt` : `Unresolved reference 'paint'`. Cause racine : le nouveau rendu bitmap du portrait utilisait un nom de Paint qui n'existait pas dans cette View. Correction minimale : ajout d'un `imagePaint` dédié et usage exclusif pour `drawBitmap`. Aucun changement de logique ou de géométrie.
+
+
+### Preuve GREEN run #28
+Après le correctif `imagePaint`, GitHub Actions run #28 (`36209229581`) termine avec succès : `:app:testDebugUnitTest`, `:app:assembleDebug` et `:app:bundleDebug`. L'artefact Android v0.10.0-dev est produit. Les symptômes réels (orientation, ancrage, audio/TTS) doivent encore être contrôlés sur téléphone : CI ne valide pas le rendu visuel ni la perception audio.

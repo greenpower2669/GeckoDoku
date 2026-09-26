@@ -566,7 +566,7 @@ Cette réorganisation ne donne encore aucun rôle runtime aux deux morceaux jung
 
 # GECKO-024 — GRILLE IMMUABLE, COMPOSITION PNG/VIDÉO ET AUDIO GAMEPLAY
 **Demandeur / date :** Fab, 26/09/2026  
-**Statut :** implémentation en cours sur branche `gecko-024-grid-audio`.
+**Statut :** build v0.10.0-dev vert sur branche `gecko-024-grid-audio` (run #28), à valider sur téléphone avant clôture fonctionnelle.
 
 ## 0. Retour téléphone qui déclenche la mission
 - les vidéos riches sont affichées tête en bas ;
