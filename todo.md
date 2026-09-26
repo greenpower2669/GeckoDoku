@@ -391,3 +391,20 @@
 - [x] Synchroniser les 4 fichiers vivants + ordre dans le cycle GREEN.
 - [x] CI tests + APK + AAB expérimental — run #58 SUCCESS, artefact `GeckoDoku-v0.10.7-voice-ab-exp-Android` id `10902486871`.
 - [ ] Test téléphone Fabrice : écouter la même phrase Android / LOW / MEDIUM, relever qualité + temps + mémoire ; aucune fusion/décision avant ce test.
+
+
+## GECKO-032 — Pierre UPMC Medium
+- [x] Vérifier le mapping officiel UPMC Medium : Jessica sid 0, Pierre sid 1.
+- [ ] RED : verrouiller modèle UPMC Medium + sid 1.
+- [ ] RED : verrouiller coexistence encouragement enregistré + Pierre.
+- [ ] RED : verrouiller format du résumé stats.
+- [ ] Retirer bouton/dialogue A/B.
+- [ ] Retirer LOW + Siwis Medium de la CI et des assets générés.
+- [ ] Garder uniquement UPMC Medium.
+- [ ] Remplacer ProfessorSpeech par Piper Pierre + fallback Android.
+- [ ] Ajouter encouragements complémentaires Pierre.
+- [ ] Ajouter callback de fin musique d'ouverture.
+- [ ] Annoncer stats après musique d'ouverture.
+- [ ] Synchroniser brain/brainmap/debug/todo/ordre.
+- [ ] CI tests + APK + AAB.
+- [ ] Fusion main après preuve verte.

@@ -313,3 +313,13 @@ GitHub Actions run #58 (`36229808317`) sur `2adf97bc49453b929a2a9e15ddb3042c0a95
 - artefact `GeckoDoku-v0.10.7-voice-ab-exp-Android`, id `10902486871`, taille archive ~317,1 Mo.
 
 Cette preuve porte uniquement sur la build expérimentale de branche. La référence stable `main` reste v0.10.6-dev tant que Fabrice n'a pas comparé les voix sur téléphone.
+
+
+## GECKO-032 — décision Pierre UPMC Medium
+La phase A/B est terminée. Le modèle runtime retenu devient `fr_FR-upmc-medium`, modèle Piper français à deux locuteurs. GeckoDoku fixe `sid=1` pour Pierre ; `sid=0` correspond à Jessica.
+
+Le laboratoire A/B, LOW et Siwis MEDIUM sont retirés. `ProfessorSpeech` devient une façade : Piper Pierre en chemin nominal, Android TTS en secours seulement si le moteur local échoue.
+
+Les encouragements existants restent disponibles. Une politique de source choisit entre audio enregistré et encouragement synthétisé par Pierre. La voix de Pierre ne remplace donc pas les clips existants.
+
+La musique de début de niveau devient séquencée avec l'annonce stats : MediaPlayer termine d'abord la musique, puis `ProfessorSpeech` prononce un résumé généré depuis `PlayerStatsStore.read()`.

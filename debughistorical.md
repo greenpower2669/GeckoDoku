@@ -401,3 +401,9 @@ Cause racine dépendance : mauvais mode d'intégration Android, pas défaut Pipe
 Après remplacement de JitPack par l'AAR Android officiel et passage des métriques PSS en Long, le run #58 (`36229808317`) termine SUCCESS. Les deux étapes de préparation native/modèles, les tests, l'APK et l'AAB sont verts. Artefact final : `GeckoDoku-v0.10.7-voice-ab-exp-Android` id `10902486871`.
 
 La taille importante de l'artefact (~317,1 Mo ZIP APK+AAB) est attendue pour cette expérience : deux modèles Piper + runtime Sherpa sont embarqués. Ce poids ne préjuge pas du choix final ; il sert précisément à comparer LOW/MEDIUM avant de ne conserver qu'une option éventuelle.
+
+
+## 2026-09-26 — GECKO-032 choix final de voix
+Fab choisit la voix masculine Pierre. Vérification externe : le catalogue Piper `fr_FR-upmc-medium` déclare 2 speakers, `jessica:0` et `pierre:1`. Le modèle Siwis du benchmark précédent n'était donc pas le bon modèle final pour Pierre.
+
+Décision : repartir de la branche A/B verte #59, supprimer tout l'UI/labo de benchmark et réduire l'artefact à Sherpa + UPMC Medium. Ajouter un test explicite sid=1 pour éviter une régression silencieuse vers Jessica.

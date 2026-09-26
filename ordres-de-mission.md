@@ -987,3 +987,66 @@ Décision :
 - vérifier son SHA-256 officiel `633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96` ;
 - l'injecter sous `app/libs/` pendant la CI ;
 - stocker les métriques PSS en `Long`.
+
+
+# GECKO-032 — PIERRE UPMC MEDIUM DEVIENT LA VOIX LOCALE DU PROF
+**Demandeur / date :** Fab, 26/09/2026
+**Statut :** TDD en cours sur `gecko-032-pierre-medium`.
+
+## 0. Décision après test A/B
+Fab valide le principe Piper MEDIUM et demande la voix masculine Pierre.
+Le modèle retenu est `fr_FR-upmc-medium`, multi-speaker :
+- Jessica = sid 0 ;
+- Pierre = sid 1.
+Le modèle Siwis LOW et Siwis MEDIUM du laboratoire A/B sont retirés.
+
+## 1. Voix runtime
+- Prof Gecko utilise en priorité Piper UPMC Medium avec `sid = 1` ;
+- synthèse locale/offline via Sherpa-ONNX v1.13.8 ;
+- un seul modèle TTS embarqué ;
+- chargement paresseux et réutilisation d'un seul `OfflineTts` ;
+- fallback Android TTS uniquement si Piper ne peut pas charger/générer ;
+- le bouton temporaire `🧪 Voix A/B` et tout le labo A/B sont supprimés.
+
+## 2. Encouragements
+Les encouragements audio existants restent intacts.
+À chaque Gecko récompensé, choisir aléatoirement entre :
+- un segment enregistré existant ;
+- un encouragement parlé par Pierre.
+Pierre dispose d'une liste complémentaire de formulations françaises, distinctes des 13 clips actuels.
+Aucun remplacement des sons existants.
+
+## 3. Stats au début d'une nouvelle grille
+Quand l'utilisateur lance une nouvelle grille :
+1. créer la grille et enregistrer le départ ;
+2. jouer la musique d'ouverture ;
+3. attendre la fin naturelle de cette musique ;
+4. Pierre annonce un résumé court des statistiques locales du joueur.
+
+Le résumé comprend au minimum :
+- parties lancées ;
+- parties terminées ;
+- taux de réussite ;
+- erreurs ;
+- temps moyen si disponible.
+
+Si la musique d'ouverture ne peut pas être jouée, l'annonce peut partir immédiatement.
+Si les FX/sons sont désactivés, aucune annonce vocale automatique.
+
+## 4. Taille
+La CI n'embarque plus que :
+- Sherpa-ONNX AAR officiel v1.13.8 ;
+- `vits-piper-fr_FR-upmc-medium`.
+LOW et Siwis MEDIUM sont absents de l'artefact final.
+
+## 5. Critères
+- `sid = 1` verrouillé pour Pierre ;
+- UPMC Medium est l'unique modèle Piper embarqué ;
+- bouton A/B supprimé ;
+- Prof normal = Pierre local, fallback Android seulement sur erreur ;
+- encouragements enregistrés + Pierre coexistent ;
+- stats annoncées après la musique d'ouverture ;
+- pas de chevauchement musique d'ouverture / annonce stats ;
+- aucune régression grille, animations, victoire ou Prof ;
+- tests + APK/AAB verts ;
+- fichiers FAB Copilot synchronisés.

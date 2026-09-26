@@ -587,3 +587,27 @@ Build GECKO-031
         └── AAB
 main
 └── reste v0.10.6-dev stable pendant le test humain
+
+
+## GECKO-032
+ProfessorSpeech
+├── PierrePiperSpeechEngine
+│   ├── modèle unique fr_FR-upmc-medium
+│   ├── sid = 1
+│   └── OfflineTts singleton paresseux
+└── AndroidProfessorSpeech fallback
+
+Encouragement
+├── Recorded → AssetAudioPlayer segment
+└── Pierre → ProfessorSpeech phrase complémentaire
+
+Nouvelle grille
+├── recordStart
+├── musique LEVEL_START
+└── onCompletion
+    └── PlayerStatsNarration
+        └── ProfessorSpeech(Pierre)
+
+CI
+├── Sherpa AAR
+└── UPMC Medium seulement
