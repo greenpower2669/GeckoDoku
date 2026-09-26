@@ -675,3 +675,57 @@ Le Prof ne doit plus être animé seulement avec une probabilité faible.
 - texte/voix ne sont jamais retardés ;
 - tests + APK/AAB verts ;
 - validation téléphone Fab.
+
+
+# GECKO-026 — BULLE PROF FLOTTANTE + PROF VIVANT DANS SON BOUTON
+**Demandeur / date :** Fab, 26/09/2026  
+**Statut :** implémentation en cours sur branche `gecko-026-floating-prof-ui`.
+
+## 0. Bug observé sur téléphone
+Quand la bulle Prof apparaît, le cadrage de la grille change. Cause identifiée dans le code :
+`showProfessorBubble()` mettait `controlsPanel.visibility = GONE`. La grille utilise une hauteur pondérée (`weight=1`) dans le `LinearLayout`; masquer les contrôles lui rend donc de l'espace et provoque un nouveau calcul de taille/cadrage.
+
+## 1. Contrat de fenêtre flottante
+La bulle Prof doit être un overlay pur dans `screenRoot` :
+- elle ne retire, masque, redimensionne ni remesure aucun contrôle du jeu ;
+- `controlsPanel` reste visible pendant toute la bulle ;
+- la grille garde exactement les mêmes dimensions avant, pendant et après l'ouverture/fermeture ;
+- la bulle peut recouvrir visuellement une zone du jeu car elle flotte, mais elle n'entre jamais dans le flux de layout ;
+- la bulle conserve une grande croix accessible et une élévation visuelle claire.
+
+## 2. Prof retiré de l'intérieur de la bulle
+La bulle devient calme et lisible :
+- aucun PNG Prof dans la bulle ;
+- aucune vidéo `Prof_actions.mp4` dans la bulle ;
+- aucune animation visuelle Prof à l'intérieur ;
+- uniquement titre « Prof Gecko », texte pédagogique et croix de fermeture ;
+- la voix TTS reste associée au texte et ne dépend pas de l'animation.
+
+## 3. Prof vivant dans son bouton
+Le PNG transparent `assets/prof/Prof.png` est déplacé visuellement vers le bouton Prof :
+- le bouton reste à hauteur fixe afin de ne jamais changer la grille ;
+- le PNG se superpose dans le bouton et peut dépasser légèrement vers le haut ;
+- les parents concernés autorisent ce petit débordement (`clipChildren=false`) ;
+- le texte du bouton reste lisible à droite du PNG ;
+- à chaque interaction avec Prof, le PNG réalise une petite animation locale courte (léger soulèvement/agrandissement), sans vidéo et sans impact layout ;
+- les changements de libellé (« Tester l'hypothèse », « Étape suivante ») continuent à fonctionner.
+
+## 4. Prof_actions.mp4
+`Prof_actions.mp4` reste conservé comme asset historique/futur mais n'est plus lancé depuis la bulle dans GECKO-026. GECKO-025 est donc supersédé sur ce point précis par la demande de Fab.
+
+## 5. Accessibilité
+- le bouton conserve son texte et son rôle de bouton ;
+- le PNG du Prof est décoratif pour TalkBack afin d'éviter une annonce en double ;
+- la bulle texte reste entièrement accessible ;
+- aucun changement de fonctionnalité si le PNG ne peut pas être décodé : bouton texte seul.
+
+## 6. Critères d'acceptation
+- ouverture/fermeture de la bulle : grille strictement immuable ;
+- contrôles jamais masqués par changement de layout ;
+- bulle réellement flottante au-dessus de l'écran ;
+- aucun portrait/vidéo Prof dans la bulle ;
+- Prof.png visible dans le bouton avec léger débordement ;
+- petite animation du PNG lors d'une interaction Prof, sans re-layout ;
+- TTS Prof inchangé ;
+- tests + APK + AAB verts ;
+- validation téléphone par Fab.

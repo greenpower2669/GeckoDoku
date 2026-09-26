@@ -300,3 +300,17 @@
 - [x] Synchroniser brain/brainmap/debug/todo/ordre dans le même cycle.
 - [x] CI tests + APK + AAB — run #33 vert, version `0.10.1-dev`.
 - [ ] Validation téléphone — vérifier Gecko_tr affiché partout et Prof animé à chaque intervention éligible.
+
+
+## GECKO-026 — bulle flottante / Prof dans bouton
+- [x] Identifier la cause racine du recadrage : `controlsPanel = GONE` libère de la hauteur pour la grille pondérée.
+- [ ] RED : verrouiller la politique UI « contrôles visibles + aucun Prof dans bulle + PNG vivant dans bouton ».
+- [ ] Supprimer tout changement de visibilité de `controlsPanel` lors de la bulle.
+- [ ] Retirer Prof.png de `ProfessorBubbleView`.
+- [ ] Supprimer le déclenchement de `Prof_actions.mp4` dans la bulle.
+- [ ] Ajouter Prof.png dans un host de bouton à hauteur fixe, légèrement débordant.
+- [ ] Ajouter une micro-animation locale du PNG au clic Prof sans toucher au layout.
+- [ ] Retirer le runtime `ProfessorAnimationPolicy` devenu obsolète par GECKO-026.
+- [ ] Mettre à jour brain/brainmap/debug/todo/ordre dans le même cycle.
+- [ ] CI tests + APK + AAB.
+- [ ] Validation téléphone : grille inchangée pixel pour pixel à l'ouverture/fermeture du Prof.

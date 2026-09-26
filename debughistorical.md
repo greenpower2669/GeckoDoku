@@ -237,3 +237,14 @@ Run #32 : RED attendu. `AssetMediaCatalogTest` impose `gecko/Gecko_tr.png` et `P
 
 ### GREEN GECKO-025
 Run #33 (`36210582662`) : succès complet après passage de Gecko_tr en sprite canonique et suppression du gate aléatoire du Prof. Les tests imposent le chemin `gecko/Gecko_tr.png` et la politique d'animation systématique sous conditions de priorité.
+
+
+## 2026-09-26 — GECKO-026 cadrage grille / bulle Prof
+### Symptôme
+Sur téléphone, ouverture de la bulle Prof → recadrage visible de la grille.
+
+### Cause racine trouvée
+`showProfessorBubble()` exécute `controlsPanel.visibility = View.GONE`. Le plateau est un enfant de hauteur `0` avec `weight=1f` dans le même `LinearLayout`. En supprimant les trois rangées de contrôles du flux, Android augmente mécaniquement la hauteur disponible pour le plateau, qui se remesure et change son rectangle. À la fermeture, le phénomène inverse se produit.
+
+### Décision
+Ne plus changer le flux de layout pour une bulle. La bulle reste enfant overlay de `screenRoot`. Prof.png sort de la bulle et devient décor du bouton Prof à taille de host fixe ; la vidéo Prof ne joue plus dans la bulle.
