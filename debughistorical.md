@@ -741,3 +741,63 @@ Correction : restaurer OnTop pour l'alpha tout en gardant la nouvelle architectu
 - Après restauration de la composition transparente, run #96 : SUCCESS complet, y compris tests, assembleDebug, bundleDebug et upload artifact.
 
 Le rendu réel noir/transparence reste à confirmer sur téléphone.
+
+
+<!-- GECKO-033-WORKING-STATE-CONSOLIDATED-2026-09-26 -->
+## 2026-09-26 — consolidation de ce qui fonctionne
+
+Cette entrée distingue volontairement trois niveaux : **validé téléphone**, **actif et couvert par le code/tests**, et **preuve CI**.
+
+### Validé explicitement sur téléphone par Fab
+- Intro 1 `IntroGeckoGD.mp4` : affichage correct.
+- Son embarqué Intro 1 : correct.
+- Intro 2 `Gecko_Intro.mp4` : correcte.
+- Enchaînement Intro 1 → Intro 2 : correct.
+- Icône launcher GeckoDoku : validée.
+- Médaillon/icon près du titre : validé.
+
+Après la livraison de v0.10.11-dev, Fab a répondu « Parfait » puis a demandé de vider l'ordre de mission. Ce retour est enregistré comme **retour global positif sur la candidate actuelle**, sans inventer de détail de test non formulé séparément.
+
+### Bons fonctionnements toujours actifs dans le code
+Vérification croisée sur le HEAD courant :
+- moteur `GameEngine` : croix, Gecko, hypothèses, marqueurs, erreurs, auto-crosses ;
+- génération 5×5 à 12×12 avec unicité et validation logique ;
+- `HumanSolver` : singles, région verrouillée, projection, Gecko X-Wing ;
+- `HypothesisSolver` : contradiction bornée pour Mission Impossible/Infernal ;
+- 8 niveaux de difficulté actifs ;
+- `ProfessorGecko` : trace cachée si encore valide, recalcul sinon, explication et étape appliquable ;
+- sauvegarde/rejouer/journal persistant ;
+- statistiques locales et par difficulté ;
+- distinction des parties assistées par Prof ;
+- bulle Prof overlay sans reflow de grille ;
+- célébration procédurale + audio ;
+- Pierre local + fallback Android ;
+- priorité des origines de parole ;
+- interventions ambiantes ;
+- encouragements enregistrés + Pierre ;
+- multi-sessions vidéo indépendantes ;
+- animations Gecko gameplay forcées muettes ;
+- retry `ProfParle.mp4` après erreur ponctuelle ;
+- instrumentation `GeckoDokuMediaTrace`.
+
+### Corrections GECKO-033 qui ont techniquement réussi
+- séparation fermeture de bulle / arrêt transport de Pierre ;
+- actions normales joueur ne coupent plus la voix ;
+- suppression du verrou global mono-session vidéo ;
+- intro 1 devenue sonore lorsque FX ON ;
+- séquence Intro 1 → Intro 2 restaurée ;
+- Prof non présenté pendant Intro 1 ;
+- bootstrap initial corrigé pour ne pas annuler IntroPhase.FIRST ;
+- latch permanent `professorSpeechVideoFailed` supprimé comme condition de refus ;
+- retry vidéo ProfParle autorisé au speech suivant ;
+- stratégie Surface chroma restaurée en `ZOrderOnTop` avec alpha/translucide ;
+- multi-sessions conservées malgré ce changement de composition.
+
+### Preuves CI
+- #94 : RED attendu sur policy retry absente.
+- #95 : 43 tests exécutés, un seul RED sur la Surface transparente.
+- #96 : SUCCESS complet.
+- #97 : SUCCESS complet v0.10.11-dev : tests unitaires, APK, AAB, artifact.
+
+### Règle historique ajoutée
+Un succès confirmé doit être conservé dans `brain.md` comme invariant actif. Un bug corrigé reste dans `debughistorical.md` avec sa cause et sa correction. Une future mission ne doit pas effacer ces acquis simplement parce qu'elle cible une autre zone du projet.
