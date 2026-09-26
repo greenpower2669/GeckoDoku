@@ -247,3 +247,14 @@ Fab doit pouvoir confirmer :
 ## Contrat court
 
 **Pierre parle toujours. La vidéo l'accompagne si elle peut. Elle ne commande jamais la voix.**
+
+
+<!-- GECKO-035-RED-2026-09-26 -->
+## TDD RED ouvert
+Tests de contrat ajoutés avant production :
+- erreur/timeout vidéo → Pierre démarre avec PNG, jamais stoppé ;
+- toutes les `SpeechOrigin` demandent l'habillage parlant ;
+- encouragement enregistré demande aussi l'habillage parlant ;
+- ⚙️ contient Son / Animations / Journal média sans reflow ;
+- ! choisit parmi les 100 phrases avec anti-répétition ;
+- journal persistant lisible, borné et vidable.

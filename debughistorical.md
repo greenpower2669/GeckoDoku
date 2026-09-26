@@ -823,3 +823,8 @@ Correction : gate de frame fraîche réellement dessinée OpenGL, abort avant r�
 <!-- GECKO-034-V01012-CANDIDATE-2026-09-26 -->
 ## 2026-09-26 — preuve GREEN GECKO-034
 Run #104 : SUCCESS complet après le correctif première frame + board flottante. Tests, assembleDebug, bundleDebug et upload artifact réussis.
+
+
+<!-- GECKO-035-RED-2026-09-26 -->
+## 2026-09-26 — GECKO-035 RED
+Avant production, ouverture d'un RED sur priorité voix, habillage de toutes les origines, bouton !, menu ⚙️ et journal persistant. L'ancien verrou `previousAttemptFailed` reste explicitement interdit.

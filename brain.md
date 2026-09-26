@@ -539,3 +539,8 @@ Acquis durables supplémentaires :
 - les intros validées restent inchangées.
 
 Ces comportements sont désormais des invariants de non-régression au même titre que les autres acquis du brain.
+
+
+<!-- GECKO-035-RED-2026-09-26 -->
+## Garde-fou en cours GECKO-035
+La priorité durable est déjà définie : Pierre est fonctionnel, la vidéo est décorative. Le cycle TDD doit empêcher toute future dépendance où une panne vidéo pourrait couper ou condamner la voix.

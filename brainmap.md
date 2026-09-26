@@ -122,3 +122,12 @@ v0.10.12-dev
 ├── board flottante immuable
 ├── intros inchangées
 └── validation téléphone Fab
+
+
+<!-- GECKO-035-RED-2026-09-26 -->
+GECKO-035 RED
+├── ProfessorSpeechLaunchPolicy
+├── ProfessorSpeechVisualPolicy
+├── ProfessorQuickTalkPolicy
+├── SettingsMenuPolicy
+└── PersistentMediaLog

@@ -108,3 +108,21 @@ Aucun ordre de mission actif actuellement.
 - [ ] CI finale versionnée GREEN.
 - [ ] Test téléphone : aucun flash noir.
 - [ ] Test téléphone : grille immobile malgré textes/overlays.
+
+
+<!-- GECKO-035-RED-2026-09-26 -->
+## GECKO-035
+- [x] Poser RED priorité Pierre / panne vidéo.
+- [x] Poser RED toutes SpeechOrigin + encouragement enregistré.
+- [x] Poser RED bouton ! / 100 phrases.
+- [x] Poser RED ⚙️ Son / Anim / Journal.
+- [x] Poser RED journal persistant borné / clear.
+- [ ] Vérifier RED CI.
+- [ ] Implémenter pré-roll ProfParle caché avant Pierre avec fallback.
+- [ ] Ajouter timeout de sécurité sans couper la voix.
+- [ ] Animer encouragement enregistré.
+- [ ] Ajouter bouton !.
+- [ ] Ajouter ⚙️ et déplacer Son/Anim.
+- [ ] Ajouter journal persistant consultable/vidable.
+- [ ] Synchroniser les 5 fichiers au GREEN.
+- [ ] CI GREEN + APK/AAB.
