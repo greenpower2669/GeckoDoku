@@ -54,3 +54,16 @@ Aucun ordre de mission actif actuellement.
 - [ ] Build APK/AAB après GREEN.
 - [ ] Validation téléphone : aucun flash noir au démarrage Prof.
 - [ ] Validation téléphone : aucun flash noir au démarrage Gecko.
+
+
+<!-- GECKO-034-GRID-GEOMETRY-GUARD-2026-09-26 -->
+## GECKO-034 — garde-fou géométrie grille
+- [ ] RED : rectangle de la grille identique avant création de la session vidéo.
+- [ ] RED : rectangle identique pendant vidéo cachée en attente de première frame.
+- [ ] RED : rectangle identique lors du passage alpha 0 → 1.
+- [ ] RED : rectangle identique après fin/erreur vidéo.
+- [ ] Ne jamais utiliser `GONE` si cela peut provoquer un reflow.
+- [ ] Préférer `alpha=0f` / couche overlay pour cacher la surface sans modifier le layout.
+- [ ] Vérifier aucun changement de weight/marges/padding/taille du parent plateau.
+- [ ] Vérifier petits/grands écrans et orientation/ratios différents.
+- [ ] Validation téléphone : aucune grille qui flotte, saute, se redimensionne ou se décale pendant le lancement d'une animation.

@@ -92,3 +92,25 @@ Au déclenchement d'une animation :
 ## Contrat court
 
 **Créer la vidéo cachée, la démarrer cachée, attendre la première frame réellement rendue, puis seulement l'afficher.**
+
+
+<!-- GECKO-034-GRID-GEOMETRY-GUARD-2026-09-26 -->
+## Garde-fou supplémentaire — grille géométriquement immuable
+
+Retour Fab : selon certains affichages, un objet relatif peut perturber la grille ou donner l'impression qu'elle flotte/se décale.
+
+Pour GECKO-034, le gate de première frame ne doit **jamais** modifier le layout de la grille.
+
+Règles strictes :
+- aucun `View.GONE` sur un élément dont la présence influence la mesure du plateau ;
+- aucun changement de `layout_weight`, marge, padding, hauteur ou largeur du parent de la grille ;
+- aucun conteneur média ajouté dans le flux vertical/relatif du plateau ;
+- les vidéos restent dans un overlay indépendant au-dessus du rendu normal ;
+- masquer une vidéo avant sa première frame doit agir uniquement sur la couche média (`alpha=0f` ou visibilité sans reflow), pas sur la géométrie du parent ;
+- passage à visible après première frame = aucun `requestLayout()` volontaire sur la grille ;
+- le rectangle réel du plateau avant/durant/après animation doit rester identique.
+
+Test/non-régression attendu :
+`boardRectBefore == boardRectDuringHiddenVideo == boardRectAfterFirstFrame == boardRectAfterVideo`.
+
+Si une solution de visibilité provoque un re-layout même sur certains appareils/taille d'écran, elle est rejetée.
