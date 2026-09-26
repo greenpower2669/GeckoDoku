@@ -645,3 +645,33 @@ Le texte pédagogique du Prof peut être vocalisé via Android TextToSpeech fran
 
 ### Note d'implémentation audio GECKO-024
 Le premier build téléphone utilise les 13 fenêtres temporelles canoniques directement dans le master via MediaPlayer.seekTo(..., SEEK_CLOSEST), disponible à partir d'Android 26. Cette solution permet le test immédiat mais ne clôt pas l'étape GECKO-023 de production/versionnage des 13 clips physiques, qui reste ouverte si la précision des attaques/fins n'est pas parfaite sur téléphone.
+
+
+# GECKO-025 — GECKO_TR CANONIQUE + PROF ANIMÉ À CHAQUE INTERVENTION
+**Demandeur / date :** Fab, 26/09/2026  
+**Statut :** implémentation en cours.
+
+## 1. Sprite Gecko canonique
+Fab confirme que `assets/gecko/Gecko_tr.png` est le PNG officiel déjà uploadé.
+- `Gecko_tr.png` devient l'unique source statique Gecko hors animation ;
+- le petit `Gecko.png` ajouté par l'assistant est un doublon erroné et doit être supprimé ;
+- le runtime doit pointer exclusivement vers `gecko/Gecko_tr.png` ;
+- fallback procédural conservé uniquement si l'asset canonique est illisible.
+
+## 2. Prof davantage animé
+Le Prof ne doit plus être animé seulement avec une probabilité faible.
+À chaque ouverture/actualisation d'une intervention Prof :
+- texte et voix sont immédiats ;
+- si Habillage animé ON, aucun média plus prioritaire, aucune hypothèse Prof en attente et aucune célébration : lancer `Prof_actions.mp4` dans la zone portrait ;
+- animation locale, grille immuable ;
+- audio embarqué de la vidéo Prof muet pendant la voix TTS ;
+- si la vidéo est déjà active, ne pas en empiler une seconde ;
+- fermeture de bulle / animation OFF / pause → arrêt propre.
+
+## 3. Critères
+- aucun conflit entre deux PNG Gecko ;
+- Gecko normal = Gecko_tr.png ;
+- Prof s'anime à chaque intervention éligible, sans hasard/cooldown ;
+- texte/voix ne sont jamais retardés ;
+- tests + APK/AAB verts ;
+- validation téléphone Fab.

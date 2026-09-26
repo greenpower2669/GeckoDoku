@@ -288,3 +288,15 @@
 - [x] Run #26 analysé : compilation bloquée uniquement par `ProfessorBubbleView.paint` inexistant.
 - [x] Corriger avec un `imagePaint` dédié, sans autre changement.
 - [x] Refaire tests + APK + AAB après ce correctif — run #28 vert.
+
+
+## GECKO-025 — Gecko_tr + Prof animé
+- [x] Vérifier que `assets/gecko/Gecko_tr.png` existe déjà.
+- [ ] RED : test du chemin canonique Gecko_tr.
+- [ ] RED : test de politique Prof systématique sans hasard/cooldown.
+- [ ] Pointer AssetMediaCatalog sur Gecko_tr.png.
+- [ ] Supprimer le doublon `assets/gecko/Gecko.png`.
+- [ ] Remplacer le scheduler aléatoire Prof par une politique systématique d'éligibilité.
+- [ ] Synchroniser brain/brainmap/debug/todo/ordre dans le même cycle.
+- [ ] CI tests + APK + AAB.
+- [ ] Validation téléphone.
