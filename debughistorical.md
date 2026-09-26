@@ -306,3 +306,7 @@ Run #44 échoue sur les nouvelles classes/politiques absentes, conformément au 
 - stratégie TTS masculine avec fallback grave documenté ;
 - trois micro-animations Prof et timer idle 10–20 s ;
 - nettoyage des callbacks sur pause/destroy et désactivation animations.
+
+
+### GREEN GECKO-028
+Run #45 (`36213803733`) : succès complet. Palette/cache, stratégie TTS et timer Prof compilent avec la suite existante. Limite explicitement conservée : le genre des voix TTS dépend du moteur installé ; la sélection masculine est préférentielle, avec fallback vocal grave.

@@ -443,3 +443,12 @@ Prof.png bouton
     ├── action aléatoire
     ├── replanification automatique
     └── callbacks retirés pause/destroy/Anim OFF
+
+
+Build GECKO-028
+└── run #45 vert
+    ├── CellAnimationStyleTest
+    ├── ProfessorVoicePolicyTest
+    ├── ProfessorIdleAnimationPolicyTest
+    ├── APK v0.10.4-dev
+    └── AAB v0.10.4-dev

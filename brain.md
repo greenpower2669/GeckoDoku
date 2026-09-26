@@ -242,3 +242,7 @@ La palette de régions est centralisée dans `GeckoBoardPalette`. Le même entie
 `ProfessorVoicePolicy` préfère une voix française dont nom/features signalent explicitement male/masculin/homme. Android ne normalisant pas le genre sur tous les moteurs TTS, le fallback choisit une voix française locale disponible et abaisse le pitch à 0,78 ; une voix explicitement masculine utilise 0,94. Débit 0,93.
 
 `ProfessorIdleAnimationPolicy` fournit trois actions (BOUNCE/TILT/NOD) et un délai pseudo-aléatoire borné à 10–20 s. Le clic Prof anime immédiatement puis reprogramme le timer. Les animations idle utilisent uniquement transform ; pause/destroy et Anim OFF retirent le callback.
+
+
+### Preuve CI GECKO-028
+GitHub Actions run #45 (`36213803733`) : tests unitaires + APK + AAB réussis sur le commit `6c0e602b607c352bb29bbf4aeca228d38ee4939b`. Version `0.10.4-dev`. La validation téléphone reste nécessaire pour juger la perception masculine du TTS installé et l'intégration visuelle du cache coloré.

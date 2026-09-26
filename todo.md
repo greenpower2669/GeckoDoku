@@ -338,5 +338,5 @@
 - [x] Planifier animation idle toutes les 10–20 s et replanifier après clic/idle.
 - [x] Nettoyer callbacks en pause/destroy et Anim OFF.
 - [x] Synchroniser les fichiers vivants FAB Copilot.
-- [ ] CI tests + APK + AAB.
-- [ ] Validation téléphone.
+- [x] CI tests + APK + AAB — run #45 vert, version `0.10.4-dev`.
+- [ ] Validation téléphone : couleur/inset du cache, voix Prof, animation clic et idle 10–20 s.
