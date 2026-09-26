@@ -472,3 +472,35 @@ Toute future mission doit préserver sauf ordre explicite :
 - transparence chroma sans rectangle noir.
 
 En cas de conflit entre une hypothèse technique et un comportement téléphone validé, **le comportement validé gagne**.
+
+
+<!-- GECKO-BOARD-FLOATING-IMMUTABLE-INVARIANT-2026-09-26 -->
+# 24. GRILLE FLOTTANTE ET GÉOMÉTRIQUEMENT IMMUABLE
+
+La grille GeckoDoku est un **repère visuel stable**.
+
+Invariant permanent :
+
+- le rectangle du plateau reste identique pendant toute interaction qui ne change pas explicitement de taille de grille ;
+- bulles, vidéos, sprites, overlays, animations, Prof, célébrations et médias ne participent jamais au calcul de taille du plateau ;
+- aucun média ne doit pousser, tirer, recentrer, agrandir ou réduire la grille ;
+- aucune apparition/disparition d'un objet visuel relatif ne doit provoquer de reflow ;
+- aucun `View.GONE` ne doit être utilisé sur un élément dont la suppression du flux modifierait la géométrie du plateau ;
+- préférer des overlays indépendants et des changements `alpha/visibility` sans recalcul du layout ;
+- aucun changement temporaire de `layout_weight`, marges, padding ou dimensions du parent de la grille pour afficher un média ;
+- la grille doit rester visuellement “flottante” dans son espace dédié, indépendante des couches décoratives placées au-dessus.
+
+Contrat géométrique :
+
+`boardRectBefore == boardRectDuringOverlay == boardRectDuringVideo == boardRectAfterVideo`
+
+Ce principe s'applique notamment à :
+- bulle Prof ;
+- Prof.png / Prof_actions / ProfParle ;
+- Gecko apparition/disparition/actions longues ;
+- intro ;
+- célébration ;
+- overlays pédagogiques ;
+- futur gate de première frame.
+
+Si une solution technique corrige un média mais fait bouger ou redimensionner la grille sur certains formats d'écran, cette solution est invalide.
