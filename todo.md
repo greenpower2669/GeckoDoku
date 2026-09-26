@@ -199,3 +199,19 @@ Aucun ordre de mission actif actuellement.
 - [ ] Fab : tester consultation / copie / vidage du journal.
 - [ ] Fab : confirmer que Pierre continue si ProfParle échoue.
 - [ ] Fab : confirmer grille immuable.
+
+
+<!-- GECKO-036-PNG-CONTINUITY-MISSION-2026-09-27 -->
+## GECKO-036 — continuité PNG → ProfParle
+- [ ] RED : PNG visible au début du pré-roll.
+- [ ] RED : PNG visible pendant prepare.
+- [ ] RED : PNG visible après première frame tenue.
+- [ ] RED : reveal réussi → masquer PNG seulement après succès.
+- [ ] RED : reveal échoué → PNG reste visible.
+- [ ] RED : timeout → PNG reste visible.
+- [ ] RED : erreur vidéo avant reveal → PNG reste visible.
+- [ ] RED : erreur vidéo après reveal → retour PNG immédiat.
+- [ ] RED : rectangle de grille inchangé pendant toute la transition.
+- [ ] GREEN minimal sans toucher à la priorité Pierre.
+- [ ] CI GREEN + APK/AAB.
+- [ ] Validation téléphone : aucun trou visuel.

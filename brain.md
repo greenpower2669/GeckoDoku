@@ -665,3 +665,12 @@ Cycle GECKO-035 :
 - #115 : GREEN complet final sur v0.10.13-dev, avec tests, APK, AAB et artifact.
 
 Cette preuve CI valide le contrat logiciel et le build. Les observations perceptuelles téléphone restent toujours l'autorité finale pour synchro audio/vidéo et rendu.
+
+
+<!-- GECKO-036-PNG-CONTINUITY-MISSION-2026-09-27 -->
+## Nouveau contrat visuel Prof — à implémenter
+Fab impose une continuité visuelle stricte entre le portrait statique et ProfParle :
+`Prof.png` doit rester visible pendant toute la préparation cachée de `ProfParle.mp4` et ne doit être masqué qu'après réussite réelle de la révélation de la première frame.
+
+En cas de timeout, erreur ou reveal impossible, le PNG reste visible.
+Cette exigence ne change pas la priorité de Pierre et ne doit pas modifier la géométrie de la grille.

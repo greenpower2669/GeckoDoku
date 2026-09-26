@@ -863,3 +863,12 @@ Le démarrage antérieur (voix puis vidéo) est remplacé pour les nouvelles dem
 <!-- GECKO-035-CI115-GREEN-2026-09-26 -->
 ## 2026-09-26 — #115 GREEN
 Candidate v0.10.13-dev : tests + APK + AAB + artifact réussis. Ne pas confondre cette preuve CI avec une validation téléphone de la synchro audio/vidéo.
+
+
+<!-- GECKO-036-PNG-CONTINUITY-MISSION-2026-09-27 -->
+## 2026-09-27 — trou visuel pendant pré-roll ProfParle
+Retour téléphone Fab sur v0.10.13-dev : le délai de synchronisation est jugé correct, mais pendant ce délai le Prof peut parfois ne plus avoir aucune image visible.
+
+Diagnostic fonctionnel : la transition PNG → vidéo masque parfois le fallback statique avant que la vidéo ne soit effectivement révélée.
+
+Correction demandée : conserver `Prof.png` jusqu'à la réussite effective de `revealHeldFirstFrame()`.
