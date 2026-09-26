@@ -644,3 +644,17 @@
 - [x] Arrêts puzzle/fin/FX/lifecycle explicitement tracés.
 - [x] Ajouter logs SPEAK_* avec origin/reason/caller.
 - [ ] Vérifier CI de ce câblage avant coexistence vidéo.
+
+
+<!-- GECKO-033-MULTISESSION-RUNTIME-2026-09-26 -->
+## GECKO-033 — multi-sessions runtime
+- [x] Remplacer le RichMediaOverlay mono-session par des sessions indépendantes.
+- [x] Garantir qu’une fin vidéo ne stoppe jamais une autre instance.
+- [x] Conserver INTRO séquentielle sans mutex vidéo global.
+- [x] Remplacer `setZOrderOnTop(true)` par politique MediaOverlay.
+- [x] Ajouter logicalLayer dans les traces vidéo.
+- [x] Tracer LOAD/WRITE de Anim pour l’anomalie OFF.
+- [ ] Retirer les gardes globaux `richMediaOverlay.isBusy` dans MainActivity.
+- [ ] Câbler IntroLifecyclePolicy / visibilité Prof / skip.
+- [ ] Vérifier coexistence ProfParle + Gecko apparition/disparition/action longue.
+- [ ] CI GREEN + APK/AAB.

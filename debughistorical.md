@@ -618,3 +618,18 @@ Cause : suppression de INTRO de la branche mute sans branche explicite false dan
 ## 2026-09-26 — séparation état pédagogique / bulle / transport voix
 Cause racine de la coupure sur action normale : `clearProfessorSession → closeProfessorBubble → professorSpeech.stop`.
 Correction : `closeProfessorBubble` n’arrête plus le moteur vocal. Les arrêts transport sont maintenant explicites et tracés par raison/caller. Les requêtes basses priorité sont rejetées plutôt que préempter la parole.
+
+
+<!-- GECKO-033-MULTISESSION-RUNTIME-2026-09-26 -->
+## 2026-09-26 — suppression du verrou mono-session au niveau overlay
+Cause architecturale identifiée : `RichMediaOverlayView` possédait un unique `videoView`, un unique `activeKind` et rejetait tout nouveau `play()` dès `isBusy`. Cela empêchait structurellement la coexistence de plusieurs animations.
+
+Correction du composant :
+- map de sessions indépendantes ;
+- vue/player par session ;
+- terminaison isolée ;
+- INTRO seulement séquentielle avec INTRO ;
+- Z-order SurfaceView passé de OnTop global à MediaOverlay ;
+- logs par couche logique.
+
+La suppression des gardes `MainActivity.richMediaOverlay.isBusy` reste une étape séparée pour limiter le rayon de changement.

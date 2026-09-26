@@ -15,15 +15,32 @@ class RichMediaOverlayView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
-    private val maskView =
-        View(context).apply {
-            visibility = GONE
-            importantForAccessibility =
-                IMPORTANT_FOR_ACCESSIBILITY_NO
-        }
+    private data class ActiveSession(
+        val id: String,
+        val kind: RichMediaKind,
+        val assetPath: String,
+        val videoView:
+            ChromaKeyVideoView,
+        val maskView:
+            View?,
+        val titleText:
+            String?,
+        val skippable:
+            Boolean,
+        val onFinished:
+            (() -> Unit)?,
+        val onSkipped:
+            (() -> Unit)?
+    )
 
-    private val videoView =
-        ChromaKeyVideoView(context)
+    private val sessions =
+        linkedMapOf<String, ActiveSession>()
+
+    private val playbackRegistry =
+        RichMediaPlaybackRegistry()
+
+    private var nextSessionId =
+        0L
 
     private val titleView =
         TextView(context).apply {
@@ -33,11 +50,14 @@ class RichMediaOverlayView @JvmOverloads constructor(
                 Color.rgb(246, 255, 231)
             )
             setShadowLayer(
-                8f, 0f, 3f,
+                8f,
+                0f,
+                3f,
                 Color.rgb(18, 80, 44)
             )
             importantForAccessibility =
                 IMPORTANT_FOR_ACCESSIBILITY_NO
+            visibility = GONE
         }
 
     private val closeButton =
@@ -49,37 +69,26 @@ class RichMediaOverlayView @JvmOverloads constructor(
             minWidth = dp(56)
             minHeight = dp(56)
             visibility = GONE
-            setOnClickListener { stop() }
+            setOnClickListener {
+                skipCurrentSession()
+            }
         }
 
-    private var activeKind:
-        RichMediaKind? = null
-
-    private var activeAssetPath:
-        String? = null
-
-    private var activeCompletion:
-        (() -> Unit)? = null
-
     val isBusy: Boolean
-        get() = activeKind != null
+        get() = sessions.isNotEmpty()
+
+    val activeCount: Int
+        get() = sessions.size
 
     init {
-        setBackgroundColor(Color.TRANSPARENT)
+        setBackgroundColor(
+            Color.TRANSPARENT
+        )
         visibility = GONE
         isClickable = false
+        clipChildren = false
+        clipToPadding = false
 
-        addView(
-            maskView,
-            LayoutParams(1, 1)
-        )
-        addView(
-            videoView,
-            LayoutParams(
-                LayoutParams.MATCH_PARENT,
-                LayoutParams.MATCH_PARENT
-            )
-        )
         addView(
             titleView,
             LayoutParams(
@@ -92,6 +101,7 @@ class RichMediaOverlayView @JvmOverloads constructor(
                 rightMargin = dp(76)
             }
         )
+
         addView(
             closeButton,
             LayoutParams(
@@ -99,12 +109,20 @@ class RichMediaOverlayView @JvmOverloads constructor(
                 dp(64)
             ).apply {
                 gravity =
-                    Gravity.TOP or Gravity.END
+                    Gravity.TOP or
+                        Gravity.END
                 topMargin = dp(12)
                 rightMargin = dp(12)
             }
         )
     }
+
+    fun hasActiveKind(
+        kind: RichMediaKind
+    ): Boolean =
+        sessions.values.any {
+            it.kind == kind
+        }
 
     fun play(
         kind: RichMediaKind,
@@ -115,182 +133,394 @@ class RichMediaOverlayView @JvmOverloads constructor(
         skippable: Boolean,
         maskTarget: RectF? = null,
         maskColor: Int = Color.WHITE,
-        onFinished: (() -> Unit)? = null
+        onFinished: (() -> Unit)? = null,
+        onSkipped: (() -> Unit)? = null
     ): Boolean {
         val effectiveMuted =
             muted ||
                 GeckoMediaAudioPolicy
                     .mustMute(kind)
 
-        if (isBusy) {
+        if (
+            kind == RichMediaKind.INTRO &&
+            hasActiveKind(
+                RichMediaKind.INTRO
+            )
+        ) {
             MediaTrace.event(
                 source = "Overlay",
-                event = "PLAY_REJECT_BUSY",
+                event =
+                    "PLAY_REJECT_INTRO_ACTIVE",
                 assetPath = assetPath,
                 detail =
-                    "requestedKind=" +
-                        kind +
-                        " activeKind=" +
-                        activeKind +
-                        " activeAsset=" +
-                        activeAssetPath
+                    "activeCount=" +
+                        activeCount
             )
             return false
         }
+
+        val sessionId =
+            "media-" +
+                (++nextSessionId)
+
+        val maskView =
+            if (maskTarget != null) {
+                View(context).apply {
+                    setBackgroundColor(
+                        maskColor
+                    )
+                    importantForAccessibility =
+                        IMPORTANT_FOR_ACCESSIBILITY_NO
+                    applyBounds(
+                        this,
+                        maskTarget
+                    )
+                }
+            } else {
+                null
+            }
+
+        val videoView =
+            ChromaKeyVideoView(context)
+                .apply {
+                    logicalLayer =
+                        "OVERLAY:" +
+                            kind +
+                            ":" +
+                            sessionId
+                    importantForAccessibility =
+                        IMPORTANT_FOR_ACCESSIBILITY_NO
+                    isClickable = false
+                    applyBounds(
+                        this,
+                        target
+                    )
+                }
+
+        val session =
+            ActiveSession(
+                id = sessionId,
+                kind = kind,
+                assetPath = assetPath,
+                videoView = videoView,
+                maskView = maskView,
+                titleText = titleText,
+                skippable = skippable,
+                onFinished = onFinished,
+                onSkipped = onSkipped
+            )
 
         MediaTrace.event(
             source = "Overlay",
             event = "PLAY_ACCEPT",
             assetPath = assetPath,
             detail =
-                "kind=" +
+                "id=" +
+                    sessionId +
+                    " kind=" +
                     kind +
                     " requestedMuted=" +
                     muted +
                     " effectiveMuted=" +
                     effectiveMuted +
-                    " skippable=" +
-                    skippable
+                    " activeBefore=" +
+                    sessions.size
         )
 
-        activeKind = kind
-        activeAssetPath = assetPath
-        activeCompletion = onFinished
+        maskView?.let {
+            addView(it)
+        }
+
+        addView(
+            videoView
+        )
+
+        sessions[sessionId] =
+            session
+
+        playbackRegistry.started(
+            id = sessionId,
+            kind = kind
+        )
+
+        visibility = VISIBLE
+        refreshChrome()
+
+        videoView.play(
+            assetPath = assetPath,
+            muted = effectiveMuted,
+            onStarted = {
+                MediaTrace.event(
+                    source = "Overlay",
+                    event = "SESSION_STARTED",
+                    assetPath =
+                        assetPath,
+                    detail =
+                        "id=" +
+                            sessionId +
+                            " kind=" +
+                            kind +
+                            " activeCount=" +
+                            activeCount
+                )
+            },
+            onCompletion = {
+                finishSession(
+                    sessionId = sessionId,
+                    invokeCompletion = true,
+                    invokeSkipped = false
+                )
+            },
+            onError = {
+                message ->
+
+                Log.w(
+                    TAG,
+                    message
+                )
+
+                finishSession(
+                    sessionId = sessionId,
+                    invokeCompletion = true,
+                    invokeSkipped = false
+                )
+            }
+        )
+
+        return true
+    }
+
+    fun setMuted(
+        value: Boolean
+    ) {
+        sessions.values.forEach {
+            session ->
+
+            val forcedMute =
+                GeckoMediaAudioPolicy
+                    .mustMute(
+                        session.kind
+                    )
+
+            session.videoView
+                .setMuted(
+                    value ||
+                        forcedMute
+                )
+        }
+    }
+
+    fun stop() {
+        MediaTrace.event(
+            source = "Overlay",
+            event = "STOP_ALL_REQUEST",
+            detail =
+                "activeCount=" +
+                    activeCount
+        )
+
+        sessions.keys
+            .toList()
+            .forEach {
+                sessionId ->
+
+                finishSession(
+                    sessionId =
+                        sessionId,
+                    invokeCompletion =
+                        false,
+                    invokeSkipped =
+                        false
+                )
+            }
+    }
+
+    fun stopKind(
+        kind: RichMediaKind
+    ) {
+        sessions.values
+            .filter {
+                it.kind == kind
+            }
+            .map {
+                it.id
+            }
+            .forEach {
+                finishSession(
+                    sessionId = it,
+                    invokeCompletion = false,
+                    invokeSkipped = false
+                )
+            }
+    }
+
+    fun release() {
+        MediaTrace.event(
+            source = "Overlay",
+            event = "RELEASE_ALL",
+            detail =
+                "activeCount=" +
+                    activeCount
+        )
+
+        stop()
+        playbackRegistry.clear()
+        visibility = GONE
+    }
+
+    private fun skipCurrentSession() {
+        val session =
+            sessions.values
+                .lastOrNull {
+                    it.skippable
+                }
+            ?: return
+
+        MediaTrace.event(
+            source = "Overlay",
+            event = "SKIP_REQUEST",
+            assetPath =
+                session.assetPath,
+            detail =
+                "id=" +
+                    session.id +
+                    " kind=" +
+                    session.kind
+        )
+
+        finishSession(
+            sessionId =
+                session.id,
+            invokeCompletion =
+                false,
+            invokeSkipped =
+                true
+        )
+    }
+
+    private fun finishSession(
+        sessionId: String,
+        invokeCompletion: Boolean,
+        invokeSkipped: Boolean
+    ) {
+        val session =
+            sessions.remove(
+                sessionId
+            ) ?: return
+
+        playbackRegistry.completed(
+            sessionId
+        )
+
+        MediaTrace.event(
+            source = "Overlay",
+            event =
+                when {
+                    invokeCompletion ->
+                        "SESSION_COMPLETE"
+
+                    invokeSkipped ->
+                        "SESSION_SKIPPED"
+
+                    else ->
+                        "SESSION_STOPPED"
+                },
+            assetPath =
+                session.assetPath,
+            detail =
+                "id=" +
+                    session.id +
+                    " kind=" +
+                    session.kind +
+                    " remaining=" +
+                    sessions.size
+        )
+
+        session.videoView
+            .release()
+
+        removeView(
+            session.videoView
+        )
+
+        session.maskView
+            ?.let {
+                removeView(it)
+            }
+
+        refreshChrome()
+
+        when {
+            invokeCompletion ->
+                session.onFinished
+                    ?.invoke()
+
+            invokeSkipped ->
+                session.onSkipped
+                    ?.invoke()
+        }
+    }
+
+    private fun refreshChrome() {
+        val hasIntro =
+            hasActiveKind(
+                RichMediaKind.INTRO
+            )
 
         setBackgroundColor(
-            if (kind == RichMediaKind.INTRO) {
+            if (hasIntro) {
                 Color.BLACK
             } else {
                 Color.TRANSPARENT
             }
         )
 
-        titleView.text = titleText ?: ""
+        val titled =
+            sessions.values
+                .lastOrNull {
+                    !it.titleText
+                        .isNullOrBlank()
+                }
+
+        titleView.text =
+            titled?.titleText ?: ""
+
         titleView.visibility =
-            if (titleText.isNullOrBlank()) {
+            if (titled == null) {
                 GONE
             } else {
                 VISIBLE
             }
+
+        val skippable =
+            sessions.values
+                .lastOrNull {
+                    it.skippable
+                }
+
         closeButton.visibility =
-            if (skippable) VISIBLE else GONE
+            if (skippable == null) {
+                GONE
+            } else {
+                VISIBLE
+            }
 
         contentDescription =
-            if (skippable) {
-                "Animation en cours. Passer l'animation avec la croix."
-            } else {
+            if (skippable == null) {
                 null
+            } else {
+                "Animation en cours. Passer l'animation avec la croix."
             }
 
-        if (maskTarget != null) {
-            maskView.setBackgroundColor(maskColor)
-            applyBounds(maskView, maskTarget)
-            maskView.visibility = VISIBLE
-        } else {
-            maskView.visibility = GONE
-        }
+        titleView.bringToFront()
+        closeButton.bringToFront()
 
-        applyBounds(videoView, target)
-        visibility = VISIBLE
-
-        videoView.play(
-            assetPath = assetPath,
-            muted =
-                effectiveMuted,
-            onCompletion = {
-                finishActive(true)
-            },
-            onError = { message ->
-                Log.w(TAG, message)
-                finishActive(true)
+        visibility =
+            if (sessions.isEmpty()) {
+                GONE
+            } else {
+                VISIBLE
             }
-        )
-        return true
-    }
-
-    fun setMuted(value: Boolean) {
-        val forcedMute =
-            activeKind?.let {
-                GeckoMediaAudioPolicy
-                    .mustMute(it)
-            } ?: false
-
-        videoView.setMuted(
-            value || forcedMute
-        )
-    }
-
-    fun stop() {
-        MediaTrace.event(
-            source = "Overlay",
-            event = "STOP_REQUEST",
-            assetPath =
-                activeAssetPath,
-            detail =
-                "activeKind=" +
-                    activeKind
-        )
-
-        finishActive(false)
-    }
-
-    fun release() {
-        MediaTrace.event(
-            source = "Overlay",
-            event = "RELEASE",
-            assetPath =
-                activeAssetPath,
-            detail =
-                "activeKind=" +
-                    activeKind
-        )
-
-        activeCompletion = null
-        activeKind = null
-        activeAssetPath = null
-        videoView.release()
-        maskView.visibility = GONE
-        setBackgroundColor(Color.TRANSPARENT)
-        visibility = GONE
-    }
-
-    private fun finishActive(
-        invokeCompletion: Boolean
-    ) {
-        if (!isBusy) return
-        val completion = activeCompletion
-        val finishedKind = activeKind
-        val finishedAsset =
-            activeAssetPath
-
-        MediaTrace.event(
-            source = "Overlay",
-            event =
-                if (invokeCompletion) {
-                    "FINISH_COMPLETE"
-                } else {
-                    "FINISH_STOPPED"
-                },
-            assetPath =
-                finishedAsset,
-            detail =
-                "kind=" +
-                    finishedKind
-        )
-
-        activeCompletion = null
-        activeKind = null
-        activeAssetPath = null
-        videoView.stopPlayback()
-        titleView.text = ""
-        titleView.visibility = GONE
-        closeButton.visibility = GONE
-        maskView.visibility = GONE
-        setBackgroundColor(Color.TRANSPARENT)
-        visibility = GONE
-        if (invokeCompletion) {
-            completion?.invoke()
-        }
     }
 
     private fun applyBounds(
@@ -313,15 +543,21 @@ class RichMediaOverlayView @JvmOverloads constructor(
                         .coerceAtLeast(1)
                 ).apply {
                     leftMargin =
-                        target.left.toInt()
+                        target.left
+                            .toInt()
                     topMargin =
-                        target.top.toInt()
+                        target.top
+                            .toInt()
                 }
             }
-        view.layoutParams = params
+
+        view.layoutParams =
+            params
     }
 
-    private fun dp(value: Int): Int =
+    private fun dp(
+        value: Int
+    ): Int =
         (
             value *
                 resources

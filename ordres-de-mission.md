@@ -1819,3 +1819,21 @@ Câblage runtime effectué après validation #85 des policies :
 - logs `SPEAK_REQUEST`, `SPEAK_STARTED`, `SPEAK_REJECT_BUSY`, `SPEAK_STOP(reason, caller)`, `SPEAK_COMPLETED`.
 
 Conséquence attendue : simple tap, double tap, croix, ajout/retrait Gecko et changement visuel ne coupent plus une phrase de Pierre déjà commencée.
+
+
+<!-- GECKO-033-MULTISESSION-RUNTIME-2026-09-26 -->
+## GECKO-033 — runtime multi-sessions vidéo
+Le verrou global « une seule vidéo » est supprimé du composant `RichMediaOverlayView`.
+
+Architecture :
+- chaque lecture obtient sa propre session, son propre `ChromaKeyVideoView` et son propre `MediaPlayer` ;
+- plusieurs sessions non-INTRO peuvent coexister simultanément ;
+- une fin/erreur/skip retire uniquement sa propre session ;
+- aucune fin de session ne fait `stopPlayback()` sur une autre instance ;
+- une INTRO reste séquentielle avec une autre INTRO, mais ce n’est pas un mutex global ;
+- le bouton × vise uniquement la session skippable courante ;
+- `ChromaKeyVideoView` n’utilise plus `setZOrderOnTop(true)` global ; il utilise la politique `setZOrderMediaOverlay(true)` afin de permettre plusieurs surfaces transparentes indépendantes ;
+- chaque vue vidéo porte un `logicalLayer` dans les traces ;
+- `RichMediaSettings` trace désormais `LOAD_ENABLED` et `WRITE_ENABLED` pour diagnostiquer le passage Anim OFF inattendu.
+
+Ce lot ne câble pas encore tous les anciens gardes `isBusy` de MainActivity : leur suppression ciblée vient dans le lot suivant.

@@ -61,6 +61,12 @@ class ChromaKeyVideoView @JvmOverloads constructor(
     private var activeAssetPath:
         String? = null
 
+    var logicalLayer: String =
+        "UNSPECIFIED"
+
+    private val layerPolicy =
+        VideoSurfaceLayerPolicy()
+
     init {
         setEGLContextClientVersion(2)
         setEGLConfigChooser(
@@ -74,7 +80,18 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         holder.setFormat(
             PixelFormat.TRANSLUCENT
         )
-        setZOrderOnTop(true)
+        if (
+            layerPolicy.useZOrderOnTop
+        ) {
+            setZOrderOnTop(true)
+        }
+
+        if (
+            layerPolicy.useMediaOverlay
+        ) {
+            setZOrderMediaOverlay(true)
+        }
+
         setRenderer(chromaRenderer)
         renderMode = RENDERMODE_WHEN_DIRTY
         preserveEGLContextOnPause = true
@@ -92,12 +109,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
     ) {
         MediaTrace.event(
             source =
-                "ChromaKey@" +
-                    Integer.toHexString(
-                        System.identityHashCode(
-                            this
-                        )
-                    ),
+                traceSource(),
             event = "PLAY_REQUEST",
             assetPath = assetPath,
             detail =
@@ -137,12 +149,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
     ) {
         MediaTrace.event(
             source =
-                "ChromaKey@" +
-                    Integer.toHexString(
-                        System.identityHashCode(
-                            this
-                        )
-                    ),
+                traceSource(),
             event = "SET_MUTED",
             assetPath =
                 activeAssetPath,
@@ -171,12 +178,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         ) {
             MediaTrace.event(
                 source =
-                    "ChromaKey@" +
-                        Integer.toHexString(
-                            System.identityHashCode(
-                                this
-                            )
-                        ),
+                    traceSource(),
                 event = "STOP",
                 assetPath =
                     activeAssetPath
@@ -212,12 +214,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
     fun release() {
         MediaTrace.event(
             source =
-                "ChromaKey@" +
-                    Integer.toHexString(
-                        System.identityHashCode(
-                            this
-                        )
-                    ),
+                traceSource(),
             event = "RELEASE",
             assetPath =
                 activeAssetPath
@@ -284,12 +281,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
                 MediaTrace.event(
                     source =
-                        "ChromaKey@" +
-                            Integer.toHexString(
-                                System.identityHashCode(
-                                    this
-                                )
-                            ),
+                        traceSource(),
                     event = "START",
                     assetPath =
                         request.assetPath,
@@ -341,12 +333,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
                 MediaTrace.event(
                     source =
-                        "ChromaKey@" +
-                            Integer.toHexString(
-                                System.identityHashCode(
-                                    this
-                                )
-                            ),
+                        traceSource(),
                     event = "ERROR",
                     assetPath =
                         request.assetPath,
@@ -379,12 +366,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
             MediaTrace.event(
                 source =
-                    "ChromaKey@" +
-                        Integer.toHexString(
-                            System.identityHashCode(
-                                this
-                            )
-                        ),
+                    traceSource(),
                 event = "EXCEPTION",
                 assetPath =
                     request.assetPath,
@@ -400,6 +382,17 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             )
         }
     }
+
+    private fun traceSource(): String =
+        "ChromaKey@" +
+            Integer.toHexString(
+                System.identityHashCode(
+                    this
+                )
+            ) +
+            "[" +
+            logicalLayer +
+            "]"
 
     private data class PlaybackRequest(
         val assetPath: String,

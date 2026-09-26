@@ -11,6 +11,23 @@ class RichMediaSettings(
             Context.MODE_PRIVATE
         )
 
+    init {
+        MediaTrace.event(
+            source = "RichMediaSettings",
+            event = "LOAD_ENABLED",
+            detail =
+                "value=" +
+                    preferences.getBoolean(
+                        "animations_enabled",
+                        true
+                    ) +
+                    " persisted=" +
+                    preferences.contains(
+                        "animations_enabled"
+                    )
+        )
+    }
+
     var enabled: Boolean
         get() =
             preferences.getBoolean(
@@ -18,6 +35,22 @@ class RichMediaSettings(
                 true
             )
         set(value) {
+            val previous =
+                preferences.getBoolean(
+                    "animations_enabled",
+                    true
+                )
+
+            MediaTrace.event(
+                source = "RichMediaSettings",
+                event = "WRITE_ENABLED",
+                detail =
+                    "previous=" +
+                        previous +
+                        " new=" +
+                        value
+            )
+
             preferences.edit()
                 .putBoolean(
                     "animations_enabled",
