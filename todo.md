@@ -227,5 +227,18 @@
 - [x] Ajouter le test RED du scheduler des animations longues avant son implémentation.
 - [x] Vérifier que la CI échoue pour la raison attendue : `RichMediaScheduler` absent (run #14, `Unresolved reference`).
 - [x] Implémenter le sous-système média riche + keycolor bleu transparent sur la branche isolée.
-- [ ] Faire passer tests + APK + AAB sur GitHub Actions.
+- [x] Faire passer tests + APK + AAB sur GitHub Actions — run #15 `36203684907`, succès ; artefact `GeckoDoku-v0.9.0-dev-Android` id `10893390568`.
 - [ ] Fusionner seulement après CI verte ; validation visuelle Android restera humaine.
+
+
+## Validation téléphone v0.9
+- [ ] Vérifier intro complète + titre GeckoDoku + bouton ×.
+- [ ] Vérifier que le bleu des vidéos devient transparent sans trou visible dans le Gecko/Prof.
+- [ ] Vérifier bords doux et absence de frange bleue gênante ; ajuster seuil/softness/despill si besoin.
+- [ ] Vérifier apparition/disparition exactement sur la case concernée.
+- [ ] Vérifier que les séquences Gecko/Prof longues jouent 0→EOF sans boucle.
+- [ ] Vérifier Habillage animé OFF immédiatement et après redémarrage.
+- [ ] Vérifier FX OFF : vidéos silencieuses, visuel conservé.
+- [ ] Vérifier pause/reprise Android et changement de grille sans vidéo orpheline.
+- [ ] Vérifier Prof : texte logique immédiat, média jamais bloquant.
+- [ ] Vérifier célébration prioritaire au-dessus du média.

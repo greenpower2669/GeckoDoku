@@ -437,4 +437,4 @@ Le lot sera considéré valide lorsque :
 - **Remplace :** la section GECKO-022 « Keycolor bleu — PAS MAINTENANT » pour le périmètre de ce lot.
 - **Résultat demandé :** fond bleu supprimé au rendu, contours adoucis, réduction des franges bleues, traitement GPU compatible minSdk 26 ; si le shader ou le décodage échoue, fermer le média et conserver le jeu normal. Ne jamais toucher à la logique du puzzle.
 - **Portée :** vidéos riches Gecko/Prof à fond bleu. `Prof.png` reste le portrait normal transparent ; `Prof_fb.png` reste une source bleue et ne remplace pas automatiquement le portrait normal.
-- **Statut :** En cours sur branche `gecko-022-rich-media` ; validation visuelle téléphone requise après build.
+- **Statut :** **Livré sur branche, à valider sur téléphone.** GitHub Actions run #15 (`36203684907`) : tests + APK + AAB réussis. Artefact `GeckoDoku-v0.9.0-dev-Android` id `10893390568`. Validation visuelle du détourage bleu et du placement reste humaine.

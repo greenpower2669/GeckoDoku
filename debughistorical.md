@@ -172,3 +172,7 @@ Le média reste décoratif. Erreur d'asset, de MediaPlayer ou de shader : log + 
 
 ### TDD
 Le test scheduler a été lancé seul avant implémentation et a échoué sur `Unresolved reference RichMediaScheduler`, RED attendu.
+
+
+### Preuve build v0.9
+GitHub Actions run #15 (`36203684907`) sur commit `e9dbfa394246f6ba0f552ef69ff3d1da847ede76` : succès de `:app:testDebugUnitTest`, `:app:assembleDebug` et `:app:bundleDebug`. APK et AAB renommés puis regroupés dans l'artefact `GeckoDoku-v0.9.0-dev-Android` (id `10893390568`, digest `sha256:77d4dddc2db8433a33ca7689da8c3b02ef9d3959fed435dc033731f596842882`). Le rendu chroma-key lui-même nécessite encore validation visuelle sur téléphone.
