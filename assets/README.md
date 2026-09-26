@@ -59,3 +59,8 @@ Les MP3 autonomes sont rangés par rôle sans réencodage :
 - `audio/encouragements/clips/` : réservé aux 13 clips courts GECKO-023 à produire ultérieurement.
 
 Le rangement des MP3 n'ajoute aucun code et ne modifie pas le comportement de la v0.9 en cours de test.
+
+
+## Gecko statique
+- `gecko/Gecko.png` : sprite transparent normal hors animation, dérivé de l'identité visuelle GeckoDoku existante.
+- les MP4 Gecko restent des overlays temporaires au-dessus du rendu normal.

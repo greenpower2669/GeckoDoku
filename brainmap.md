@@ -312,7 +312,7 @@ assets/audio/
 
 ## GECKO-024 runtime
 GeckoBoardView
-├── Gecko.png si présent
+├── Gecko.png transparent
 └── fallback procédural
 
 Case immuable

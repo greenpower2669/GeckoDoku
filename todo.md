@@ -273,7 +273,7 @@
 - [x] Conserver grille immuable pendant tous les overlays.
 - [x] Intro : fond noir.
 - [x] Prof : afficher `Prof.png` statiquement et localiser son animation sur le portrait.
-- [x] Gecko : charger `Gecko.png` si présent, fallback procédural sinon.
+- [x] Gecko : ajouter `assets/gecko/Gecko.png` transparent dérivé de l'identité visuelle existante, avec fallback procédural.
 - [ ] Découper les 13 encouragements depuis le master, sans le modifier.
 - [x] Jouer musique intro sur bouton Nouvelle.
 - [x] Jouer musique célébration à la victoire.
