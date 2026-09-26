@@ -106,6 +106,17 @@ class MainActivity : Activity() {
     private val professorUiPolicy =
         ProfessorUiPolicy()
 
+    private val professorIdleAnimationPolicy =
+        ProfessorIdleAnimationPolicy()
+
+    private val cellAnimationStyle =
+        CellAnimationStyle()
+
+    private val professorIdleAnimationRunnable =
+        Runnable {
+            runProfessorIdleAnimation()
+        }
+
     private var selectedSize = 5
 
     private var selectedDifficulty =
@@ -346,6 +357,12 @@ class MainActivity : Activity() {
                         ::richMediaOverlay.isInitialized
                     ) {
                         richMediaOverlay.stop()
+                    }
+
+                    if (richMediaSettings.enabled) {
+                        scheduleProfessorIdleAnimation()
+                    } else {
+                        cancelProfessorIdleAnimation()
                     }
 
                     status.text =
@@ -736,6 +753,7 @@ class MainActivity : Activity() {
         protectFromSystemBars(root)
         refreshGameUi()
         updateAnimationButton()
+        scheduleProfessorIdleAnimation()
 
         if (savedInstanceState == null) {
             screenRoot.post {
@@ -1335,7 +1353,14 @@ class MainActivity : Activity() {
 
     private fun showProfessorHint() {
         professorUsed = true
-        animateProfessorButtonPortrait()
+
+        animateProfessorButtonPortrait(
+            professorIdleAnimationPolicy
+                .actionFor(
+                    Random.nextInt()
+                )
+        )
+        scheduleProfessorIdleAnimation()
 
         val pending =
             pendingProfessorHypothesis
@@ -2199,6 +2224,18 @@ class MainActivity : Activity() {
                 else -> return
             }
 
+        val maskTarget =
+            RectF(target).apply {
+                val insetAmount =
+                    width() *
+                        cellAnimationStyle
+                            .maskInsetFraction
+                inset(
+                    insetAmount,
+                    insetAmount
+                )
+            }
+
         richMediaOverlay.play(
             kind = kind,
             assetPath = asset,
@@ -2206,8 +2243,11 @@ class MainActivity : Activity() {
             target = target,
             titleText = null,
             skippable = false,
-            maskTarget = target,
-            maskColor = Color.WHITE,
+            maskTarget = maskTarget,
+            maskColor =
+                board.cellBackgroundColor(
+                    cell
+                ),
             onFinished = onFinished
         )
     }
@@ -2257,6 +2297,18 @@ class MainActivity : Activity() {
                 )
             }
 
+        val maskTarget =
+            RectF(target).apply {
+                val insetAmount =
+                    width() *
+                        cellAnimationStyle
+                            .maskInsetFraction
+                inset(
+                    insetAmount,
+                    insetAmount
+                )
+            }
+
         richMediaOverlay.play(
             kind = RichMediaKind.GECKO_LONG_ACTION,
             assetPath = AssetMediaCatalog.GECKO_LONG_ACTIONS,
@@ -2264,12 +2316,17 @@ class MainActivity : Activity() {
             target = target,
             titleText = null,
             skippable = true,
-            maskTarget = target,
-            maskColor = Color.WHITE
+            maskTarget = maskTarget,
+            maskColor =
+                board.cellBackgroundColor(
+                    cell
+                )
         )
     }
 
-    private fun animateProfessorButtonPortrait() {
+    private fun animateProfessorButtonPortrait(
+        action: ProfessorAnimationAction
+    ) {
         if (
             !::professorPortrait.isInitialized ||
             !professorUiPolicy
@@ -2287,24 +2344,140 @@ class MainActivity : Activity() {
                 professorUiPolicy
                     .portraitElevationDp
             ).toFloat()
+
         professorPortrait.scaleX = 1f
         professorPortrait.scaleY = 1f
         professorPortrait.translationY = 0f
+        professorPortrait.rotation = 0f
 
-        professorPortrait.animate()
-            .scaleX(1.07f)
-            .scaleY(1.07f)
-            .translationY(-dp(4).toFloat())
-            .setDuration(150L)
-            .withEndAction {
+        when (action) {
+            ProfessorAnimationAction.BOUNCE -> {
                 professorPortrait.animate()
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .translationY(0f)
-                    .setDuration(180L)
+                    .scaleX(1.08f)
+                    .scaleY(1.08f)
+                    .translationY(
+                        -dp(5).toFloat()
+                    )
+                    .setDuration(150L)
+                    .withEndAction {
+                        resetProfessorPortrait(
+                            190L
+                        )
+                    }
                     .start()
             }
+
+            ProfessorAnimationAction.TILT -> {
+                professorPortrait.animate()
+                    .rotation(8f)
+                    .scaleX(1.05f)
+                    .scaleY(1.05f)
+                    .setDuration(170L)
+                    .withEndAction {
+                        professorPortrait
+                            .animate()
+                            .rotation(-6f)
+                            .setDuration(150L)
+                            .withEndAction {
+                                resetProfessorPortrait(
+                                    170L
+                                )
+                            }
+                            .start()
+                    }
+                    .start()
+            }
+
+            ProfessorAnimationAction.NOD -> {
+                professorPortrait.animate()
+                    .translationY(
+                        dp(3).toFloat()
+                    )
+                    .scaleY(0.96f)
+                    .setDuration(120L)
+                    .withEndAction {
+                        professorPortrait
+                            .animate()
+                            .translationY(
+                                -dp(4).toFloat()
+                            )
+                            .scaleY(1.04f)
+                            .setDuration(130L)
+                            .withEndAction {
+                                resetProfessorPortrait(
+                                    170L
+                                )
+                            }
+                            .start()
+                    }
+                    .start()
+            }
+        }
+    }
+
+    private fun resetProfessorPortrait(
+        durationMs: Long
+    ) {
+        professorPortrait.animate()
+            .scaleX(1f)
+            .scaleY(1f)
+            .translationY(0f)
+            .rotation(0f)
+            .setDuration(durationMs)
             .start()
+    }
+
+    private fun runProfessorIdleAnimation() {
+        if (
+            richMediaSettings.enabled &&
+            ::professorPortrait.isInitialized &&
+            professorPortrait.isShown &&
+            !(
+                ::celebrationView.isInitialized &&
+                    celebrationView.visibility ==
+                        View.VISIBLE
+                )
+        ) {
+            animateProfessorButtonPortrait(
+                professorIdleAnimationPolicy
+                    .actionFor(
+                        Random.nextInt()
+                    )
+            )
+        }
+
+        scheduleProfessorIdleAnimation()
+    }
+
+    private fun scheduleProfessorIdleAnimation() {
+        if (!::professorPortrait.isInitialized) {
+            return
+        }
+
+        cancelProfessorIdleAnimation()
+
+        if (!richMediaSettings.enabled) {
+            return
+        }
+
+        val delay =
+            professorIdleAnimationPolicy
+                .delayMs(
+                    Random.nextInt()
+                )
+
+        professorPortrait.postDelayed(
+            professorIdleAnimationRunnable,
+            delay
+        )
+    }
+
+    private fun cancelProfessorIdleAnimation() {
+        if (::professorPortrait.isInitialized) {
+            professorPortrait.removeCallbacks(
+                professorIdleAnimationRunnable
+            )
+        }
     }
 
     private fun handlePlayerGeckoConfirmed(
@@ -2419,7 +2592,14 @@ class MainActivity : Activity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        scheduleProfessorIdleAnimation()
+    }
+
     override fun onPause() {
+        cancelProfessorIdleAnimation()
+
         if (::richMediaOverlay.isInitialized) {
             richMediaOverlay.stop()
         }
@@ -2436,6 +2616,8 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        cancelProfessorIdleAnimation()
+
         if (::richMediaOverlay.isInitialized) {
             richMediaOverlay.release()
         }

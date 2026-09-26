@@ -234,3 +234,11 @@ Après insertion du portrait, puis avant chaque micro-animation, `bringToFront()
 
 ### Preuve CI GECKO-027
 GitHub Actions run #41 (`36212793683`) sur `df8ebb93b43cd5b5c69bcdf382c7d5b1e23b8b7c` : tests unitaires + APK + AAB réussis. Version `0.10.3-dev`. La vérification téléphone doit confirmer que la surface du bouton ne recouvre plus jamais le Prof, y compris pendant press et micro-animation.
+
+
+## GECKO-028 — cache harmonisé, voix masculine et vie idle du Prof
+La palette de régions est centralisée dans `GeckoBoardPalette`. Le même entier ARGB sert au dessin de la case et au cache d'overlay. Le cache est inset de 4 % sur chaque bord ; la vidéo conserve le rectangle intégral de la case.
+
+`ProfessorVoicePolicy` préfère une voix française dont nom/features signalent explicitement male/masculin/homme. Android ne normalisant pas le genre sur tous les moteurs TTS, le fallback choisit une voix française locale disponible et abaisse le pitch à 0,78 ; une voix explicitement masculine utilise 0,94. Débit 0,93.
+
+`ProfessorIdleAnimationPolicy` fournit trois actions (BOUNCE/TILT/NOD) et un délai pseudo-aléatoire borné à 10–20 s. Le clic Prof anime immédiatement puis reprogramme le timer. Les animations idle utilisent uniquement transform ; pause/destroy et Anim OFF retirent le callback.

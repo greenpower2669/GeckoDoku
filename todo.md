@@ -327,16 +327,16 @@
 
 
 ## GECKO-028
-- [ ] RED : palette région + inset 4 % du cache.
-- [ ] RED : politique voix masculine + pitch fallback.
-- [ ] RED : délai d'animation Prof borné entre 10 et 20 s et plusieurs actions.
-- [ ] Remplacer le blanc par la couleur de région exacte.
-- [ ] Inset du cache sans modifier le rectangle vidéo.
-- [ ] Sélectionner une voix TTS française masculine si identifiable.
-- [ ] Fallback TTS grave si genre non identifiable.
-- [ ] Ajouter 3 micro-animations Prof.
-- [ ] Planifier animation idle toutes les 10–20 s.
-- [ ] Nettoyer les callbacks en pause/destroy.
-- [ ] Synchroniser les fichiers vivants FAB Copilot.
+- [x] RED : palette région + inset 4 % du cache — run #44.
+- [x] RED : politique voix masculine + pitch fallback — run #44.
+- [x] RED : délai Prof 10–20 s + plusieurs actions — run #44.
+- [x] Remplacer le blanc par la couleur de région exacte via GeckoBoardPalette.
+- [x] Inset 4 % du cache sans modifier le rectangle vidéo.
+- [x] Sélectionner une voix TTS française masculine si identifiable par nom/features.
+- [x] Fallback TTS français pitch 0,78 si genre non identifiable.
+- [x] Ajouter BOUNCE / TILT / NOD.
+- [x] Planifier animation idle toutes les 10–20 s et replanifier après clic/idle.
+- [x] Nettoyer callbacks en pause/destroy et Anim OFF.
+- [x] Synchroniser les fichiers vivants FAB Copilot.
 - [ ] CI tests + APK + AAB.
 - [ ] Validation téléphone.

@@ -49,21 +49,6 @@ class GeckoBoardView @JvmOverloads constructor(
     private var professorGhosts: Set<Cell> = emptySet()
     private var professorLevel = 0
 
-    private val regionColors = intArrayOf(
-        Color.rgb(232, 248, 232),
-        Color.rgb(222, 239, 255),
-        Color.rgb(255, 241, 204),
-        Color.rgb(244, 225, 255),
-        Color.rgb(255, 222, 226),
-        Color.rgb(218, 247, 242),
-        Color.rgb(255, 229, 204),
-        Color.rgb(225, 229, 255),
-        Color.rgb(237, 246, 205),
-        Color.rgb(255, 218, 242),
-        Color.rgb(216, 245, 255),
-        Color.rgb(239, 225, 207)
-    )
-
     private val gestures =
         GestureDetector(
             context,
@@ -295,10 +280,10 @@ class GeckoBoardView @JvmOverloads constructor(
                     Paint.Style.FILL
 
                 paint.color =
-                    regionColors[
-                        puzzle.regionAt(cell) %
-                            regionColors.size
-                    ]
+                    GeckoBoardPalette
+                        .colorFor(
+                            puzzle.regionAt(cell)
+                        )
 
                 canvas.drawRect(
                     cellRect(cell),
@@ -1009,6 +994,13 @@ class GeckoBoardView @JvmOverloads constructor(
 
         return Cell(row, col)
     }
+
+    fun cellBackgroundColor(
+        cell: Cell
+    ): Int =
+        GeckoBoardPalette.colorFor(
+            puzzle.regionAt(cell)
+        )
 
     fun cellRectOnScreen(
         cell: Cell

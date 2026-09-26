@@ -423,3 +423,23 @@ Build GECKO-027
     ├── suite existante
     ├── APK v0.10.3-dev
     └── AAB v0.10.3-dev
+
+
+## GECKO-028
+GeckoBoardPalette
+├── couleur région utilisée par GeckoBoardView
+└── même couleur → masque animation cellule
+    ├── inset 4 %
+    └── vidéo = rectangle complet
+
+ProfessorSpeech
+└── ProfessorVoicePolicy
+    ├── voix FR explicitement masculine si identifiable
+    └── sinon voix FR locale + pitch 0,78
+
+Prof.png bouton
+├── clic → action aléatoire BOUNCE/TILT/NOD
+└── idle → timer 10–20 s
+    ├── action aléatoire
+    ├── replanification automatique
+    └── callbacks retirés pause/destroy/Anim OFF

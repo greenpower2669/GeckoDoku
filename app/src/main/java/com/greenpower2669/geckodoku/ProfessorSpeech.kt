@@ -13,6 +13,9 @@ class ProfessorSpeech(
     private var pendingText:
         String? = null
 
+    private val voicePolicy =
+        ProfessorVoicePolicy()
+
     var enabled: Boolean = true
         set(value) {
             field = value
@@ -41,8 +44,68 @@ class ProfessorSpeech(
                         result !=
                             TextToSpeech
                                 .LANG_NOT_SUPPORTED
-                    engine.setSpeechRate(0.94f)
-                    engine.setPitch(1.03f)
+                    val frenchVoices =
+                        engine.voices
+                            .orEmpty()
+                            .filter {
+                                it.locale.language
+                                    .equals(
+                                        "fr",
+                                        ignoreCase = true
+                                    )
+                            }
+
+                    val masculineVoice =
+                        frenchVoices
+                            .filter {
+                                voicePolicy
+                                    .looksMasculine(
+                                        buildString {
+                                            append(it.name)
+                                            append(' ')
+                                            append(
+                                                it.features
+                                                    .joinToString(" ")
+                                            )
+                                        }
+                                    )
+                            }
+                            .sortedBy {
+                                it.isNetworkConnectionRequired
+                            }
+                            .firstOrNull()
+
+                    val fallbackVoice =
+                        frenchVoices
+                            .sortedBy {
+                                it.isNetworkConnectionRequired
+                            }
+                            .firstOrNull()
+
+                    val selectedVoice =
+                        masculineVoice
+                            ?: fallbackVoice
+
+                    if (selectedVoice != null) {
+                        engine.setVoice(
+                            selectedVoice
+                        )
+                    }
+
+                    engine.setSpeechRate(
+                        voicePolicy.speechRate
+                    )
+
+                    engine.setPitch(
+                        if (masculineVoice != null) {
+                            voicePolicy
+                                .masculineVoicePitch
+                        } else {
+                            voicePolicy
+                                .fallbackPitch
+                        }
+                    )
+
                     val pending = pendingText
                     pendingText = null
                     if (

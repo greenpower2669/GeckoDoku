@@ -759,7 +759,7 @@ Le bouton Prof est visuellement dessiné devant le PNG du Prof. Le PNG est bien 
 
 # GECKO-028 — CACHE DE CASE HARMONISÉ + VOIX PROF MASCULINE + ANIMATIONS D'ATTENTE
 **Demandeur / date :** Fab, 26/09/2026
-**Statut :** implémentation en cours sur `gecko-028-prof-voice-idle-mask`.
+**Statut :** implémentation GREEN en cours sur `gecko-028-prof-voice-idle-mask` ; CI puis validation téléphone requises.
 
 ## 1. Cache des animations Gecko
 Le cache derrière une animation Gecko ne doit plus être blanc. Il reprend exactement la couleur de région de la case ciblée. Le cache est centré et légèrement plus petit que la case (inset 4 % de chaque côté) afin de masquer le Gecko normal sans former un carré visuellement agressif. La vidéo reste ancrée sur le rectangle complet de la case. La grille reste immuable.
