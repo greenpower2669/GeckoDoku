@@ -342,3 +342,17 @@ Le commit GECKO-025 `8aaa06f...` lançait `Prof_actions.mp4` à chaque intervent
 
 ### Correctif visé
 Restaurer exactement le MP4 complet mais dans le bouton, via un ChromaKeyVideoView local et indépendant de la bulle/grille.
+
+
+### TDD RED GECKO-030
+Run #52 échoue uniquement parce que `ProfessorUiPolicy` ne contient pas encore `playVideoInButton`, `playProfVideoFromStartToEnd` et `muteProfVideoEmbeddedAudio`. Le RED verrouille donc bien la restauration de la vraie vidéo.
+
+### Correctif GECKO-030
+- `ChromaKeyVideoView.play()` reçoit un callback `onStarted`, afin de ne masquer le PNG qu'au démarrage réel ;
+- un ChromaKeyVideoView dédié est ajouté dans `professorButtonHost` au même rectangle que le portrait ;
+- `Prof_actions.mp4` complet est lu au clic et à l'idle 2–3 s ;
+- aucun restart/empilement si déjà en cours ;
+- bulle ouverte autorisée ;
+- audio vidéo muet ;
+- PNG restauré à EOF/erreur/stop ;
+- fallback micro-animation PNG uniquement si vidéo indisponible.

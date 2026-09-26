@@ -61,6 +61,15 @@ class MainActivity : Activity() {
     private lateinit var professorPortrait:
         ImageView
 
+    private lateinit var professorVideo:
+        ChromaKeyVideoView
+
+    private var professorVideoPlaying =
+        false
+
+    private var professorVideoFailed =
+        false
+
     private lateinit var screenRoot:
         FrameLayout
 
@@ -356,10 +365,11 @@ class MainActivity : Activity() {
 
                     updateAnimationButton()
 
-                    if (!richMediaSettings.enabled &&
-                        ::richMediaOverlay.isInitialized
-                    ) {
-                        richMediaOverlay.stop()
+                    if (!richMediaSettings.enabled) {
+                        if (::richMediaOverlay.isInitialized) {
+                            richMediaOverlay.stop()
+                        }
+                        stopProfessorButtonVideo()
                     }
 
                     if (richMediaSettings.enabled) {
@@ -478,6 +488,19 @@ class MainActivity : Activity() {
                 }
             }
 
+        professorVideo =
+            ChromaKeyVideoView(this).apply {
+                visibility = View.INVISIBLE
+                importantForAccessibility =
+                    View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                isClickable = false
+                elevation =
+                    dp(
+                        professorUiPolicy
+                            .portraitElevationDp + 4
+                    ).toFloat()
+            }
+
         professorButtonHost =
             FrameLayout(this).apply {
                 clipChildren = false
@@ -519,6 +542,26 @@ class MainActivity : Activity() {
                     )
 
                     professorPortrait.bringToFront()
+
+                    if (
+                        professorUiPolicy
+                            .playVideoInButton
+                    ) {
+                        addView(
+                            professorVideo,
+                            FrameLayout.LayoutParams(
+                                portraitSize,
+                                portraitSize
+                            ).apply {
+                                gravity =
+                                    Gravity.START or
+                                        Gravity.BOTTOM
+                                leftMargin = dp(8)
+                            }
+                        )
+
+                        professorVideo.bringToFront()
+                    }
                 }
             }
 
@@ -1364,13 +1407,18 @@ class MainActivity : Activity() {
     private fun showProfessorHint() {
         professorUsed = true
 
-        animateProfessorButtonPortrait(
-            professorIdleAnimationPolicy
-                .actionFor(
-                    Random.nextInt()
-                )
-        )
-        scheduleProfessorIdleAnimation()
+        val videoHandled =
+            playProfessorButtonVideo()
+
+        if (!videoHandled) {
+            animateProfessorButtonPortrait(
+                professorIdleAnimationPolicy
+                    .actionFor(
+                        Random.nextInt()
+                    )
+            )
+            scheduleProfessorIdleAnimation()
+        }
 
         val pending =
             pendingProfessorHypothesis
@@ -2438,15 +2486,122 @@ class MainActivity : Activity() {
     }
 
     private fun runProfessorIdleAnimation() {
-        if (
+        val eligible =
             richMediaSettings.enabled &&
-            ::professorPortrait.isInitialized &&
-            professorPortrait.isShown &&
-            !(
-                ::celebrationView.isInitialized &&
-                    celebrationView.visibility ==
-                        View.VISIBLE
+                ::professorPortrait.isInitialized &&
+                professorButtonHost.isShown &&
+                !(
+                    ::celebrationView.isInitialized &&
+                        celebrationView.visibility ==
+                            View.VISIBLE
+                    )
+
+        if (!eligible) {
+            scheduleProfessorIdleAnimation()
+            return
+        }
+
+        val videoHandled =
+            playProfessorButtonVideo()
+
+        if (!videoHandled) {
+            animateProfessorButtonPortrait(
+                professorIdleAnimationPolicy
+                    .actionFor(
+                        Random.nextInt()
+                    )
+            )
+            scheduleProfessorIdleAnimation()
+        }
+    }
+
+    private fun playProfessorButtonVideo(): Boolean {
+        if (
+            !richMediaSettings.enabled ||
+            !professorUiPolicy.playVideoInButton ||
+            !::professorVideo.isInitialized ||
+            professorVideoFailed
+        ) {
+            return false
+        }
+
+        if (professorVideoPlaying) {
+            return true
+        }
+
+        if (
+            ::celebrationView.isInitialized &&
+            celebrationView.visibility ==
+                View.VISIBLE
+        ) {
+            return false
+        }
+
+        cancelProfessorIdleAnimation()
+
+        professorVideoPlaying = true
+        professorVideo.visibility =
+            View.VISIBLE
+        professorVideo.bringToFront()
+        professorVideo.elevation =
+            dp(
+                professorUiPolicy
+                    .portraitElevationDp + 4
+            ).toFloat()
+
+        professorVideo.play(
+            assetPath =
+                AssetMediaCatalog
+                    .PROF_LONG_ACTIONS,
+            muted =
+                professorUiPolicy
+                    .muteProfVideoEmbeddedAudio,
+            onStarted = {
+                professorPortrait
+                    .animate()
+                    .cancel()
+                professorPortrait.visibility =
+                    View.INVISIBLE
+            },
+            onCompletion = {
+                finishProfessorButtonVideo(
+                    failed = false
                 )
+            },
+            onError = {
+                finishProfessorButtonVideo(
+                    failed = true
+                )
+            }
+        )
+
+        return true
+    }
+
+    private fun finishProfessorButtonVideo(
+        failed: Boolean
+    ) {
+        professorVideoPlaying = false
+
+        if (failed) {
+            professorVideoFailed = true
+        }
+
+        if (::professorVideo.isInitialized) {
+            professorVideo.stopPlayback()
+            professorVideo.visibility =
+                View.INVISIBLE
+        }
+
+        if (::professorPortrait.isInitialized) {
+            professorPortrait.visibility =
+                View.VISIBLE
+            professorPortrait.bringToFront()
+        }
+
+        if (
+            failed &&
+            ::professorPortrait.isInitialized
         ) {
             animateProfessorButtonPortrait(
                 professorIdleAnimationPolicy
@@ -2457,6 +2612,22 @@ class MainActivity : Activity() {
         }
 
         scheduleProfessorIdleAnimation()
+    }
+
+    private fun stopProfessorButtonVideo() {
+        professorVideoPlaying = false
+
+        if (::professorVideo.isInitialized) {
+            professorVideo.stopPlayback()
+            professorVideo.visibility =
+                View.INVISIBLE
+        }
+
+        if (::professorPortrait.isInitialized) {
+            professorPortrait.visibility =
+                View.VISIBLE
+            professorPortrait.bringToFront()
+        }
     }
 
     private fun scheduleProfessorIdleAnimation() {
@@ -2609,6 +2780,7 @@ class MainActivity : Activity() {
 
     override fun onPause() {
         cancelProfessorIdleAnimation()
+        stopProfessorButtonVideo()
 
         if (::richMediaOverlay.isInitialized) {
             richMediaOverlay.stop()
@@ -2627,6 +2799,11 @@ class MainActivity : Activity() {
 
     override fun onDestroy() {
         cancelProfessorIdleAnimation()
+        stopProfessorButtonVideo()
+
+        if (::professorVideo.isInitialized) {
+            professorVideo.release()
+        }
 
         if (::richMediaOverlay.isInitialized) {
             richMediaOverlay.release()

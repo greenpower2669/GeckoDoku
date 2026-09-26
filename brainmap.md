@@ -479,3 +479,27 @@ Build GECKO-029
     ├── celebration audio policy
     ├── APK v0.10.5-dev
     └── AAB v0.10.5-dev
+
+
+## GECKO-030
+professorButtonHost (géométrie fixe)
+├── Button Prof (Z 0)
+├── Prof.png (repos/fallback)
+└── ChromaKeyVideoView dédié (premier plan)
+    └── assets/prof/Prof_actions.mp4
+        ├── t=0 → EOF ~30,070 s
+        ├── chroma bleu → transparent
+        └── audio embarqué muet
+
+Déclencheurs
+├── clic Prof
+└── idle 2–3 s
+    └── même si bulle ouverte
+
+Pendant playback
+├── PNG masqué après MediaPlayer prepared
+├── vidéo locale au bouton
+└── aucune mutation de layout/grille
+
+Fin / erreur / pause / Anim OFF
+└── stop vidéo → PNG restauré

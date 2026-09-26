@@ -258,3 +258,11 @@ Le scheduler des longues actions Gecko conserve la même logique de sécurité m
 
 ### Preuve CI GECKO-029
 GitHub Actions run #49 (`36215814330`) sur `f2ea4b0da5935dc1760831229ba8bd9540678c16` : suite de tests, APK et AAB réussis. Version `0.10.5-dev`. Validation téléphone encore requise pour la cadence ressentie des animations et la lecture complète du MP3 de victoire.
+
+
+## GECKO-030 — restauration du vrai Prof_actions.mp4
+L'investigation Git confirme que `14126.mp4` et `assets/prof/Prof_actions.mp4` sont le même blob `87c72def...`. La régression était uniquement runtime : GECKO-026 avait supprimé `maybePlayProfessorLongAction()`.
+
+Le MP4 complet est restauré sans revenir à l'ancien emplacement dans la bulle. `professorButtonHost` possède maintenant un `ChromaKeyVideoView` dédié, de même rectangle que le portrait, ajouté au-dessus du Button et du PNG. Le PNG reste visible tant que MediaPlayer n'a pas réellement démarré, puis est masqué pendant le playback et restauré à EOF/erreur/stop.
+
+Le fichier joue depuis t=0 jusqu'à EOF naturel, sans découpage ni boucle, audio embarqué muet. Clic Prof et idle 2–3 s démarrent le vrai MP4 si aucune lecture n'est en cours. La bulle ouverte n'est pas une condition de blocage. Les micro-animations PNG sont conservées uniquement comme fallback si la vidéo ne peut pas être jouée.

@@ -358,14 +358,14 @@
 ## GECKO-030 — restaurer Prof_actions.mp4
 - [x] Comparer `14126.mp4` au Git : correspondance exacte avec `assets/prof/Prof_actions.mp4`, blob `87c72def...`.
 - [x] Identifier la régression : GECKO-026 a supprimé le playback vidéo Prof introduit en GECKO-025.
-- [ ] RED : exiger vidéo Prof dans le bouton, complète et muette.
-- [ ] Ajouter un `ChromaKeyVideoView` dédié dans `professorButtonHost`, au-dessus du bouton.
-- [ ] PNG visible au repos, masqué pendant vidéo, restauré ensuite.
-- [ ] Clic Prof → vraie vidéo si inactive.
-- [ ] Idle 2–3 s → vraie vidéo si inactive.
-- [ ] Bulle ouverte → vidéo autorisée.
-- [ ] Anim OFF / pause / destroy → stop + cleanup.
-- [ ] Garder micro-animation PNG uniquement comme fallback si vidéo indisponible.
-- [ ] Synchroniser brain/brainmap/debug/todo/ordre.
+- [x] RED : exiger vidéo Prof dans le bouton, complète et muette — run #52.
+- [x] Ajouter un `ChromaKeyVideoView` dédié dans `professorButtonHost`, au-dessus du bouton et du PNG.
+- [x] PNG visible jusqu'au démarrage réel, masqué pendant vidéo, restauré ensuite.
+- [x] Clic Prof → vraie vidéo complète si inactive.
+- [x] Idle 2–3 s → vraie vidéo complète si inactive.
+- [x] Bulle ouverte → vidéo autorisée ; aucune condition sur ProfessorBubbleView.
+- [x] Anim OFF / pause / destroy → stop + cleanup + PNG restauré.
+- [x] Garder micro-animation PNG uniquement comme fallback si vidéo indisponible.
+- [x] Synchroniser brain/brainmap/debug/todo/ordre.
 - [ ] CI tests + APK + AAB.
 - [ ] Validation téléphone.

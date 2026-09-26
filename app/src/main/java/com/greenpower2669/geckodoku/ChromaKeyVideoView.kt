@@ -84,7 +84,8 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         assetPath: String,
         muted: Boolean,
         onCompletion: () -> Unit,
-        onError: (String) -> Unit
+        onError: (String) -> Unit,
+        onStarted: () -> Unit = {}
     ) {
         stopPlayback()
 
@@ -102,7 +103,8 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 assetPath = assetPath,
                 onCompletion =
                     onCompletion,
-                onError = onError
+                onError = onError,
+                onStarted = onStarted
             )
 
         startPendingPlayback()
@@ -199,6 +201,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                     if (muted) 0f else 1f,
                     if (muted) 0f else 1f
                 )
+                request.onStarted()
                 it.start()
             }
 
@@ -250,7 +253,8 @@ class ChromaKeyVideoView @JvmOverloads constructor(
     private data class PlaybackRequest(
         val assetPath: String,
         val onCompletion: () -> Unit,
-        val onError: (String) -> Unit
+        val onError: (String) -> Unit,
+        val onStarted: () -> Unit
     )
 
     private class ChromaRenderer(

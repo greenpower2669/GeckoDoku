@@ -830,7 +830,7 @@ Le MP3 `audio/celebration/jungle cebration GeckoD.mp3` ne doit plus être arrêt
 
 # GECKO-030 — RESTAURATION DES VRAIES ANIMATIONS PROF
 **Demandeur / date :** Fab, 26/09/2026
-**Statut :** investigation terminée, TDD en cours sur `gecko-030-restore-prof-video`.
+**Statut :** implémentation GREEN en cours sur `gecko-030-restore-prof-video` ; CI puis validation téléphone requises.
 
 ## 0. Régression confirmée
 Le fichier fourni à nouveau par Fab, `14126.mp4`, est exactement le même blob que `assets/prof/Prof_actions.mp4` dans Git :
