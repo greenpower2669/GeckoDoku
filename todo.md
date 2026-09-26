@@ -324,3 +324,19 @@
 - [x] Synchroniser brain/brainmap/debug/todo/ordre.
 - [x] CI tests + APK + AAB — run #41 vert, version `0.10.3-dev`.
 - [ ] Validation téléphone : bouton toujours derrière Prof, animé ou non ; vérifier aussi l'état pressé.
+
+
+## GECKO-028
+- [ ] RED : palette région + inset 4 % du cache.
+- [ ] RED : politique voix masculine + pitch fallback.
+- [ ] RED : délai d'animation Prof borné entre 10 et 20 s et plusieurs actions.
+- [ ] Remplacer le blanc par la couleur de région exacte.
+- [ ] Inset du cache sans modifier le rectangle vidéo.
+- [ ] Sélectionner une voix TTS française masculine si identifiable.
+- [ ] Fallback TTS grave si genre non identifiable.
+- [ ] Ajouter 3 micro-animations Prof.
+- [ ] Planifier animation idle toutes les 10–20 s.
+- [ ] Nettoyer les callbacks en pause/destroy.
+- [ ] Synchroniser les fichiers vivants FAB Copilot.
+- [ ] CI tests + APK + AAB.
+- [ ] Validation téléphone.

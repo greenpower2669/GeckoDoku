@@ -2,7 +2,7 @@ name: Build GeckoDoku APK + AAB
 
 on:
   push:
-    branches: [ main, gecko-022-rich-media, gecko-024-grid-audio, gecko-025-canonical-gecko-prof, gecko-026-floating-prof-ui, gecko-027-prof-foreground ]
+    branches: [ main, gecko-022-rich-media, gecko-024-grid-audio, gecko-025-canonical-gecko-prof, gecko-026-floating-prof-ui, gecko-027-prof-foreground, gecko-028-prof-voice-idle-mask ]
   workflow_dispatch:
 
 jobs:

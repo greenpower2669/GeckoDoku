@@ -755,3 +755,38 @@ Le bouton Prof est visuellement dessiné devant le PNG du Prof. Le PNG est bien 
 - pas de re-layout ;
 - tests + APK/AAB verts ;
 - validation visuelle téléphone Fab.
+
+
+# GECKO-028 — CACHE DE CASE HARMONISÉ + VOIX PROF MASCULINE + ANIMATIONS D'ATTENTE
+**Demandeur / date :** Fab, 26/09/2026
+**Statut :** implémentation en cours sur `gecko-028-prof-voice-idle-mask`.
+
+## 1. Cache des animations Gecko
+Le cache derrière une animation Gecko ne doit plus être blanc. Il reprend exactement la couleur de région de la case ciblée. Le cache est centré et légèrement plus petit que la case (inset 4 % de chaque côté) afin de masquer le Gecko normal sans former un carré visuellement agressif. La vidéo reste ancrée sur le rectangle complet de la case. La grille reste immuable.
+
+## 2. Voix du Prof
+Prof Gecko étant un personnage masculin :
+- préférer une voix TTS française explicitement masculine si le moteur installé en expose une ;
+- la sélection examine nom et features du moteur, sans supposer qu'Android fournit toujours une métadonnée de genre standard ;
+- si aucune voix masculine n'est identifiable, garder une voix française locale disponible et utiliser un pitch plus grave ;
+- fallback silencieux/texte inchangé si TTS indisponible.
+
+## 3. Prof plus vivant dans son bouton
+Le PNG Prof reste au premier plan du bouton. Ajouter plusieurs micro-animations locales (rebond, inclinaison, petit hochement) :
+- immédiatement à chaque clic Prof ;
+- aussi après une période d'attente aléatoire entre 10 et 20 secondes ;
+- nouveau délai replanifié après chaque animation ;
+- aucune animation si l'Activity est en pause, si le portrait est absent/invisible ou si l'habillage animé est OFF ;
+- aucun re-layout : uniquement scale / rotation / translation ;
+- pas de vidéo dans la bulle.
+
+## 4. Critères
+- cache Gecko = couleur exacte de la région, jamais blanc arbitraire ;
+- cache inset 4 %, vidéo toujours calée sur la case entière ;
+- voix Prof masculine quand disponible, sinon voix française plus grave ;
+- 3 micro-animations Prof disponibles ;
+- clic Prof anime immédiatement ;
+- attente 10–20 s déclenche une animation locale ;
+- pause/destroy retire les callbacks ;
+- tests + APK/AAB verts ;
+- validation téléphone Fab.

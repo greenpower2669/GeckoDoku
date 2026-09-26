@@ -289,3 +289,9 @@ Run #40 échoue comme prévu : `ProfessorUiPolicyTest` référence `buttonElevat
 
 ### GREEN GECKO-027
 Run #41 (`36212793683`) termine en succès complet. Le Button Prof a son StateListAnimator neutralisé et un Z nul ; Prof.png reçoit 18 dp d'élévation et est ramené au premier plan avant chaque animation. La CI valide le code et les tests ; le contrôle final de superposition reste visuel sur téléphone.
+
+
+## 2026-09-26 — GECKO-028
+Retour téléphone : le cache blanc d'animation Gecko tranche avec la couleur de région ; exemple observé : cache blanc sur une case vert pâle qui devait conserver RGB(232,248,232). Le Prof est aussi vocalisé avec une voix perçue féminine et paraît trop statique hors clic.
+
+Décision : palette unique réutilisée par le plateau et les overlays ; cache inset 4 %. Pour le TTS, Android n'expose pas de propriété de genre normalisée sur tous les moteurs : préférence explicite pour les voix françaises dont nom/features signalent masculin, sinon voix française disponible avec pitch abaissé. Prof PNG : animations au clic + timer aléatoire 10–20 s.
