@@ -487,3 +487,20 @@ CI #75 était GREEN côté tests/build/APK/AAB, mais la validation téléphone r
 Important : ne pas conclure la cause racine de l’intro 2 avant audit. Le build GREEN ne valide pas la chaîne comportementale réelle sur appareil.
 
 Décision : aucun code maintenant ; accumuler les autres retours téléphone de Fab, puis ouvrir un nouveau cycle RED ciblé.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-ICON-PROF-ARBITRATION-2026-09-26 -->
+## 2026-09-26 — téléphone : icônes validées, conflit d’arbitrage média non résolu
+Fab valide les deux livraisons icône de v0.10.9-dev :
+- launcher Android ;
+- médaillon/icon in-app près du titre.
+
+Nouveau symptôme observé : le Prof semble interrompre une animation, ou l’inverse. La capture et l’observation ne permettent pas encore d’attribuer la cause avec certitude.
+
+Ne pas corriger à l’aveugle. Lors du prochain cycle :
+1. instrumenter les demandes de lecture/arrêt ;
+2. identifier le média propriétaire du host partagé ;
+3. reproduire le conflit ;
+4. seulement ensuite ajuster la priorité/arbitrage.
+
+Vigilance : préserver les deux icônes validées et les règles de cycle de vie `ProfParle.mp4` déjà contractualisées.

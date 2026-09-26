@@ -407,3 +407,17 @@ Retour v0.10.9-dev :
 - `ProfParle.mp4` reste muet ;
 - `Gecko_Intro.mp4` doit impérativement suivre l’intro 1 ; elle est actuellement absente sur téléphone.
 Aucun correctif runtime n’est lancé tant que Fab poursuit ses tests.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-ICON-PROF-ARBITRATION-2026-09-26 -->
+## GECKO-033 — état téléphone : icônes OK, arbitrage Prof à diagnostiquer
+Validation Fab :
+- launcher GeckoDoku : **OK** ;
+- médaillon/icon in-app à gauche du titre : **OK**.
+
+À préserver sans retouche lors du prochain correctif.
+
+Point ouvert :
+- le Prof et une animation semblent s’interrompre mutuellement ;
+- causalité non déterminée ;
+- prochain audit : tracer les transitions et appels play/stop entre INTRO, PROF_ACTION, PROF_SPEECH et GECKO_ACTION avant de modifier la priorité.

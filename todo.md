@@ -498,3 +498,15 @@
 - [ ] Ajouter un RED ciblé sur l’enchaînement réel intro 1 → intro 2.
 - [ ] Ne rien coder avant la fin de la prochaine série de retours téléphone de Fab.
 - [ ] Reprendre ensuite les corrections dans un seul cycle synchronisé FAB Copilot.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-ICON-PROF-ARBITRATION-2026-09-26 -->
+## GECKO-033 — validation téléphone complémentaire
+- [x] VALIDÉ téléphone : icône launcher Android depuis `IconGeckoGD.png`.
+- [x] VALIDÉ téléphone : médaillon/icon in-app à gauche du titre + micro-animation.
+- [ ] NE PAS RETOUCHER les deux missions icône pendant le prochain correctif sans cause nécessaire.
+- [ ] ENQUÊTE : déterminer si le Prof interrompt l’animation ou si l’animation interrompt le Prof.
+- [ ] Tracer `play/stop` pour INTRO / PROF_ACTION / PROF_SPEECH / GECKO_ACTION.
+- [ ] Vérifier l’arbitrage du player/host partagé avant toute correction.
+- [ ] Regrouper ce diagnostic avec les deux bugs intro déjà relevés après la fin de la série de tests de Fab.
+- [ ] Aucun code avant nouvel ordre de Fab.

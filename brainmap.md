@@ -762,3 +762,18 @@ Audio policy
 └── ProfParle.mp4 : muet
 
 État : bugs constatés sur v0.10.9-dev ; correction gelée pendant poursuite des tests Fab.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-ICON-PROF-ARBITRATION-2026-09-26 -->
+## GECKO-033 — validation / conflit média
+IconGeckoGD.png
+├── launcher Android → VALIDÉ téléphone ✅
+└── médaillon in-app gauche du titre → VALIDÉ téléphone ✅
+
+Arbitrage média à auditer
+├── INTRO
+├── PROF_ACTION = Prof_actions.mp4
+├── PROF_SPEECH = ProfParle.mp4
+└── GECKO_ACTION
+    └── symptôme : une transition semble interrompre une autre
+        └── cause inconnue → tracer play/stop avant correction

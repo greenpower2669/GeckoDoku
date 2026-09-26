@@ -1433,3 +1433,42 @@ Le bouton Skip reste accessible et doit quitter proprement la séquence d’intr
 ## Gel temporaire
 Fab poursuit ses tests de v0.10.9-dev.
 **Ne rien corriger/coder pour l’instant** : attendre les autres observations afin de regrouper proprement le prochain cycle RED → correction.
+
+
+<!-- GECKO-033-PHONE-FEEDBACK-ICON-PROF-ARBITRATION-2026-09-26 -->
+# GECKO-033 — RETOUR TÉLÉPHONE : ICÔNES VALIDÉES + CONFLIT PROF/ANIMATION À AUDITER
+**Retour Fab — 26/09/2026.**
+**Statut : documentation uniquement. Aucun code maintenant.**
+
+## A. Missions icône — VALIDÉES SUR TÉLÉPHONE
+Les deux objectifs icône de GECKO-033 sont considérés **accomplis et validés visuellement par Fab** :
+1. **icône launcher Android** dérivée de `assets/gecko/IconGeckoGD.png` : validée ;
+2. **icône/médaillon dans l’application**, à gauche du titre GeckoDoku, avec son habillage rond et sa micro-animation indépendante : validée.
+
+Ces deux points sortent donc de la liste des anomalies à corriger. Ne pas les retoucher pendant le prochain correctif intro/Prof sauf nécessité démontrée, afin d’éviter une régression visuelle.
+
+## B. Nouveau point d’enquête — Prof et animation semblent se couper
+Observation téléphone :
+- un comportement d’interruption est visible entre le Prof et une animation ;
+- à ce stade, **ne pas conclure lequel interrompt lequel** ;
+- hypothèses à vérifier plus tard :
+  - `Prof_actions.mp4` interrompt une animation/introduction en cours ;
+  - une animation/introduction interrompt l’état visuel du Prof ;
+  - le passage vers `ProfParle.mp4` prend la priorité et stoppe `Prof_actions.mp4` ;
+  - un host/player partagé provoque un arrêt involontaire lors d’un changement de média.
+
+### Règle d’investigation
+Au prochain cycle RED/correction :
+- tracer les transitions `INTRO`, `PROF_ACTION`, `PROF_SPEECH`, `GECKO_ACTION` ;
+- journaliser qui demande `play()`, `stop()` et à quel instant ;
+- vérifier les priorités et la propriété du player ;
+- ne pas modifier l’arbitrage avant d’avoir identifié **qui stoppe qui** ;
+- préserver le contrat déjà validé : Pierre doit afficher `ProfParle.mp4` uniquement pendant sa parole réelle, et `Prof_actions.mp4` reste séparé.
+
+## C. État de test
+Fab continue la validation téléphone de v0.10.9-dev.
+Le prochain correctif devra regrouper :
+- audio de l’intro 1 à restaurer ;
+- intro 2 à restaurer ;
+- conflit Prof/animation à diagnostiquer ;
+tout en préservant les deux missions icône déjà validées.
