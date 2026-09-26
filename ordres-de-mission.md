@@ -679,7 +679,7 @@ Le Prof ne doit plus être animé seulement avec une probabilité faible.
 
 # GECKO-026 — BULLE PROF FLOTTANTE + PROF VIVANT DANS SON BOUTON
 **Demandeur / date :** Fab, 26/09/2026  
-**Statut :** implémentation GREEN en cours sur branche `gecko-026-floating-prof-ui` ; CI et validation téléphone requises.
+**Statut :** implémenté, CI branche verte (run #37) ; validation téléphone requise.
 
 ## 0. Bug observé sur téléphone
 Quand la bulle Prof apparaît, le cadrage de la grille change. Cause identifiée dans le code :

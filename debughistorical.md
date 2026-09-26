@@ -260,3 +260,7 @@ Run #36 (`36211900132`) échoue volontairement sur `Unresolved reference 'Profes
 - `Prof.png` placé dans un host fixe autour du bouton avec clip désactivé ;
 - micro-animation locale par `scaleX/scaleY/translationY`, donc sans `requestLayout` ;
 - retrait de `ProfessorAnimationPolicy` et de son test, supersédés par GECKO-026.
+
+
+### GREEN GECKO-026
+Run #37 (`36212085221`) termine en succès complet. Le build compile après suppression de la vidéo Prof dans la bulle, déplacement du PNG dans le bouton et maintien permanent du panneau de contrôles dans le layout. La CI valide la structure et les tests ; seul le téléphone peut confirmer le symptôme visuel initial.

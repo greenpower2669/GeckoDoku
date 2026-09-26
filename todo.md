@@ -312,5 +312,5 @@
 - [x] Ajouter une micro-animation locale du PNG au clic Prof via transform uniquement.
 - [x] Retirer le runtime `ProfessorAnimationPolicy` devenu obsolète par GECKO-026.
 - [x] Mettre à jour brain/brainmap/debug/todo/ordre dans le même cycle.
-- [ ] CI tests + APK + AAB.
-- [ ] Validation téléphone : grille inchangée pixel pour pixel à l'ouverture/fermeture du Prof.
+- [x] CI tests + APK + AAB — run #37 vert, artefact `GeckoDoku-v0.10.2-dev-Android`.
+- [ ] Validation téléphone : grille inchangée visuellement à l'ouverture/fermeture du Prof ; contrôler aussi le léger débordement et la micro-animation du PNG.

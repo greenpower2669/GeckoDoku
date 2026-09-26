@@ -391,3 +391,11 @@ showProfessorBubble()
 ├── ne touche jamais au flux de layout
 ├── TTS immédiat
 └── positionProfessorBubble() seulement
+
+
+Build GECKO-026
+└── run #37 vert
+    ├── ProfessorUiPolicyTest
+    ├── suite existante
+    ├── APK v0.10.2-dev
+    └── AAB v0.10.2-dev

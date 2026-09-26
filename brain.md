@@ -220,3 +220,7 @@ Le bug de cadrage n'était pas causé par le fait que `ProfessorBubbleView` soit
 GECKO-026 interdit désormais tout retrait du layout lors d'une bulle Prof : les contrôles restent visibles, la bulle flotte au-dessus, et la grille conserve ses dimensions. `ProfessorBubbleView` ne contient plus aucun PNG ni animation Prof : seulement titre, texte, croix et TTS externe.
 
 `Prof.png` vit dans un `FrameLayout` de bouton à hauteur fixe (58 dp), avec 10 dp de débordement visuel autorisé vers le haut. Une micro-animation de scale/lift est appliquée au PNG à chaque interaction Prof via propriétés visuelles uniquement ; aucune mesure/layout n'est modifiée. `Prof_actions.mp4` n'est plus lancé depuis la bulle. La précédente `ProfessorAnimationPolicy` GECKO-025 est retirée du runtime.
+
+
+### Preuve CI GECKO-026
+GitHub Actions run #37 (`36212085221`) sur `f555102094cda6a21ed7812dae247748329ea62d` : tests unitaires + APK + AAB réussis. Artefact : `GeckoDoku-v0.10.2-dev-Android` id `10896251661`. La validation téléphone doit encore confirmer visuellement que la grille ne change plus de cadre à l'ouverture/fermeture de la bulle.
