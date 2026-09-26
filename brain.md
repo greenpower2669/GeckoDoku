@@ -441,7 +441,10 @@ TDD sprites :
 - run #94 : RED attendu ProfParle retry ;
 - run #95 : RED isolé transparence, 43 tests / 1 échec ;
 - run #96 : GREEN complet ;
-- run #97 : GREEN complet pour v0.10.11-dev, tests + APK + AAB + artifact.
+- run #97 : GREEN complet pour v0.10.11-dev, tests + APK + AAB + artifact ;
+- run #103 : RED attendu GECKO-034 première frame + grille flottante ;
+- run #104 : GREEN complet du correctif GECKO-034 ;
+- run #105 : GREEN complet v0.10.12-dev, tests + APK + AAB + artifact.
 
 La CI valide la cohérence logicielle.
 Le téléphone de Fab reste l'autorité finale pour le rendu, le son et l'ergonomie.
@@ -521,8 +524,18 @@ La vraie grille est une couche flottante de screenRoot. Le LinearLayout ne conti
 Les vidéos non-intro sont révélées par alpha après draw OpenGL d'une frame fraîche ; prepared/start seuls ne suffisent jamais.
 
 
-<!-- GECKO-034-V01012-CANDIDATE-2026-09-26 -->
-## Référence candidate GECKO-034
-v0.10.12-dev conserve les invariants validés antérieurs et ajoute uniquement :
-- gate de première frame pour médias non-intro ;
-- grille réelle flottante/figée par fenêtre.
+<!-- GECKO-034-V01012-VALIDATED-2026-09-26 -->
+## GECKO-034 VALIDÉ TÉLÉPHONE — v0.10.12-dev
+
+Fab valide le correctif GECKO-034 sur téléphone.
+
+Acquis durables supplémentaires :
+- plus de flash noir parasite au démarrage des animations concernées ;
+- les médias non-intro restent cachés jusqu'à la première frame réellement rendue ;
+- la révélation se fait sans délai artificiel ;
+- la grille réelle est flottante dans `screenRoot` ;
+- son rectangle reste immuable tant que la fenêtre ne change pas ;
+- textes, overlays, Prof, sprites et variations relatives du layout ne doivent plus déplacer la grille ;
+- les intros validées restent inchangées.
+
+Ces comportements sont désormais des invariants de non-régression au même titre que les autres acquis du brain.
