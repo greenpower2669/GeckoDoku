@@ -114,3 +114,14 @@ Test/non-régression attendu :
 `boardRectBefore == boardRectDuringHiddenVideo == boardRectAfterFirstFrame == boardRectAfterVideo`.
 
 Si une solution de visibilité provoque un re-layout même sur certains appareils/taille d'écran, elle est rejetée.
+
+
+<!-- GECKO-034-RED-FIRST-FRAME-FLOATING-BOARD-2026-09-26 -->
+## Cycle TDD RED ouvert
+Deux causes sont désormais séparées :
+1. la Surface vidéo est présentée avant sa première frame OpenGL réellement consommée ;
+2. la grille reste enfant pondéré du LinearLayout, donc sa géométrie peut encore suivre les variations de hauteur des éléments voisins.
+
+RED :
+- `FirstFrameVisibilityGate` : invisible jusqu'à la première frame rendue, abort irréversible pour la tentative ;
+- `BoardGeometryPolicy` : fige le rectangle de la grille tant que les dimensions de fenêtre restent identiques, et autorise un nouvel ancrage uniquement lors d'un vrai changement de fenêtre.

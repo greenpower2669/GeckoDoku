@@ -67,3 +67,16 @@ Aucun ordre de mission actif actuellement.
 - [ ] Vérifier aucun changement de weight/marges/padding/taille du parent plateau.
 - [ ] Vérifier petits/grands écrans et orientation/ratios différents.
 - [ ] Validation téléphone : aucune grille qui flotte, saute, se redimensionne ou se décale pendant le lancement d'une animation.
+
+
+<!-- GECKO-034-RED-FIRST-FRAME-FLOATING-BOARD-2026-09-26 -->
+## GECKO-034 — RED posé
+- [x] Ajouter RED gate première frame.
+- [x] Ajouter RED sessions indépendantes.
+- [x] Ajouter RED géométrie figée dans une même fenêtre.
+- [x] Ajouter RED réancrage uniquement sur changement de fenêtre.
+- [ ] Vérifier que CI échoue pour classes de policy absentes.
+- [ ] Implémenter gate dans ChromaKeyVideoView.
+- [ ] Révéler mask/portrait seulement à la première frame.
+- [ ] Sortir la grille réelle du LinearLayout pondéré vers une couche flottante ancrée.
+- [ ] Conserver un slot de réservation sans déplacer la grille réelle.

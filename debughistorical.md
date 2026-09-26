@@ -801,3 +801,13 @@ Vérification croisée sur le HEAD courant :
 
 ### Règle historique ajoutée
 Un succès confirmé doit être conservé dans `brain.md` comme invariant actif. Un bug corrigé reste dans `debughistorical.md` avec sa cause et sa correction. Une future mission ne doit pas effacer ces acquis simplement parce qu'elle cible une autre zone du projet.
+
+
+<!-- GECKO-034-RED-FIRST-FRAME-FLOATING-BOARD-2026-09-26 -->
+## 2026-09-26 — GECKO-034 RED
+Audit avant code :
+- l'overlay passe VISIBLE avant la première frame ;
+- `ChromaKeyVideoView.onPrepared` appelle le démarrage sans gate de première frame ;
+- la grille est encore directement ajoutée au `LinearLayout` en `height=0, weight=1f`, donc une variation d'un sibling peut modifier sa hauteur.
+
+Décision : tester séparément le gate de frame et la géométrie de grille avant production.

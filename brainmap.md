@@ -81,3 +81,21 @@ Règle centrale :
 brain.md = contrat durable.
 ordre de mission = tâche temporaire.
 debughistorical = mémoire des causes/corrections.
+
+
+<!-- GECKO-034-RED-FIRST-FRAME-FLOATING-BOARD-2026-09-26 -->
+## GECKO-034
+Vidéo
+→ création alpha 0
+→ prepared
+→ start
+→ SurfaceTexture frame
+→ draw OpenGL réel
+→ alpha 1
+
+Grille
+→ slot/ancre dans layout
+→ grille réelle en couche flottante
+→ capture rectangle initial
+→ même fenêtre : rectangle figé
+→ fenêtre réellement redimensionnée : nouvel ancrage autorisé

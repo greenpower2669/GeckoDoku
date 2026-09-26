@@ -504,3 +504,11 @@ Ce principe s'applique notamment à :
 - futur gate de première frame.
 
 Si une solution technique corrige un média mais fait bouger ou redimensionner la grille sur certains formats d'écran, cette solution est invalide.
+
+
+<!-- GECKO-034-RED-FIRST-FRAME-FLOATING-BOARD-2026-09-26 -->
+## Invariant de présentation média
+Une animation non-intro ne doit devenir visible qu'après consommation/rendu d'une première frame réelle. `onPrepared` ou `MediaPlayer.start()` seuls ne suffisent pas.
+
+## Invariant de grille flottante
+L'espace de layout peut conserver une ancre, mais la vue de grille réelle doit être indépendante des variations relatives des textes/contrôles. Tant que la fenêtre ne change pas, son rectangle reste figé.
