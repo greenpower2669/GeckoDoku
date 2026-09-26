@@ -1082,3 +1082,17 @@ Pierre START
 → portrait normal
 
 Aucun stop croisé vers les sessions Gecko.
+
+
+<!-- GECKO-033-PROFPARLE-LATCHED-FAILURE-HYPOTHESIS-2026-09-26 -->
+## GECKO-033 — ProfParle failure latch
+ProfParle onError
+→ professorSpeechVideoFailed = true
+→ stopProfessorSpeechVideo()
+→ phrase suivante
+→ startProfessorSpeechVideo()
+→ garde professorSpeechVideoFailed == true
+→ REFUS de relancer
+→ PNG reste visible malgré Pierre actif
+
+À auditer avec les erreurs Surface/MediaPlayer observées en parallèle du fond noir.

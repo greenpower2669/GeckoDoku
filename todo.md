@@ -697,3 +697,15 @@
 - [ ] Ajouter test : Gecko active + bascule PROF_ACTION→PROF_SPEECH → Gecko reste active.
 - [ ] Conserver les logs `PROF_ACTION_REQUEST`, `PROF_SPEECH_STATE`, `PROF_SPEECH_VIDEO_REQUEST`, `PROF_VIDEO_STOP_ALL`.
 - [ ] Aucun code avant nouvel ordre explicite de Fab.
+
+
+<!-- GECKO-033-PROFPARLE-LATCHED-FAILURE-HYPOTHESIS-2026-09-26 -->
+## GECKO-033 — ProfParle ne revient pas après erreur potentielle
+- [ ] Vérifier dans les logs la valeur de `professorSpeechVideoFailed` au moment où Pierre parle mais reste en PNG.
+- [ ] Tracer précisément le premier passage false → true de `professorSpeechVideoFailed`.
+- [ ] Capturer le message MediaPlayer/Surface associé.
+- [ ] Vérifier si le fond noir Prof/Gecko précède ou accompagne cette erreur.
+- [ ] Remplacer le verrou permanent par stratégie retry/fallback appropriée si hypothèse confirmée.
+- [ ] Garantir : erreur d'une instance ProfParle ≠ désactivation définitive de ProfParle pour toute la session.
+- [ ] Conserver priorité locale PROF_SPEECH > PROF_ACTION.
+- [ ] Aucun code avant nouvel ordre explicite de Fab.

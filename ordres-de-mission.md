@@ -1912,3 +1912,50 @@ Dans le slot visuel du Prof uniquement :
 5. Pierre continue à parler : `ProfParle.mp4` reste/reboucle si nécessaire.
 6. Pierre termine : stop `ProfParle.mp4`, retour au portrait normal.
 7. Les animations Gecko concurrentes continuent indépendamment durant tout ce cycle.
+
+
+<!-- GECKO-033-PROFPARLE-LATCHED-FAILURE-HYPOTHESIS-2026-09-26 -->
+# GECKO-033 — PROF_PARLE NE SE RELANCE PAS MÊME DEPUIS PNG : HYPOTHÈSE DE VERROU D'ÉCHEC PERSISTANT
+**Retour Fab — 26/09/2026.**
+**Statut : diagnostic documenté, aucun correctif dans ce cycle.**
+
+## Observation téléphone
+Fab confirme :
+- Pierre peut parler ;
+- le Prof peut être dans son état PNG normal, sans `Prof_actions.mp4` active ;
+- malgré cela, `ProfParle.mp4` ne se lance pas.
+
+Cela démontre que le problème ne se limite pas à la préemption locale `Prof_actions.mp4` → `ProfParle.mp4`.
+
+## Indice code concret
+Dans `MainActivity.startProfessorSpeechVideo()`, le lancement est refusé si :
+`professorSpeechVideoFailed == true`.
+
+Dans le callback `onError` de `ProfParle.mp4`, le code fait :
+`professorSpeechVideoFailed = true`
+puis stoppe la vidéo de parole.
+
+Cette valeur reste ensuite mémorisée dans l'Activity.
+
+### Hypothèse désormais forte
+Une erreur antérieure de lecture/rendu/surface peut faire passer `professorSpeechVideoFailed` à true, puis empêcher définitivement toute nouvelle tentative de `ProfParle.mp4` pendant la session, même lorsque le Prof est revenu en PNG.
+
+Cette hypothèse est particulièrement crédible car les tests téléphone montrent aussi :
+- fond noir derrière la vidéo Prof ;
+- fond noir derrière une animation Gecko ;
+ce qui suggère un problème commun de composition/surface/chroma susceptible de provoquer ou accompagner des erreurs vidéo.
+
+## À vérifier avant correction
+Ajouter/contrôler dans les logs :
+- valeur `professorSpeechVideoFailed` à chaque `PROF_SPEECH_VIDEO_REQUEST` ;
+- événement exact qui la fait passer de false à true ;
+- message `onError` / MediaPlayer associé ;
+- possibilité de relancer `ProfParle.mp4` après une erreur transitoire ;
+- ne jamais utiliser un échec unique comme interdiction définitive sans stratégie de retry/fallback.
+
+## Contrat
+Même après une erreur ponctuelle :
+- Pierre doit continuer à parler ;
+- le PNG reste fallback visuel immédiat ;
+- une future phrase doit pouvoir retenter `ProfParle.mp4` si le contexte média est sain ;
+- une erreur vidéo ne doit pas désactiver définitivement l'animation de parole pour toute la session.

@@ -667,3 +667,16 @@ Fab précise que la seule préemption vidéo supplémentaire autorisée est loca
 - état `professorVideoMode` au `SPEAK_STARTED` ;
 - si ACTION → STOP local puis START SPEECH ;
 - jamais de stop sur `RichMediaOverlayView` ou sessions Gecko.
+
+
+<!-- GECKO-033-PROFPARLE-LATCHED-FAILURE-HYPOTHESIS-2026-09-26 -->
+## 2026-09-26 — ProfParle absent même depuis PNG
+Nouvelle observation discriminante : Fab déclenche Prof depuis l'état PNG normal et `ProfParle.mp4` ne démarre toujours pas.
+
+Audit code :
+`startProfessorSpeechVideo()` contient une garde sur `professorSpeechVideoFailed`.
+Le callback erreur de cette même vidéo met ce flag à true de manière persistante.
+
+Conclusion de diagnostic : hypothèse forte d'un latch d'échec permanent après une première erreur vidéo. Cette hypothèse doit être confirmée par `GeckoDokuMediaTrace` / erreurs MediaPlayer avant correction.
+
+Ne pas confondre avec la priorité locale PROF_SPEECH > PROF_ACTION, qui reste correcte mais n'explique pas le cas PNG.

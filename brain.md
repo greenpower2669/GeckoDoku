@@ -596,3 +596,14 @@ Exception à la coexistence : le slot vidéo du Prof est exclusif entre `Prof_ac
 Quand la parole réelle démarre, `ProfParle.mp4` préempte localement `Prof_actions.mp4`. Cette préemption ne concerne aucune autre session Gecko/intro/décorative.
 
 Tant que Pierre parle, `Prof_actions.mp4` ne peut pas reprendre la main. `ProfParle.mp4` s'arrête uniquement quand la parole réelle se termine ou lors d'une interruption explicitement autorisée.
+
+
+<!-- GECKO-033-PROFPARLE-LATCHED-FAILURE-HYPOTHESIS-2026-09-26 -->
+## GECKO-033 — ProfParle : verrou d'échec persistant suspecté
+Le runtime contient un latch `professorSpeechVideoFailed`.
+- `onError` de `ProfParle.mp4` le passe à true ;
+- `startProfessorSpeechVideo()` refuse tout lancement futur tant qu'il reste true.
+
+Le retour téléphone depuis l'état PNG renforce fortement cette piste : l'absence de ProfParle ne dépend pas uniquement d'une animation Prof concurrente.
+
+Contrat futur : erreur ponctuelle = fallback PNG pour l'instance courante, mais pas condamnation permanente de `ProfParle.mp4` pour la session entière.
