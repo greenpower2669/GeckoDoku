@@ -641,3 +641,13 @@ Build GECKO-032
     ├── stats narration test
     ├── APK v0.10.8-dev
     └── AAB v0.10.8-dev
+
+
+Build GECKO-032
+└── run #61 SUCCESS
+    ├── Sherpa AAR OK
+    ├── UPMC Medium SHA OK
+    ├── sid Pierre = 1 verrouillé par test
+    ├── tests verts
+    ├── APK v0.10.8-dev
+    └── AAB v0.10.8-dev

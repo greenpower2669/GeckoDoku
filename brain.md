@@ -337,3 +337,9 @@ Les encouragements alternent aléatoirement à parts égales entre les 13 segmen
 GitHub Actions run #61 (`36232826836`) sur `8aae5460caebf5d1f6d25b023e7a5b698ce2f917` : AAR Sherpa vérifié, archive UPMC Medium vérifiée, tests unitaires réussis, APK et AAB construits. Artefact `GeckoDoku-v0.10.8-dev-Android` id `10903700375`, taille ZIP APK+AAB `286519230` octets.
 
 Le laboratoire A/B précédent produisait ~317,1 Mo pour le même ZIP double-artifact ; la suppression de LOW + Siwis Medium réduit déjà la distribution de test tout en conservant uniquement Pierre UPMC Medium.
+
+
+### Preuve CI GECKO-032
+GitHub Actions run #61 (`36232826836`) sur `8aae5460caebf5d1f6d25b023e7a5b698ce2f917` : préparation Sherpa-ONNX AAR, téléchargement/vérification de `vits-piper-fr_FR-upmc-medium`, tests unitaires, APK et AAB tous réussis. Artefact `GeckoDoku-v0.10.8-dev-Android` id `10903700375`, archive ~286,5 Mo.
+
+Comparaison pratique avec l'A/B précédent (~317,1 Mo) : la suppression de LOW + Siwis MEDIUM réduit déjà l'artefact de travail d'environ 30,6 Mo, tout en ne conservant qu'un seul modèle Piper runtime.
