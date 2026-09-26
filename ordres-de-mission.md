@@ -890,3 +890,87 @@ Si le MP4 ou le shader échoue :
 - aucune modification de grille/layout ;
 - tests + APK/AAB verts ;
 - validation téléphone Fab.
+
+
+# GECKO-031 — TEST A/B TTS LOCAL ANDROID vs PIPER LOW vs PIPER MEDIUM
+**Demandeur / date :** Fab, 26/09/2026
+**Statut :** TDD en cours sur `gecko-031-voice-ab-experiment`. Build strictement expérimental.
+
+## 0. Règle de non-régression
+Cette mission ne remplace pas la voix normale du Prof Gecko.
+`ProfessorSpeech` et le TTS Android actuel restent la référence runtime du jeu.
+Le test A/B est un écran temporaire séparé et optionnel.
+
+Avant toute modification, l'existant, `ordres-de-mission.md`, `brain.md`, `brainmap.md`, `debughistorical.md` et `todo.md` ont été relus depuis le HEAD `57db0ee3d7f6ba57cca54d381531b6495b21aa18`.
+
+## 1. Moteurs comparés
+La même phrase de test est jouée successivement avec :
+1. Android TTS actuel ;
+2. Piper LOW ;
+3. Piper MEDIUM.
+
+Les deux voix Piper utilisent la même famille française `fr_FR-siwis` afin que la comparaison LOW/MEDIUM porte principalement sur la qualité et le poids, pas sur un changement de speaker.
+
+## 2. Sherpa-ONNX / Piper
+- version Sherpa-ONNX figée pour l'expérience : `v1.13.8` ;
+- API Kotlin officielle : `OfflineTts`, `OfflineTtsVitsModelConfig`, `OfflineTtsModelConfig`, `OfflineTtsConfig` ;
+- LOW : `vits-piper-fr_FR-siwis-low` ;
+- MEDIUM : `vits-piper-fr_FR-siwis-medium` ;
+- les archives officielles doivent être injectées dans les assets pendant la CI, sans commiter ~90 Mo de modèles dans le dépôt ;
+- l'APK/AAB expérimental contient effectivement les deux modèles et fonctionne hors ligne à l'exécution.
+
+## 3. API Kotlin unique
+Créer une API commune de benchmark utilisée par les trois moteurs :
+- même texte ;
+- même callback de résultat ;
+- même structure de métriques ;
+- aucune branche UI spécifique au LOW vs MEDIUM.
+
+LOW et MEDIUM utilisent la même implémentation Piper, paramétrée uniquement par un profil/catalogue.
+
+## 4. RAM : un seul Piper à la fois
+Le gestionnaire Piper ne conserve jamais LOW et MEDIUM simultanément en mémoire :
+1. si un autre Piper est chargé, appeler `release()` ;
+2. annuler/référencer null l'ancien ;
+3. ensuite seulement créer le nouveau `OfflineTts`.
+
+Le test doit verrouiller l'ordre **release ancien → create nouveau**.
+
+## 5. Écran temporaire
+Ajouter un bouton temporaire `🧪 Voix A/B` sans ajouter une nouvelle hauteur de contrôles.
+Il ouvre un dialogue accessible affichant :
+- la phrase test commune ;
+- bouton `1. Android TTS` ;
+- bouton `2. Piper LOW` ;
+- bouton `3. Piper MEDIUM` ;
+- résultats/erreurs sous chaque essai.
+
+Le jeu normal continue de fonctionner si Sherpa ou les modèles sont indisponibles.
+
+## 6. Mesures
+Afficher si disponible :
+- temps de génération ;
+- temps de chargement du modèle Piper ;
+- taille du modèle ONNX ;
+- mémoire approximative du processus via PSS Android avant/après chargement/génération ;
+- sample rate / durée audio générée pour Piper.
+
+Les valeurs mémoire sont explicitement approximatives.
+
+## 7. Modèles retenus
+Références officielles :
+- LOW ONNX ~28,1 Mo, 16 kHz ;
+- MEDIUM ONNX ~63,2 Mo, 22,05 kHz.
+
+## 8. Critères d'acceptation
+- jeu normal et voix Prof inchangés hors écran expérimental ;
+- même phrase pour les trois moteurs ;
+- LOW et MEDIUM passent par exactement la même API Kotlin ;
+- un seul OfflineTts Piper vivant à la fois ;
+- passage LOW→MEDIUM et MEDIUM→LOW libère d'abord l'ancien ;
+- modèles présents dans l'APK expérimental ;
+- génération et lecture entièrement locales/offline ;
+- métriques visibles ;
+- fermeture/pause/destroy libèrent les ressources expérimentales ;
+- tests unitaires + APK + AAB verts ;
+- Fabrice teste sur téléphone et choisit ensuite LOW/MEDIUM/Android.

@@ -360,3 +360,15 @@ Run #52 échoue uniquement parce que `ProfessorUiPolicy` ne contient pas encore 
 
 ### GREEN GECKO-030
 Run #53 (`36224509248`) : succès complet. Le build compile avec le ChromaKeyVideoView local au bouton, le callback onStarted et la restauration du PNG à EOF/erreur/stop. L'asset vidéo utilisé est toujours le blob exact `87c72def...`.
+
+
+## 2026-09-26 — GECKO-031 préparation expérience TTS
+Fab demande un A/B local sans remplacement du Prof : Android TTS vs Piper LOW vs Piper MEDIUM.
+
+Recherche amont :
+- sherpa-onnx latest vérifié : v1.13.8, release 10/09/2026 ;
+- API Kotlin officielle confirme `OfflineTts.release()` et la config VITS Piper ;
+- archives officielles disponibles pour `vits-piper-fr_FR-siwis-low` et `...-medium` ;
+- LOW/MEDIUM siwis utilisent le même speaker/famille, ce qui évite de confondre qualité et timbre.
+
+Risque principal : charger simultanément deux modèles natifs ONNX. Garde-fou imposé par contrat + test : release de l'ancien avant création du suivant.

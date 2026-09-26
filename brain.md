@@ -270,3 +270,18 @@ Le fichier joue depuis t=0 jusqu'à EOF naturel, sans découpage ni boucle, audi
 
 ### Preuve CI GECKO-030
 GitHub Actions run #53 (`36224509248`) sur `09e475d897f308e68150e0228f50605f094d1f21` : tests unitaires + APK + AAB réussis. Artefact `GeckoDoku-v0.10.6-dev-Android` id `10900510994`. Version `0.10.6-dev`. La validation téléphone doit confirmer le retour visuel exact des animations du MP4 fourni.
+
+
+## GECKO-031 — expérience TTS locale isolée
+Référence stable avant expérience : v0.10.6-dev. Le runtime normal du Prof conserve `ProfessorSpeech` basé sur Android TextToSpeech. Le benchmark TTS est un sous-système séparé, non appelé par `showProfessorBubble()` ou `showProfessorHint()`.
+
+Choix expérimental : Sherpa-ONNX v1.13.8 + Piper `fr_FR-siwis-low` / `fr_FR-siwis-medium`, même famille de voix. Les modèles sont préparés par CI et embarqués dans l'artefact Android, mais ne sont pas stockés en gros blobs Git.
+
+Architecture prévue :
+- `VoiceBenchmarkEngine` : API Kotlin commune ;
+- `VoiceBenchmarkVariant` / catalogue : Android, Piper LOW, Piper MEDIUM ;
+- `PiperVoiceBenchmarkEngine` : une implémentation unique pour LOW/MEDIUM ;
+- `PiperSingleModelSlot` : garantit release avant changement de modèle ;
+- `AndroidTtsBenchmarkEngine` : référence Android séparée du Prof ;
+- dialogue temporaire dans MainActivity ;
+- métriques génération / modèle / PSS approximatif.

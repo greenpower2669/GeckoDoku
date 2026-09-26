@@ -512,3 +512,26 @@ Build GECKO-030
     ├── PNG fallback
     ├── APK v0.10.6-dev
     └── AAB v0.10.6-dev
+
+
+## GECKO-031 — architecture prévue
+MainActivity
+└── bouton temporaire 🧪 Voix A/B
+    └── VoiceBenchmarkDialog
+        ├── VoiceBenchmarkEngine (contrat unique)
+        │   ├── AndroidTtsBenchmarkEngine
+        │   └── PiperVoiceBenchmarkEngine
+        │       ├── LOW fr_FR-siwis-low
+        │       └── MEDIUM fr_FR-siwis-medium
+        └── métriques
+
+PiperVoiceBenchmarkEngine
+└── PiperSingleModelSlot<OfflineTts>
+    ├── active = LOW ou MEDIUM ou null
+    ├── switch : release(active)
+    └── puis create(target)
+
+CI
+├── récupère les archives Piper officielles
+├── extrait dans assets/tts/piper/{low,medium}
+└── build APK/AAB contenant les deux modèles
