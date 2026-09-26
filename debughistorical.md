@@ -395,3 +395,9 @@ La compilation échoue ensuite sur :
 - quatre incompatibilités `Long -> Int` autour de `Debug.getPss()`.
 
 Cause racine dépendance : mauvais mode d'intégration Android, pas défaut Piper. Correctif : AAR officiel seul + PSS en Long.
+
+
+### GREEN GECKO-031 — run #58
+Après remplacement de JitPack par l'AAR Android officiel et passage des métriques PSS en Long, le run #58 (`36229808317`) termine SUCCESS. Les deux étapes de préparation native/modèles, les tests, l'APK et l'AAB sont verts. Artefact final : `GeckoDoku-v0.10.7-voice-ab-exp-Android` id `10902486871`.
+
+La taille importante de l'artefact (~317,1 Mo ZIP APK+AAB) est attendue pour cette expérience : deux modèles Piper + runtime Sherpa sont embarqués. Ce poids ne préjuge pas du choix final ; il sert précisément à comparer LOW/MEDIUM avant de ne conserver qu'une option éventuelle.

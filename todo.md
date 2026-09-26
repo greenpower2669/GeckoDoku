@@ -389,5 +389,5 @@
 - [x] Cleanup dismiss/pause/destroy.
 - [x] ProfessorSpeech reste inchangé et indépendant du benchmark.
 - [x] Synchroniser les 4 fichiers vivants + ordre dans le cycle GREEN.
-- [ ] CI tests + APK + AAB expérimental.
-- [ ] Test téléphone Fabrice avant toute décision de remplacement.
+- [x] CI tests + APK + AAB expérimental — run #58 SUCCESS, artefact `GeckoDoku-v0.10.7-voice-ab-exp-Android` id `10902486871`.
+- [ ] Test téléphone Fabrice : écouter la même phrase Android / LOW / MEDIUM, relever qualité + temps + mémoire ; aucune fusion/décision avant ce test.

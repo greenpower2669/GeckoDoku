@@ -301,3 +301,15 @@ Le bouton temporaire est ajouté à row3 comme quatrième enfant afin de ne cré
 La dépendance Sherpa-ONNX expérimentale n'utilise finalement pas JitPack : cette coordonnée apporte le JAR JVM en plus de l'AAR Android et produit des classes dupliquées. La CI récupère désormais uniquement l'AAR Android officiel v1.13.8, vérifie son SHA-256 et le place dans `app/libs` avant Gradle. `app/build.gradle.kts` référence ce fichier local temporaire.
 
 Les métriques PSS utilisent `Long`, conformément au type Android actuel de `Debug.getPss()`.
+
+
+### Preuve CI GECKO-031
+GitHub Actions run #58 (`36229808317`) sur `2adf97bc49453b929a2a9e15ddb3042c0a950631` :
+- AAR officiel Sherpa-ONNX v1.13.8 téléchargé et SHA-256 vérifié ;
+- archives Piper LOW/MEDIUM téléchargées et SHA-256 vérifiés ;
+- tests unitaires réussis ;
+- APK debug réussi ;
+- AAB debug réussi ;
+- artefact `GeckoDoku-v0.10.7-voice-ab-exp-Android`, id `10902486871`, taille archive ~317,1 Mo.
+
+Cette preuve porte uniquement sur la build expérimentale de branche. La référence stable `main` reste v0.10.6-dev tant que Fabrice n'a pas comparé les voix sur téléphone.

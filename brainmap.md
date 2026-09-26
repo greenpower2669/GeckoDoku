@@ -574,3 +574,16 @@ GitHub release v1.13.8
         └── Gradle implementation(files(...))
 
 Aucun sherpa-onnx-jvm.jar dans l'APK Android.
+
+
+Build GECKO-031
+└── branche gecko-031-voice-ab-experiment
+    └── run #58 SUCCESS
+        ├── AAR Sherpa SHA vérifié
+        ├── Piper LOW SHA vérifié
+        ├── Piper MEDIUM SHA vérifié
+        ├── tests
+        ├── APK
+        └── AAB
+main
+└── reste v0.10.6-dev stable pendant le test humain
