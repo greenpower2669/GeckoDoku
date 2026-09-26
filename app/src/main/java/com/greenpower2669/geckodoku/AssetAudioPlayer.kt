@@ -83,6 +83,7 @@ class AssetAudioPlayer(
         assetPath: String,
         startMs: Int,
         endMs: Int,
+        onStarted: (() -> Unit)? = null,
         onCompletion: (() -> Unit)? = null
     ): Boolean {
         if (
@@ -120,6 +121,7 @@ class AssetAudioPlayer(
                     return@setOnSeekCompleteListener
                 }
                 it.start()
+                onStarted?.invoke()
                 handler.postDelayed(
                     {
                         if (

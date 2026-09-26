@@ -143,3 +143,7 @@ MediaTrace → Logcat + PersistentMediaLog(geckodoku-media.log, 256 KiB).
 
 <!-- GECKO-035-GREEN-SPEECH-GATE-2026-09-26 -->
 SpeechOrigin + QUICK_TALK → ProfessorSpeechRequestPolicy → canAccept avant pré-roll.
+
+
+<!-- GECKO-035-GREEN-FIRST-FRAME-HOLD-2026-09-26 -->
+ProfParle → draw fresh frame → pause hidden → audio START → revealHeldFirstFrame → resume.

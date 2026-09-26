@@ -273,3 +273,8 @@ MediaTrace conserve Logcat et écrit aussi dans geckodoku-media.log. Le fichier 
 <!-- GECKO-035-GREEN-SPEECH-GATE-2026-09-26 -->
 ## GREEN étape 3 — admission voix
 QUICK_TALK est une origine non préemptive. ProfessorSpeech expose canAccept(origin) afin de refuser proprement une demande basse priorité avant de préparer ProfParle.
+
+
+<!-- GECKO-035-GREEN-FIRST-FRAME-HOLD-2026-09-26 -->
+## GREEN étape 4 — première frame tenue
+ChromaKeyVideoView peut maintenant préparer une frame fraîche, la garder cachée et mettre le MediaPlayer en pause. revealHeldFirstFrame() révèle alpha=1 et reprend la lecture. AssetAudioPlayer expose onStarted pour synchroniser les encouragements enregistrés.

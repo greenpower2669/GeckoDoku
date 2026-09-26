@@ -78,6 +78,12 @@ class ChromaKeyVideoView @JvmOverloads constructor(
     private var firstFrameAssetPath:
         String? = null
 
+    private var holdOnFirstFrame =
+        false
+
+    private var firstFrameHeld =
+        false
+
     var logicalLayer: String =
         "UNSPECIFIED"
 
@@ -135,6 +141,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         onError: (String) -> Unit,
         onStarted: () -> Unit = {},
         revealOnFirstFrame: Boolean = true,
+        holdOnFirstFrame: Boolean = false,
         onFirstFrameRendered: () -> Unit = {}
     ) {
         MediaTrace.event(
@@ -156,6 +163,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         this.muted = muted
         this.revealOnFirstFrame =
             revealOnFirstFrame
+        this.holdOnFirstFrame =
+            holdOnFirstFrame
+        firstFrameHeld = false
         firstFrameCallback =
             onFirstFrameRendered
         firstFrameAssetPath =
@@ -204,6 +214,31 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             )
 
         startPendingPlayback()
+    }
+
+    fun revealHeldFirstFrame(): Boolean {
+        if (!firstFrameHeld) {
+            return false
+        }
+
+        firstFrameHeld = false
+        alpha = 1f
+
+        return try {
+            player?.start()
+
+            MediaTrace.event(
+                source = traceSource(),
+                event = "VIDEO_VISIBLE",
+                assetPath = activeAssetPath,
+                detail =
+                    "heldFirstFrame=true alpha=1"
+            )
+
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
 
     fun setMuted(
@@ -258,6 +293,8 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         }
 
         pendingPlayback = null
+        firstFrameHeld = false
+        holdOnFirstFrame = false
 
         val current = player
         player = null
@@ -509,17 +546,36 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             source = traceSource(),
             event = "VIDEO_FIRST_FRAME",
             assetPath = asset,
-            detail = "glFrameDrawn=true"
+            detail =
+                "glFrameDrawn=true hold=" +
+                    holdOnFirstFrame
         )
 
-        alpha = 1f
+        if (holdOnFirstFrame) {
+            try {
+                player?.pause()
+                firstFrameHeld = true
+            } catch (_: Exception) {
+                firstFrameHeld = false
+            }
 
-        MediaTrace.event(
-            source = traceSource(),
-            event = "VIDEO_VISIBLE",
-            assetPath = asset,
-            detail = "alpha=1"
-        )
+            MediaTrace.event(
+                source = traceSource(),
+                event =
+                    "VIDEO_FIRST_FRAME_HELD",
+                assetPath = asset,
+                detail = "alpha=0"
+            )
+        } else {
+            alpha = 1f
+
+            MediaTrace.event(
+                source = traceSource(),
+                event = "VIDEO_VISIBLE",
+                assetPath = asset,
+                detail = "alpha=1"
+            )
+        }
 
         val callback =
             firstFrameCallback

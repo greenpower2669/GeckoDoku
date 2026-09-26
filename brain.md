@@ -559,3 +559,8 @@ Le diagnostic média possède deux sorties : Logcat GeckoDokuMediaTrace et fichi
 <!-- GECKO-035-GREEN-SPEECH-GATE-2026-09-26 -->
 ## Admission des paroles
 Le bouton ! utilise QUICK_TALK et ne préempte pas sauvagement une phrase active. La préparation vidéo ne doit commencer que si la requête voix est admissible.
+
+
+<!-- GECKO-035-GREEN-FIRST-FRAME-HOLD-2026-09-26 -->
+## Pré-roll parlant
+La première frame de ProfParle peut être rendue hors écran puis tenue en pause. Sa révélation/reprise est indépendante du démarrage du player et peut donc être alignée sur le vrai départ audio.

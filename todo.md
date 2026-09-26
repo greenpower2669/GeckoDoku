@@ -152,3 +152,11 @@ Aucun ordre de mission actif actuellement.
 - [x] QUICK_TALK non préemptif.
 - [x] ProfessorSpeech.canAccept.
 - [ ] Première frame tenue / release synchronisée.
+
+
+<!-- GECKO-035-GREEN-FIRST-FRAME-HOLD-2026-09-26 -->
+## GECKO-035 étape 4
+- [x] holdOnFirstFrame.
+- [x] revealHeldFirstFrame.
+- [x] AssetAudioPlayer.onStarted.
+- [ ] Câbler MainActivity et UI.

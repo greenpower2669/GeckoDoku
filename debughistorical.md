@@ -843,3 +843,8 @@ Ajout d'un sink fichier borné et tolérant aux erreurs en complément de Logcat
 <!-- GECKO-035-GREEN-SPEECH-GATE-2026-09-26 -->
 ## 2026-09-26 — admission voix avant vidéo
 Ajout de canAccept pour éviter qu'un média se prépare pour une parole qui serait ensuite rejetée occupée.
+
+
+<!-- GECKO-035-GREEN-FIRST-FRAME-HOLD-2026-09-26 -->
+## 2026-09-26 — frame tenue
+Le gate anti-flash est étendu avec un mode hold : première frame consommée OpenGL mais alpha 0 + player pause, puis révélation explicite au départ audio.
