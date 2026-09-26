@@ -205,27 +205,27 @@
 - [x] Définir le keycolor comme chantier futur séparé.
 - [x] Définir règles d'accessibilité / skip.
 - [x] Ranger les assets dans un dossier assets.
-- [ ] Implémenter AssetMediaCatalog.
-- [ ] Implémenter RichMediaSettings persistant.
-- [ ] Implémenter RichMediaOverlayView hors layout de grille.
-- [ ] Implémenter lecture Intro + texte stylisé GeckoDoku.
-- [ ] Implémenter apparition sur case après confirmation logique.
-- [ ] Implémenter disparition sur case après retrait logique.
-- [ ] Implémenter lecture occasionnelle ENTIÈRE de Gecko_actions_plusieurs.mp4.
-- [ ] Implémenter lecture occasionnelle ENTIÈRE de Prof_actions.mp4 en contexte Prof.
-- [ ] Respecter FX ON/OFF pour le son média.
+- [x] Implémenter AssetMediaCatalog.
+- [x] Implémenter RichMediaSettings persistant.
+- [x] Implémenter RichMediaOverlayView hors layout de grille.
+- [x] Implémenter lecture Intro + texte stylisé GeckoDoku.
+- [x] Implémenter apparition sur case après confirmation logique.
+- [x] Implémenter disparition sur case après retrait logique.
+- [x] Implémenter lecture occasionnelle ENTIÈRE de Gecko_actions_plusieurs.mp4.
+- [x] Implémenter lecture occasionnelle ENTIÈRE de Prof_actions.mp4 en contexte Prof.
+- [x] Respecter FX ON/OFF pour le son média.
 - [ ] Tester arrêt propre Activity pause/destroy.
 - [ ] Tester asset manquant → jeu inchangé.
 - [ ] Tester qu'une seule vidéo peut être active.
 - [ ] Mesurer impact APK / mémoire / décodage sur téléphone.
 - [ ] FUTUR : découpage des clips par timecodes, uniquement après validation séparée.
-- [ ] FUTUR : keycolor bleu GPU, uniquement après validation séparée.
+- [x] Keycolor bleu GPU avancé dans ce lot par décision Fab du 26/09/2026.
 
 
 ## Exécution GECKO-022 — TDD
 - [x] Créer la branche isolée `gecko-022-rich-media` depuis le HEAD stable `edbe4740d60716fa01a69c29ce8a51645e791abd`.
 - [x] Ajouter le test RED du scheduler des animations longues avant son implémentation.
-- [ ] Vérifier que la CI échoue pour la raison attendue : `RichMediaScheduler` absent.
-- [ ] Implémenter le sous-système média riche + keycolor bleu transparent.
+- [x] Vérifier que la CI échoue pour la raison attendue : `RichMediaScheduler` absent (run #14, `Unresolved reference`).
+- [x] Implémenter le sous-système média riche + keycolor bleu transparent sur la branche isolée.
 - [ ] Faire passer tests + APK + AAB sur GitHub Actions.
 - [ ] Fusionner seulement après CI verte ; validation visuelle Android restera humaine.

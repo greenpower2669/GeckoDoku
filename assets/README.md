@@ -30,7 +30,8 @@ Ils ne doivent jamais devenir une dépendance de la logique du jeu.
   - portrait principal du Prof.
 
 - `Prof_fb.png`
-  - source fond bleu réservée au futur keycolor.
+  - source fond bleu disponible pour le keycolor ;
+  - ne remplace pas automatiquement `Prof.png`.
 
 - `Prof_actions.mp4`
   - séquence longue du Prof ;
@@ -43,3 +44,7 @@ Ils ne doivent jamais devenir une dépendance de la logique du jeu.
 Les médias sont un habillage désactivable en overlay.
 Le jeu normal doit fonctionner parfaitement sans eux.
 Le son embarqué des vidéos respecte le réglage FX.
+
+
+## Keycolor bleu
+Le fond bleu des vidéos riches est supprimé au runtime par shader GPU OpenGL ES : dominance bleue → transparence, transition douce et réduction des franges bleues. Les seuils sont réglables dans `AssetMediaCatalog`. En cas d'échec du shader ou du décodage, l'overlay disparaît et le jeu procédural continue.

@@ -164,3 +164,9 @@ Catalogue de vérité :
 Les deux vidéos longues (~30,07 s) ne sont PAS découpées dans la phase actuelle : lecture 0→EOF, une fois, sans boucle. Le futur découpage en micro-actions est explicitement différé.
 
 Le futur runtime devra utiliser une couche overlay dédiée avec fallback systématique vers le rendu normal. Une défaillance média ne peut jamais modifier ou invalider l'état de partie.
+
+
+## Keycolor bleu immédiat — amendement GECKO-022
+Décision Fab du 26/09/2026 : le fond bleu des médias riches doit être rendu transparent dès ce lot. Le lecteur vidéo applique un chroma-key GPU OpenGL ES avant composition : dominance bleue → alpha, bord adouci et réduction de frange bleue. Les seuils vivent dans AssetMediaCatalog et restent réglables. Une erreur shader/décodage déclenche un fallback vers le jeu procédural ; le média ne peut jamais modifier GameEngine.
+
+Les médias racine `assets/` sont empaquetés par le sourceSet Android sans duplication binaire. Habillage animé est persistant, désactivable à chaud et indépendant de FX ; FX coupe uniquement l'audio des vidéos. `Prof.png` reste le portrait normal déjà transparent ; `Prof_fb.png` reste une source bleue disponible sans remplacer automatiquement le portrait normal.

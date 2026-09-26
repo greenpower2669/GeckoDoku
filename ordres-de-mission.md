@@ -429,3 +429,12 @@ Le lot sera considéré valide lorsque :
 - audio vidéo suit FX ;
 - les médias manquants ne cassent jamais le jeu ;
 - tous les assets sont rangés dans `assets/`.
+
+
+### AMENDEMENT GECKO-022-K — KEYCOLOR BLEU IMMÉDIAT
+- **Demandeur / date :** Fab, 26/09/2026.
+- **Commande :** le keycolor bleu n'est plus différé. Le bleu des médias sert dès maintenant à produire de la transparence.
+- **Remplace :** la section GECKO-022 « Keycolor bleu — PAS MAINTENANT » pour le périmètre de ce lot.
+- **Résultat demandé :** fond bleu supprimé au rendu, contours adoucis, réduction des franges bleues, traitement GPU compatible minSdk 26 ; si le shader ou le décodage échoue, fermer le média et conserver le jeu normal. Ne jamais toucher à la logique du puzzle.
+- **Portée :** vidéos riches Gecko/Prof à fond bleu. `Prof.png` reste le portrait normal transparent ; `Prof_fb.png` reste une source bleue et ne remplace pas automatiquement le portrait normal.
+- **Statut :** En cours sur branche `gecko-022-rich-media` ; validation visuelle téléphone requise après build.

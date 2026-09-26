@@ -10,8 +10,14 @@ android {
         applicationId = "com.greenpower2669.geckodoku"
         minSdk = 26
         targetSdk = 36
-        versionCode = 9
-        versionName = "0.8.0-dev"
+        versionCode = 10
+        versionName = "0.9.0-dev"
+    }
+
+    sourceSets {
+        getByName("main") {
+            assets.srcDirs("../assets")
+        }
     }
 
     buildTypes {

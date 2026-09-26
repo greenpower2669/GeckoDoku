@@ -158,3 +158,17 @@ Ne pas découper Gecko_actions_plusieurs.mp4 ni Prof_actions.mp4 maintenant. Les
 L'habillage riche doit toujours être un overlay désactivable au-dessus du rendu normal. Aucune dépendance du moteur logique.
 ### Décision assets
 Sortir les médias de la racine du dépôt et les ranger sous assets/gecko et assets/prof sans réencodage.
+
+
+## 2026-09-26 — Keycolor bleu avancé dans GECKO-022
+### Changement de mission
+Fab demande finalement le keycolor bleu immédiatement, uniquement pour transformer le fond bleu en transparence. L'ancien point « PAS MAINTENANT » est remplacé par cet amendement explicite.
+
+### Choix technique
+Les MP4 H.264 n'emportent pas d'alpha fiable. Le rendu utilise MediaPlayer vers SurfaceTexture externe OES puis un fragment shader OpenGL ES 2.0 : dominance bleue, transition douce et despill. Cette voie couvre minSdk 26 sans dépendre de RuntimeShader API 33.
+
+### Protection
+Le média reste décoratif. Erreur d'asset, de MediaPlayer ou de shader : log + fermeture overlay, sans rollback logique. Une seule vidéo riche à la fois ; victoire, nouvelle grille, pause et désactivation arrêtent la vidéo.
+
+### TDD
+Le test scheduler a été lancé seul avant implémentation et a échoué sur `Unresolved reference RichMediaScheduler`, RED attendu.

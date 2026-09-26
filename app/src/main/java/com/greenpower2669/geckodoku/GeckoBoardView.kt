@@ -964,6 +964,29 @@ class GeckoBoardView @JvmOverloads constructor(
         return Cell(row, col)
     }
 
+    fun cellRectOnScreen(
+        cell: Cell
+    ): RectF {
+        if (boardRect.width() <= 0f) {
+            updateBoardRect()
+        }
+
+        val rect =
+            cellRect(cell)
+
+        val location =
+            IntArray(2)
+
+        getLocationOnScreen(location)
+
+        rect.offset(
+            location[0].toFloat(),
+            location[1].toFloat()
+        )
+
+        return rect
+    }
+
     private fun cellRect(
         cell: Cell
     ): RectF {

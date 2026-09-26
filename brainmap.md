@@ -238,3 +238,32 @@ vidéo longue
 → lecture entière
 → EOF
 → jamais de découpage / boucle
+
+
+## Keycolor runtime GECKO-022
+MainActivity
+├── RichMediaSettings (SharedPreferences)
+├── RichMediaScheduler (12 % test / cooldown partagé 180 s)
+├── RichMediaOverlayView
+│   └── ChromaKeyVideoView
+│       ├── MediaPlayer → SurfaceTexture OES
+│       ├── OpenGL ES 2 fragment shader
+│       │   ├── dominance bleue → alpha
+│       │   ├── bord smoothstep
+│       │   └── despill bleu
+│       └── erreur média/shader → overlay fermé, jeu inchangé
+├── intro 0→EOF + titre GeckoDoku + skip
+├── apparition/disparition → rectangle réel de la case
+├── Gecko_actions_plusieurs.mp4 → entier, rare, cooldown
+└── Prof_actions.mp4 → entier, rare, texte Prof prioritaire
+
+Gradle app
+└── sourceSets.main.assets = ../assets
+    └── aucun doublon des MP4/PNG dans app/src/main/assets
+
+Ordre visuel
+screenRoot
+├── jeu normal
+├── RichMediaOverlayView
+├── ProfessorBubbleView (texte logique au-dessus du média Prof)
+└── VictoryCelebrationView (priorité la plus haute)

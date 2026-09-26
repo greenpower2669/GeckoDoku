@@ -3,6 +3,7 @@ package com.greenpower2669.geckodoku
 import android.app.Activity
 import android.app.AlertDialog
 import android.graphics.Color
+import android.graphics.RectF
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
@@ -16,6 +17,7 @@ import android.widget.TextView
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.random.Random
 
 class MainActivity : Activity() {
     private lateinit var puzzle: Puzzle
@@ -66,6 +68,18 @@ class MainActivity : Activity() {
     private lateinit var saveButton:
         Button
 
+    private lateinit var animationButton:
+        Button
+
+    private lateinit var richMediaSettings:
+        RichMediaSettings
+
+    private lateinit var richMediaOverlay:
+        RichMediaOverlayView
+
+    private val richMediaScheduler =
+        RichMediaScheduler()
+
     private var selectedSize = 5
 
     private var selectedDifficulty =
@@ -91,6 +105,9 @@ class MainActivity : Activity() {
         super.onCreate(
             savedInstanceState
         )
+
+        richMediaSettings =
+            RichMediaSettings(this)
 
         statsStore =
             PlayerStatsStore(this)
@@ -267,6 +284,38 @@ class MainActivity : Activity() {
                         } else {
                             "🔇 FX"
                         }
+
+                    if (::richMediaOverlay.isInitialized) {
+                        richMediaOverlay.setMuted(
+                            !fx.enabled
+                        )
+                    }
+                }
+            }
+
+        animationButton =
+            Button(this).apply {
+                textSize = 13f
+                minHeight = dp(46)
+
+                setOnClickListener {
+                    richMediaSettings.enabled =
+                        !richMediaSettings.enabled
+
+                    updateAnimationButton()
+
+                    if (!richMediaSettings.enabled &&
+                        ::richMediaOverlay.isInitialized
+                    ) {
+                        richMediaOverlay.stop()
+                    }
+
+                    status.text =
+                        if (richMediaSettings.enabled) {
+                            "Habillage animé activé 🎬"
+                        } else {
+                            "Habillage animé désactivé."
+                        }
                 }
             }
 
@@ -398,6 +447,15 @@ class MainActivity : Activity() {
                         1f
                     )
                 )
+
+                addView(
+                    animationButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
+                )
             }
 
         val row3 =
@@ -468,19 +526,32 @@ class MainActivity : Activity() {
                         FrameLayout.LayoutParams.MATCH_PARENT
                     )
                 )
-
-                addView(
-                    professorBubble,
-                    FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        leftMargin = dp(12)
-                        rightMargin = dp(12)
-                        gravity = Gravity.TOP
-                    }
-                )
             }
+
+        richMediaOverlay =
+            RichMediaOverlayView(this).apply {
+                visibility = View.GONE
+            }
+
+        screenRoot.addView(
+            richMediaOverlay,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+
+        screenRoot.addView(
+            professorBubble,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                leftMargin = dp(12)
+                rightMargin = dp(12)
+                gravity = Gravity.TOP
+            }
+        )
 
         celebrationView =
             VictoryCelebrationView(this).apply {
@@ -517,6 +588,13 @@ class MainActivity : Activity() {
 
         protectFromSystemBars(root)
         refreshGameUi()
+        updateAnimationButton()
+
+        if (savedInstanceState == null) {
+            screenRoot.post {
+                playIntroIfEnabled()
+            }
+        }
     }
 
     private fun createPuzzle(
@@ -538,6 +616,10 @@ class MainActivity : Activity() {
         nextPuzzle: Puzzle,
         recordStart: Boolean
     ) {
+        if (::richMediaOverlay.isInitialized) {
+            richMediaOverlay.stop()
+        }
+
         puzzle = nextPuzzle
 
         selectedSize =
@@ -945,12 +1027,14 @@ class MainActivity : Activity() {
                 fx.cross()
                 status.text =
                     "Croix posée."
+                maybePlayGeckoLongAction()
             }
 
             ActionFeedback.CROSS_REMOVED -> {
                 fx.cross()
                 status.text =
                     "Croix retirée."
+                maybePlayGeckoLongAction()
             }
 
             ActionFeedback.CROSS_BLOCKED -> {
@@ -1012,12 +1096,22 @@ class MainActivity : Activity() {
                             remaining +
                             " restant."
                     )
+
+                playCellAnimation(
+                    RichMediaKind.GECKO_APPEARANCE,
+                    cell
+                )
             }
 
             ActionFeedback.GECKO_REMOVED -> {
                 fx.cross()
                 status.text =
                     "Gecko retiré."
+
+                playCellAnimation(
+                    RichMediaKind.GECKO_DISAPPEARANCE,
+                    cell
+                )
             }
 
             ActionFeedback.WRONG_GECKO -> {
@@ -1276,6 +1370,13 @@ class MainActivity : Activity() {
             ActionFeedback.COMPLETED
         ) {
             completeGame()
+        } else if (hint.step.cell != null) {
+            playCellAnimation(
+                RichMediaKind.GECKO_APPEARANCE,
+                hint.step.cell
+            )
+        } else {
+            maybePlayProfessorLongAction()
         }
     }
 
@@ -1413,6 +1514,11 @@ class MainActivity : Activity() {
 
     private fun completeGame() {
         fx.stopCelebration()
+
+        if (::richMediaOverlay.isInitialized) {
+            richMediaOverlay.stop()
+        }
+
         clearProfessorSession()
 
         if (!completionRecorded) {
@@ -1858,7 +1964,179 @@ class MainActivity : Activity() {
         root.requestApplyInsets()
     }
 
+    private fun updateAnimationButton() {
+        if (!::animationButton.isInitialized) {
+            return
+        }
+
+        animationButton.text =
+            if (richMediaSettings.enabled) {
+                "🎬 Anim. ON"
+            } else {
+                "🎬 Anim. OFF"
+            }
+    }
+
+    private fun playIntroIfEnabled() {
+        if (!richMediaSettings.enabled ||
+            !::richMediaOverlay.isInitialized ||
+            richMediaOverlay.isBusy
+        ) {
+            return
+        }
+
+        richMediaOverlay.play(
+            kind = RichMediaKind.INTRO,
+            assetPath = AssetMediaCatalog.GECKO_INTRO,
+            muted = !fx.enabled,
+            target = null,
+            titleText = "GeckoDoku",
+            skippable = true
+        )
+    }
+
+    private fun playCellAnimation(
+        kind: RichMediaKind,
+        cell: Cell
+    ) {
+        if (!richMediaSettings.enabled ||
+            !::richMediaOverlay.isInitialized ||
+            richMediaOverlay.isBusy ||
+            (::celebrationView.isInitialized &&
+                celebrationView.visibility == View.VISIBLE)
+        ) {
+            return
+        }
+
+        val screenRect =
+            board.cellRectOnScreen(cell)
+
+        val rootLocation =
+            IntArray(2)
+
+        screenRoot.getLocationOnScreen(
+            rootLocation
+        )
+
+        val target =
+            RectF(screenRect).apply {
+                offset(
+                    -rootLocation[0].toFloat(),
+                    -rootLocation[1].toFloat()
+                )
+            }
+
+        val asset =
+            when (kind) {
+                RichMediaKind.GECKO_APPEARANCE ->
+                    AssetMediaCatalog.GECKO_APPEARANCE
+
+                RichMediaKind.GECKO_DISAPPEARANCE ->
+                    AssetMediaCatalog.GECKO_DISAPPEARANCE
+
+                else -> return
+            }
+
+        richMediaOverlay.play(
+            kind = kind,
+            assetPath = asset,
+            muted = !fx.enabled,
+            target = target,
+            titleText = null,
+            skippable = false
+        )
+    }
+
+    private fun maybePlayGeckoLongAction() {
+        if (!richMediaSettings.enabled ||
+            !::richMediaOverlay.isInitialized ||
+            richMediaOverlay.isBusy ||
+            pendingProfessorHypothesis != null ||
+            (::professorBubble.isInitialized &&
+                professorBubble.visibility == View.VISIBLE) ||
+            (::celebrationView.isInitialized &&
+                celebrationView.visibility == View.VISIBLE) ||
+            engine.snapshot().complete
+        ) {
+            return
+        }
+
+        val shouldPlay =
+            richMediaScheduler
+                .shouldPlayLongAction(
+                    nowMs =
+                        SystemClock.elapsedRealtime(),
+                    randomValue =
+                        Random.nextInt(100),
+                    eligible = true,
+                    busy = false
+                )
+
+        if (!shouldPlay) {
+            return
+        }
+
+        richMediaOverlay.play(
+            kind = RichMediaKind.GECKO_LONG_ACTION,
+            assetPath = AssetMediaCatalog.GECKO_LONG_ACTIONS,
+            muted = !fx.enabled,
+            target = null,
+            titleText = null,
+            skippable = true
+        )
+    }
+
+    private fun maybePlayProfessorLongAction() {
+        if (!richMediaSettings.enabled ||
+            !::richMediaOverlay.isInitialized ||
+            richMediaOverlay.isBusy ||
+            pendingProfessorHypothesis != null ||
+            (::celebrationView.isInitialized &&
+                celebrationView.visibility == View.VISIBLE)
+        ) {
+            return
+        }
+
+        val shouldPlay =
+            richMediaScheduler
+                .shouldPlayLongAction(
+                    nowMs =
+                        SystemClock.elapsedRealtime(),
+                    randomValue =
+                        Random.nextInt(100),
+                    eligible = true,
+                    busy = false
+                )
+
+        if (!shouldPlay) {
+            return
+        }
+
+        richMediaOverlay.play(
+            kind = RichMediaKind.PROF_LONG_ACTION,
+            assetPath = AssetMediaCatalog.PROF_LONG_ACTIONS,
+            muted = !fx.enabled,
+            target = null,
+            titleText = null,
+            skippable = true
+        )
+
+        professorBubble.bringToFront()
+    }
+
+    override fun onPause() {
+        if (::richMediaOverlay.isInitialized) {
+            richMediaOverlay.stop()
+        }
+
+        super.onPause()
+    }
+
     override fun onDestroy() {
+        if (::richMediaOverlay.isInitialized) {
+            richMediaOverlay.release()
+        }
+
         fx.release()
         super.onDestroy()
     }
