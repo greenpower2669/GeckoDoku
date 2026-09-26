@@ -267,3 +267,31 @@ screenRoot
 ├── RichMediaOverlayView
 ├── ProfessorBubbleView (texte logique au-dessus du média Prof)
 └── VictoryCelebrationView (priorité la plus haute)
+
+
+## Encouragement audio GECKO-023 — cible
+assets/Voix_encouragements.mp3 (master 14,441 s)
+└── découpage préparatoire, jamais au runtime
+    └── assets/voice/encouragements/
+        └── 13 clips courts
+
+GameEngine
+└── confirme le coup joueur
+    └── MainActivity / événement gecko confirmé
+        └── EncourgagementSelector
+            ├── cellule nouvelle dans la tentative
+            ├── hasard
+            ├── anti-répétition immédiate
+            └── « Tu y es presque » seulement à 1–2 restants
+                └── EncouragementPlayer
+                    ├── FX ON → lecture
+                    ├── FX OFF → silence
+                    └── erreur asset → ignore / jeu inchangé
+
+Dernier gecko
+├── voix courte
+└── célébration visuelle immédiate
+    └── futur audio victoire attend la fin de la voix
+
+Habillage animé
+└── sans effet sur les voix d'encouragement

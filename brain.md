@@ -170,3 +170,11 @@ Le futur runtime devra utiliser une couche overlay dédiée avec fallback systé
 Décision Fab du 26/09/2026 : le fond bleu des médias riches doit être rendu transparent dès ce lot. Le lecteur vidéo applique un chroma-key GPU OpenGL ES avant composition : dominance bleue → alpha, bord adouci et réduction de frange bleue. Les seuils vivent dans AssetMediaCatalog et restent réglables. Une erreur shader/décodage déclenche un fallback vers le jeu procédural ; le média ne peut jamais modifier GameEngine.
 
 Les médias racine `assets/` sont empaquetés par le sourceSet Android sans duplication binaire. Habillage animé est persistant, désactivable à chaud et indépendant de FX ; FX coupe uniquement l'audio des vidéos. `Prof.png` reste le portrait normal déjà transparent ; `Prof_fb.png` reste une source bleue disponible sans remplacer automatiquement le portrait normal.
+
+
+## Voix d'encouragement — mission GECKO-023
+Le master `assets/Voix_encouragements.mp3` contient 13 phrases courtes. La mission GECKO-023 prévoit de le conserver intact et de générer 13 clips séparés sous `assets/voice/encouragements/`. Une voix est déclenchée uniquement après confirmation correcte d'un **nouveau gecko par le joueur**, jamais pour une action Prof, une erreur, une croix ou un retrait. Le même gecko ne doit pas être félicité deux fois dans une tentative après retrait/repose.
+
+Le choix est aléatoire sans répétition immédiate. « Tu y es presque » est conditionné à 1–2 geckos restants. Les voix suivent FX ON/OFF mais restent indépendantes du switch Habillage animé. Le dernier gecko reçoit lui aussi un encouragement ; un futur son de victoire est séquencé après la courte phrase pour éviter la cacophonie. L'audio reste décoratif et ne peut jamais influencer GameEngine, stats ou difficulté.
+
+Les timecodes canoniques de découpe sont stockés dans `ordres-de-mission.md`. Statut : **à implémenter**.

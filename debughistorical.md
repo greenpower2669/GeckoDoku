@@ -176,3 +176,19 @@ Le test scheduler a été lancé seul avant implémentation et a échoué sur `U
 
 ### Preuve build v0.9
 GitHub Actions run #15 (`36203684907`) sur commit `e9dbfa394246f6ba0f552ef69ff3d1da847ede76` : succès de `:app:testDebugUnitTest`, `:app:assembleDebug` et `:app:bundleDebug`. APK et AAB renommés puis regroupés dans l'artefact `GeckoDoku-v0.9.0-dev-Android` (id `10893390568`, digest `sha256:77d4dddc2db8433a33ca7689da8c3b02ef9d3959fed435dc033731f596842882`). Le rendu chroma-key lui-même nécessite encore validation visuelle sur téléphone.
+
+
+## 2026-09-26 — Banque vocale d'encouragement
+### Source observée
+`assets/Voix_encouragements.mp3`, durée mesurée 14,441 s, contient 13 phrases séparées par des silences nets. La dernière phrase contient une pause interne volontaire après « Ça » et ne doit pas être scindée.
+
+### Décision GECKO-023
+Ne pas piloter un MP3 long avec des seeks/timers à chaque coup. Conserver le master et produire 13 clips courts déterministes à partir des timecodes canoniques de l'ordre de mission. Lecture seulement après un nouveau gecko correctement confirmé par le joueur, avec anti-répétition et garde contextuelle pour « Tu y es presque ».
+
+### Vigilances
+- éviter les coupes trop serrées : les timecodes gardent une marge autour de la parole ;
+- ne pas féliciter un gecko placé par le Prof ;
+- ne pas rejouer une phrase si la même cellule est retirée puis reposée ;
+- ne pas mélanger voix d'encouragement et futur son de victoire ;
+- FX OFF doit rester réellement silencieux ;
+- audio absent = aucun impact logique.

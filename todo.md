@@ -228,7 +228,7 @@
 - [x] Vérifier que la CI échoue pour la raison attendue : `RichMediaScheduler` absent (run #14, `Unresolved reference`).
 - [x] Implémenter le sous-système média riche + keycolor bleu transparent sur la branche isolée.
 - [x] Faire passer tests + APK + AAB sur GitHub Actions — run #15 `36203684907`, succès ; artefact `GeckoDoku-v0.9.0-dev-Android` id `10893390568`.
-- [ ] Fusionner seulement après CI verte ; validation visuelle Android restera humaine.
+- [x] Fusionner seulement après CI verte ; `main` = branche GECKO-022 au commit `13ed666a8d93057c5ebd25307b8651c849b01154`, run #21 vert ; validation visuelle Android reste humaine.
 
 
 ## Validation téléphone v0.9
@@ -246,3 +246,19 @@
 
 ## Synchronisation main pendant GECKO-022
 - [x] Synchroniser les trois MP3 ajoutés directement sur `main` pendant le développement (`jungle intro GeckoD.mp3`, `jungle cebration GeckoD.mp3`, `Voix_encouragements.mp3`) sans les modifier ni leur inventer un rôle runtime.
+
+
+## GECKO-023 — Voix d'encouragement
+- [x] Analyser le master `assets/Voix_encouragements.mp3` et mesurer sa durée : 14,441 s.
+- [x] Identifier les 13 phrases et figer les timecodes sûrs dans `ordres-de-mission.md`.
+- [ ] Découper les 13 clips sous `assets/voice/encouragements/` en conservant le master intact.
+- [ ] Ajouter EncourgagementCatalog / Selector / Player (noms finaux à confirmer lors de l'implémentation).
+- [ ] Déclencher uniquement après un nouveau gecko correctement confirmé par le joueur.
+- [ ] Empêcher le redéclenchement sur la même cellule dans une tentative.
+- [ ] Empêcher la répétition immédiate du même clip.
+- [ ] Rendre « Tu y es presque » éligible seulement à 1–2 geckos restants.
+- [ ] Faire suivre les voix par FX ON/OFF, indépendamment de Habillage animé.
+- [ ] Séquencer le dernier encouragement avant un futur audio de victoire, sans bloquer la célébration visuelle.
+- [ ] Ajouter tests unitaires de sélection/déclenchement/anti-répétition.
+- [ ] Tester toutes les coupes sur téléphone : attaque et fin de mot intactes.
+- [ ] Vérifier qu'un clip absent ou illisible ne change jamais la partie.

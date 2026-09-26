@@ -438,3 +438,117 @@ Le lot sera considéré valide lorsque :
 - **Résultat demandé :** fond bleu supprimé au rendu, contours adoucis, réduction des franges bleues, traitement GPU compatible minSdk 26 ; si le shader ou le décodage échoue, fermer le média et conserver le jeu normal. Ne jamais toucher à la logique du puzzle.
 - **Portée :** vidéos riches Gecko/Prof à fond bleu. `Prof.png` reste le portrait normal transparent ; `Prof_fb.png` reste une source bleue et ne remplace pas automatiquement le portrait normal.
 - **Statut :** **Livré sur branche, à valider sur téléphone.** GitHub Actions run #15 (`36203684907`) : tests + APK + AAB réussis. Artefact `GeckoDoku-v0.9.0-dev-Android` id `10893390568`. Validation visuelle du détourage bleu et du placement reste humaine.
+
+
+# GECKO-023 — VOIX D'ENCOURAGEMENT À CHAQUE NOUVEAU GECKO
+**Demandeur / date :** Fab, 26/09/2026  
+**Statut :** mission figée, **à implémenter ultérieurement**.  
+**Source maître :** `assets/Voix_encouragements.mp3` — durée mesurée 14,441 s.
+
+## 0. Intention
+À chaque **nouveau gecko correctement trouvé par le joueur**, GeckoDoku joue une courte phrase française d'encouragement choisie de façon aléatoire. Cette voix est un retour positif purement sonore : elle ne modifie jamais la logique, le score, la difficulté, les statistiques ni l'état du puzzle.
+
+Le fichier maître doit être conservé intact. L'implémentation devra produire des clips courts séparés afin d'éviter de faire des seek/timers fragiles dans un MP3 long pendant le gameplay.
+
+## 1. Timecodes de découpe validés
+Les fenêtres ci-dessous incluent une petite marge de sécurité autour de la parole afin de ne pas couper les consonnes ou les fins de mots.
+
+| # | Fichier cible conseillé | Texte | IN | OUT |
+|---|---|---|---:|---:|
+| 01 | `encouragement_01_bravo.mp3` | Bravo. | 00:00.000 | 00:00.508 |
+| 02 | `encouragement_02_super.mp3` | Super. | 00:01.023 | 00:01.518 |
+| 03 | `encouragement_03_excellente.mp3` | Excellente. | 00:02.113 | 00:02.683 |
+| 04 | `encouragement_04_genial.mp3` | Génial. | 00:03.108 | 00:03.717 |
+| 05 | `encouragement_05_bien_joue.mp3` | Bien joué. | 00:04.246 | 00:04.859 |
+| 06 | `encouragement_06_magnifique.mp3` | Magnifique. | 00:05.111 | 00:05.745 |
+| 07 | `encouragement_07_continue.mp3` | Continue comme ça. | 00:06.327 | 00:07.169 |
+| 08 | `encouragement_08_presque.mp3` | Tu y es presque. | 00:07.878 | 00:08.644 |
+| 09 | `encouragement_09_tres_bien.mp3` | Très bien. | 00:09.019 | 00:09.468 |
+| 10 | `encouragement_10_formidable.mp3` | Formidable. | 00:09.790 | 00:10.524 |
+| 11 | `encouragement_11_quel_talent.mp3` | Quel talent. | 00:10.974 | 00:11.604 |
+| 12 | `encouragement_12_impressionnant.mp3` | Impressionnant. | 00:11.991 | 00:12.741 |
+| 13 | `encouragement_13_vraiment_bon.mp3` | Ça, c'était vraiment bon. | 00:13.152 | 00:14.441 |
+
+**Important :** le clip 13 contient volontairement la pause entre « Ça » et « c'était vraiment bon ». Elle doit être conservée ; ne pas le redécouper en deux phrases.
+
+## 2. Organisation des assets
+- conserver `assets/Voix_encouragements.mp3` comme master ;
+- créer les dérivés sous `assets/voice/encouragements/` ;
+- ne pas remplacer le master par les clips ;
+- le catalogue des clips devient la seule source de vérité pour le runtime ;
+- le découpage se fait une fois lors de la préparation des assets, pas en temps réel pendant la partie.
+
+## 3. Déclenchement
+Déclencher une voix uniquement quand le joueur vient de **confirmer correctement un nouveau gecko**.
+
+Ne pas déclencher sur :
+- une croix ;
+- une hypothèse ;
+- un gecko incorrect ;
+- un gecko retiré ;
+- un gecko posé automatiquement par le Prof ;
+- le simple rechargement d'une grille ;
+- une animation décorative.
+
+Pour éviter de féliciter plusieurs fois la même découverte, mémoriser pendant la tentative les cellules déjà récompensées. Retirer puis remettre le même gecko ne doit pas relancer une nouvelle phrase. Cette mémoire temporaire est remise à zéro au lancement/rejeu d'une tentative.
+
+## 4. Choix aléatoire
+- choisir aléatoirement parmi les phrases éligibles ;
+- **interdire deux fois de suite le même clip** ;
+- les phrases génériques restent disponibles à tout moment ;
+- `Tu y es presque` n'entre dans le tirage que lorsqu'il reste au maximum deux geckos à trouver et au moins un ;
+- garder le mécanisme simple : pas de classement, pas de score caché et pas de système de récompense complexe.
+
+## 5. Dernier gecko et victoire
+Le dernier gecko est lui aussi une nouvelle découverte et doit recevoir une phrase.
+
+Pour éviter un mélange sonore :
+- la célébration visuelle peut démarrer immédiatement ;
+- la courte phrase d'encouragement est jouée une fois ;
+- tout futur son/morceau de victoire attend la fin de cette phrase avant de démarrer ;
+- aucune superposition de deux voix ou bandes son fortes.
+
+## 6. Réglages audio
+- les voix suivent **FX ON/OFF** ;
+- FX OFF = aucune voix d'encouragement ;
+- `Habillage animé` ne contrôle pas ces voix : ce réglage reste réservé aux médias visuels/vidéos ;
+- une désactivation FX en cours de phrase doit arrêter ou rendre muette proprement la voix ;
+- aucune voix ne doit bloquer les gestes ni l'affichage.
+
+## 7. Architecture cible
+Créer une petite couche dédiée, par exemple :
+- `EncouragementCatalog` : noms, texte, conditions ;
+- `EncouragementSelector` : hasard + anti-répétition + règle « presque » ;
+- `EncouragementPlayer` : lecture courte et libération propre ;
+- MainActivity ne contient pas les timecodes en dur.
+
+Le système reçoit uniquement un événement « gecko joueur nouvellement confirmé » après validation du GameEngine. Il ne doit jamais décider lui-même si un coup est correct.
+
+## 8. Robustesse / accessibilité
+- clip absent ou illisible → ignorer la voix, jeu inchangé ;
+- aucune exception audio ne remonte au moteur ;
+- pause/destroy → libération propre ;
+- la phrase sonore ne remplace jamais le texte visuel d'encouragement ;
+- aucune obligation d'écouter la voix pour comprendre ou résoudre la grille.
+
+## 9. Tests exigés avant livraison
+- test de sélection : pas de répétition immédiate ;
+- test de contexte : « Tu y es presque » absent loin de la fin ;
+- test de contexte : « Tu y es presque » autorisé à 1–2 geckos restants ;
+- test : croix / erreur / retrait / Prof ne déclenchent rien ;
+- test : même cellule retirée puis remise ne redéclenche pas ;
+- test : chaque nouveau gecko joueur déclenche exactement une voix ;
+- test : FX OFF = silence ;
+- test : clip manquant = aucun impact sur le jeu ;
+- test manuel téléphone : toutes les coupes commencent et finissent proprement, sans syllabe mangée.
+
+## 10. Critères d'acceptation
+- 13 clips propres issus du master ;
+- timecodes conformes au tableau ;
+- une phrase aléatoire par nouveau gecko joueur ;
+- pas de répétition immédiate ;
+- contexte « Tu y es presque » cohérent ;
+- dernier gecko encouragé sans cacophonie avec la victoire ;
+- FX contrôle les voix ;
+- jeu et logique totalement indépendants de l'audio ;
+- master original conservé.
