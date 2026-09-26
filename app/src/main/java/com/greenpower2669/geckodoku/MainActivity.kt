@@ -77,6 +77,21 @@ class MainActivity : Activity() {
     private lateinit var richMediaOverlay:
         RichMediaOverlayView
 
+    private lateinit var gameAudio:
+        AssetAudioPlayer
+
+    private lateinit var professorSpeech:
+        ProfessorSpeech
+
+    private val encouragementSelector =
+        EncouragementSelector()
+
+    private val rewardedGeckos =
+        linkedSetOf<Cell>()
+
+    private var celebrationUsesMusic =
+        false
+
     private val richMediaScheduler =
         RichMediaScheduler()
 
@@ -108,6 +123,12 @@ class MainActivity : Activity() {
 
         richMediaSettings =
             RichMediaSettings(this)
+
+        gameAudio =
+            AssetAudioPlayer(this)
+
+        professorSpeech =
+            ProfessorSpeech(this)
 
         statsStore =
             PlayerStatsStore(this)
@@ -254,6 +275,7 @@ class MainActivity : Activity() {
                         recordStart = true
                     )
                     refreshGameUi()
+                    playLevelStartMusic()
                 }
             }
 
@@ -284,6 +306,9 @@ class MainActivity : Activity() {
                         } else {
                             "🔇 FX"
                         }
+
+                    gameAudio.enabled = fx.enabled
+                    professorSpeech.enabled = fx.enabled
 
                     if (::richMediaOverlay.isInitialized) {
                         richMediaOverlay.setMuted(
@@ -562,15 +587,19 @@ class MainActivity : Activity() {
                         burst,
                         isLast ->
 
-                    fx.celebrationBurst(
-                        level,
-                        burst,
-                        isLast
-                    )
+                    if (!celebrationUsesMusic) {
+                        fx.celebrationBurst(
+                            level,
+                            burst,
+                            isLast
+                        )
+                    }
                 }
 
                 onCelebrationStopped = {
                     fx.stopCelebration()
+                    gameAudio.stopMusic()
+                    celebrationUsesMusic = false
                 }
             }
 
@@ -632,6 +661,16 @@ class MainActivity : Activity() {
         eraseMarkerMode = false
         completionRecorded = false
         professorUsed = false
+        rewardedGeckos.clear()
+        encouragementSelector.reset()
+
+        if (::gameAudio.isInitialized) {
+            gameAudio.stopAll()
+        }
+
+        if (::professorSpeech.isInitialized) {
+            professorSpeech.stop()
+        }
 
         gameStartedAt =
             SystemClock.elapsedRealtime()
@@ -1027,14 +1066,12 @@ class MainActivity : Activity() {
                 fx.cross()
                 status.text =
                     "Croix posée."
-                maybePlayGeckoLongAction()
             }
 
             ActionFeedback.CROSS_REMOVED -> {
                 fx.cross()
                 status.text =
                     "Croix retirée."
-                maybePlayGeckoLongAction()
             }
 
             ActionFeedback.CROSS_BLOCKED -> {
@@ -1078,28 +1115,9 @@ class MainActivity : Activity() {
             engine.toggleGecko(cell)
         ) {
             ActionFeedback.GECKO_CONFIRMED -> {
-                fx.gecko()
-
-                val remaining =
-                    puzzle.size -
-                        engine.snapshot()
-                            .confirmed.size
-
-                status.text =
-                    encouragement(
-                        remaining
-                    )
-
-                board
-                    .announceForAccessibility(
-                        "Gecko confirmé. " +
-                            remaining +
-                            " restant."
-                    )
-
-                playCellAnimation(
-                    RichMediaKind.GECKO_APPEARANCE,
-                    cell
+                handlePlayerGeckoConfirmed(
+                    cell = cell,
+                    completed = false
                 )
             }
 
@@ -1140,7 +1158,10 @@ class MainActivity : Activity() {
             }
 
             ActionFeedback.COMPLETED ->
-                completeGame()
+                handlePlayerGeckoConfirmed(
+                    cell = cell,
+                    completed = true
+                )
 
             else -> Unit
         }
@@ -1369,14 +1390,15 @@ class MainActivity : Activity() {
             result ==
             ActionFeedback.COMPLETED
         ) {
-            completeGame()
+            completeGame(
+                playCelebrationMusicImmediately =
+                    true
+            )
         } else if (hint.step.cell != null) {
             playCellAnimation(
                 RichMediaKind.GECKO_APPEARANCE,
                 hint.step.cell
             )
-        } else {
-            maybePlayProfessorLongAction()
         }
     }
 
@@ -1412,6 +1434,10 @@ class MainActivity : Activity() {
             message
         )
 
+        professorSpeech.speak(
+            message
+        )
+
         professorBubble.bringToFront()
 
         if (
@@ -1424,6 +1450,9 @@ class MainActivity : Activity() {
 
         screenRoot.post {
             positionProfessorBubble()
+            screenRoot.post {
+                maybePlayProfessorLongAction()
+            }
         }
     }
 
@@ -1432,6 +1461,10 @@ class MainActivity : Activity() {
             ::professorBubble.isInitialized
         ) {
             professorBubble.hideMessage()
+        }
+
+        if (::professorSpeech.isInitialized) {
+            professorSpeech.stop()
         }
 
         if (
@@ -1512,7 +1545,9 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun completeGame() {
+    private fun completeGame(
+        playCelebrationMusicImmediately: Boolean = true
+    ) {
         fx.stopCelebration()
 
         if (::richMediaOverlay.isInitialized) {
@@ -1542,6 +1577,12 @@ class MainActivity : Activity() {
 
         status.text =
             "Bravo ! Grille terminée 🦎"
+
+        celebrationUsesMusic = true
+
+        if (playCelebrationMusicImmediately) {
+            startCelebrationMusic()
+        }
 
         if (
             ::celebrationView.isInitialized
@@ -1997,7 +2038,8 @@ class MainActivity : Activity() {
 
     private fun playCellAnimation(
         kind: RichMediaKind,
-        cell: Cell
+        cell: Cell,
+        onFinished: (() -> Unit)? = null
     ) {
         if (!richMediaSettings.enabled ||
             !::richMediaOverlay.isInitialized ||
@@ -2043,11 +2085,16 @@ class MainActivity : Activity() {
             muted = !fx.enabled,
             target = target,
             titleText = null,
-            skippable = false
+            skippable = false,
+            maskTarget = target,
+            maskColor = Color.WHITE,
+            onFinished = onFinished
         )
     }
 
-    private fun maybePlayGeckoLongAction() {
+    private fun maybePlayGeckoLongAction(
+        cell: Cell
+    ) {
         if (!richMediaSettings.enabled ||
             !::richMediaOverlay.isInitialized ||
             richMediaOverlay.isBusy ||
@@ -2076,13 +2123,29 @@ class MainActivity : Activity() {
             return
         }
 
+        val screenRect =
+            board.cellRectOnScreen(cell)
+        val rootLocation = IntArray(2)
+        screenRoot.getLocationOnScreen(
+            rootLocation
+        )
+        val target =
+            RectF(screenRect).apply {
+                offset(
+                    -rootLocation[0].toFloat(),
+                    -rootLocation[1].toFloat()
+                )
+            }
+
         richMediaOverlay.play(
             kind = RichMediaKind.GECKO_LONG_ACTION,
             assetPath = AssetMediaCatalog.GECKO_LONG_ACTIONS,
             muted = !fx.enabled,
-            target = null,
+            target = target,
             titleText = null,
-            skippable = true
+            skippable = true,
+            maskTarget = target,
+            maskColor = Color.WHITE
         )
     }
 
@@ -2112,21 +2175,186 @@ class MainActivity : Activity() {
             return
         }
 
-        richMediaOverlay.play(
-            kind = RichMediaKind.PROF_LONG_ACTION,
-            assetPath = AssetMediaCatalog.PROF_LONG_ACTIONS,
-            muted = !fx.enabled,
-            target = null,
-            titleText = null,
-            skippable = true
+        val screenRect =
+            professorBubble
+                .portraitRectOnScreen()
+
+        if (
+            screenRect.width() <= 0f ||
+            screenRect.height() <= 0f
+        ) {
+            return
+        }
+
+        val rootLocation = IntArray(2)
+        screenRoot.getLocationOnScreen(
+            rootLocation
+        )
+        val target =
+            RectF(screenRect).apply {
+                offset(
+                    -rootLocation[0].toFloat(),
+                    -rootLocation[1].toFloat()
+                )
+            }
+
+        val started =
+            richMediaOverlay.play(
+                kind =
+                    RichMediaKind
+                        .PROF_LONG_ACTION,
+                assetPath =
+                    AssetMediaCatalog
+                        .PROF_LONG_ACTIONS,
+                muted = true,
+                target = target,
+                titleText = null,
+                skippable = true,
+                maskTarget = target,
+                maskColor =
+                    Color.rgb(
+                        255,
+                        252,
+                        224
+                    )
+            )
+
+        if (started) {
+            richMediaOverlay.bringToFront()
+
+            if (
+                ::celebrationView.isInitialized &&
+                celebrationView.visibility ==
+                    View.VISIBLE
+            ) {
+                celebrationView.bringToFront()
+            }
+        }
+    }
+
+    private fun handlePlayerGeckoConfirmed(
+        cell: Cell,
+        completed: Boolean
+    ) {
+        val remaining =
+            puzzle.size -
+                engine.snapshot()
+                    .confirmed.size
+
+        status.text =
+            if (completed) {
+                "Dernier gecko trouvé !"
+            } else {
+                encouragement(remaining)
+            }
+
+        board.announceForAccessibility(
+            "Gecko confirmé. " +
+                remaining +
+                " restant."
         )
 
-        professorBubble.bringToFront()
+        val newlyRewarded =
+            rewardedGeckos.add(cell)
+
+        val voiceStarted =
+            if (newlyRewarded) {
+                playEncouragement(
+                    remaining = remaining,
+                    onFinished = {
+                        if (completed) {
+                            startCelebrationMusic()
+                        }
+                    }
+                )
+            } else {
+                false
+            }
+
+        if (!voiceStarted) {
+            fx.gecko()
+        }
+
+        if (completed) {
+            completeGame(
+                playCelebrationMusicImmediately =
+                    !voiceStarted
+            )
+            return
+        }
+
+        playCellAnimation(
+            kind =
+                RichMediaKind
+                    .GECKO_APPEARANCE,
+            cell = cell,
+            onFinished = {
+                maybePlayGeckoLongAction(
+                    cell
+                )
+            }
+        )
+    }
+
+    private fun playEncouragement(
+        remaining: Int,
+        onFinished: (() -> Unit)? = null
+    ): Boolean {
+        if (!fx.enabled) {
+            return false
+        }
+
+        val index =
+            encouragementSelector.choose(
+                remaining = remaining,
+                randomValue =
+                    Random.nextInt(
+                        Int.MAX_VALUE
+                    )
+            )
+
+        val segment =
+            AssetAudioCatalog
+                .ENCOURAGEMENTS[index]
+
+        return gameAudio
+            .playVoiceSegment(
+                assetPath =
+                    AssetAudioCatalog
+                        .ENCOURAGEMENT_MASTER,
+                startMs = segment.startMs,
+                endMs = segment.endMs,
+                onCompletion = onFinished
+            )
+    }
+
+    private fun playLevelStartMusic() {
+        if (fx.enabled) {
+            gameAudio.playMusic(
+                AssetAudioCatalog.LEVEL_START
+            )
+        }
+    }
+
+    private fun startCelebrationMusic() {
+        if (fx.enabled) {
+            gameAudio.playMusic(
+                AssetAudioCatalog.CELEBRATION
+            )
+        }
     }
 
     override fun onPause() {
         if (::richMediaOverlay.isInitialized) {
             richMediaOverlay.stop()
+        }
+
+        if (::gameAudio.isInitialized) {
+            gameAudio.stopAll()
+        }
+
+        if (::professorSpeech.isInitialized) {
+            professorSpeech.stop()
         }
 
         super.onPause()
@@ -2135,6 +2363,14 @@ class MainActivity : Activity() {
     override fun onDestroy() {
         if (::richMediaOverlay.isInitialized) {
             richMediaOverlay.release()
+        }
+
+        if (::gameAudio.isInitialized) {
+            gameAudio.release()
+        }
+
+        if (::professorSpeech.isInitialized) {
+            professorSpeech.release()
         }
 
         fx.release()

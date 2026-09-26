@@ -207,3 +207,7 @@ Le renderer utilise déjà `SurfaceTexture.getTransformMatrix()` mais son buffer
 
 ### Décision géométrique
 La grille ne participe jamais au layout des médias. Les médias utilisent le rectangle réel de case et un cache blanc local dans l'overlay. Tout débordement visuel reste hors layout.
+
+
+### Correctif implémenté GECKO-024
+Le test RED run #25 échoue exactement sur les deux classes absentes attendues. Le correctif remplace les UV inversés par des UV canoniques, ajoute le cache blanc de case, localise les animations Gecko/Prof et branche musique/voix/TTS sans modifier GameEngine. Les 13 clips physiques restent à versionner ; le build téléphone lit temporairement les fenêtres canoniques directement dans le master.

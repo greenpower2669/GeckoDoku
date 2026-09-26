@@ -641,3 +641,7 @@ Le texte pédagogique du Prof peut être vocalisé via Android TextToSpeech fran
 - voix Prof TTS non bloquante avec fallback ;
 - tests unitaires + APK/AAB verts avant fusion ;
 - validation visuelle finale sur téléphone par Fab.
+
+
+### Note d'implémentation audio GECKO-024
+Le premier build téléphone utilise les 13 fenêtres temporelles canoniques directement dans le master via MediaPlayer.seekTo(..., SEEK_CLOSEST), disponible à partir d'Android 26. Cette solution permet le test immédiat mais ne clôt pas l'étape GECKO-023 de production/versionnage des 13 clips physiques, qui reste ouverte si la précision des attaques/fins n'est pas parfaite sur téléphone.

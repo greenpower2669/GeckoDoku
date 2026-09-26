@@ -15,6 +15,13 @@ class RichMediaOverlayView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
+    private val maskView =
+        View(context).apply {
+            visibility = GONE
+            importantForAccessibility =
+                IMPORTANT_FOR_ACCESSIBILITY_NO
+        }
+
     private val videoView =
         ChromaKeyVideoView(context)
 
@@ -23,21 +30,11 @@ class RichMediaOverlayView @JvmOverloads constructor(
             textSize = 36f
             gravity = Gravity.CENTER
             setTextColor(
-                Color.rgb(
-                    246,
-                    255,
-                    231
-                )
+                Color.rgb(246, 255, 231)
             )
             setShadowLayer(
-                8f,
-                0f,
-                3f,
-                Color.rgb(
-                    18,
-                    80,
-                    44
-                )
+                8f, 0f, 3f,
+                Color.rgb(18, 80, 44)
             )
             importantForAccessibility =
                 IMPORTANT_FOR_ACCESSIBILITY_NO
@@ -52,14 +49,11 @@ class RichMediaOverlayView @JvmOverloads constructor(
             minWidth = dp(56)
             minHeight = dp(56)
             visibility = GONE
-            setOnClickListener {
-                stop()
-            }
+            setOnClickListener { stop() }
         }
 
     private var activeKind:
         RichMediaKind? = null
-
     private var activeCompletion:
         (() -> Unit)? = null
 
@@ -67,12 +61,14 @@ class RichMediaOverlayView @JvmOverloads constructor(
         get() = activeKind != null
 
     init {
-        setBackgroundColor(
-            Color.TRANSPARENT
-        )
+        setBackgroundColor(Color.TRANSPARENT)
         visibility = GONE
         isClickable = false
 
+        addView(
+            maskView,
+            LayoutParams(1, 1)
+        )
         addView(
             videoView,
             LayoutParams(
@@ -80,7 +76,6 @@ class RichMediaOverlayView @JvmOverloads constructor(
                 LayoutParams.MATCH_PARENT
             )
         )
-
         addView(
             titleView,
             LayoutParams(
@@ -93,7 +88,6 @@ class RichMediaOverlayView @JvmOverloads constructor(
                 rightMargin = dp(76)
             }
         )
-
         addView(
             closeButton,
             LayoutParams(
@@ -101,8 +95,7 @@ class RichMediaOverlayView @JvmOverloads constructor(
                 dp(64)
             ).apply {
                 gravity =
-                    Gravity.TOP or
-                        Gravity.END
+                    Gravity.TOP or Gravity.END
                 topMargin = dp(12)
                 rightMargin = dp(12)
             }
@@ -116,30 +109,32 @@ class RichMediaOverlayView @JvmOverloads constructor(
         target: RectF?,
         titleText: String?,
         skippable: Boolean,
+        maskTarget: RectF? = null,
+        maskColor: Int = Color.WHITE,
         onFinished: (() -> Unit)? = null
     ): Boolean {
-        if (isBusy) {
-            return false
-        }
+        if (isBusy) return false
 
         activeKind = kind
         activeCompletion = onFinished
 
-        titleView.text =
-            titleText ?: ""
+        setBackgroundColor(
+            if (kind == RichMediaKind.INTRO) {
+                Color.BLACK
+            } else {
+                Color.TRANSPARENT
+            }
+        )
+
+        titleView.text = titleText ?: ""
         titleView.visibility =
             if (titleText.isNullOrBlank()) {
                 GONE
             } else {
                 VISIBLE
             }
-
         closeButton.visibility =
-            if (skippable) {
-                VISIBLE
-            } else {
-                GONE
-            }
+            if (skippable) VISIBLE else GONE
 
         contentDescription =
             if (skippable) {
@@ -148,78 +143,69 @@ class RichMediaOverlayView @JvmOverloads constructor(
                 null
             }
 
-        applyVideoBounds(target)
+        if (maskTarget != null) {
+            maskView.setBackgroundColor(maskColor)
+            applyBounds(maskView, maskTarget)
+            maskView.visibility = VISIBLE
+        } else {
+            maskView.visibility = GONE
+        }
+
+        applyBounds(videoView, target)
         visibility = VISIBLE
 
         videoView.play(
             assetPath = assetPath,
             muted = muted,
             onCompletion = {
-                finishActive(
-                    invokeCompletion = true
-                )
+                finishActive(true)
             },
-            onError = {
-                message ->
-
-                Log.w(
-                    TAG,
-                    message
-                )
-
-                finishActive(
-                    invokeCompletion = true
-                )
+            onError = { message ->
+                Log.w(TAG, message)
+                finishActive(true)
             }
         )
-
         return true
     }
 
-    fun setMuted(
-        value: Boolean
-    ) {
+    fun setMuted(value: Boolean) {
         videoView.setMuted(value)
     }
 
     fun stop() {
-        finishActive(
-            invokeCompletion = false
-        )
+        finishActive(false)
     }
 
     fun release() {
         activeCompletion = null
         activeKind = null
         videoView.release()
+        maskView.visibility = GONE
+        setBackgroundColor(Color.TRANSPARENT)
         visibility = GONE
     }
 
     private fun finishActive(
         invokeCompletion: Boolean
     ) {
-        if (!isBusy) {
-            return
-        }
-
-        val completion =
-            activeCompletion
-
+        if (!isBusy) return
+        val completion = activeCompletion
         activeCompletion = null
         activeKind = null
-
         videoView.stopPlayback()
         titleView.text = ""
         titleView.visibility = GONE
         closeButton.visibility = GONE
+        maskView.visibility = GONE
+        setBackgroundColor(Color.TRANSPARENT)
         visibility = GONE
-
         if (invokeCompletion) {
             completion?.invoke()
         }
     }
 
-    private fun applyVideoBounds(
+    private fun applyBounds(
+        view: View,
         target: RectF?
     ) {
         val params =
@@ -243,13 +229,10 @@ class RichMediaOverlayView @JvmOverloads constructor(
                         target.top.toInt()
                 }
             }
-
-        videoView.layoutParams = params
+        view.layoutParams = params
     }
 
-    private fun dp(
-        value: Int
-    ): Int =
+    private fun dp(value: Int): Int =
         (
             value *
                 resources

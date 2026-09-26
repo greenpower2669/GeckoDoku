@@ -1,6 +1,8 @@
 package com.greenpower2669.geckodoku
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -62,6 +64,17 @@ class ProfessorBubbleView @JvmOverloads constructor(
     private val closeRect =
         RectF()
 
+    private val professorBitmap: Bitmap? =
+        try {
+            context.assets.open(
+                AssetMediaCatalog.PROF_PORTRAIT
+            ).use {
+                BitmapFactory.decodeStream(it)
+            }
+        } catch (_: Exception) {
+            null
+        }
+
     private var message =
         ""
 
@@ -112,7 +125,7 @@ class ProfessorBubbleView @JvmOverloads constructor(
             )
 
         val desired =
-            dp(58f).toInt() +
+            dp(92f).toInt() +
                 body.height +
                 dp(18f).toInt()
 
@@ -247,10 +260,21 @@ class ProfessorBubbleView @JvmOverloads constructor(
             closeTextPaint
         )
 
+        val portrait = portraitRect(rect)
+
+        professorBitmap?.let { bitmap ->
+            canvas.drawBitmap(
+                bitmap,
+                null,
+                portrait,
+                paint
+            )
+        }
+
         canvas.drawText(
-            "🦎  Prof Gecko",
-            rect.left + dp(14f),
-            rect.top + dp(24f),
+            "Prof Gecko",
+            portrait.right + dp(8f),
+            rect.top + dp(28f),
             titlePaint
         )
 
@@ -267,11 +291,40 @@ class ProfessorBubbleView @JvmOverloads constructor(
         canvas.save()
         canvas.translate(
             rect.left + dp(14f),
-            rect.top + dp(38f)
+            rect.top + dp(72f)
         )
         body.draw(canvas)
         canvas.restore()
     }
+
+    fun portraitRectOnScreen(): RectF {
+        val margin = dp(8f)
+        val bubbleRect =
+            RectF(
+                margin,
+                margin,
+                width - margin,
+                height - margin - dp(14f)
+            )
+        val result = portraitRect(bubbleRect)
+        val location = IntArray(2)
+        getLocationOnScreen(location)
+        result.offset(
+            location[0].toFloat(),
+            location[1].toFloat()
+        )
+        return result
+    }
+
+    private fun portraitRect(
+        bubbleRect: RectF
+    ): RectF =
+        RectF(
+            bubbleRect.left + dp(10f),
+            bubbleRect.top + dp(8f),
+            bubbleRect.left + dp(62f),
+            bubbleRect.top + dp(60f)
+        )
 
     private fun makeLayout(
         text: String,

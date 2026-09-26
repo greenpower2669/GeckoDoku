@@ -20,12 +20,12 @@ jobs:
       - name: Test and build Android
         run: gradle :app:testDebugUnitTest :app:assembleDebug :app:bundleDebug --no-daemon
       - name: Name APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk GeckoDoku-v0.9.0-dev.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk GeckoDoku-v0.10.0-dev.apk
       - name: Name AAB
-        run: cp app/build/outputs/bundle/debug/app-debug.aab GeckoDoku-v0.9.0-dev.aab
+        run: cp app/build/outputs/bundle/debug/app-debug.aab GeckoDoku-v0.10.0-dev.aab
       - uses: actions/upload-artifact@v4
         with:
-          name: GeckoDoku-v0.9.0-dev-Android
+          name: GeckoDoku-v0.10.0-dev-Android
           path: |
-            GeckoDoku-v0.9.0-dev.apk
-            GeckoDoku-v0.9.0-dev.aab
+            GeckoDoku-v0.10.0-dev.apk
+            GeckoDoku-v0.10.0-dev.aab

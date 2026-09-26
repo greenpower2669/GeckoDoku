@@ -308,3 +308,26 @@ assets/audio/
     │   └── Voix_encouragements.mp3
     └── clips/
         └── futur : 13 clips GECKO-023
+
+
+## GECKO-024 runtime
+GeckoBoardView
+├── Gecko.png si présent
+└── fallback procédural
+
+Case immuable
+├── masque blanc exact
+└── ChromaKeyVideoView
+    └── UV canoniques + matrice SurfaceTexture
+
+ProfessorBubbleView
+├── Prof.png statique
+├── texte
+└── portraitRectOnScreen
+    └── Prof_actions.mp4 localisé
+        └── TTS français prioritaire
+
+AssetAudioPlayer
+├── musique Nouvelle
+├── musique victoire
+└── voix encouragements par timecodes du master

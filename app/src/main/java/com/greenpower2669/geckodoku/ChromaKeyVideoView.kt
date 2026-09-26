@@ -295,12 +295,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 .asFloatBuffer()
                 .apply {
                     put(
-                        floatArrayOf(
-                            0f, 1f,
-                            1f, 1f,
-                            0f, 0f,
-                            1f, 0f
-                        )
+                        MediaRenderGeometry.textureCoordinates()
                     )
                     position(0)
                 }

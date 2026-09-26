@@ -188,3 +188,13 @@ Les fichiers audio autonomes sont classés sous `assets/audio/` :
 - `encouragements/clips/` réservé aux 13 dérivés GECKO-023.
 
 Ce rangement n'active aucun comportement à lui seul. Les vidéos MP4 conservent leur audio embarqué et restent sous `assets/gecko/` et `assets/prof/`.
+
+
+## GECKO-024 — rendu fixe et audio gameplay
+Le retour téléphone v0.9 a montré une inversion verticale des vidéos. Le buffer UV pré-appliquait un retournement alors que SurfaceTexture fournit déjà sa matrice : les UV sont désormais canoniques et la matrice SurfaceTexture reste la transformation de vérité.
+
+La grille est immuable pendant les médias. RichMediaOverlayView porte un masque indépendant ; les animations de case utilisent exactement le rectangle réel de GeckoBoardView, avec cache blanc sous la vidéo et aucun impact sur la mesure du plateau. Les actions longues Gecko ne partent plus après une croix et restent attachées à la case du Gecko confirmé.
+
+ProfessorBubbleView utilise Prof.png statiquement. Prof_actions.mp4 est localisé sur le portrait, avec audio vidéo muet pour laisser la voix TTS française du Prof prioritaire.
+
+AssetAudioPlayer sépare musique et voix. Nouvelle → musique intro ; victoire → musique celebration. GECKO-023 utilise dans ce build les timecodes canoniques du master par seek Android 26+ ; le découpage physique en 13 clips reste une étape de durcissement ouverte.

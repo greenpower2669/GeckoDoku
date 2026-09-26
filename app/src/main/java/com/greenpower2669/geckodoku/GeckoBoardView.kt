@@ -1,6 +1,8 @@
 package com.greenpower2669.geckodoku
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -26,6 +28,18 @@ class GeckoBoardView @JvmOverloads constructor(
     var onLongPressOutside: (() -> Unit)? = null
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    private val geckoBitmap: Bitmap? =
+        try {
+            context.assets.open(
+                AssetMediaCatalog.GECKO_PORTRAIT
+            ).use {
+                BitmapFactory.decodeStream(it)
+            }
+        } catch (_: Exception) {
+            null
+        }
+
     private val boardRect = RectF()
     private var cellSize = 1f
     private val gutter = dp(76f)
@@ -671,6 +685,38 @@ class GeckoBoardView @JvmOverloads constructor(
                     0,
                     255
                 )
+
+        val sprite = geckoBitmap
+
+        if (sprite != null) {
+            val inset = cellSize * .10f
+            paint.alpha = a
+            canvas.drawBitmap(
+                sprite,
+                null,
+                RectF(
+                    rect.left + inset,
+                    rect.top + inset,
+                    rect.right - inset,
+                    rect.bottom - inset
+                ),
+                paint
+            )
+            paint.alpha = 255
+
+            if (alert) {
+                paint.style = Paint.Style.STROKE
+                paint.strokeWidth = cellSize * .045f
+                paint.color = Color.argb(a, 170, 20, 20)
+                canvas.drawCircle(
+                    cx,
+                    cy,
+                    cellSize * .31f,
+                    paint
+                )
+            }
+            return
+        }
 
         paint.style =
             Paint.Style.FILL

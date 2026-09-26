@@ -266,19 +266,19 @@
 
 ## GECKO-024 — grille immuable / médias / audio
 - [x] Figer le retour téléphone et le contrat géométrique dans l'ordre de mission.
-- [ ] RED : verrouiller orientation UV sans double retournement.
-- [ ] RED : verrouiller sélection encouragements / anti-répétition / contexte fin de grille.
-- [ ] Corriger vidéo tête en bas.
-- [ ] Ajouter cache blanc strictement borné aux animations de case.
-- [ ] Conserver grille immuable pendant tous les overlays.
-- [ ] Intro : fond noir.
-- [ ] Prof : afficher `Prof.png` statiquement et localiser son animation sur le portrait.
-- [ ] Gecko : utiliser `Gecko.png` si présent, sinon fallback procédural sans changer la géométrie.
+- [x] RED : verrouiller orientation UV sans double retournement — run #25, classe absente attendue.
+- [x] RED : verrouiller sélection encouragements / anti-répétition / contexte fin de grille — run #25, classe absente attendue.
+- [x] Corriger vidéo tête en bas par UV canoniques.
+- [x] Ajouter cache blanc strictement borné aux animations de case.
+- [x] Conserver grille immuable pendant tous les overlays.
+- [x] Intro : fond noir.
+- [x] Prof : afficher `Prof.png` statiquement et localiser son animation sur le portrait.
+- [x] Gecko : charger `Gecko.png` si présent, fallback procédural sinon.
 - [ ] Découper les 13 encouragements depuis le master, sans le modifier.
-- [ ] Jouer musique intro sur bouton Nouvelle.
-- [ ] Jouer musique célébration à la victoire.
-- [ ] Implémenter sélection voix GECKO-023 et anti-répétition.
-- [ ] Ajouter TTS français non bloquant pour les textes du Prof, contrôlé par FX.
-- [ ] Vérifier pause/destroy/FX OFF : aucun lecteur ou TTS orphelin.
+- [x] Jouer musique intro sur bouton Nouvelle.
+- [x] Jouer musique célébration à la victoire.
+- [x] Implémenter sélection voix GECKO-023 et anti-répétition ; timecodes master pour build téléphone.
+- [x] Ajouter TTS français non bloquant pour les textes du Prof, contrôlé par FX.
+- [x] Cleanup pause/destroy/FX OFF implémenté ; validation téléphone requise.
 - [ ] CI tests + APK + AAB.
 - [ ] Validation téléphone Fab.
