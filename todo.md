@@ -262,3 +262,23 @@
 - [ ] Ajouter tests unitaires de sélection/déclenchement/anti-répétition.
 - [ ] Tester toutes les coupes sur téléphone : attaque et fin de mot intactes.
 - [ ] Vérifier qu'un clip absent ou illisible ne change jamais la partie.
+
+
+## GECKO-024 — grille immuable / médias / audio
+- [x] Figer le retour téléphone et le contrat géométrique dans l'ordre de mission.
+- [ ] RED : verrouiller orientation UV sans double retournement.
+- [ ] RED : verrouiller sélection encouragements / anti-répétition / contexte fin de grille.
+- [ ] Corriger vidéo tête en bas.
+- [ ] Ajouter cache blanc strictement borné aux animations de case.
+- [ ] Conserver grille immuable pendant tous les overlays.
+- [ ] Intro : fond noir.
+- [ ] Prof : afficher `Prof.png` statiquement et localiser son animation sur le portrait.
+- [ ] Gecko : utiliser `Gecko.png` si présent, sinon fallback procédural sans changer la géométrie.
+- [ ] Découper les 13 encouragements depuis le master, sans le modifier.
+- [ ] Jouer musique intro sur bouton Nouvelle.
+- [ ] Jouer musique célébration à la victoire.
+- [ ] Implémenter sélection voix GECKO-023 et anti-répétition.
+- [ ] Ajouter TTS français non bloquant pour les textes du Prof, contrôlé par FX.
+- [ ] Vérifier pause/destroy/FX OFF : aucun lecteur ou TTS orphelin.
+- [ ] CI tests + APK + AAB.
+- [ ] Validation téléphone Fab.

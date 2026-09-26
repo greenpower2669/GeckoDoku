@@ -562,3 +562,82 @@ Sans code applicatif, les trois MP3 ont été classés par rôle, sans réencoda
 
 Les futurs 13 clips GECKO-023 seront placés sous `assets/audio/encouragements/clips/`.
 Cette réorganisation ne donne encore aucun rôle runtime aux deux morceaux jungle et n'active pas GECKO-023 : elle prépare uniquement les assets pendant que Fab teste la v0.9.
+
+
+# GECKO-024 — GRILLE IMMUABLE, COMPOSITION PNG/VIDÉO ET AUDIO GAMEPLAY
+**Demandeur / date :** Fab, 26/09/2026  
+**Statut :** implémentation en cours sur branche `gecko-024-grid-audio`.
+
+## 0. Retour téléphone qui déclenche la mission
+- les vidéos riches sont affichées tête en bas ;
+- l'animation Gecko est trop générale/grande pour une animation de case ;
+- toute animation de case doit être ancrée sur la case réelle sans faire bouger, redimensionner ou re-mesurer la grille ;
+- pendant une animation de case, un cache carré blanc masque le Gecko/rendu normal sous-jacent ; PNG et vidéo sont dessinés au-dessus ;
+- les éléments décoratifs peuvent visuellement dépasser d'une case, mais ce débordement reste un overlay et ne modifie jamais la géométrie du plateau.
+
+## 1. Contrat géométrique absolu
+La grille est une référence immuable pendant la partie :
+- aucune animation ne change sa taille, sa position ou ses contraintes de layout ;
+- les coordonnées d'une case viennent uniquement du rectangle réel calculé par `GeckoBoardView` ;
+- un overlay de case réutilise exactement ce rectangle ;
+- le cache de case et la vidéo sont des frères dans `screenRoot`, jamais des enfants participant à la mesure de la grille ;
+- toute animation terminée/échouée retire son overlay sans demander de re-layout au plateau.
+
+## 2. Composition d'une animation Gecko de case
+Ordre arrière → avant :
+1. grille normale déjà dessinée ;
+2. cache carré **blanc** exactement borné à la case ciblée ;
+3. PNG statique Gecko si disponible/nécessaire ;
+4. vidéo Gecko transparente par keycolor ;
+5. à la fin : suppression du cache + vidéo, rendu normal inchangé dessous.
+
+Le cache blanc masque notamment le Gecko confirmé déjà présent pendant `Gecko_apparition.mp4`, afin d'éviter le double Gecko.
+
+## 3. Orientation vidéo
+Corriger la cause du rendu tête en bas. `SurfaceTexture.getTransformMatrix()` reste la transformation de vérité. Les UV d'entrée ne doivent pas pré-appliquer un second retournement vertical.
+
+## 4. PNG statiques
+- Prof hors animation : `assets/prof/Prof.png`, transparent, dans la présentation du Prof.
+- Gecko hors animation : PNG transparent dédié attendu sous `assets/gecko/Gecko.png`.
+- Tant que `Gecko.png` n'existe pas, le Gecko procédural existant reste le fallback exact : ne pas inventer un asset silencieusement.
+- les animations restent temporaires ; à leur fin, le PNG/fallback normal est visible.
+
+## 5. Intro
+L'intro vidéo reste un overlay et ne touche pas à la grille. Un fond/cadre noir opaque est affiché derrière la vidéo d'intro pour garantir une composition propre ; titre GeckoDoku et bouton Passer restent au-dessus.
+
+## 6. MP3 de gameplay
+Rôles désormais explicites :
+- `assets/audio/intro/jungle intro GeckoD.mp3` : joué quand l'utilisateur appuie sur **Nouvelle** et que la nouvelle grille est créée ;
+- `assets/audio/celebration/jungle cebration GeckoD.mp3` : musique de victoire pendant la célébration ;
+- ces deux sons suivent FX ON/OFF ;
+- absence/erreur de lecture → fallback silencieux ou FX procéduraux, jeu inchangé ;
+- pas de superposition incontrôlée : le joueur audio dédié arbitre les pistes.
+
+## 7. Voix d'encouragement / voix du Prof
+GECKO-023 est intégré à ce lot :
+- découper le master en 13 clips déterministes sous `assets/audio/encouragements/clips/` ;
+- un nouveau Gecko correct trouvé **par le joueur** déclenche une phrase aléatoire ;
+- jamais deux fois le même clip à la suite ;
+- même cellule retirée/replacée : pas de nouvelle récompense dans la tentative ;
+- « Tu y es presque » uniquement à 1–2 Gecko restants ;
+- le dernier Gecko est lui aussi encouragé ;
+- les Gecko posés par Prof ne déclenchent pas ces encouragements.
+
+Le texte pédagogique du Prof peut être vocalisé via Android TextToSpeech français quand FX est ON. TTS indisponible → texte/bulle inchangés, aucune erreur logique. Une fermeture de bulle ou FX OFF arrête la parole.
+
+## 8. Animation du Prof
+`Prof.png` reste visible statiquement dans la bulle. `Prof_actions.mp4` reste une animation décorative occasionnelle ; lorsqu'elle est jouée dans le contexte Prof, elle doit être localisée sur la zone portrait du Prof plutôt qu'en grande animation plein écran. La bulle texte reste immédiatement disponible et prioritaire.
+
+## 9. Critères d'acceptation
+- vidéos dans le bon sens ;
+- grille strictement immuable pendant tous les médias ;
+- animation apparition/disparition ancrée sur la case exacte ;
+- cache blanc exact sous la vidéo de case ;
+- aucun double Gecko visible pendant l'apparition ;
+- intro sur fond noir propre ;
+- Prof statique via PNG transparent ;
+- musique Nouvelle et musique Victoire aux bons événements ;
+- 13 encouragements découpés et sélectionnés selon GECKO-023 ;
+- voix Prof TTS non bloquante avec fallback ;
+- tests unitaires + APK/AAB verts avant fusion ;
+- validation visuelle finale sur téléphone par Fab.

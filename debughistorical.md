@@ -196,3 +196,14 @@ Ne pas piloter un MP3 long avec des seeks/timers à chaque coup. Conserver le ma
 
 ### Rangement physique des MP3 — sans code
 Pendant le test téléphone v0.9, Fab demande uniquement de préparer GECKO-023 et de ranger les assets audio. Les trois blobs MP3 sont déplacés sans réencodage ni changement de contenu vers `assets/audio/`, classés en `intro/`, `celebration/` et `encouragements/master/`. Aucun fichier Kotlin/Gradle n'est modifié pour ce rangement.
+
+
+## 2026-09-26 — Vidéos inversées et grille mobile pendant médias
+### Retour téléphone
+Les vidéos riches apparaissent tête en bas et l'animation de case donne une composition trop générale. Fab exige une grille immuable et un cache blanc local avant PNG/vidéo.
+
+### Hypothèse racine orientation
+Le renderer utilise déjà `SurfaceTexture.getTransformMatrix()` mais son buffer UV est lui-même verticalement inversé. Cela peut appliquer deux corrections verticales et produire le rendu tête en bas. Le correctif sera précédé d'un test RED sur les UV canoniques.
+
+### Décision géométrique
+La grille ne participe jamais au layout des médias. Les médias utilisent le rectangle réel de case et un cache blanc local dans l'overlay. Tout débordement visuel reste hors layout.
