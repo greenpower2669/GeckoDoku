@@ -472,3 +472,7 @@ Les tests de contrat sont volontairement ajoutés avant les classes de productio
 
 
 GECKO-033 RED complémentaire : l’ordre `IntroGeckoGD.mp4` → `Gecko_Intro.mp4` est désormais verrouillé par test avant code.
+
+
+## 2026-09-26 — GECKO-033 RED validé, implémentation poussée
+Runs #73 (`36237890947`) et #74 (`36238120422`) ont échoué à `:app:compileDebugUnitTestKotlin` exactement sur les références GECKO-033 volontairement absentes : constantes nouveaux assets, politiques audio/ProfParle/intro/titre, Prof ambiant et catalogue 100 phrases. Le code de production est ajouté seulement après cette preuve RED. Prochaine étape : observer le run GREEN complet ; en cas d’échec, corriger la cause racine et synchroniser les cinq fichiers dans le même cycle.

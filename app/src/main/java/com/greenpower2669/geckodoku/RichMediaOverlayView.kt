@@ -156,7 +156,10 @@ class RichMediaOverlayView @JvmOverloads constructor(
 
         videoView.play(
             assetPath = assetPath,
-            muted = muted,
+            muted =
+                muted ||
+                    GeckoMediaAudioPolicy
+                        .mustMute(kind),
             onCompletion = {
                 finishActive(true)
             },
@@ -169,7 +172,15 @@ class RichMediaOverlayView @JvmOverloads constructor(
     }
 
     fun setMuted(value: Boolean) {
-        videoView.setMuted(value)
+        val forcedMute =
+            activeKind?.let {
+                GeckoMediaAudioPolicy
+                    .mustMute(it)
+            } ?: false
+
+        videoView.setMuted(
+            value || forcedMute
+        )
     }
 
     fun stop() {

@@ -1382,3 +1382,18 @@ Le cycle RED ajoute uniquement les tests de contrat GECKO-033 et l’activation 
 
 
 GECKO-033 RED complémentaire : l’ordre `IntroGeckoGD.mp4` → `Gecko_Intro.mp4` est désormais verrouillé par test avant code.
+
+
+## GECKO-033 — implémentation GREEN poussée, CI à confirmer
+Le code GECKO-033 est branché sur `gecko-033-identity-prof-life` :
+- callbacks réels début/fin de parole Pierre sur Piper/Sherpa et fallback Android ;
+- `ProfParle.mp4` réservé à la parole, toujours muet, stoppé dès le silence et relancé depuis t=0 si Pierre reparle ; si une parole dépasse ~30 s, le clip repart tant que la voix est active ;
+- `Prof_actions.mp4` reste l’animation action/idle et partage une seule vue vidéo avec arbitrage exclusif ;
+- intro `IntroGeckoGD.mp4` → `Gecko_Intro.mp4`, skip interrompant la chaîne sans recréer la grille ;
+- vidéos Gecko forcées muettes au niveau du player, indépendamment de FX ;
+- `IconGeckoGD.png` affiché en médaillon rond superposé à gauche du titre et micro-animé par transform, sans participer au layout ;
+- launcher Android adaptatif utilisant le blob exact de `IconGeckoGD.png` ;
+- Prof ambiant : aide à 90 s d’inactivité, proposition de sauvegarde à 10 min ou 25 actions, catalogue de 100 banalités à 4–8 min avec anti-répétition ;
+- version cible `0.10.9-dev`.
+
+La mission reste en validation CI : aucune déclaration GREEN finale avant tests + APK + AAB.

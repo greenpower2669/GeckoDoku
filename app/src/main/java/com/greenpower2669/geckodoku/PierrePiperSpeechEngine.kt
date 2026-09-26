@@ -38,6 +38,8 @@ class PierrePiperSpeechEngine(
 
     fun speak(
         text: String,
+        onStarted:
+            (() -> Unit)? = null,
         onCompletion:
             (() -> Unit)? = null,
         onFailure:
@@ -84,6 +86,16 @@ class PierrePiperSpeechEngine(
                             audio.samples,
                         sampleRate =
                             audio.sampleRate,
+                        onStarted = {
+                            if (
+                                !released &&
+                                token ==
+                                    generation
+                            ) {
+                                onStarted
+                                    ?.invoke()
+                            }
+                        },
                         onCompletion = {
                             if (
                                 !released &&

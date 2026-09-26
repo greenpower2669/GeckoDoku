@@ -20,6 +20,7 @@ class VoicePcmPlayer {
     fun play(
         samples: FloatArray,
         sampleRate: Int,
+        onStarted: (() -> Unit)? = null,
         onCompletion: (() -> Unit)? = null
     ) {
         stop()
@@ -97,6 +98,7 @@ class VoicePcmPlayer {
 
         track = next
         next.play()
+        onStarted?.invoke()
 
         val durationMs =
             (

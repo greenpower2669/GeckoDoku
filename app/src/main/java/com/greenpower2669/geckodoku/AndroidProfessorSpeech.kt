@@ -26,11 +26,17 @@ class AndroidProfessorSpeech(
     private var pendingText:
         String? = null
 
+    private var pendingStarted:
+        (() -> Unit)? = null
+
     private var pendingCompletion:
         (() -> Unit)? = null
 
     private var currentUtterance:
         String? = null
+
+    private var currentStarted:
+        (() -> Unit)? = null
 
     private var currentCompletion:
         (() -> Unit)? = null
@@ -55,7 +61,11 @@ class AndroidProfessorSpeech(
                 UtteranceProgressListener() {
                 override fun onStart(
                     utteranceId: String?
-                ) = Unit
+                ) {
+                    started(
+                        utteranceId
+                    )
+                }
 
                 override fun onDone(
                     utteranceId: String?
@@ -90,6 +100,8 @@ class AndroidProfessorSpeech(
 
     fun speak(
         text: String,
+        onStarted:
+            (() -> Unit)? = null,
         onCompletion:
             (() -> Unit)? = null
     ): Boolean {
@@ -99,6 +111,8 @@ class AndroidProfessorSpeech(
 
         if (!ready) {
             pendingText = text
+            pendingStarted =
+                onStarted
             pendingCompletion =
                 onCompletion
             return true
@@ -117,20 +131,35 @@ class AndroidProfessorSpeech(
                     .toString()
 
         currentUtterance = id
+        currentStarted =
+            onStarted
         currentCompletion =
             onCompletion
 
-        return engine.speak(
-            text,
-            TextToSpeech.QUEUE_FLUSH,
-            null,
-            id
-        ) ==
+        val result =
+            engine.speak(
+                text,
+                TextToSpeech.QUEUE_FLUSH,
+                null,
+                id
+            )
+
+        if (
+            result !=
             TextToSpeech.SUCCESS
+        ) {
+            currentUtterance = null
+            currentStarted = null
+            currentCompletion = null
+            return false
+        }
+
+        return true
     }
 
     fun stop() {
         pendingText = null
+        pendingStarted = null
         pendingCompletion = null
 
         stopCurrent(
@@ -224,10 +253,14 @@ class AndroidProfessorSpeech(
         val text =
             pendingText
 
+        val startedCallback =
+            pendingStarted
+
         val completion =
             pendingCompletion
 
         pendingText = null
+        pendingStarted = null
         pendingCompletion = null
 
         if (
@@ -235,9 +268,34 @@ class AndroidProfessorSpeech(
             !text.isNullOrBlank()
         ) {
             speak(
-                text,
-                completion
+                text = text,
+                onStarted =
+                    startedCallback,
+                onCompletion =
+                    completion
             )
+        }
+    }
+
+    private fun started(
+        utteranceId: String?
+    ) {
+        if (
+            utteranceId == null ||
+            utteranceId !=
+                currentUtterance
+        ) {
+            return
+        }
+
+        handler.post {
+            if (
+                utteranceId ==
+                currentUtterance
+            ) {
+                currentStarted
+                    ?.invoke()
+            }
         }
     }
 
@@ -253,6 +311,7 @@ class AndroidProfessorSpeech(
         }
 
         currentUtterance = null
+        currentStarted = null
 
         val completion =
             currentCompletion
@@ -269,10 +328,12 @@ class AndroidProfessorSpeech(
     ) {
         if (clearPending) {
             pendingText = null
+            pendingStarted = null
             pendingCompletion = null
         }
 
         currentUtterance = null
+        currentStarted = null
         currentCompletion = null
         tts?.stop()
     }

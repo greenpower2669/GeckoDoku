@@ -4,6 +4,12 @@ object AssetMediaCatalog {
     const val GECKO_PORTRAIT =
         "gecko/Gecko_tr.png"
 
+    const val GECKO_ICON =
+        "gecko/IconGeckoGD.png"
+
+    const val GECKO_INTRO_GD =
+        "gecko/IntroGeckoGD.mp4"
+
     const val GECKO_INTRO =
         "gecko/Gecko_Intro.mp4"
 
@@ -24,6 +30,9 @@ object AssetMediaCatalog {
 
     const val PROF_LONG_ACTIONS =
         "prof/Prof_actions.mp4"
+
+    const val PROF_SPEECH =
+        "prof/ProfParle.mp4"
 
     const val KEY_THRESHOLD = 0.22f
     const val KEY_SOFTNESS = 0.18f

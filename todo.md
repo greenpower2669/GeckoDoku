@@ -470,3 +470,19 @@
 - [ ] Implémenter uniquement après RED confirmé.
 
 - [x] RED complété : ordre IntroGeckoGD → Gecko_Intro explicitement testé avant implémentation.
+
+
+## GECKO-033 — passage GREEN
+- [x] RED #73/#74 observé pour la bonne raison.
+- [x] Implémenter politiques assets/audio/intro/titre/Prof ambiant/100 phrases.
+- [x] Brancher le cycle réel Pierre → `ProfParle.mp4` avec arrêt au silence.
+- [x] Préserver et arbitrer séparément `Prof_actions.mp4`.
+- [x] Brancher `IntroGeckoGD.mp4` → `Gecko_Intro.mp4`.
+- [x] Forcer toutes les animations Gecko au silence.
+- [x] Ajouter le médaillon overlay à gauche du titre sans changer le layout de grille.
+- [x] Préparer le launcher adaptatif depuis le blob exact `IconGeckoGD.png`.
+- [x] Passer la cible à `v0.10.9-dev`.
+- [ ] CI complète GREEN tests + APK + AAB.
+- [ ] Revue finale de branche.
+- [ ] Fusion vers main uniquement après GREEN.
+- [ ] Validation téléphone Fab.
