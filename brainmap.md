@@ -838,3 +838,38 @@ RichMediaSettings.enabled
     └── NE DOIVENT PAS forcer OFF
 
 Symptôme téléphone : Anim observé OFF sans origine connue → tracer lecture/écriture + lifecycle.
+<!-- GECKO-033-AUDIT-PROF-SPEECH-GECKO-FLOW-2026-09-26 -->
+## GECKO-033 — chronologie affinée
+
+Action joueur (tap/double tap)
+→ clearProfessorSession
+→ closeProfessorBubble
+→ professorSpeech.stop
+→ mutation GameEngine
+→ playCellAnimation
+   ├── APPEARANCE
+   │   └── EOF → maybePlayGeckoLongAction (45% / 45 s)
+   └── DISAPPEARANCE
+       └── fin, pas d'action longue
+
+playCellAnimation
+├── overlay busy → SKIP définitif, aucun retry
+└── accepté → MediaPlayer prepareAsync → premières frames éventuellement plus tard
+
+Étape Prof
+→ showProfessorBubble
+→ ProfessorSpeech.speak
+→ apply step
+→ GECKO_APPEARANCE sur richMediaOverlay
+→ pas de stop voix dans playCellAnimation
+
+Prof visuel
+professorVideo unique
+├── ACTION = Prof_actions
+└── SPEECH = ProfParle muet
+
+Pierre audio
+→ VoicePcmPlayer
+→ AudioTrack séparé
+
+Donc : arrivée tardive animation Gecko ≠ remplacement différé ; rechercher d'abord stop explicite voix ou préemption par nouveau speak.

@@ -1586,3 +1586,115 @@ Au prochain audit :
 5. confirmer qu’aucun chemin d’erreur média n’écrit `enabled = false`.
 
 Ne pas corriger avant la fin de la série de tests téléphone de Fab.
+<!-- GECKO-033-AUDIT-PROF-SPEECH-GECKO-FLOW-2026-09-26 -->
+# GECKO-033 — AUDIT PROF / PAROLE / FLUX VIDÉO GECKO — SANS CODE
+**Demandeur / date :** Fab, 26/09/2026  
+**Statut :** audit statique approfondi uniquement. Aucun correctif runtime dans ce cycle.
+
+## Retour téléphone affiné
+Fab précise que l'animation Gecko sur sa case **finit bien par apparaître**. Il faut donc distinguer :
+- `Gecko_apparition.mp4` ;
+- `Gecko_disparition.mp4` ;
+- `Gecko_actions_plusieurs.mp4` lancé éventuellement après l'apparition ;
+- le flux vidéo Prof, séparé du flux overlay Gecko.
+
+## Déduction importante : pas de file d'attente / retry overlay
+`playCellAnimation()` refuse immédiatement la vidéo si `richMediaOverlay.isBusy`.  
+`RichMediaOverlayView.play()` refuse également si `isBusy`.  
+**Aucun mécanisme de queue/retry différé n'existe.**
+
+Donc, si l'animation Gecko finit par être visible :
+- elle n'a pas été « remise plus tard » après un conflit busy ;
+- elle a été acceptée lors de sa demande ;
+- le délai visible peut venir de la préparation asynchrone du `MediaPlayer` / SurfaceTexture avant les premières frames.
+
+Cela affaiblit fortement l'hypothèse « une autre vidéo remplace puis rend plus tard l'animation Gecko ».
+
+## Les trois chemins Gecko ne sont pas équivalents
+### 1. Apparition
+Après un Gecko confirmé par le joueur :
+`handlePlayerGeckoConfirmed()`
+→ `playCellAnimation(GECKO_APPEARANCE)`
+→ à la FIN naturelle seulement : `maybePlayGeckoLongAction(cell)`.
+
+Donc une seconde animation longue peut éventuellement suivre l'apparition.
+
+### 2. Disparition
+Après retrait manuel :
+`handleDoubleTap()`
+→ `clearProfessorSession()`
+→ `professorSpeech.stop()`
+→ `engine.toggleGecko()`
+→ si GECKO_REMOVED : `playCellAnimation(GECKO_DISAPPEARANCE)`.
+
+**Aucune action longue n'est chaînée après la disparition.**
+
+### 3. Action longue Gecko
+`Gecko_actions_plusieurs.mp4` n'est éligible qu'après la FIN de l'apparition d'un Gecko confirmé par le joueur, avec politique actuelle 45 % et cooldown 45 s.
+Elle n'est pas appelée après une disparition.
+Elle n'est pas appelée par le chemin `applyProfessorHint()`.
+
+## Corrélation très forte avec la coupure de Pierre sur action joueur
+Les taps manuels commencent par `clearProfessorSession()`.  
+Celui-ci ferme la bulle via `closeProfessorBubble()`, qui appelle explicitement `professorSpeech.stop()`.
+
+Chronologie possible et cohérente avec le retour Fab :
+**Pierre parle → action joueur → professorSpeech.stop() → mutation grille → préparation vidéo asynchrone → animation apparition/disparition visible un peu après.**
+
+Le fait que la vidéo arrive « après » renforce donc cette piste : la coupure de Pierre peut précéder volontairement le démarrage visuel, donnant l'impression que la vidéo l'a coupé alors que l'ordre logique est inverse.
+
+## Cas Prof qui pose lui-même un Gecko
+`applyProfessorHint()` :
+1. `showProfessorBubble(message)` → `professorSpeech.speak(message)` ;
+2. application logique ;
+3. si une cellule Gecko est posée : `playCellAnimation(GECKO_APPEARANCE)`.
+
+Ici, `playCellAnimation()` n'appelle pas `professorSpeech.stop()`.  
+La vidéo Gecko est muette et utilise `richMediaOverlay`, distinct du `professorVideo`.
+
+Si Pierre se coupe dans CE cas précis, il faut chercher :
+- une deuxième demande `ProfessorSpeech.speak()` qui préempte la première ;
+- une fermeture de bulle / `clearProfessorSession()` venant d'un autre événement ;
+- pause/lifecycle ;
+- ou comportement Android/OEM non visible dans le code statique.
+
+## Prof : conflit confirmé mais VISUEL
+`Prof_actions.mp4` et `ProfParle.mp4` partagent le même `professorVideo: ChromaKeyVideoView`.
+Le passage ACTION → SPEECH appelle `stopPlayback()` puis démarre `ProfParle.mp4`.
+C'est un arbitrage vidéo Prof volontaire.
+
+Pierre, lui, sort par :
+`ProfessorSpeech` → `PierrePiperSpeechEngine` → `VoicePcmPlayer` → `AudioTrack`.
+
+Donc la piste « même canal son » n'est pas confirmée : le code montre surtout un **lecteur vidéo Prof partagé**, alors que la voix Pierre possède son lecteur PCM séparé.
+
+## Autre source réelle de coupure : nouvelle parole
+Chaque `ProfessorSpeech.speak()` :
+- incrémente une génération ;
+- stoppe Piper courant ;
+- stoppe le fallback Android courant ;
+- puis lance la nouvelle phrase.
+
+Le fallback Android utilise `TextToSpeech.QUEUE_FLUSH`.
+Donc une nouvelle demande de parole remplace explicitement la précédente.
+
+Sources possibles : nouveau texte Prof, encouragement Pierre, banalité/aide ambiante, annonce stats.
+
+## Matrice de test téléphone à conserver
+1. Pierre parle → retrait manuel d'un Gecko → noter si la parole coupe AVANT `Gecko_disparition`.
+2. Pierre parle → confirmation manuelle d'un Gecko → noter si la parole coupe AVANT `Gecko_apparition`.
+3. Laisser `Gecko_apparition` finir → vérifier si `Gecko_actions_plusieurs` suit parfois ; ne pas confondre les deux.
+4. Prof pose lui-même un Gecko → vérifier si Pierre continue pendant `Gecko_apparition`.
+5. Prof parle → nouvelle pression Prof avant fin de phrase → vérifier si la nouvelle phrase préempte l'ancienne.
+6. `Prof_actions.mp4` tourne → Pierre commence → vérifier remplacement VISUEL par `ProfParle.mp4`, sans coupure sonore.
+7. Relever `GeckoDokuMediaTrace` autour de ces scénarios.
+
+## Audit suivant avant correction
+Ajouter si nécessaire une trace dédiée à la voix :
+- `SPEAK_REQUEST(origin=...)`
+- `SPEAK_STARTED`
+- `SPEAK_STOP(reason=...)`
+- `SPEAK_COMPLETED`
+afin de corréler exactement la coupure audio avec les événements vidéo.
+
+**Aucun code correctif avant nouvel ordre de Fab.**

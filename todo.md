@@ -553,3 +553,22 @@
 - [ ] Vérifier pause/reprise, recréation Activity et redémarrage.
 - [ ] Vérifier qu’aucune erreur/conflit vidéo ne force Anim OFF.
 - [ ] Ne pas corriger avant nouvel ordre de Fab.
+<!-- GECKO-033-AUDIT-PROF-SPEECH-GECKO-FLOW-2026-09-26 -->
+## GECKO-033 — audit Prof / animations Gecko
+- [x] Prendre en compte que l'animation Gecko finit par apparaître.
+- [x] Vérifier l'existence d'une queue/retry overlay : aucune.
+- [x] Distinguer apparition / disparition / action longue.
+- [x] Confirmer : action longue Gecko seulement après fin d'apparition joueur.
+- [x] Confirmer : disparition sans action longue.
+- [x] Confirmer : étape Prof posant Gecko = apparition sans action longue.
+- [x] Identifier arrêt explicite voix sur action joueur : clearProfessorSession → closeProfessorBubble → professorSpeech.stop.
+- [x] Identifier préemption d'une parole par un nouveau ProfessorSpeech.speak.
+- [x] Confirmer séparation audio Pierre (AudioTrack) / vidéo Gecko (MediaPlayer).
+- [x] Confirmer partage vidéo Prof_actions / ProfParle sur professorVideo.
+- [ ] Test téléphone : Pierre parle → retrait Gecko → chronologie parole/disparition.
+- [ ] Test téléphone : Pierre parle → ajout Gecko → chronologie parole/apparition/action longue éventuelle.
+- [ ] Test téléphone : Prof pose Gecko → vérifier coexistence parole + apparition.
+- [ ] Test téléphone : seconde pression Prof pendant parole → vérifier préemption par nouvelle phrase.
+- [ ] Exploiter GeckoDokuMediaTrace sur les scénarios ci-dessus.
+- [ ] Si nécessaire, ajouter plus tard logs voix avec origine et raison de stop.
+- [ ] Aucun correctif runtime avant nouvel ordre de Fab.

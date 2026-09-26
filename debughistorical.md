@@ -548,3 +548,24 @@ Prochain diagnostic :
 - tracer chargement initial + source ;
 - vérifier qu’aucun échec vidéo ne modifie ce réglage ;
 - vérifier comportement après mise à jour APK et recréation Activity.
+<!-- GECKO-033-AUDIT-PROF-SPEECH-GECKO-FLOW-2026-09-26 -->
+## 2026-09-26 — parole Prof semblant coupée au lancement des animations
+Retour initial : Pierre semble parfois se couper/se vider lorsqu'une animation démarre. Hypothèse Fab : canal son partagé.
+
+Précision ultérieure décisive : l'animation Gecko sur sa case finit bien par arriver.
+
+Audit :
+- aucun mécanisme queue/retry dans `RichMediaOverlayView` ; si busy, la demande est perdue ;
+- animation visible plus tard = demande initialement acceptée, démarrage réel possiblement retardé par `prepareAsync()` ;
+- animations Gecko forcées muettes ;
+- Pierre joue via `AudioTrack`, distinct du `MediaPlayer` vidéo ;
+- sur action manuelle, `clearProfessorSession()` coupe explicitement `ProfessorSpeech` avant la demande apparition/disparition ;
+- une nouvelle `ProfessorSpeech.speak()` coupe aussi la phrase précédente ;
+- `Prof_actions` et `ProfParle` partagent bien un player, mais ce conflit est vidéo.
+
+Particularité à ne pas mélanger :
+- apparition joueur peut déclencher ensuite une action longue Gecko ;
+- disparition ne déclenche pas d'action longue ;
+- apparition posée par le Prof ne déclenche pas d'action longue.
+
+Cause racine non encore déclarée tant que le scénario téléphone exact n'est pas corrélé aux logs.

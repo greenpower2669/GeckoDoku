@@ -457,3 +457,17 @@ Contrat :
 - OFF uniquement par action utilisateur explicite ou préférence persistée antérieure.
 
 Cause non déterminée. Ajouter au prochain audit un log de chaque lecture/écriture de `RichMediaSettings.enabled`.
+<!-- GECKO-033-AUDIT-PROF-SPEECH-GECKO-FLOW-2026-09-26 -->
+## GECKO-033 — audit parole / flux Gecko
+Nouvelle précision téléphone : les animations Gecko sur case finissent bien par apparaître.
+
+Conséquence architecturale : l'overlay Gecko ne possède aucune queue différée. Si `RichMediaOverlayView` est busy, `playCellAnimation()` abandonne immédiatement et ne retente pas. Une animation finalement visible a donc été acceptée lors de sa demande ; son décalage visuel peut provenir du `prepareAsync()` du MediaPlayer/SurfaceTexture.
+
+Chaînes distinctes :
+- confirmation joueur → apparition → seulement après EOF, action longue Gecko potentielle ;
+- retrait joueur → disparition seulement ;
+- étape Prof posant un Gecko → apparition seulement, sans action longue chaînée.
+
+Sur action manuelle, `clearProfessorSession()` → `closeProfessorBubble()` → `professorSpeech.stop()` précède la mutation et la demande vidéo. Cela peut produire exactement le ressenti « la vidéo coupe Pierre » alors que Pierre est arrêté explicitement avant son démarrage visible.
+
+Le lecteur vidéo Prof partagé ACTION/SPEECH reste distinct de l'AudioTrack de Pierre. Une nouvelle `ProfessorSpeech.speak()`, en revanche, préempte explicitement la phrase précédente.
