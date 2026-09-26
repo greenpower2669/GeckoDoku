@@ -230,3 +230,7 @@ GitHub Actions run #37 (`36212085221`) sur `f555102094cda6a21ed7812dae247748329e
 Le simple ordre d'ajout dans le FrameLayout ne suffit pas avec un `Button` Android, car son StateListAnimator peut modifier son Z lors des états pressés. Le host Prof neutralise désormais le Z du bouton (`stateListAnimator=null`, élévation 0 dp) et impose au PNG une élévation dédiée de 18 dp.
 
 Après insertion du portrait, puis avant chaque micro-animation, `bringToFront()` est appelé. L'animation continue d'utiliser uniquement scale/translationY ; l'élévation du portrait est réaffirmée avant animation. Aucun paramètre de layout n'est modifié.
+
+
+### Preuve CI GECKO-027
+GitHub Actions run #41 (`36212793683`) sur `df8ebb93b43cd5b5c69bcdf382c7d5b1e23b8b7c` : tests unitaires + APK + AAB réussis. Version `0.10.3-dev`. La vérification téléphone doit confirmer que la surface du bouton ne recouvre plus jamais le Prof, y compris pendant press et micro-animation.

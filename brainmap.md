@@ -415,3 +415,11 @@ professorButtonHost
 
 Résultat attendu
 └── Button jamais devant Prof, même pendant press/animation
+
+
+Build GECKO-027
+└── run #41 vert
+    ├── ProfessorUiPolicyTest
+    ├── suite existante
+    ├── APK v0.10.3-dev
+    └── AAB v0.10.3-dev

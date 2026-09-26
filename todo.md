@@ -322,5 +322,5 @@
 - [x] Donner au PNG Prof une élévation explicite de 18 dp.
 - [x] Appeler bringToFront après ajout et avant chaque micro-animation.
 - [x] Synchroniser brain/brainmap/debug/todo/ordre.
-- [ ] CI tests + APK + AAB.
-- [ ] Validation téléphone : bouton toujours derrière Prof, animé ou non.
+- [x] CI tests + APK + AAB — run #41 vert, version `0.10.3-dev`.
+- [ ] Validation téléphone : bouton toujours derrière Prof, animé ou non ; vérifier aussi l'état pressé.

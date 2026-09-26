@@ -285,3 +285,7 @@ Run #40 échoue comme prévu : `ProfessorUiPolicyTest` référence `buttonElevat
 - Prof.png : élévation 18 dp ;
 - `bringToFront()` après insertion dans le host et avant chaque micro-animation ;
 - aucune modification de taille/position du host ni de la grille.
+
+
+### GREEN GECKO-027
+Run #41 (`36212793683`) termine en succès complet. Le Button Prof a son StateListAnimator neutralisé et un Z nul ; Prof.png reçoit 18 dp d'élévation et est ramené au premier plan avant chaque animation. La CI valide le code et les tests ; le contrôle final de superposition reste visuel sur téléphone.
