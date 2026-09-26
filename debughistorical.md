@@ -646,3 +646,10 @@ Correction :
 - intro gérée par phase narrative, et non par verrou vidéo global.
 
 La disparition précédente de `Gecko_Intro.mp4` est également couverte par un enchaînement explicite via `IntroLifecyclePolicy` et callbacks de session indépendants.
+
+
+<!-- GECKO-033-INTRO-BOOT-FIX-V01010-2026-09-26 -->
+## 2026-09-26 — cause subtile Prof trop tôt au boot
+Le premier `createPuzzle(recordStart=true)` est appelé avant construction de `richMediaOverlay`. Le câblage initial avait placé `introPhase = DONE` dans `startPuzzle()` sans distinguer ce bootstrap d’une vraie nouvelle grille utilisateur.
+
+Correction : terminer l’intro dans `startPuzzle()` uniquement lorsque l’overlay existe déjà. Cette condition différencie proprement bootstrap et navigation runtime.

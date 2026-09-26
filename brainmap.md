@@ -1040,3 +1040,26 @@ IntroPhase.DONE
 
 En parallèle hors règle narrative Intro 1 :
 ProfParle + GeckoAppearance/Disappearance/LongAction = coexistence autorisée.
+
+
+<!-- GECKO-033-INTRO-BOOT-FIX-V01010-2026-09-26 -->
+## GECKO-033 — correction démarrage Intro 1 + version de test v0.10.10-dev
+Audit du câblage après commit coexistence : le `createPuzzle()` initial de `onCreate` passait par `startPuzzle()` avant création de l’overlay et pouvait remettre `introPhase` à `DONE`. Cela pouvait réautoriser le Prof avant la première intro.
+
+Correction racine :
+- la création initiale conserve `IntroPhase.FIRST` ;
+- seul un changement de grille effectué après initialisation de `richMediaOverlay` termine volontairement la séquence d’intro ;
+- le Prof reste donc inéligible/caché dès le premier frame jusqu’à la fin naturelle ou au skip d’Intro 1.
+
+La build de validation est renommée `v0.10.10-dev` / versionCode 21 pour la distinguer de la v0.10.9-dev observée sur téléphone.
+
+
+Boot :
+onCreate
+→ RichMediaSettings
+→ introPhase = FIRST
+→ createPuzzle initial (NE DOIT PAS annuler FIRST)
+→ construction UI
+→ Prof INVISIBLE
+→ Intro 1
+→ Intro 2 / Prof éligible.

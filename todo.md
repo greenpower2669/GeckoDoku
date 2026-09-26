@@ -674,3 +674,14 @@
 - [ ] Vérifier logs téléphone : Pierre START + Gecko START + Gecko COMPLETE + Pierre COMPLETE.
 - [ ] Vérifier Anim ne repasse pas OFF sans WRITE_ENABLED explicite.
 - [ ] Validation téléphone Fab avant clôture.
+
+
+<!-- GECKO-033-INTRO-BOOT-FIX-V01010-2026-09-26 -->
+## GECKO-033 — build téléphone v0.10.10-dev
+- [x] Corriger le bootstrap pour conserver IntroPhase.FIRST au premier lancement.
+- [x] Bump versionCode 21 / versionName 0.10.10-dev.
+- [x] Renommer artifacts workflow v0.10.10-dev.
+- [ ] CI finale tests + APK + AAB GREEN.
+- [ ] Télécharger APK final et test téléphone Fab.
+- [ ] Vérifier Intro 1 son + Intro 2 + Prof après Intro 1.
+- [ ] Vérifier coexistence ProfParle + animations Gecko grâce aux logs.

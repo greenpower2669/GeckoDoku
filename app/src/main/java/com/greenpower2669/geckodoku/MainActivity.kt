@@ -1041,11 +1041,11 @@ class MainActivity : Activity() {
     ) {
         if (::richMediaOverlay.isInitialized) {
             richMediaOverlay.stop()
-        }
 
-        introPhase =
-            IntroPhase.DONE
-        applyProfessorIntroVisibility()
+            introPhase =
+                IntroPhase.DONE
+            applyProfessorIntroVisibility()
+        }
 
         puzzle = nextPuzzle
 

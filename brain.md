@@ -575,3 +575,15 @@ Deuxième bloc runtime appliqué après validation du socle multi-sessions :
 - le bouton × de l’overlay privilégie une session INTRO active avant une autre animation skippable.
 
 Le moteur de grille, ses métriques et sa logique restent inchangés.
+
+
+<!-- GECKO-033-INTRO-BOOT-FIX-V01010-2026-09-26 -->
+## GECKO-033 — correction démarrage Intro 1 + version de test v0.10.10-dev
+Audit du câblage après commit coexistence : le `createPuzzle()` initial de `onCreate` passait par `startPuzzle()` avant création de l’overlay et pouvait remettre `introPhase` à `DONE`. Cela pouvait réautoriser le Prof avant la première intro.
+
+Correction racine :
+- la création initiale conserve `IntroPhase.FIRST` ;
+- seul un changement de grille effectué après initialisation de `richMediaOverlay` termine volontairement la séquence d’intro ;
+- le Prof reste donc inéligible/caché dès le premier frame jusqu’à la fin naturelle ou au skip d’Intro 1.
+
+La build de validation est renommée `v0.10.10-dev` / versionCode 21 pour la distinguer de la v0.10.9-dev observée sur téléphone.
