@@ -278,7 +278,7 @@ assets/Voix_encouragements.mp3 (master 14,441 s)
 GameEngine
 └── confirme le coup joueur
     └── MainActivity / événement gecko confirmé
-        └── EncourgagementSelector
+        └── EncouragementSelector
             ├── cellule nouvelle dans la tentative
             ├── hasard
             ├── anti-répétition immédiate

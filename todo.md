@@ -252,7 +252,7 @@
 - [x] Analyser le master `assets/Voix_encouragements.mp3` et mesurer sa durée : 14,441 s.
 - [x] Identifier les 13 phrases et figer les timecodes sûrs dans `ordres-de-mission.md`.
 - [ ] Découper les 13 clips sous `assets/voice/encouragements/` en conservant le master intact.
-- [ ] Ajouter EncourgagementCatalog / Selector / Player (noms finaux à confirmer lors de l'implémentation).
+- [ ] Ajouter EncouragementCatalog / Selector / Player (noms finaux à confirmer lors de l'implémentation).
 - [ ] Déclencher uniquement après un nouveau gecko correctement confirmé par le joueur.
 - [ ] Empêcher le redéclenchement sur la même cellule dans une tentative.
 - [ ] Empêcher la répétition immédiate du même clip.
