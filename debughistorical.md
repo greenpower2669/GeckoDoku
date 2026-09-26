@@ -680,3 +680,25 @@ Le callback erreur de cette même vidéo met ce flag à true de manière persist
 Conclusion de diagnostic : hypothèse forte d'un latch d'échec permanent après une première erreur vidéo. Cette hypothèse doit être confirmée par `GeckoDokuMediaTrace` / erreurs MediaPlayer avant correction.
 
 Ne pas confondre avec la priorité locale PROF_SPEECH > PROF_ACTION, qui reste correcte mais n'explique pas le cas PNG.
+
+
+<!-- GECKO-033-ACTIVE-MISSION-RESET-SPRITES-2026-09-26 -->
+## 2026-09-26 — validation intros et réinitialisation de la mission active
+Retour téléphone Fab sur v0.10.10-dev :
+- Intro 1 : parfaite ;
+- audio Intro 1 : correct ;
+- Intro 2 : parfaite ;
+- enchaînement Intro 1 → Intro 2 : correct.
+
+Ces points sont désormais considérés VALIDÉS et GELÉS.
+
+Le problème actif devient exclusivement la famille animations/sprites vidéo, jugée « quasi KO » :
+- rectangle noir derrière vidéo Prof ;
+- rectangle noir derrière vidéo Gecko de grille ;
+- animation ProfParle non fiable ;
+- animations Gecko de gameplay non fiables ;
+- composition multi-surfaces/chroma/Z-order à auditer.
+
+Pour réduire le bruit documentaire, les fichiers vivants `ordres-de-mission.md`, `brain.md`, `brainmap.md` et `todo.md` ont été réinitialisés autour de cet état courant. `debughistorical.md` conserve l'historique détaillé antérieur.
+
+Aucun code de production modifié dans ce cycle.
