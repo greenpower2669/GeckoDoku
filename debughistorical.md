@@ -465,3 +465,7 @@ Risque identifié : laisser `ProfParle.mp4` continuer ~30 s après une phrase co
 Décision Fab : la vidéo de parole suit le **cycle réel de la voix**. Elle démarre avec la parole, peut être réutilisée tant que la parole reste active, mais doit être stoppée dès la fin/annulation/échec de la synthèse. Une parole ultérieure relance le média depuis t=0.
 
 Cette décision remplace explicitement l’ancienne formulation qui laissait la vidéo aller à sa fin naturelle après la fin de la voix.
+
+
+## GECKO-033 — RED attendu
+Les tests de contrat sont volontairement ajoutés avant les classes de production. Échec attendu : références GECKO-033 non résolues, prouvant que les tests pincent bien le comportement nouveau avant implémentation.

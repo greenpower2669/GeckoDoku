@@ -374,3 +374,8 @@ Le contrat GECKO-033 est étendu sans modification runtime dans ce cycle.
 - fin/annulation/échec de parole → stopper la vidéo immédiatement et restaurer `Prof.png` ;
 - nouvelle parole après arrêt → relancer la vidéo depuis t=0.
 La durée nominale ~30 s du média n’est plus une durée d’affichage imposée.
+
+
+## GECKO-033 — RED TDD démarré sur branche isolée
+Branche : `gecko-033-identity-prof-life`.
+Le cycle RED ajoute uniquement les tests de contrat GECKO-033 et l’activation CI de cette branche. Les tests exigent les constantes assets, le mute Gecko, le cycle ProfParle ↔ parole réelle, l’identité du titre, le catalogue 100 phrases et les seuils du Prof ambiant avant toute implémentation.

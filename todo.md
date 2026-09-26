@@ -460,3 +460,11 @@
 - [ ] RED : vérifier que speechCancel/speechError stoppent ProfParle.
 - [ ] RED : vérifier qu’une nouvelle parole après arrêt redémarre ProfParle à t=0.
 - [ ] RED : vérifier qu’une phrase enchaînée sans arrêt ne crée pas une seconde instance.
+
+
+## GECKO-033 — exécution RED
+- [x] Créer la branche isolée `gecko-033-identity-prof-life` depuis main `b5eaf995...`.
+- [x] Ajouter le plan d’implémentation.
+- [x] Ajouter les tests RED du contrat GECKO-033.
+- [ ] Observer CI RED pour références production absentes.
+- [ ] Implémenter uniquement après RED confirmé.

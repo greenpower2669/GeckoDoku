@@ -1374,3 +1374,8 @@ Règle runtime cible :
 6. la vidéo reste muette ; seule la voix Sherpa/Piper est audible.
 
 Conséquence : l’ancienne règle « laisser ProfParle aller jusqu’à sa fin naturelle après la fin de la voix » est **remplacée** par ce contrat piloté par l’état réel de `ProfessorSpeech`/Sherpa.
+
+
+## GECKO-033 — RED TDD démarré sur branche isolée
+Branche : `gecko-033-identity-prof-life`.
+Le cycle RED ajoute uniquement les tests de contrat GECKO-033 et l’activation CI de cette branche. Les tests exigent les constantes assets, le mute Gecko, le cycle ProfParle ↔ parole réelle, l’identité du titre, le catalogue 100 phrases et les seuils du Prof ambiant avant toute implémentation.

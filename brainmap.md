@@ -721,3 +721,8 @@ ProfessorSpeech / Sherpa Pierre
 │       └── restore Prof.png
 └── next speech after stop
     └── play ProfParle from t=0
+
+
+## GECKO-033 — RED TDD démarré sur branche isolée
+Branche : `gecko-033-identity-prof-life`.
+Le cycle RED ajoute uniquement les tests de contrat GECKO-033 et l’activation CI de cette branche. Les tests exigent les constantes assets, le mute Gecko, le cycle ProfParle ↔ parole réelle, l’identité du titre, le catalogue 100 phrases et les seuils du Prof ambiant avant toute implémentation.
