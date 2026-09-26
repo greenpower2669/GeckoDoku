@@ -372,9 +372,15 @@ class RichMediaOverlayView @JvmOverloads constructor(
         val session =
             sessions.values
                 .lastOrNull {
-                    it.skippable
+                    it.skippable &&
+                        it.kind ==
+                            RichMediaKind.INTRO
                 }
-            ?: return
+                ?: sessions.values
+                    .lastOrNull {
+                        it.skippable
+                    }
+                ?: return
 
         MediaTrace.event(
             source = "Overlay",

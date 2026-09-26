@@ -140,6 +140,12 @@ class MainActivity : Activity() {
     private val richMediaScheduler =
         RichMediaScheduler()
 
+    private val introLifecyclePolicy =
+        IntroLifecyclePolicy()
+
+    private var introPhase =
+        IntroPhase.DONE
+
     private val professorUiPolicy =
         ProfessorUiPolicy()
 
@@ -201,6 +207,16 @@ class MainActivity : Activity() {
 
         richMediaSettings =
             RichMediaSettings(this)
+
+        introPhase =
+            if (
+                savedInstanceState == null &&
+                richMediaSettings.enabled
+            ) {
+                IntroPhase.FIRST
+            } else {
+                IntroPhase.DONE
+            }
 
         gameAudio =
             AssetAudioPlayer(this)
@@ -505,10 +521,22 @@ class MainActivity : Activity() {
 
                     updateAnimationButton()
 
+                    MediaTrace.event(
+                        source = "MainActivity",
+                        event = "ANIM_TOGGLE_USER",
+                        detail =
+                            "enabled=" +
+                                richMediaSettings.enabled
+                    )
+
                     if (!richMediaSettings.enabled) {
                         if (::richMediaOverlay.isInitialized) {
                             richMediaOverlay.stop()
                         }
+
+                        introPhase =
+                            IntroPhase.DONE
+                        applyProfessorIntroVisibility()
                         stopProfessorButtonVideo()
                     }
 
@@ -637,6 +665,8 @@ class MainActivity : Activity() {
 
         professorVideo =
             ChromaKeyVideoView(this).apply {
+                logicalLayer =
+                    "PROFESSOR"
                 visibility = View.INVISIBLE
                 importantForAccessibility =
                     View.IMPORTANT_FOR_ACCESSIBILITY_NO
@@ -976,6 +1006,7 @@ class MainActivity : Activity() {
         protectFromSystemBars(root)
         refreshGameUi()
         updateAnimationButton()
+        applyProfessorIntroVisibility()
         scheduleProfessorIdleAnimation()
         resetProfessorAmbientState()
         scheduleProfessorAmbientTick()
@@ -1011,6 +1042,10 @@ class MainActivity : Activity() {
         if (::richMediaOverlay.isInitialized) {
             richMediaOverlay.stop()
         }
+
+        introPhase =
+            IntroPhase.DONE
+        applyProfessorIntroVisibility()
 
         puzzle = nextPuzzle
 
@@ -2308,6 +2343,45 @@ class MainActivity : Activity() {
             .show()
     }
 
+    private fun applyProfessorIntroVisibility() {
+        if (
+            !::professorButtonHost
+                .isInitialized
+        ) {
+            return
+        }
+
+        val eligible =
+            introLifecyclePolicy
+                .professorEligible(
+                    introPhase
+                )
+
+        professorButtonHost.visibility =
+            if (eligible) {
+                View.VISIBLE
+            } else {
+                View.INVISIBLE
+            }
+
+        MediaTrace.event(
+            source = "MainActivity",
+            event =
+                "PROF_INTRO_ELIGIBILITY",
+            detail =
+                "phase=" +
+                    introPhase +
+                    " eligible=" +
+                    eligible
+        )
+
+        if (eligible) {
+            scheduleProfessorIdleAnimation()
+        } else {
+            cancelProfessorIdleAnimation()
+        }
+    }
+
     private fun positionTitleIdentity() {
         if (
             !::screenRoot.isInitialized ||
@@ -2523,17 +2597,14 @@ class MainActivity : Activity() {
             !fx.enabled ||
             professorSpeechActive ||
             professorSpeech.isBusy ||
+            !introLifecyclePolicy
+                .professorEligible(
+                    introPhase
+                ) ||
             !hasWindowFocus() ||
             engine.snapshot().complete ||
             pendingProfessorHypothesis !=
                 null
-        ) {
-            return true
-        }
-
-        if (
-            ::richMediaOverlay.isInitialized &&
-            richMediaOverlay.isBusy
         ) {
             return true
         }
@@ -2785,19 +2856,43 @@ class MainActivity : Activity() {
     }
 
     private fun playIntroIfEnabled() {
-        if (!richMediaSettings.enabled ||
+        if (
+            !richMediaSettings.enabled ||
             !::richMediaOverlay.isInitialized ||
-            richMediaOverlay.isBusy
+            richMediaOverlay
+                .hasActiveKind(
+                    RichMediaKind.INTRO
+                )
         ) {
+            if (!richMediaSettings.enabled) {
+                introPhase =
+                    IntroPhase.DONE
+                applyProfessorIntroVisibility()
+            }
             return
         }
 
+        introPhase =
+            IntroPhase.FIRST
+        applyProfessorIntroVisibility()
         playIntroStep(0)
     }
 
     private fun playIntroStep(
         index: Int
     ) {
+        val phase =
+            when (index) {
+                0 ->
+                    IntroPhase.FIRST
+
+                1 ->
+                    IntroPhase.SECOND
+
+                else ->
+                    IntroPhase.DONE
+            }
+
         MediaTrace.event(
             source = "MainActivity",
             event = "INTRO_STEP_REQUEST",
@@ -2808,56 +2903,119 @@ class MainActivity : Activity() {
             detail =
                 "index=" +
                     index +
-                    " overlayBusy=" +
+                    " phase=" +
+                    phase +
+                    " introActive=" +
                     (
                         ::richMediaOverlay
                             .isInitialized &&
                             richMediaOverlay
-                                .isBusy
+                                .hasActiveKind(
+                                    RichMediaKind
+                                        .INTRO
+                                )
                         )
         )
+
+        if (phase == IntroPhase.DONE) {
+            introPhase =
+                IntroPhase.DONE
+            applyProfessorIntroVisibility()
+            return
+        }
 
         if (
             !richMediaSettings.enabled ||
             index !in
                 IntroSequencePolicy
                     .assets.indices ||
-            richMediaOverlay.isBusy
+            richMediaOverlay
+                .hasActiveKind(
+                    RichMediaKind.INTRO
+                )
         ) {
             return
         }
 
+        introPhase =
+            phase
+        applyProfessorIntroVisibility()
+
         val accepted =
             richMediaOverlay.play(
-                kind = RichMediaKind.INTRO,
+                kind =
+                    RichMediaKind.INTRO,
                 assetPath =
                     IntroSequencePolicy
                         .assets[index],
-            muted =
-                GeckoMediaAudioPolicy
-                    .mustMute(
-                        RichMediaKind.INTRO
-                    ),
-            target = null,
-            titleText = "GeckoDoku",
-            skippable = true,
-            onFinished = {
-                MediaTrace.event(
-                    source = "MainActivity",
-                    event = "INTRO_STEP_FINISHED",
-                    assetPath =
-                        IntroSequencePolicy
-                            .assets[index],
-                    detail =
-                        "index=" +
-                            index
-                )
+                muted =
+                    introLifecyclePolicy
+                        .mustMuteIntro(
+                            phase = phase,
+                            fxEnabled =
+                                fx.enabled
+                        ),
+                target = null,
+                titleText = "GeckoDoku",
+                skippable = true,
+                onFinished = {
+                    MediaTrace.event(
+                        source =
+                            "MainActivity",
+                        event =
+                            "INTRO_STEP_FINISHED",
+                        assetPath =
+                            IntroSequencePolicy
+                                .assets[index],
+                        detail =
+                            "index=" +
+                                index +
+                                " phase=" +
+                                phase
+                    )
 
-                playIntroStep(
-                    index + 1
-                )
-            }
-        )
+                    introPhase =
+                        introLifecyclePolicy
+                            .onNaturalCompletion(
+                                phase
+                            )
+
+                    applyProfessorIntroVisibility()
+
+                    if (
+                        introPhase !=
+                        IntroPhase.DONE
+                    ) {
+                        playIntroStep(
+                            index + 1
+                        )
+                    }
+                },
+                onSkipped = {
+                    MediaTrace.event(
+                        source =
+                            "MainActivity",
+                        event =
+                            "INTRO_SEQUENCE_SKIPPED",
+                        assetPath =
+                            IntroSequencePolicy
+                                .assets[index],
+                        detail =
+                            "index=" +
+                                index +
+                                " phase=" +
+                                phase
+                    )
+
+                    introPhase =
+                        introLifecyclePolicy
+                            .onSkip(
+                                phase
+                            )
+
+                    applyProfessorIntroVisibility()
+                }
+            )
 
         MediaTrace.event(
             source = "MainActivity",
@@ -2872,7 +3030,9 @@ class MainActivity : Activity() {
                     .assets[index],
             detail =
                 "index=" +
-                    index
+                    index +
+                    " phase=" +
+                    phase
         )
     }
 
@@ -2888,7 +3048,6 @@ class MainActivity : Activity() {
 
         if (!richMediaSettings.enabled ||
             !::richMediaOverlay.isInitialized ||
-            richMediaOverlay.isBusy ||
             celebrationVisible
         ) {
             MediaTrace.event(
@@ -2902,12 +3061,17 @@ class MainActivity : Activity() {
                         " overlayInit=" +
                         ::richMediaOverlay
                             .isInitialized +
-                        " overlayBusy=" +
+                        " activeMedia=" +
                         (
-                            ::richMediaOverlay
-                                .isInitialized &&
+                            if (
+                                ::richMediaOverlay
+                                    .isInitialized
+                            ) {
                                 richMediaOverlay
-                                    .isBusy
+                                    .activeCount
+                            } else {
+                                0
+                            }
                             ) +
                         " celebration=" +
                         celebrationVisible
@@ -2996,10 +3160,6 @@ class MainActivity : Activity() {
     ) {
         if (!richMediaSettings.enabled ||
             !::richMediaOverlay.isInitialized ||
-            richMediaOverlay.isBusy ||
-            pendingProfessorHypothesis != null ||
-            (::professorBubble.isInitialized &&
-                professorBubble.visibility == View.VISIBLE) ||
             (::celebrationView.isInitialized &&
                 celebrationView.visibility == View.VISIBLE) ||
             engine.snapshot().complete
@@ -3202,6 +3362,15 @@ class MainActivity : Activity() {
     }
 
     private fun playProfessorButtonVideo(): Boolean {
+        if (
+            !introLifecyclePolicy
+                .professorEligible(
+                    introPhase
+                )
+        ) {
+            return false
+        }
+
         MediaTrace.event(
             source = "MainActivity",
             event = "PROF_ACTION_REQUEST",
@@ -3534,7 +3703,13 @@ class MainActivity : Activity() {
 
         cancelProfessorIdleAnimation()
 
-        if (!richMediaSettings.enabled) {
+        if (
+            !richMediaSettings.enabled ||
+            !introLifecyclePolicy
+                .professorEligible(
+                    introPhase
+                )
+        ) {
             return
         }
 
@@ -3758,6 +3933,10 @@ class MainActivity : Activity() {
         if (::richMediaOverlay.isInitialized) {
             richMediaOverlay.stop()
         }
+
+        introPhase =
+            IntroPhase.DONE
+        applyProfessorIntroVisibility()
 
         if (::gameAudio.isInitialized) {
             gameAudio.stopAll()

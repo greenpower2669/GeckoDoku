@@ -633,3 +633,16 @@ Correction du composant :
 - logs par couche logique.
 
 La suppression des gardes `MainActivity.richMediaOverlay.isBusy` reste une étape séparée pour limiter le rayon de changement.
+
+
+<!-- GECKO-033-COEXISTENCE-MAIN-WIRING-2026-09-26 -->
+## 2026-09-26 — retrait des verrous MainActivity
+Après passage de l’overlay en multi-sessions, plusieurs gardes `richMediaOverlay.isBusy` continuaient à reproduire artificiellement l’ancien modèle mono-vidéo au niveau de l’Activity.
+
+Correction :
+- suppression des guards busy pour Gecko de case et action longue ;
+- suppression du blocage « Prof/bulle active » sur action longue ;
+- maintien uniquement des interdictions fonctionnelles légitimes (Anim OFF, célébration, partie terminée) ;
+- intro gérée par phase narrative, et non par verrou vidéo global.
+
+La disparition précédente de `Gecko_Intro.mp4` est également couverte par un enchaînement explicite via `IntroLifecyclePolicy` et callbacks de session indépendants.

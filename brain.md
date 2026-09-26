@@ -554,3 +554,24 @@ Architecture :
 - `RichMediaSettings` trace désormais `LOAD_ENABLED` et `WRITE_ENABLED` pour diagnostiquer le passage Anim OFF inattendu.
 
 Ce lot ne câble pas encore tous les anciens gardes `isBusy` de MainActivity : leur suppression ciblée vient dans le lot suivant.
+
+
+<!-- GECKO-033-COEXISTENCE-MAIN-WIRING-2026-09-26 -->
+## GECKO-033 — câblage MainActivity coexistence + intros
+Deuxième bloc runtime appliqué après validation du socle multi-sessions :
+
+- suppression des gardes globaux `richMediaOverlay.isBusy` pour les animations Gecko de case ;
+- apparition / disparition / action longue Gecko peuvent désormais démarrer même si une autre session vidéo non-INTRO est active ;
+- les états Prof/bulle ne bloquent plus artificiellement l’action longue Gecko ;
+- les paroles ambiantes ne sont plus bloquées par n’importe quelle vidéo ; elles restent bloquées par la priorité voix et par la règle narrative Intro 1 ;
+- `IntroLifecyclePolicy` est câblée dans `MainActivity` ;
+- Intro 1 = `IntroGeckoGD.mp4`, audio embarqué audible si FX ON ;
+- fin naturelle Intro 1 → phase SECOND → `Gecko_Intro.mp4` ;
+- bouton × sur une intro = skip explicite de la séquence, sans déclencher l’intro suivante ;
+- Prof caché via `INVISIBLE` pendant Intro 1, puis éligible à partir de la phase SECOND ;
+- `Prof_actions.mp4` automatique est interdit uniquement pendant Intro 1, pas par un mutex vidéo global ;
+- arrêt lifecycle / nouvelle grille termine proprement la phase d’intro afin de ne pas laisser le Prof caché ;
+- le player Prof porte le logicalLayer `PROFESSOR` ;
+- le bouton × de l’overlay privilégie une session INTRO active avant une autre animation skippable.
+
+Le moteur de grille, ses métriques et sa logique restent inchangés.

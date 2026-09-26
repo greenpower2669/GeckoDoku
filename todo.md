@@ -658,3 +658,19 @@
 - [ ] Câbler IntroLifecyclePolicy / visibilité Prof / skip.
 - [ ] Vérifier coexistence ProfParle + Gecko apparition/disparition/action longue.
 - [ ] CI GREEN + APK/AAB.
+
+
+<!-- GECKO-033-COEXISTENCE-MAIN-WIRING-2026-09-26 -->
+## GECKO-033 — câblage coexistence
+- [x] Retirer `isBusy` comme verrou global des animations Gecko.
+- [x] Autoriser apparition/disparition/action longue Gecko avec Pierre/Prof actifs.
+- [x] Câbler Intro 1 audible si FX ON.
+- [x] Câbler Intro 1 → Intro 2 sur fin naturelle.
+- [x] Câbler × = skip explicite de la séquence d’intro.
+- [x] Cacher Prof uniquement pendant Intro 1.
+- [x] Autoriser Prof à partir de l’Intro 2.
+- [x] Protéger le bouton × pour viser prioritairement l’INTRO active.
+- [ ] Vérifier CI tests + APK + AAB sur ce câblage.
+- [ ] Vérifier logs téléphone : Pierre START + Gecko START + Gecko COMPLETE + Pierre COMPLETE.
+- [ ] Vérifier Anim ne repasse pas OFF sans WRITE_ENABLED explicite.
+- [ ] Validation téléphone Fab avant clôture.
