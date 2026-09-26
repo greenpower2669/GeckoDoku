@@ -292,11 +292,11 @@
 
 ## GECKO-025 — Gecko_tr + Prof animé
 - [x] Vérifier que `assets/gecko/Gecko_tr.png` existe déjà.
-- [ ] RED : test du chemin canonique Gecko_tr.
-- [ ] RED : test de politique Prof systématique sans hasard/cooldown.
-- [ ] Pointer AssetMediaCatalog sur Gecko_tr.png.
-- [ ] Supprimer le doublon `assets/gecko/Gecko.png`.
-- [ ] Remplacer le scheduler aléatoire Prof par une politique systématique d'éligibilité.
-- [ ] Synchroniser brain/brainmap/debug/todo/ordre dans le même cycle.
+- [x] RED : test du chemin canonique Gecko_tr — run #32.
+- [x] RED : test de politique Prof systématique sans hasard/cooldown — run #32.
+- [x] Pointer AssetMediaCatalog sur `Gecko_tr.png`.
+- [x] Supprimer le doublon `assets/gecko/Gecko.png`.
+- [x] Remplacer le scheduler aléatoire Prof par `ProfessorAnimationPolicy`, sans hasard/cooldown.
+- [x] Synchroniser brain/brainmap/debug/todo/ordre dans le même cycle.
 - [ ] CI tests + APK + AAB.
 - [ ] Validation téléphone.

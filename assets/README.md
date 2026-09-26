@@ -62,5 +62,6 @@ Le rangement des MP3 n'ajoute aucun code et ne modifie pas le comportement de la
 
 
 ## Gecko statique
-- `gecko/Gecko.png` : sprite transparent normal hors animation, dérivé de l'identité visuelle GeckoDoku existante.
+- `gecko/Gecko_tr.png` : **sprite Gecko canonique transparent** hors animation, fourni par Fab.
+- `gecko/Gecko.png` : supprimé, ancien doublon généré par erreur.
 - les MP4 Gecko restent des overlays temporaires au-dessus du rendu normal.

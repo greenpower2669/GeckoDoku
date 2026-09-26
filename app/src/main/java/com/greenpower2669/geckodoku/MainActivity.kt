@@ -95,6 +95,9 @@ class MainActivity : Activity() {
     private val richMediaScheduler =
         RichMediaScheduler()
 
+    private val professorAnimationPolicy =
+        ProfessorAnimationPolicy()
+
     private var selectedSize = 5
 
     private var selectedDifficulty =
@@ -2150,25 +2153,26 @@ class MainActivity : Activity() {
     }
 
     private fun maybePlayProfessorLongAction() {
-        if (!richMediaSettings.enabled ||
+        val celebrationVisible =
+            ::celebrationView.isInitialized &&
+                celebrationView.visibility ==
+                    View.VISIBLE
+
+        val mediaBusy =
             !::richMediaOverlay.isInitialized ||
-            richMediaOverlay.isBusy ||
-            pendingProfessorHypothesis != null ||
-            (::celebrationView.isInitialized &&
-                celebrationView.visibility == View.VISIBLE)
-        ) {
-            return
-        }
+                richMediaOverlay.isBusy
 
         val shouldPlay =
-            richMediaScheduler
-                .shouldPlayLongAction(
-                    nowMs =
-                        SystemClock.elapsedRealtime(),
-                    randomValue =
-                        Random.nextInt(100),
-                    eligible = true,
-                    busy = false
+            professorAnimationPolicy
+                .shouldAnimate(
+                    animationsEnabled =
+                        richMediaSettings.enabled,
+                    mediaBusy = mediaBusy,
+                    hypothesisPending =
+                        pendingProfessorHypothesis !=
+                            null,
+                    celebrationVisible =
+                        celebrationVisible
                 )
 
         if (!shouldPlay) {

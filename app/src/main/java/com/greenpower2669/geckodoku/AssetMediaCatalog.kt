@@ -2,7 +2,7 @@ package com.greenpower2669.geckodoku
 
 object AssetMediaCatalog {
     const val GECKO_PORTRAIT =
-        "gecko/Gecko.png"
+        "gecko/Gecko_tr.png"
 
     const val GECKO_INTRO =
         "gecko/Gecko_Intro.mp4"

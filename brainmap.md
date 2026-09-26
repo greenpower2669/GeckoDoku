@@ -312,7 +312,7 @@ assets/audio/
 
 ## GECKO-024 runtime
 GeckoBoardView
-├── Gecko.png transparent
+├── Gecko_tr.png transparent
 └── fallback procédural
 
 Case immuable
@@ -339,3 +339,20 @@ Build v0.10
     ├── APK
     └── AAB
         └── validation téléphone encore ouverte
+
+
+## GECKO-025
+GeckoBoardView
+└── AssetMediaCatalog.GECKO_PORTRAIT
+    └── assets/gecko/Gecko_tr.png (canonique)
+
+Intervention Prof
+├── texte immédiat
+├── TTS immédiat
+└── ProfessorAnimationPolicy
+    ├── Animations ON
+    ├── média libre
+    ├── pas d'hypothèse en attente
+    └── pas de célébration
+        └── Prof_actions.mp4 localisé dans le portrait
+            └── aucune probabilité / aucun cooldown

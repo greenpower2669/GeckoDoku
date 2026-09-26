@@ -229,3 +229,7 @@ Après le correctif `imagePaint`, GitHub Actions run #28 (`36209229581`) termine
 Fab signale que le bon sprite avait déjà été uploadé sous `Gecko_tr.png`. Le `Gecko.png` généré pendant GECKO-024 crée donc un conflit d'identité visuelle. Décision : Gecko_tr devient canonique et le doublon sera supprimé.
 
 Même retour : le Prof doit être davantage animé. Le scheduler partagé 12 % / 180 s n'est pas adapté à ce besoin ; l'animation Prof devient systématique à chaque intervention éligible, tout en restant locale au portrait et non bloquante.
+
+
+### TDD GECKO-025
+Run #32 : RED attendu. `AssetMediaCatalogTest` impose `gecko/Gecko_tr.png` et `ProfessorAnimationPolicyTest` échoue sur la classe absente. Le correctif introduit cette politique pure puis retire le gate aléatoire 12 % / 180 s du Prof. Le scheduler reste utilisé uniquement pour les actions Gecko occasionnelles.

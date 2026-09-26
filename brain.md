@@ -202,3 +202,9 @@ AssetAudioPlayer sépare musique et voix. Nouvelle → musique intro ; victoire 
 
 ### Preuve CI v0.10
 GitHub Actions run #28 (`36209229581`) sur `f7fd2a703913e636cddaab4f7fed4951643146de` : tests unitaires + APK + AAB réussis. Artefact `GeckoDoku-v0.10.0-dev-Android` id `10894193799`. La validation visuelle/audio sur téléphone reste requise.
+
+
+## GECKO-025 — sprite canonique et Prof systématique
+Fab confirme que `assets/gecko/Gecko_tr.png` était déjà le sprite transparent officiel. `AssetMediaCatalog.GECKO_PORTRAIT` pointe exclusivement vers ce fichier ; le petit `Gecko.png` ajouté pendant GECKO-024 est supprimé pour éliminer toute ambiguïté.
+
+L'animation du Prof n'utilise plus `RichMediaScheduler`. À chaque intervention Prof éligible, `ProfessorAnimationPolicy` autorise immédiatement `Prof_actions.mp4` dans le rectangle du portrait quand les animations sont ON, que le média n'est pas déjà occupé, qu'aucune hypothèse Prof n'attend sa seconde étape et qu'aucune célébration n'est visible. Texte et TTS restent immédiats et prioritaires.
