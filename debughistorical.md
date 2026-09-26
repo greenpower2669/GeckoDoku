@@ -356,3 +356,7 @@ Run #52 échoue uniquement parce que `ProfessorUiPolicy` ne contient pas encore 
 - audio vidéo muet ;
 - PNG restauré à EOF/erreur/stop ;
 - fallback micro-animation PNG uniquement si vidéo indisponible.
+
+
+### GREEN GECKO-030
+Run #53 (`36224509248`) : succès complet. Le build compile avec le ChromaKeyVideoView local au bouton, le callback onStarted et la restauration du PNG à EOF/erreur/stop. L'asset vidéo utilisé est toujours le blob exact `87c72def...`.

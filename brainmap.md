@@ -503,3 +503,12 @@ Pendant playback
 
 Fin / erreur / pause / Anim OFF
 └── stop vidéo → PNG restauré
+
+
+Build GECKO-030
+└── run #53 vert
+    ├── vraie vidéo Prof restaurée
+    ├── lecture complète dans le bouton
+    ├── PNG fallback
+    ├── APK v0.10.6-dev
+    └── AAB v0.10.6-dev

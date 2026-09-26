@@ -367,5 +367,5 @@
 - [x] Anim OFF / pause / destroy → stop + cleanup + PNG restauré.
 - [x] Garder micro-animation PNG uniquement comme fallback si vidéo indisponible.
 - [x] Synchroniser brain/brainmap/debug/todo/ordre.
-- [ ] CI tests + APK + AAB.
-- [ ] Validation téléphone.
+- [x] CI tests + APK + AAB — run #53 vert, version `0.10.6-dev`.
+- [ ] Validation téléphone : vérifier que les animations visibles correspondent exactement à `14126.mp4`, dans le bouton et devant lui.

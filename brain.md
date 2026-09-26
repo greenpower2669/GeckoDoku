@@ -266,3 +266,7 @@ L'investigation Git confirme que `14126.mp4` et `assets/prof/Prof_actions.mp4` s
 Le MP4 complet est restauré sans revenir à l'ancien emplacement dans la bulle. `professorButtonHost` possède maintenant un `ChromaKeyVideoView` dédié, de même rectangle que le portrait, ajouté au-dessus du Button et du PNG. Le PNG reste visible tant que MediaPlayer n'a pas réellement démarré, puis est masqué pendant le playback et restauré à EOF/erreur/stop.
 
 Le fichier joue depuis t=0 jusqu'à EOF naturel, sans découpage ni boucle, audio embarqué muet. Clic Prof et idle 2–3 s démarrent le vrai MP4 si aucune lecture n'est en cours. La bulle ouverte n'est pas une condition de blocage. Les micro-animations PNG sont conservées uniquement comme fallback si la vidéo ne peut pas être jouée.
+
+
+### Preuve CI GECKO-030
+GitHub Actions run #53 (`36224509248`) sur `09e475d897f308e68150e0228f50605f094d1f21` : tests unitaires + APK + AAB réussis. Artefact `GeckoDoku-v0.10.6-dev-Android` id `10900510994`. Version `0.10.6-dev`. La validation téléphone doit confirmer le retour visuel exact des animations du MP4 fourni.
