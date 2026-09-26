@@ -155,3 +155,7 @@ UI row2 → Nouvelle | Stats | ! | ⚙️
 Pierre → canAccept → pre-roll ProfParle → frame held → speak → SPEAK_STARTED → reveal
 video fail/timeout → PNG → speak
 recorded encouragement → same visual pre-roll → audio onStarted → reveal.
+
+
+<!-- GECKO-035-V01013-CANDIDATE-2026-09-26 -->
+v0.10.13-dev → GECKO-035 candidate → CI finale → test téléphone Fab.

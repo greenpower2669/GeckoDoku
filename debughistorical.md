@@ -853,3 +853,8 @@ Le gate anti-flash est étendu avec un mode hold : première frame consommée Op
 <!-- GECKO-035-GREEN-RUNTIME-2026-09-26 -->
 ## 2026-09-26 — GECKO-035 runtime câblé
 Le démarrage antérieur (voix puis vidéo) est remplacé pour les nouvelles demandes MainActivity par un pré-roll de ProfParle. Le fallback est volontairement un échec visuel seulement. Aucune callback vidéo n'appelle ProfessorSpeech.stop().
+
+
+<!-- GECKO-035-V01013-CANDIDATE-2026-09-26 -->
+## 2026-09-26 — candidate GECKO-035
+#108 RED attendu. Étapes intermédiaires et #114 GREEN complet avant bump. Candidate v0.10.13-dev code 24 préparée pour CI finale.

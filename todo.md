@@ -175,3 +175,15 @@ Aucun ordre de mission actif actuellement.
 - [ ] CI GREEN runtime.
 - [ ] Bump v0.10.13-dev.
 - [ ] Test téléphone.
+
+
+<!-- GECKO-035-V01013-CANDIDATE-2026-09-26 -->
+## Candidate v0.10.13-dev
+- [x] #108 RED attendu.
+- [x] #114 GREEN runtime.
+- [x] versionCode 24 / versionName 0.10.13-dev.
+- [ ] CI finale versionnée GREEN.
+- [ ] Test téléphone : synchro Pierre/ProfParle.
+- [ ] Test téléphone : panne vidéo n'empêche jamais Pierre.
+- [ ] Test téléphone : ! / ⚙️ / journal.
+- [ ] Test téléphone : grille toujours immuable.

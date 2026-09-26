@@ -283,3 +283,8 @@ ChromaKeyVideoView peut maintenant préparer une frame fraîche, la garder cach�
 <!-- GECKO-035-GREEN-RUNTIME-2026-09-26 -->
 ## GREEN étape 5 — runtime/UI
 MainActivity câble désormais pré-roll caché → frame tenue → demande voix → reveal au SPEAK_STARTED. Timeout/erreur repassent sur Prof.png et lancent quand même la voix. ! utilise les 100 phrases en QUICK_TALK. ⚙️ contient Son/Animations/Journal ; les anciens boutons Son/Anim quittent la barre. Journal consultable, sélectionnable, copiable et vidable. Encouragement enregistré anime aussi ProfParle et nettoie le visuel sur erreur audio.
+
+
+<!-- GECKO-035-V01013-CANDIDATE-2026-09-26 -->
+## Candidate téléphone v0.10.13-dev
+Après GREEN #114 du runtime GECKO-035 : versionCode 24 / versionName 0.10.13-dev. CI finale versionnée requise avant livraison.

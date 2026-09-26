@@ -569,3 +569,8 @@ La première frame de ProfParle peut être rendue hors écran puis tenue en paus
 <!-- GECKO-035-GREEN-RUNTIME-2026-09-26 -->
 ## GECKO-035 runtime
 Toutes les demandes Pierre de MainActivity passent par un wrapper visuel commun. Le média est préparé avant la voix, mais n'a aucun pouvoir de blocage : erreur ou timeout → PNG + voix. Le bouton ! est non préemptif. Les réglages Son/Animations sont regroupés sous ⚙️ avec accès au journal média.
+
+
+<!-- GECKO-035-V01013-CANDIDATE-2026-09-26 -->
+## Référence candidate GECKO-035
+v0.10.13-dev porte le pré-roll ProfParle avant voix, fallback PNG sans punir Pierre, ! quick talk, ⚙️ Son/Animations/Journal et journal média persistant.
