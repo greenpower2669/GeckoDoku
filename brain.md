@@ -579,3 +579,89 @@ v0.10.13-dev porte le pré-roll ProfParle avant voix, fallback PNG sans punir Pi
 <!-- GECKO-035-CI115-GREEN-2026-09-26 -->
 ## Preuve technique GECKO-035
 Run #115 GREEN complet pour v0.10.13-dev. Cette preuve valide la cohérence logicielle/build ; la synchro perceptuelle, l'ergonomie ⚙️/! et les scénarios de panne vidéo restent à valider sur téléphone par Fab.
+
+
+<!-- GECKO-035-CONSOLIDATED-2026-09-27 -->
+# GECKO-035 — PIERRE PRIORITAIRE / RÉGLAGES / JOURNAL MÉDIA
+
+État logiciel consolidé après CI #115 GREEN sur v0.10.13-dev (versionCode 24).
+
+## Pierre reste prioritaire sur la vidéo
+Principe durable :
+
+**Pierre parle toujours. ProfParle l'accompagne si possible, mais la vidéo ne commande jamais la voix.**
+
+Le flux de parole est désormais conçu ainsi :
+- vérifier que la requête de parole est admissible ;
+- préparer `ProfParle.mp4` caché ;
+- attendre une première frame réellement rendue ;
+- tenir cette frame cachée ;
+- lancer Pierre ;
+- au vrai `SPEAK_STARTED`, révéler la frame tenue et reprendre la vidéo ;
+- en cas d'erreur vidéo ou de timeout de préparation, conserver `Prof.png` et lancer quand même Pierre.
+
+Timeout de sécurité actuel du pré-roll : environ 900 ms.
+
+Une panne vidéo ne doit jamais :
+- appeler `ProfessorSpeech.stop()` ;
+- empêcher une phrase de Pierre ;
+- condamner les phrases suivantes ;
+- désactiver définitivement ProfParle.
+
+## Habillage de toutes les paroles du Prof
+Les origines de parole du Prof passent par le même contrat visuel :
+- PROF_BUTTON ;
+- AMBIENT ;
+- STATS ;
+- ENCOURAGEMENT ;
+- END_GAME ;
+- QUICK_TALK.
+
+Les encouragements enregistrés demandent également une animation de parole du Prof lorsque les animations sont actives.
+
+La priorité locale reste :
+`PROF_SPEECH > PROF_ACTION`.
+
+Aucune animation Gecko ne doit être stoppée par cette priorité locale.
+
+## Bouton !
+Le bouton `!` permet de faire parler volontairement le Prof avec les 100 phrases de `PierreSmallTalk`.
+
+Règles durables :
+- sélection avec anti-répétition immédiate ;
+- origine `QUICK_TALK` ;
+- ne préempte pas sauvagement une phrase déjà active ;
+- utilise le même contrat ProfParle / fallback PNG ;
+- ne modifie pas la géométrie de la grille.
+
+## Menu ⚙️
+Les contrôles Son et Animations ont quitté la barre principale.
+
+Le menu `⚙️` regroupe :
+- Son ON/OFF ;
+- Animations ON/OFF ;
+- Journal vidéo.
+
+L'ouverture/fermeture de ce menu ne doit jamais provoquer de reflow de la grille flottante.
+
+## Journal média persistant
+Le diagnostic média conserve deux sorties :
+1. Logcat avec le tag `GeckoDokuMediaTrace` ;
+2. fichier interne persistant `geckodoku-media.log`.
+
+Le fichier :
+- est borné à environ 256 KiB ;
+- est consultable dans l'application ;
+- est sélectionnable/copiant ;
+- peut être vidé avec confirmation ;
+- ne doit jamais perturber le jeu si lecture/écriture échoue.
+
+Les événements média principaux restent traçables : PLAY_REQUEST, START, VIDEO_RENDERING_START_SIGNAL, VIDEO_FIRST_FRAME, VIDEO_VISIBLE, STOP, COMPLETE, ERROR, EXCEPTION, VIDEO_ABORT_BEFORE_FIRST_FRAME, erreurs ProfParle et événements de parole.
+
+## Preuves techniques
+Cycle GECKO-035 :
+- #108 : RED attendu sur les nouveaux contrats absents ;
+- #114 : GREEN complet après câblage runtime ;
+- #115 : GREEN complet final sur v0.10.13-dev, avec tests, APK, AAB et artifact.
+
+Cette preuve CI valide le contrat logiciel et le build. Les observations perceptuelles téléphone restent toujours l'autorité finale pour synchro audio/vidéo et rendu.
