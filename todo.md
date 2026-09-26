@@ -145,3 +145,10 @@ Aucun ordre de mission actif actuellement.
 - [x] MediaTrace Logcat + fichier.
 - [ ] Installer MediaTrace au démarrage UI.
 - [ ] Consultation/copie/clear via ⚙️.
+
+
+<!-- GECKO-035-GREEN-SPEECH-GATE-2026-09-26 -->
+## GECKO-035 étape 3
+- [x] QUICK_TALK non préemptif.
+- [x] ProfessorSpeech.canAccept.
+- [ ] Première frame tenue / release synchronisée.

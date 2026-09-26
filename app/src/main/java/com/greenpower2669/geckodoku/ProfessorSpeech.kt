@@ -50,6 +50,19 @@ class ProfessorSpeech(
             }
         }
 
+    fun canAccept(
+        origin: SpeechOrigin
+    ): Boolean =
+        enabled &&
+            requestPolicy.decide(
+                activeOrigin =
+                    activeOrigin,
+                incomingOrigin =
+                    origin
+            ) !=
+            SpeechRequestDecision
+                .REJECT_BUSY
+
     fun speak(
         text: String,
         origin: SpeechOrigin,

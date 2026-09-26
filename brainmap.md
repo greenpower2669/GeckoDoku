@@ -139,3 +139,7 @@ GECKO-035 policies → Launch / Visual / Settings / QuickTalk.
 
 <!-- GECKO-035-GREEN-LOG-2026-09-26 -->
 MediaTrace → Logcat + PersistentMediaLog(geckodoku-media.log, 256 KiB).
+
+
+<!-- GECKO-035-GREEN-SPEECH-GATE-2026-09-26 -->
+SpeechOrigin + QUICK_TALK → ProfessorSpeechRequestPolicy → canAccept avant pré-roll.

@@ -268,3 +268,8 @@ Policies pures ajoutées : priorité voix/fallback PNG, habillage de toutes les 
 <!-- GECKO-035-GREEN-LOG-2026-09-26 -->
 ## GREEN étape 2 — journal média
 MediaTrace conserve Logcat et écrit aussi dans geckodoku-media.log. Le fichier est borné à 256 KiB, lisible et vidable sans jamais affecter le jeu en cas d'erreur I/O.
+
+
+<!-- GECKO-035-GREEN-SPEECH-GATE-2026-09-26 -->
+## GREEN étape 3 — admission voix
+QUICK_TALK est une origine non préemptive. ProfessorSpeech expose canAccept(origin) afin de refuser proprement une demande basse priorité avant de préparer ProfParle.

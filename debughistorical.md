@@ -838,3 +838,8 @@ Après RED #108, ajout des policies pures avant câblage Android.
 <!-- GECKO-035-GREEN-LOG-2026-09-26 -->
 ## 2026-09-26 — journal persistant
 Ajout d'un sink fichier borné et tolérant aux erreurs en complément de Logcat.
+
+
+<!-- GECKO-035-GREEN-SPEECH-GATE-2026-09-26 -->
+## 2026-09-26 — admission voix avant vidéo
+Ajout de canAccept pour éviter qu'un média se prépare pour une parole qui serait ensuite rejetée occupée.

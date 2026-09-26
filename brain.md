@@ -554,3 +554,8 @@ La policy GECKO-035 affirme qu'une panne vidéo ne peut jamais autoriser l'arrê
 <!-- GECKO-035-GREEN-LOG-2026-09-26 -->
 ## Journal média durable
 Le diagnostic média possède deux sorties : Logcat GeckoDokuMediaTrace et fichier interne geckodoku-media.log, borné à 256 KiB. Une erreur du journal ne doit jamais perturber le jeu.
+
+
+<!-- GECKO-035-GREEN-SPEECH-GATE-2026-09-26 -->
+## Admission des paroles
+Le bouton ! utilise QUICK_TALK et ne préempte pas sauvagement une phrase active. La préparation vidéo ne doit commencer que si la requête voix est admissible.

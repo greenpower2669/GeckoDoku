@@ -5,7 +5,8 @@ enum class SpeechOrigin {
     AMBIENT,
     STATS,
     ENCOURAGEMENT,
-    END_GAME
+    END_GAME,
+    QUICK_TALK
 }
 
 enum class SpeechRequestDecision {
@@ -40,7 +41,8 @@ class ProfessorSpeechRequestPolicy {
 
             SpeechOrigin.AMBIENT,
             SpeechOrigin.STATS,
-            SpeechOrigin.ENCOURAGEMENT ->
+            SpeechOrigin.ENCOURAGEMENT,
+            SpeechOrigin.QUICK_TALK ->
                 SpeechRequestDecision.REJECT_BUSY
         }
     }
