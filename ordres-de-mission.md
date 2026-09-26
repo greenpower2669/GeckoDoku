@@ -244,3 +244,18 @@ Nouvelles preuves téléphone :
 RED ajouté :
 1. une surface chroma transparente doit choisir la composition permettant réellement l'alpha, et non le MediaOverlay opaque constaté sur téléphone ;
 2. un échec précédent de `ProfParle.mp4` ne doit jamais interdire la tentative de la phrase suivante.
+
+
+<!-- GECKO-033-PROFPARLE-RETRY-GREEN-2026-09-26 -->
+## GREEN 1 — ProfParle retry après erreur
+Le flag `professorSpeechVideoFailed` reste conservé uniquement comme information de diagnostic de la tentative précédente.
+
+Il n'est plus autorisé à bloquer une phrase future.
+Une nouvelle policy `ProfessorSpeechVideoStartPolicy` autorise le lancement selon les conditions courantes :
+- animations activées ;
+- vidéo Prof autorisée ;
+- vue prête ;
+- Pierre réellement en train de parler.
+
+Une erreur précédente n'est pas un critère de refus.
+Au démarrage réussi suivant, le flag est remis à false.

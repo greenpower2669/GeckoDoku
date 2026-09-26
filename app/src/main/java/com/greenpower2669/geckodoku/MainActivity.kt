@@ -80,6 +80,9 @@ class MainActivity : Activity() {
     private val professorSpeechVideoPolicy =
         ProfessorSpeechVideoPolicy()
 
+    private val professorSpeechVideoStartPolicy =
+        ProfessorSpeechVideoStartPolicy()
+
     private lateinit var titleView:
         TextView
 
@@ -3572,16 +3575,26 @@ class MainActivity : Activity() {
                 "mode=" +
                     professorVideoMode +
                     " speechActive=" +
-                    professorSpeechActive
+                    professorSpeechActive +
+                    " previousFailed=" +
+                    professorSpeechVideoFailed
         )
 
         if (
-            !richMediaSettings.enabled ||
-            !professorUiPolicy
-                .playVideoInButton ||
-            !::professorVideo.isInitialized ||
-            professorSpeechVideoFailed ||
-            !professorSpeechActive
+            !professorSpeechVideoStartPolicy
+                .canStart(
+                    animationsEnabled =
+                        richMediaSettings.enabled,
+                    playVideoInButton =
+                        professorUiPolicy
+                            .playVideoInButton,
+                    viewReady =
+                        ::professorVideo.isInitialized,
+                    speechActive =
+                        professorSpeechActive,
+                    previousAttemptFailed =
+                        professorSpeechVideoFailed
+                )
         ) {
             if (
                 professorVideoMode ==
@@ -3612,6 +3625,20 @@ class MainActivity : Activity() {
                     .PROF_SPEECH,
             muted = true,
             onStarted = {
+                professorSpeechVideoFailed =
+                    false
+
+                MediaTrace.event(
+                    source = "MainActivity",
+                    event =
+                        "PROF_SPEECH_VIDEO_STARTED",
+                    assetPath =
+                        AssetMediaCatalog
+                            .PROF_SPEECH,
+                    detail =
+                        "retryRecovered=true"
+                )
+
                 if (
                     professorVideoMode ==
                     ProfessorVideoMode.SPEECH &&
@@ -3645,6 +3672,18 @@ class MainActivity : Activity() {
             onError = {
                 professorSpeechVideoFailed =
                     true
+
+                MediaTrace.event(
+                    source = "MainActivity",
+                    event =
+                        "PROF_SPEECH_VIDEO_FAILED",
+                    assetPath =
+                        AssetMediaCatalog
+                            .PROF_SPEECH,
+                    detail =
+                        "willRetryNextSpeech=true"
+                )
+
                 stopProfessorSpeechVideo()
             }
         )

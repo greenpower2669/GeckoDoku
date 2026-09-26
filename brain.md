@@ -49,3 +49,14 @@ La stratégie Surface/GL doit garantir simultanément :
 Le téléphone a montré un rectangle noir avec la stratégie `setZOrderMediaOverlay(true)`. L'ancienne interdiction absolue de `setZOrderOnTop(true)` est donc retirée : elle était une hypothèse technique, pas un besoin fonctionnel.
 
 Conserver `GeckoDokuMediaTrace`.
+
+
+<!-- GECKO-033-PROFPARLE-RETRY-GREEN-2026-09-26 -->
+## Invariant durable — erreur vidéo ProfParle
+Une erreur de `ProfParle.mp4` est **locale à la tentative courante** :
+- Pierre continue via la voix ;
+- PNG fallback possible ;
+- le prochain speech peut retenter la vidéo ;
+- un succès ultérieur efface l'état d'erreur diagnostic.
+
+Jamais de latch permanent de désactivation.

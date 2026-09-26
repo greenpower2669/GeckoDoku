@@ -51,3 +51,13 @@
 - [ ] Supprimer le latch permanent ProfParle via une politique de démarrage testée.
 - [ ] Conserver coexistence multi-sessions.
 - [ ] Build + APK/AAB + validation téléphone.
+
+
+<!-- GECKO-033-PROFPARLE-RETRY-GREEN-2026-09-26 -->
+## GREEN retry ProfParle
+- [x] Ajouter ProfessorSpeechVideoStartPolicy.
+- [x] Retirer l'échec précédent des critères de blocage.
+- [x] Conserver le flag seulement pour diagnostic.
+- [x] Réinitialiser le flag au prochain START réussi.
+- [ ] Observer le prochain RED sur la stratégie de transparence.
+- [ ] Corriger le rectangle noir.

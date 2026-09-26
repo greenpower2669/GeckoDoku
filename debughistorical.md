@@ -713,3 +713,12 @@ Après passage à `setZOrderMediaOverlay(true)`, le test téléphone v0.10.10-de
 Ruling : le contrat durable est « transparence + coexistence », pas « MediaOverlay à tout prix ». Le RED exige maintenant une stratégie de composition transparente, tout en conservant les lecteurs/sessions indépendants.
 
 Deuxième RED : un `professorSpeechVideoFailed` ancien ne doit pas bloquer la phrase suivante.
+
+
+<!-- GECKO-033-PROFPARLE-RETRY-GREEN-2026-09-26 -->
+## 2026-09-26 — correction du latch ProfParle
+RED #94 : `ProfessorSpeechVideoStartPolicy` manquante.
+
+Cause corrigée : `professorSpeechVideoFailed` était utilisé comme garde persistante dans `startProfessorSpeechVideo()`. Un seul onError condamnait donc toutes les phrases suivantes.
+
+Correction : policy de démarrage fondée uniquement sur l'état courant ; ancien échec conservé pour log mais ignoré comme verrou. Le flag est réinitialisé au prochain démarrage vidéo réussi.

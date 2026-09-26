@@ -52,3 +52,15 @@ Rendu transparent
 ProfParle
 ├── erreur tentative N → PNG fallback
 └── tentative N+1 → DOIT pouvoir retenter ProfParle
+
+
+<!-- GECKO-033-PROFPARLE-RETRY-GREEN-2026-09-26 -->
+## ProfParle retry
+attempt N ERROR
+→ flag diagnostic=true
+→ PNG fallback
+→ speech N+1
+→ StartPolicy ignore l'ancien échec
+→ retry ProfParle
+→ START réussi
+→ flag diagnostic=false
