@@ -282,3 +282,9 @@
 - [x] Cleanup pause/destroy/FX OFF implémenté ; validation téléphone requise.
 - [ ] CI tests + APK + AAB.
 - [ ] Validation téléphone Fab.
+
+
+### Vérification intermédiaire GECKO-024
+- [x] Run #26 analysé : compilation bloquée uniquement par `ProfessorBubbleView.paint` inexistant.
+- [x] Corriger avec un `imagePaint` dédié, sans autre changement.
+- [ ] Refaire tests + APK + AAB après ce correctif.

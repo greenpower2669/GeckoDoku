@@ -34,6 +34,9 @@ class ProfessorBubbleView @JvmOverloads constructor(
             strokeWidth = dp(2.2f)
         }
 
+    private val imagePaint =
+        Paint(Paint.ANTI_ALIAS_FLAG)
+
     private val closeFillPaint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.rgb(38, 88, 55)
@@ -267,7 +270,7 @@ class ProfessorBubbleView @JvmOverloads constructor(
                 bitmap,
                 null,
                 portrait,
-                paint
+                imagePaint
             )
         }
 

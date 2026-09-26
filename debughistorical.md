@@ -215,3 +215,7 @@ Le test RED run #25 échoue exactement sur les deux classes absentes attendues. 
 
 ### PNG Gecko statique
 `assets/gecko/Gecko.png` est un raster transparent léger dérivé du Gecko vectoriel/procédural déjà présent dans l'application. Il devient le sprite normal de la grille ; le rendu procédural reste le fallback si l'asset ne peut pas être lu.
+
+
+### Échec compilation run #26 — portrait Prof
+Le premier GREEN a atteint la compilation Kotlin puis s'est arrêté sur `ProfessorBubbleView.kt` : `Unresolved reference 'paint'`. Cause racine : le nouveau rendu bitmap du portrait utilisait un nom de Paint qui n'existait pas dans cette View. Correction minimale : ajout d'un `imagePaint` dédié et usage exclusif pour `drawBitmap`. Aucun changement de logique ou de géométrie.
