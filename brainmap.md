@@ -131,3 +131,7 @@ GECKO-035 RED
 ├── ProfessorQuickTalkPolicy
 ├── SettingsMenuPolicy
 └── PersistentMediaLog
+
+
+<!-- GECKO-035-GREEN-POLICIES-2026-09-26 -->
+GECKO-035 policies → Launch / Visual / Settings / QuickTalk.

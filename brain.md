@@ -544,3 +544,8 @@ Ces comportements sont désormais des invariants de non-régression au même tit
 <!-- GECKO-035-RED-2026-09-26 -->
 ## Garde-fou en cours GECKO-035
 La priorité durable est déjà définie : Pierre est fonctionnel, la vidéo est décorative. Le cycle TDD doit empêcher toute future dépendance où une panne vidéo pourrait couper ou condamner la voix.
+
+
+<!-- GECKO-035-GREEN-POLICIES-2026-09-26 -->
+## Contrat Pierre prioritaire
+La policy GECKO-035 affirme qu'une panne vidéo ne peut jamais autoriser l'arrêt de Pierre. Timeout de pré-roll prévu : 900 ms, puis voix avec PNG.

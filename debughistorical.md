@@ -828,3 +828,8 @@ Run #104 : SUCCESS complet après le correctif première frame + board flottante
 <!-- GECKO-035-RED-2026-09-26 -->
 ## 2026-09-26 — GECKO-035 RED
 Avant production, ouverture d'un RED sur priorité voix, habillage de toutes les origines, bouton !, menu ⚙️ et journal persistant. L'ancien verrou `previousAttemptFailed` reste explicitement interdit.
+
+
+<!-- GECKO-035-GREEN-POLICIES-2026-09-26 -->
+## 2026-09-26 — GECKO-035 policies
+Après RED #108, ajout des policies pures avant câblage Android.

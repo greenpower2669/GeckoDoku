@@ -258,3 +258,8 @@ Tests de contrat ajoutés avant production :
 - ⚙️ contient Son / Animations / Journal média sans reflow ;
 - ! choisit parmi les 100 phrases avec anti-répétition ;
 - journal persistant lisible, borné et vidable.
+
+
+<!-- GECKO-035-GREEN-POLICIES-2026-09-26 -->
+## GREEN étape 1 — policies
+Policies pures ajoutées : priorité voix/fallback PNG, habillage de toutes les paroles, contenu ⚙️ et sélection ! sans reflow.

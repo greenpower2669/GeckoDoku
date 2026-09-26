@@ -126,3 +126,13 @@ Aucun ordre de mission actif actuellement.
 - [ ] Ajouter journal persistant consultable/vidable.
 - [ ] Synchroniser les 5 fichiers au GREEN.
 - [ ] CI GREEN + APK/AAB.
+
+
+<!-- GECKO-035-GREEN-POLICIES-2026-09-26 -->
+## GECKO-035 étape 1
+- [x] ProfessorSpeechLaunchPolicy.
+- [x] ProfessorSpeechVisualPolicy.
+- [x] SettingsMenuPolicy.
+- [x] ProfessorQuickTalkPolicy.
+- [ ] PersistentMediaLog / MediaTrace.
+- [ ] Câblage voix/vidéo/UI.
