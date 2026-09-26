@@ -114,3 +114,11 @@ vidéo non-intro
 → glDrawArrays
 → firstFrameRendered
 → alpha 1
+
+
+<!-- GECKO-034-V01012-CANDIDATE-2026-09-26 -->
+v0.10.12-dev
+├── first-frame gate
+├── board flottante immuable
+├── intros inchangées
+└── validation téléphone Fab

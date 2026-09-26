@@ -818,3 +818,8 @@ Décision : tester séparément le gate de frame et la géométrie de grille ava
 RED #103 : échec attendu uniquement sur FirstFrameVisibilityGate / BoardGeometryPolicy absents.
 
 Correction : gate de frame fraîche réellement dessinée OpenGL, abort avant révélation, masks/portrait synchronisés ; grille réelle sortie du LinearLayout weight=1 vers couche flottante screenRoot avec ancre de réservation et géométrie figée par fenêtre.
+
+
+<!-- GECKO-034-V01012-CANDIDATE-2026-09-26 -->
+## 2026-09-26 — preuve GREEN GECKO-034
+Run #104 : SUCCESS complet après le correctif première frame + board flottante. Tests, assembleDebug, bundleDebug et upload artifact réussis.

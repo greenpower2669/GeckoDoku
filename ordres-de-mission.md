@@ -136,3 +136,12 @@ RED :
 - la vraie GeckoBoardView sort du LinearLayout pondéré ;
 - un boardAnchor transparent réserve l'espace ;
 - BoardGeometryPolicy fige le rectangle dans la même fenêtre et réancre seulement sur resize/insets.
+
+
+<!-- GECKO-034-V01012-CANDIDATE-2026-09-26 -->
+## Candidate téléphone v0.10.12-dev
+Preuves :
+- #103 RED attendu sur les deux nouvelles policies ;
+- #104 GREEN complet : tests, APK, AAB et artifact.
+
+La candidate téléphone GECKO-034 est versionCode 23 / versionName 0.10.12-dev.

@@ -519,3 +519,10 @@ L'espace de layout peut conserver une ancre, mais la vue de grille réelle doit 
 La vraie grille est une couche flottante de screenRoot. Le LinearLayout ne contient plus que son anchor de réservation. Son rectangle est figé tant que la fenêtre ne change pas.
 
 Les vidéos non-intro sont révélées par alpha après draw OpenGL d'une frame fraîche ; prepared/start seuls ne suffisent jamais.
+
+
+<!-- GECKO-034-V01012-CANDIDATE-2026-09-26 -->
+## Référence candidate GECKO-034
+v0.10.12-dev conserve les invariants validés antérieurs et ajoute uniquement :
+- gate de première frame pour médias non-intro ;
+- grille réelle flottante/figée par fenêtre.

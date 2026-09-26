@@ -97,3 +97,14 @@ Aucun ordre de mission actif actuellement.
 - [ ] APK/AAB.
 - [ ] Validation téléphone flash noir.
 - [ ] Validation téléphone géométrie grille.
+
+
+<!-- GECKO-034-V01012-CANDIDATE-2026-09-26 -->
+## Candidate v0.10.12-dev
+- [x] #103 RED attendu.
+- [x] #104 GREEN complet.
+- [x] versionCode 23.
+- [x] versionName 0.10.12-dev.
+- [ ] CI finale versionnée GREEN.
+- [ ] Test téléphone : aucun flash noir.
+- [ ] Test téléphone : grille immobile malgré textes/overlays.
