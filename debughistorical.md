@@ -442,3 +442,17 @@ Fab a uploadé sur `main` :
 Risque identifié : confusion entre `ProfParle.mp4` et `Prof_actions.mp4`, ou redémarrage de la vidéo de parole à chaque phrase. Décision figée : `ProfParle.mp4` accompagne uniquement la parole de Pierre et, si elle est déjà active pendant sa durée ~30 s, la nouvelle phrase réutilise la lecture courante au lieu de repartir de zéro.
 
 Aucun code n'a été modifié dans ce cycle ; il s'agit uniquement d'une préparation de mission et de passation.
+
+
+<!-- GECKO-033-ADDENDUM-FAB-2026-09-26 -->
+## 2026-09-26 — GECKO-033 addendum : risques et décisions
+Nouvelles décisions Fab, documentaires uniquement :
+1. **Risque dérive d’identité** : launcher Android et visuel in-app pourraient diverger. Décision : une seule source `IconGeckoGD.png`; le visuel in-app est un médaillon rond à gauche du titre, micro-animé localement, jamais par `IntroGeckoGD.mp4`.
+2. **Risque audio indésirable** : les vidéos Gecko pouvaient historiquement suivre FX. Nouvelle décision prioritaire : tout Gecko animé est muet au player. Les musiques dédiées restent séparées.
+3. **Risque confusion Prof** : `Prof_actions.mp4` et `ProfParle.mp4` ne doivent jamais être mélangés. ProfParle accompagne uniquement la parole Pierre et réutilise sa lecture si active.
+4. **Risque voix trop bavarde** : les interventions spontanées sont basse priorité, avec cooldown, anti-répétition et blocage pendant contextes critiques.
+5. **Risque information scientifique fausse** : ne pas attribuer l’adhérence des geckos à l’effet Casimir ; utiliser van der Waals + setae/spatulae.
+6. **Risque sauvegarde intrusive** : Pierre peut seulement proposer une sauvegarde, jamais la déclencher sans action utilisateur.
+7. **Risque régression géométrique** : médaillon, vidéo ProfParle et intros sont overlays/transforms ; aucune mesure de grille ne doit changer.
+
+Aucun bug n’est déclaré corrigé par ce commit : il s’agit d’un verrouillage de contrat avant RED TDD.

@@ -672,3 +672,38 @@ ProfessorSpeech / Pierre sid 1
 
 Prof_actions.mp4
 └── reste réservé aux actions générales du Prof
+
+
+<!-- GECKO-033-ADDENDUM-FAB-2026-09-26 -->
+## GECKO-033 — cible enrichie (non codée)
+Identité
+├── assets/gecko/IconGeckoGD.png
+│   ├── launcher Android APK/AAB
+│   └── médaillon rond à gauche du titre
+│       ├── micro-animation locale
+│       ├── jamais IntroGeckoGD.mp4
+│       └── zéro reflow / grille immuable
+│
+Audio Gecko
+├── vidéos Gecko = volume 0 systématique
+└── musiques jeu/intro/victoire = flux séparés
+│
+Pierre / ProfessorSpeech sid=1
+├── parole utile / stats / encouragement
+│   └── ProfParle.mp4 juste avant audio
+│       ├── déjà actif → réutiliser
+│       ├── terminé → restart t=0
+│       ├── aucune seconde instance
+│       └── vidéo muette
+├── Prof_actions.mp4 = général/idle, séparé
+└── parole spontanée basse priorité
+    ├── idle long → proposer bouton Prof
+    ├── partie longue → proposer sauvegarde
+    ├── check-in joueur
+    └── banalités Gecko
+        ├── catalogue 100
+        ├── anti-répétition
+        └── cooldown variable
+│
+Intro
+└── IntroGeckoGD.mp4 → Gecko_Intro.mp4 → jeu déjà prêt

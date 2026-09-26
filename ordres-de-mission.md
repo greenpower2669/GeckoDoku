@@ -1133,3 +1133,229 @@ Ne jamais confondre ni substituer les deux assets.
 - assets manquants = fallback propre ;
 - fichiers FAB Copilot synchronisés avec le code dans le même commit lors de l'implémentation ;
 - tests + APK/AAB verts avant fusion.
+
+
+<!-- GECKO-033-ADDENDUM-FAB-2026-09-26 -->
+# GECKO-033 — ADDENDUM FAB : IDENTITÉ, AUDIO MUET DES GECKOS, PROF VIVANT ET 100 RÉPLIQUES
+**Demandeur / date :** Fab, 26/09/2026  
+**Statut :** conception/mission synchronisée uniquement. **Aucun code applicatif modifié dans ce cycle.**
+
+## A. Contrat de synchronisation visuelle de l’icône
+`assets/gecko/IconGeckoGD.png` reste l’unique source graphique de référence pour les deux usages :
+1. **launcher Android** : générer les ressources mipmap/adaptive icon nécessaires à l’APK/AAB à partir de cette source ;
+2. **dans l’application** : afficher la même identité graphique **à gauche du titre GeckoDoku**, dans un petit médaillon rond/détouré de type fenêtre florale.
+
+Règles du médaillon :
+- aspect rond, propre et détouré ;
+- animation légère locale autorisée (respiration, très faible rotation/oscillation ou éclat discret) ;
+- **ne jamais utiliser `IntroGeckoGD.mp4` pour animer ce médaillon** ;
+- animation par transform/alpha seulement, sans reflow ;
+- aucune modification du calcul, de la taille ou de la position de la grille ;
+- launcher et médaillon doivent rester visuellement synchronisés car dérivés de la même source `IconGeckoGD.png`.
+
+## B. Son des animations Gecko
+Nouvelle décision Fab qui remplace la règle historique « son vidéo selon FX » pour les animations Gecko :
+- **toute animation vidéo où un Gecko s’anime est muette** ;
+- couper le son embarqué des vidéos Gecko au niveau du player, sans modifier/réencoder les fichiers source ;
+- cela concerne au minimum les apparitions, disparitions et actions Gecko, ainsi que les séquences Gecko utilisées comme animation visuelle ;
+- la musique générale du jeu, la musique d’ouverture et la musique de victoire restent des flux audio séparés et ne sont pas supprimées par cette règle ;
+- l’état FX ne doit jamais réactiver le son embarqué d’une animation Gecko devenue contractuellement muette.
+
+Objectif : conserver le visuel mignon sans la bande-son jugée gênante.
+
+## C. ProfParle.mp4 synchronisé avec Pierre — sans confusion avec Prof_actions
+Contrat impératif :
+- `assets/prof/ProfParle.mp4` = **animation exclusive de parole de Pierre** ;
+- `assets/prof/Prof_actions.mp4` = **animation générale/idle/action du Prof** ;
+- jamais de substitution implicite entre les deux.
+
+Quand une parole Pierre démarre réellement :
+1. demander l’affichage de `ProfParle.mp4` juste avant le démarrage audio ;
+2. afficher la vidéo dans le host visuel du Prof, devant le bouton et hors bulle ;
+3. vidéo **toujours muette** ; la voix audible vient de Piper/Sherpa-ONNX UPMC Medium, Pierre `sid=1` ;
+4. si `ProfParle.mp4` est déjà en cours, **réutiliser la lecture courante**, sans restart et sans seconde instance ;
+5. si la lecture est terminée, une nouvelle parole peut repartir de t=0 ;
+6. si le média échoue, la parole Pierre continue et `Prof.png` demeure le fallback ;
+7. la bulle pédagogique et la grille ne changent jamais de géométrie à cause de cette vidéo.
+
+Le contrôleur de parole doit être indépendant du contrôleur `Prof_actions.mp4` mais partager une politique de priorité empêchant deux vidéos Prof superposées.
+
+## D. Intro
+Chaîne officielle :
+`IntroGeckoGD.mp4` → `Gecko_Intro.mp4` → jeu déjà prêt derrière.
+
+- `IntroGeckoGD.mp4` est uniquement une intro plein écran/overlay ; il ne sert jamais à animer l’icône près du titre.
+- conserver le skip accessible ;
+- Anim OFF saute les intros ;
+- aucune intro ne recrée la grille ni ne modifie son layout ;
+- ne pas renommer, déplacer ni réencoder les nouveaux assets.
+
+## E. Prof vivant : interventions contextuelles
+Pierre peut parler sans clic direct du joueur, mais sans devenir envahissant.
+
+### E1. Inactivité
+Après une période d’inactivité suffisamment longue pendant une partie active :
+- Pierre peut demander si le joueur souhaite de l’aide ;
+- il rappelle explicitement qu’il peut **appuyer sur le bouton Prof** pour obtenir une aide ;
+- une seule proposition par épisode d’inactivité ;
+- toute action du joueur réarme le mécanisme après un nouveau délai ;
+- ne jamais lancer ce rappel pendant intro, victoire, dialogue, chargement, sauvegarde, parole en cours ou étape Prof critique.
+
+Valeur initiale de test recommandée : **90 s sans coup**, constante réglable après validation téléphone.
+
+### E2. Partie longue / sauvegarde
+Sur une partie devenue longue :
+- Pierre peut proposer de la sauvegarder dans le journal ;
+- ne jamais sauvegarder automatiquement ;
+- ne proposer qu’une fois par tentative tant que le contexte n’a pas changé ;
+- ne pas interrompre une déduction ou une célébration.
+
+Valeur initiale de test recommandée : **10 min de partie active ou 25 actions joueur**, constante réglable.
+
+### E3. Prendre des nouvelles
+Pierre peut occasionnellement demander au joueur comment il va ou commenter calmement la partie.
+- pas de répétition immédiate ;
+- pas de parole spontanée pendant une autre parole ;
+- priorité toujours inférieure aux messages logiques, stats, victoire et aide explicite.
+
+### E4. Banalités Gecko
+Prévoir un catalogue statique de **100 répliques** ci-dessous.
+Sélection :
+- aléatoire avec anti-répétition immédiate ;
+- cooldown long et variable ;
+- aucune banalité si le joueur vient d’appuyer sur Prof ou si une information utile doit être dite ;
+- ces phrases sont du décor vivant et ne modifient jamais la partie.
+
+Valeur initiale de test recommandée : **4 à 8 minutes entre deux banalités spontanées**, réinitialisée après toute parole Pierre.
+
+## F. 100 répliques officielles de Pierre
+001. « Parfois, la meilleure façon de voir une solution est simplement de regarder la grille autrement. »
+002. « Un gecko ne se presse pas pour tenir au mur. Nous pouvons faire pareil avec cette grille. »
+003. « Une case après l’autre. Les grandes énigmes aiment les petits pas. »
+004. « Je reste là. Pas besoin de se presser. »
+005. « Une pause peut être une technique de résolution tout à fait respectable. »
+006. « Regarder longtemps n’est pas perdre du temps quand on cherche un détail. »
+007. « Les grilles ont parfois l’air muettes, puis soudain elles deviennent très bavardes. »
+008. « Je préfère une déduction lente et sûre à trois coups joués au hasard. »
+009. « Il y a quelque chose d’apaisant dans une grille qui se clarifie progressivement. »
+010. « Le calme est souvent un excellent outil logique. »
+011. « Un bon raisonnement n’a pas besoin de faire beaucoup de bruit. »
+012. « Le prochain indice est peut-être déjà sous vos yeux. »
+013. « Une grille difficile n’est pas une grille hostile. Elle demande seulement une autre manière de regarder. »
+014. « Les erreurs aiment la précipitation. Les geckos, beaucoup moins. »
+015. « On peut rester immobile et pourtant avancer dans sa tête. »
+016. « Il n’y a aucune honte à revenir sur une zone déjà observée. »
+017. « Une bonne déduction ressemble souvent à une évidence… une fois qu’on l’a trouvée. »
+018. « Je crois beaucoup aux secondes lectures. »
+019. « Parfois, la solution commence exactement là où l’on avait cessé de regarder. »
+020. « Nous avons tout notre temps. Enfin… le gecko sur le mur, lui, surveille peut-être déjà le prochain moustique. »
+021. « Vous devez aimer les geckos pour passer autant de temps à les chercher. »
+022. « Un gecko posé sur un mur donne toujours l’impression de connaître un passage secret. »
+023. « Je pourrais regarder un gecko chasser près d’une lampe pendant des heures. »
+024. « Il y a quelque chose de très sérieux dans la façon dont un gecko fixe un insecte. »
+025. « Un gecko immobile peut soudain devenir extraordinairement rapide. Une grille fait parfois la même chose. »
+026. « Le gecko a trouvé sa case. À nous de trouver les autres. »
+027. « Je soupçonne les geckos d’être meilleurs au Sudoku qu’ils ne veulent bien l’avouer. »
+028. « Si un gecko vous regarde, faites comme si vous aviez parfaitement compris la grille. »
+029. « Un gecko qui grimpe au plafond manque franchement de respect à la gravité. »
+030. « Je me demande si les geckos comptent les humains pour s’endormir. »
+031. « Le soir, certains comptent les moutons. Moi, je compterais volontiers les geckos. »
+032. « Un petit gecko sur un grand mur : voilà quelqu’un qui ne doute pas de son échelle. »
+033. « Quand un gecko s’arrête net, j’ai toujours l’impression qu’il vient de résoudre quelque chose. »
+034. « Près d’une lampe, un gecko et un papillon de nuit peuvent transformer un mur en documentaire animalier. »
+035. « Une seule patte bien placée peut parfois suffire à garder l’équilibre. Une seule bonne déduction aussi. »
+036. « Le gecko n’a pas besoin d’une échelle. C’est presque de la triche. »
+037. « J’aime bien l’idée qu’un gecko puisse considérer un plafond comme un simple deuxième sol. »
+038. « Si la grille avait des murs, le gecko les escaladerait probablement. »
+039. « Les geckos ont une manière très personnelle de rappeler que le haut et le bas sont des conventions. »
+040. « Je crois que cette grille gagnerait beaucoup à avoir un vrai gecko posé dans un coin. Mais restons raisonnables. »
+041. « Les pattes des geckos portent des structures microscopiques appelées setae. »
+042. « À l’extrémité des setae, des structures encore plus petites augmentent énormément la surface de contact. »
+043. « Ces extrémités minuscules sont souvent appelées spatules ou spatulae. »
+044. « L’adhérence sèche des geckos repose principalement sur des interactions de van der Waals. »
+045. « Le gecko n’utilise donc ni ventouse ni colle pour tenir sur une vitre propre. »
+046. « Ce qui paraît magique à notre échelle devient très physique quand on descend vers l’échelle nanométrique. »
+047. « Les forces de van der Waals sont faibles individuellement, mais leur multitude peut produire une adhérence remarquable. »
+048. « Le système adhésif du gecko fonctionne parce qu’un très grand nombre de petits contacts travaillent ensemble. »
+049. « Pour se détacher, le gecko change notamment l’angle de ses structures adhésives, un peu comme lorsqu’on décolle un ruban. »
+050. « L’adhérence des geckos est directionnelle : la façon dont la patte est orientée compte. »
+051. « Les chercheurs étudient les geckos pour concevoir des adhésifs secs inspirés du vivant. »
+052. « On appelle cela du biomimétisme : observer le vivant pour imaginer de nouvelles solutions techniques. »
+053. « Le pied d’un gecko est un très bel exemple de structure hiérarchique, du visible jusqu’au nanométrique. »
+054. « Ce n’est pas une force mystérieuse qui colle le gecko au mur, mais énormément de minuscules interactions bien organisées. »
+055. « Quand des millions de contacts faibles coopèrent, le résultat peut devenir étonnamment fort. »
+056. « Les geckos nous rappellent qu’à petite échelle, la physique peut devenir contre-intuitive. »
+057. « Une surface qui semble parfaitement lisse pour nous possède encore beaucoup de détails à l’échelle d’un gecko. »
+058. « Les pattes du gecko maximisent le contact avec la surface plutôt que de produire une colle. »
+059. « La rapidité avec laquelle un gecko attache puis détache ses pattes est presque aussi fascinante que son adhérence. »
+060. « Science et geckos font plutôt bon ménage, vous ne trouvez pas ? »
+061. « Je me demande combien de chercheurs ont commencé une carrière entière simplement parce qu’un gecko refusait de tomber. »
+062. « Le gecko est un excellent professeur de physique : il fait la démonstration avant de donner l’explication. »
+063. « Une patte de gecko, c’est beaucoup de finesse pour résoudre un problème très simple : ne pas tomber. »
+064. « Les meilleures inventions humaines commencent parfois par quelqu’un qui regarde attentivement un animal faire quelque chose d’impossible en apparence. »
+065. « Je trouve rassurant que la physique puisse être aussi élégante sur le bout des doigts… ou plutôt des orteils. »
+066. « Un gecko ne connaît probablement pas l’expression « forces de van der Waals ». Heureusement, elles fonctionnent quand même. »
+067. « Voilà une belle leçon : comprendre un phénomène n’est pas nécessaire pour en profiter. Mais c’est encore plus amusant quand on le comprend. »
+068. « Les geckos savent exploiter la matière à une échelle où notre intuition quotidienne devient assez mauvaise. »
+069. « Chaque fois que je vois un gecko sur une vitre, j’ai envie d’imaginer tout ce qui se passe sous chacune de ses pattes. »
+070. « On parle souvent de haute technologie. Les geckos pratiquent la nanotechnologie depuis bien avant nous. »
+071. « Comment allez-vous ? La grille ne vous traite pas trop sévèrement ? »
+072. « Je passe simplement prendre de vos nouvelles. Continuez à votre rythme. »
+073. « Tout va bien de votre côté ? Je reste disponible si vous voulez un coup de main. »
+074. « Vous avez déjà bien avancé. Gardez votre rythme. »
+075. « Je vous laisse réfléchir, mais je ne suis jamais très loin. »
+076. « Je vois que vous prenez le temps d’observer. C’est souvent une bonne stratégie. »
+077. « Ne vous laissez pas intimider par les cases encore vides. »
+078. « Vous pouvez très bien ne rien jouer pendant un moment et réfléchir. C’est toujours jouer. »
+079. « J’espère que cette grille vous amuse autant qu’elle vous résiste. »
+080. « Il y a encore du chemin, mais il est déjà plus court qu’au début. »
+081. « Chaque gecko placé correctement change un peu toute la carte. »
+082. « Je garde un œil sur la grille pendant que vous gardez un œil sur les geckos. »
+083. « Vous avancez peut-être plus que vous ne le pensez. »
+084. « Si vous sentez que vous tournez en rond, changez simplement de ligne, de colonne ou de zone. »
+085. « Une grille longue peut devenir une petite histoire. Celle-ci a déjà quelques chapitres. »
+086. « Le plus agréable, c’est souvent l’instant où plusieurs déductions s’enchaînent d’un seul coup. »
+087. « Je vous promets de ne pas révéler la solution pendant que vous réfléchissez. »
+088. « Je suis un professeur très patient. C’est pratique : je suis dans le téléphone. »
+089. « Le gecko près du titre semble confiant. Je propose de lui faire confiance. »
+090. « Encore quelques observations et cette grille pourrait bien commencer à céder. »
+091. « Je me demande si un gecko choisirait toujours la case la plus chaude. »
+092. « Un mur de garage, une lumière du soir et un gecko en chasse : il n’en faut parfois pas davantage pour faire un bon spectacle. »
+093. « Quand un gecko bondit sur un papillon de nuit puis se raccroche, on comprend vite pourquoi ils sont si difficiles à quitter des yeux. »
+094. « Certains regardent les oiseaux. D’autres les étoiles. Les geckos ont aussi leurs passionnés. »
+095. « J’aime beaucoup leur mélange de tranquillité et de vitesse soudaine. »
+096. « Un gecko peut rester parfaitement immobile juste avant une action fulgurante. C’est une assez bonne métaphore pour la réflexion. »
+097. « Il faut une certaine élégance pour passer la soirée la tête en bas sans en faire toute une histoire. »
+098. « Je me demande si les geckos trouvent nos sols terriblement limités. »
+099. « Un gecko dans un garage doit avoir une opinion très précise sur l’éclairage nocturne. »
+100. « Je crois qu’un papillon de nuit n’apprécierait pas autant que nous cette conversation sur les geckos. »
+
+## G. Précision scientifique à respecter
+Ne pas faire dire à Pierre que l’adhérence du gecko est directement « l’effet Casimir ». Le contrat scientifique retenu est : structures hiérarchiques de type setae/spatulae + très grande surface de contact + interactions de **van der Waals** comme mécanisme principal d’adhérence sèche. Les formulations de la banque ci-dessus suivent cette règle.
+
+## H. RED TDD à préparer avant implémentation
+Avant tout code de GECKO-033, écrire des tests RED couvrant au minimum :
+- même source `IconGeckoGD.png` contractualisée pour launcher + médaillon in-app ;
+- médaillon à gauche du titre sans changement de métrique/grille ;
+- médaillon animé localement sans `IntroGeckoGD.mp4` ;
+- toutes animations Gecko contractuellement muettes ;
+- `ProfParle.mp4` demandé avant parole Pierre ;
+- réutilisation de la lecture ProfParle déjà active ;
+- aucune seconde instance ProfParle ;
+- `Prof_actions.mp4` distinct de `ProfParle.mp4` ;
+- ordre intro `IntroGeckoGD.mp4` puis `Gecko_Intro.mp4` ;
+- idle help : proposition unique + rappel du bouton Prof ;
+- partie longue : proposition de sauvegarde sans sauvegarde automatique ;
+- catalogue contenant exactement 100 banalités ;
+- anti-répétition des banalités ;
+- aucune parole spontanée pendant contexte bloquant ;
+- fallback média : logique, voix et grille intactes.
+
+## I. Critères d’acceptation
+GECKO-033 ne sera déclarée terminée qu’après :
+- RED observé pour la bonne raison ;
+- implémentation GREEN ;
+- synchronisation `ordres-de-mission.md`, `brain.md`, `brainmap.md`, `debughistorical.md`, `todo.md` dans le même commit de code ;
+- CI tests + APK + AAB verte ;
+- APK/AAB correctement nommés avec l’icône GeckoDoku ;
+- validation téléphone par Fab de l’icône, du médaillon, des deux intros, de la voix Pierre + ProfParle, du silence des animations Gecko et du comportement non envahissant des interventions spontanées.

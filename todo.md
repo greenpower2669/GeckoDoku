@@ -427,3 +427,24 @@
 - [ ] Tests de non-régression grille / Prof / intro / fallback.
 - [ ] Synchroniser les 4 fichiers vivants avec le code dans le même commit.
 - [ ] CI APK/AAB avant fusion.
+
+
+<!-- GECKO-033-ADDENDUM-FAB-2026-09-26 -->
+## GECKO-033 — addendum Fab à intégrer au RED
+- [x] Documenter `IconGeckoGD.png` comme source unique launcher + médaillon in-app.
+- [x] Documenter médaillon rond à gauche du titre, micro-animé localement, jamais via `IntroGeckoGD.mp4`.
+- [x] Documenter animations Gecko muettes, musiques dédiées séparées.
+- [x] Documenter synchronisation `ProfParle.mp4` ↔ démarrage réel parole Pierre sid=1.
+- [x] Documenter réutilisation ProfParle active + interdiction de seconde instance.
+- [x] Préserver séparation `Prof_actions.mp4` / `ProfParle.mp4`.
+- [x] Documenter ordre intro `IntroGeckoGD.mp4` → `Gecko_Intro.mp4`.
+- [x] Ajouter contrat aide après inactivité + rappel bouton Prof.
+- [x] Ajouter contrat proposition de sauvegarde sur partie longue, sans action automatique.
+- [x] Ajouter contrat check-in spontané non envahissant.
+- [x] Ajouter exactement 100 banalités Gecko dans l’ordre de mission.
+- [x] Verrouiller référence scientifique van der Waals / setae / spatulae.
+- [ ] Écrire RED TDD des nouveaux contrats ci-dessus avant code.
+- [ ] Implémenter après RED observé.
+- [ ] Synchroniser les 5 fichiers vivants dans le même commit que le code.
+- [ ] CI tests + APK + AAB verte.
+- [ ] Validation téléphone Fab.

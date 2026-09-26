@@ -351,3 +351,16 @@ Trois assets uploadés par Fab sont désormais contractualisés sans changement 
 
 Important : `Prof_actions.mp4` reste l'animation générale du Prof. `ProfParle.mp4` est exclusivement l'animation de parole.
 Aucun code n'a été modifié dans le cycle de préparation GECKO-033.
+
+
+<!-- GECKO-033-ADDENDUM-FAB-2026-09-26 -->
+## GECKO-033 — addendum Fab, identité + Prof vivant (non codé)
+Le contrat GECKO-033 est étendu sans modification runtime dans ce cycle.
+
+- `IconGeckoGD.png` est l’unique source d’identité pour **launcher Android** et **médaillon rond à gauche du titre**. Le médaillon peut avoir une micro-animation locale mais ne doit jamais utiliser `IntroGeckoGD.mp4` ni affecter la grille.
+- Toute vidéo d’animation Gecko devient **muette au player** ; les MP3/musiques du jeu restent séparés.
+- `ProfParle.mp4` est exclusivement synchronisé au démarrage réel de la parole de Pierre, muet, réutilisé s’il tourne déjà. `Prof_actions.mp4` reste le canal général/idle du Prof.
+- Pierre peut intervenir contextuellement : aide après inactivité, proposition de sauvegarde sur partie longue, prise de nouvelles, banalités Gecko.
+- La source de vérité des banalités est la banque **exactement 100 répliques** ajoutée à `ordres-de-mission.md`, avec anti-répétition et cooldown.
+- Référence scientifique des phrases : adhérence sèche des geckos principalement par forces de van der Waals via setae/spatulae ; ne pas présenter l’effet Casimir comme mécanisme d’adhérence.
+- Tout reste **à implémenter** après RED TDD. Aucun code applicatif n’est modifié par ce commit documentaire.
