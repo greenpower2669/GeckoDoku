@@ -1674,3 +1674,8 @@ Correctif :
 CI #208 RED : MainActivity.kt unresolved reference shouldApply dans playGomokuProfessorTurn.
 Cause : insertion textuelle ancrée sur le premier bloc gomokuProfessorThinking/professorUsed au lieu du bloc showGomokuProfessorAdvice.
 Correction : retirer l'incrément du tour adversaire automatique et l'insérer après le calcul de shouldApply dans la fonction de conseil.
+
+<!-- GECKO-041-V013-CI209-GREEN-NAME-BUG-2026-09-28 -->
+CI #209 : tests/build/APK/AAB/upload GREEN.
+Anomalie post-build : l'artifact s'appelait encore GeckoDoku-v0.12.0-dev-Android car build.yml codait 0.12 en dur.
+Correctif workflow : lecture automatique de versionName puis nommage dynamique des trois sorties.

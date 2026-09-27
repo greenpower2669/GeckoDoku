@@ -15,10 +15,10 @@ Version cible : 0.13.0-dev / code 33.
 - [x] Test de non-adoucissement de la persona.
 
 ## Validation technique
-- [ ] Tests unitaires 0.13 GREEN. (CI #208 rouge corrigée : shouldApply mal placé)
-- [ ] CI GitHub Actions GREEN.
-- [ ] APK 0.13.0-dev produit.
-- [ ] AAB 0.13.0-dev produit.
+- [x] Tests unitaires 0.13 GREEN (CI #209).
+- [x] CI code 0.13 GREEN (CI #209).
+- [ ] APK 0.13.0-dev produit avec nom correct (workflow corrigé, revalidation en cours).
+- [ ] AAB 0.13.0-dev produit avec nom correct (workflow corrigé, revalidation en cours).
 
 ## Validation téléphone Fab
 - [ ] Classic centré/agrandi.

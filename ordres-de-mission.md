@@ -333,3 +333,8 @@ Implémentation de cette passe :
 - Hall of Fame présenté par mode puis difficulté ;
 - Prof Gecko teigneux en Gomoku à toutes les difficultés, **Découverte comprise** ;
 - tests et CI 0.13 avant validation téléphone.
+
+<!-- GECKO-041-V013-ARTIFACT-NAMING-2026-09-28 -->
+### Correctif packaging 0.13
+La CI #209 a validé tests + build, mais l'artefact était encore nommé 0.12 à cause d'un nom figé dans build.yml.
+Le workflow doit désormais dériver automatiquement le nom APK/AAB/artefact depuis versionName afin que la candidate 0.13 soit identifiable sans ambiguïté.

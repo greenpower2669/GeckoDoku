@@ -2814,3 +2814,6 @@ Décisions :
 
 <!-- GECKO-041-V013-COMPILE-FIX-2026-09-28 -->
 0.13 compile fix : assistancePoints ne doit être incrémenté que dans showGomokuProfessorAdvice, où shouldApply existe. Le tour automatique jaune du Prof est un adversaire, pas une aide demandée par le joueur.
+
+<!-- GECKO-041-V013-WORKFLOW-NAMING-2026-09-28 -->
+CI #209 GREEN sur le code 0.13. Défaut de packaging détecté après build : build.yml conservait des noms 0.12 codés en dur. Correction : APP_VERSION est dérivé de app/build.gradle.kts puis réutilisé pour APK, AAB et artifact.

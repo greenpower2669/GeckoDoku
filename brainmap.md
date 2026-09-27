@@ -1316,3 +1316,6 @@ b72f149 (stars/Hall/profile) → #205 GREEN
 <!-- GECKO-041-V013-FIX-MAP-2026-09-28 -->
 Gomoku auto turn (Prof jaune) → aucune assistance.
 Gomoku advice/long press demandé → assistancePoints selon ADVICE/DIRECT_MOVE.
+
+<!-- GECKO-041-V013-WORKFLOW-MAP-2026-09-28 -->
+app/build.gradle.kts versionName → Resolve app version → GITHUB_ENV APP_VERSION → nom APK + nom AAB + nom artifact.
