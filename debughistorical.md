@@ -1181,3 +1181,29 @@ Correction :
 
 Audit avant correction : 5 occurrences de `speakWithProfessorVisual(` dans MainActivity (appel pédagogique, ambient défectueux, living conforme, définition helper, stats défectueux). Après factorisation, les appels runtime se réduisent au pédagogique + chemin simple commun ; la définition helper reste unique.
 
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-CI156-GREEN-2026-09-27 -->
+## 2026-09-27 — issue intemporelle GREEN #156
+
+Résultat :
+- branche : `gecko-038-sudoku-mode` ;
+- HEAD de départ : `e854a6d8096a5b16227f38e0d3f998075e9e5fe6` ;
+- RED : `defaf7692d1b12a09001b3411fcb3e7d3ce5bbe6`, CI #155 failure attendue ;
+- code corrigé : `2935bd8566d32650758937b1ece1693f2b5f5bd2` ;
+- CI #156 : GREEN complet ;
+- artifact Android produit : `GeckoDoku-v0.11.0-dev-Android` ;
+- digest artifact : `sha256:85ed88767ce41cc5adf842d50cea5e8621801dc9f67fc758a4120d1cdbc6b4eb`.
+
+Audit final :
+A. `showProfessorBubble()/PROF_BUTTON` : conforme, pédagogique persistante.
+A. `speakLivingProfessor()/QUICK_TALK` : conforme via helper simple.
+A. `speakLivingProfessor()/AMBIENT 309` : conforme via helper simple.
+A. `speakLivingProfessor()/ENCOURAGEMENT` : conforme via helper simple.
+A. réactions d'erreur Gecko/Sudoku : conformes via helper simple.
+A. `RETURN_AFTER_PAUSE` : conforme via helper simple.
+A. `END_GAME` Sudoku : conforme via helper simple.
+D corrigé. `speakProfessorAmbient()/AMBIENT` : aide + Sauver désormais dans la bulle.
+D corrigé. `announcePlayerStats()/STATS` : narration désormais dans la bulle.
+C. Les autres `status.text` audités sont des états UI non parlés ou des libellés courts, légitimes.
+
+Aucun quatrième chemin de parole sans bulle n'a été identifié dans l'architecture runtime auditée.
+

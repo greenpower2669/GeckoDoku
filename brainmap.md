@@ -712,3 +712,27 @@ fermer si token encore courant
 
 `showProfessorBubble()/PROF_BUTTON` reste le chemin pédagogique distinct.
 
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-CI156-GREEN-2026-09-27 -->
+# Audit final GREEN
+
+```text
+PROF_BUTTON pédagogique
+    → showProfessorBubble
+    → bulle persistante
+    → speakWithProfessorVisual
+    → ProfessorSpeech
+
+Toutes les autres paroles du Prof
+    → speakSimpleProfessorBubble
+    → même texte bulle/voix
+    → status court
+    → SpeechOrigin conservée
+    → speakWithProfessorVisual
+    → ProfessorSpeech
+    → vraie fin
+    → +1 s
+    → fermeture tokenisée
+```
+
+Aucun événement métier n'appelle directement `ProfessorSpeech.speak()`.
+

@@ -1734,3 +1734,22 @@ Création de `ProfessorSimpleSpeechCoordinator` : il définit le contrat pur d'u
 
 Le Prof pédagogique `showProfessorBubble()` reste séparé, persistant et en `PROF_BUTTON`.
 
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-CI156-GREEN-2026-09-27 -->
+## Validation technique finale de l'invariant dialogue Prof
+
+CI #156 : GREEN complet sur le commit code `2935bd8566d32650758937b1ece1693f2b5f5bd2`.
+Le workflow a produit tests, APK et AAB avec succès.
+
+Audit runtime final de `MainActivity.kt` :
+- `showProfessorBubble()` → parole pédagogique `PROF_BUTTON`, bulle persistante, conforme ;
+- `speakSimpleProfessorBubble()` → unique chemin de parole simple avec bulle synchronisée ;
+- `speakLivingProfessor()` → délègue au chemin simple pour QUICK_TALK, AMBIENT 309, ENCOURAGEMENT, END_GAME et réactions contextuelles ;
+- `speakProfessorAmbient()` → délègue au chemin simple avec `SpeechOrigin.AMBIENT` ;
+- `announcePlayerStats()` → délègue au chemin simple avec `SpeechOrigin.STATS` ;
+- `professorSpeech.speak()` n'est appelé que dans `speakWithProfessorVisual()`, jamais directement par les événements métier.
+
+Invariant permanent confirmé :
+**aucun chemin runtime connu ne fait désormais parler Pierre sans afficher le même texte dans `ProfessorBubbleView`.**
+
+La validation perceptuelle finale reste le téléphone de Fab.
+

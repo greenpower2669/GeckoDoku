@@ -1,26 +1,40 @@
 # ISSUE INTEMPORELLE — SYNCHRONISATION PIERRE ↔ BULLE PROF
 
-STATUT : CORRECTIF CODE APPLIQUÉ — ATTENTE CI GREEN.
+STATUT : **TECHNIQUEMENT GREEN — VALIDATION TÉLÉPHONE FAB EN ATTENTE**
 
-BRANCHE : `gecko-038-sudoku-mode`
-HEAD DE DÉPART : `e854a6d8096a5b16227f38e0d3f998075e9e5fe6`
-RED : commit `defaf7692d1b12a09001b3411fcb3e7d3ce5bbe6`, CI #155 failure attendue.
+BRANCHE :
+`gecko-038-sudoku-mode`
 
-Correction appliquée :
-- abstraction pure `ProfessorSimpleSpeechCoordinator` ;
-- chemin commun `speakSimpleProfessorBubble()` ;
-- AMBIENT fixe corrigé ;
-- STATS corrigé ;
-- moteur 309 factorisé vers le même chemin ;
-- refus tardif protégé ;
-- Prof pédagogique inchangé ;
-- politiques de priorité inchangées.
+HEAD DE DÉPART :
+`e854a6d8096a5b16227f38e0d3f998075e9e5fe6`
 
-Étapes restantes :
-1. obtenir CI GREEN ;
-2. refaire audit exhaustif runtime ;
-3. confirmer APK/AAB ;
-4. rapporter à Fab ;
-5. validation finale téléphone Fab.
+TDD :
+- RED commit `defaf7692d1b12a09001b3411fcb3e7d3ce5bbe6`
+- CI #155 : failure attendue
+- GREEN code `2935bd8566d32650758937b1ece1693f2b5f5bd2`
+- CI #156 : success complet, tests + APK + AAB + artifact
 
-Aucun merge main. Aucune release sans GO explicite.
+CORRECTION :
+- `ProfessorSimpleSpeechCoordinator`
+- `speakSimpleProfessorBubble()`
+- AMBIENT fixe corrigé
+- STATS corrigé
+- moteur 309 réutilise le chemin commun
+- rejet tardif protégé
+- fermeture vraie fin + ~1 s
+- Prof pédagogique inchangé
+- priorités SpeechOrigin inchangées
+- aucune modification GeckoBoardView / SudokuEngine / géométrie
+
+INVARIANT INTEMPOREL :
+**Pierre parle ⇔ ProfessorBubbleView affiche exactement le texte parlé.**
+`status` n'est jamais le conteneur d'un dialogue du Prof.
+
+RESTE :
+- test téléphone Fab sur aide automatique ;
+- test téléphone Fab sur suggestion Sauver ;
+- test téléphone Fab sur narration Stats ;
+- vérifier visuellement fermeture naturelle après fin de Pierre.
+
+Aucun merge main.
+Aucune release sans GO explicite de Fab.
