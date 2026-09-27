@@ -1104,3 +1104,7 @@ CI #146 : compilation stoppée dans SudokuGameEngine car Kotlin avait inféré `
 <!-- GECKO-038-UI-SURFACE-2026-09-27 -->
 ## 2026-09-27 — surface UI Sudoku isolée
 CI cœur #147 GREEN confirmée. Ajout d'une vue Sudoku séparée, sans modification de GeckoBoardView. Le rendu des valeurs est dans un overlay qui refuse les touches. Le sélecteur tactile 3 crans produit preview pendant MOVE et commit au UP. Les deux PNG sont repris via leurs blobs Git de main, donc octets inchangés.
+
+
+<!-- GECKO-038-ASSET-CATALOG-2026-09-27 -->
+Pré-CI surface : constantes AssetMediaCatalog ajoutées pour les deux PNG, correction de câblage uniquement.

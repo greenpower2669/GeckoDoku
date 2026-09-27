@@ -228,3 +228,7 @@ Mismatch de type des notes uniquement. Correctif minimal appliqué ; poursuivre 
 
 <!-- GECKO-038-UI-SURFACE-2026-09-27 -->
 Phase UI isolée engagée après GREEN #147. GeckoBoardView demeure intouché. Prochaine étape : câblage minimal MainActivity derrière GameMode, puis CI avant toute extension pédagogique.
+
+
+<!-- GECKO-038-ASSET-CATALOG-2026-09-27 -->
+Le renderer doit charger les PNG via AssetMediaCatalog ; les blobs sources restent inchangés.

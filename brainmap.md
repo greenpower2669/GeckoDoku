@@ -565,3 +565,7 @@ notes : MutableList<MutableSet<Int>> → capture Set immuable → restore Mutabl
 <!-- GECKO-038-UI-SURFACE-2026-09-27 -->
 SudokuBoardView (touch + grid + notes) → SudokuValueOverlayView (click-through values) → CLASSIC / NB / COLOR
 SudokuStyleSelectorView DOWN/MOVE → previewStyle → overlay.invalidate ; UP → committed style + persistence (au câblage MainActivity).
+
+
+<!-- GECKO-038-ASSET-CATALOG-2026-09-27 -->
+AssetMediaCatalog.GECKO_NUMBER_NB / GECKO_NUMBER_COLORED → PNG canoniques assets/gecko.

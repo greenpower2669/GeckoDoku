@@ -7,6 +7,12 @@ object AssetMediaCatalog {
     const val GECKO_ICON =
         "gecko/IconGeckoGD.png"
 
+    const val GECKO_NUMBER_NB =
+        "gecko/PlancheGeckoDeNombreNB.png"
+
+    const val GECKO_NUMBER_COLORED =
+        "gecko/PlancheGeckoDeNombreColored.png"
+
     const val GECKO_INTRO_GD =
         "gecko/IntroGeckoGD.mp4"
 

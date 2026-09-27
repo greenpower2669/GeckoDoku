@@ -1261,3 +1261,7 @@ Correction cœur : collection des notes typée par son contrat `MutableSet<Int>`
 <!-- GECKO-038-UI-SURFACE-2026-09-27 -->
 ## GECKO-038 — surface Sudoku isolée
 Après CI #147 GREEN, la couche UI Sudoku est ajoutée en classes séparées : grille/hitboxes Sudoku, overlay de valeurs click-through et sélecteur 3 positions. GeckoBoardView reste inchangé. Les planches PNG canoniques sont copiées par blob Git identique depuis main, sans conversion.
+
+
+<!-- GECKO-038-ASSET-CATALOG-2026-09-27 -->
+Les deux planches Sudoku Gecko sont référencées par AssetMediaCatalog avec leurs chemins canoniques exacts. Aucun traitement du fichier source.

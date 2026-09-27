@@ -730,3 +730,7 @@ Aucune mission active.
 - [x] PNG NB/couleur copiés bit-identiques depuis main.
 - [ ] Câbler MainActivity et mode switch.
 - [ ] CI surface UI.
+
+
+<!-- GECKO-038-ASSET-CATALOG-2026-09-27 -->
+- [x] Références AssetMediaCatalog des planches Sudoku.
