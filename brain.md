@@ -2299,3 +2299,7 @@ Cette règle aide à conserver la grille maximale en largeur.
 <!-- GECKO-038-FULLWIDTH-PROF-RED-2026-09-27 -->
 ## Exécution RED — grille pleine largeur + Prof joue
 HEAD de départ code : `7b02a7379f09b39b858106408553d9e486df9de4`. RED posé pour : marge réelle 3 px (incluant marge interne nulle), candidats noirs indépendants du VisualStyle, interaction Prof 1er tap Explain / 2e tap Apply / long press Apply, et provenance PROFESSOR conservée par Undo/Redo.
+
+
+<!-- GECKO-038-GREEN-POLICIES-2026-09-27 -->
+Policies pures ajoutées après RED #165 : grille Sudoku pleine largeur à 3 px brut par côté avec marge interne contractuelle 0 ; mini-candidats fonctionnels noirs ; interaction Prof pending fingerprinté avec décisions Explain / Apply / NoHint.

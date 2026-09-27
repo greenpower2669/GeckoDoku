@@ -648,3 +648,7 @@ Le téléphone de Fab reste l'autorité finale.
 <!-- GECKO-038-FULLWIDTH-PROF-RED-2026-09-27 -->
 ## ÉTAT EXÉCUTION
 GO code reçu. Phase RED lancée sur HEAD `7b02a7379f09b39b858106408553d9e486df9de4`. Aucun correctif runtime avant preuve RED. Les quatre contrats testés sont : largeur réelle 3 px, candidats noirs, Prof explique/joue, provenance Undo/Redo.
+
+
+<!-- GECKO-038-GREEN-POLICIES-2026-09-27 -->
+Bloc policies GREEN posé. Suite : moteur provenance, renderer, puis Activity.

@@ -189,3 +189,10 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Câbler Activity + long press Prof.
 - [ ] Compacter contrôles pour laisser la grille prioritaire.
 - [ ] CI GREEN + APK/AAB.
+
+
+<!-- GECKO-038-GREEN-POLICIES-2026-09-27 -->
+- [x] Policies pleine largeur / candidats noirs / pending Prof ajoutées.
+- [ ] Provenance moteur PLAYER/PROFESSOR.
+- [ ] Renderer/vues.
+- [ ] Activity.

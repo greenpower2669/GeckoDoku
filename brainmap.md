@@ -929,3 +929,7 @@ invalider ou revalider le pending
 
 <!-- GECKO-038-FULLWIDTH-PROF-RED-2026-09-27 -->
 RED contracts → FullWidthBoard(3px) + CandidateVisual(black) + ProfessorInteraction(pending) + MoveOrigin(PLAYER/PROFESSOR).
+
+
+<!-- GECKO-038-GREEN-POLICIES-2026-09-27 -->
+FullWidthBoardPolicy(3px) | CandidateVisualPolicy(BLACK) | ProfessorInteractionPolicy(pending fingerprint).
