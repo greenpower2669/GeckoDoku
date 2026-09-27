@@ -448,3 +448,7 @@ Sous-bloc input/settings posé ; prochaine étape renderer candidats puis Activi
 
 <!-- GECKO-038-TACTILE-STYLED-CANDIDATES-2026-09-27 -->
 Rendu candidats terminé ; reste câblage Activity et validation CI.
+
+
+<!-- GECKO-038-TACTILE-MAIN-WIRING-2026-09-27 -->
+Câblage runtime terminé. Étape courante : CI puis corrections ciblées uniquement si nécessaire. Pas de nouvelles fonctions avant GREEN.

@@ -2102,3 +2102,8 @@ SudokuBoardView devient input/grid uniquement : tap + long press ; les notes qui
 
 <!-- GECKO-038-TACTILE-STYLED-CANDIDATES-2026-09-27 -->
 Les candidats joueur sont désormais rendus par SudokuValueOverlayView via SudokuDigitRenderer. Une case vide peut afficher 1..9 dans positions fixes 3×3, en Classic/NB/Color. Les candidats Prof transitoires utilisent exactement le même renderer et peuvent mettre en évidence le candidat expliqué.
+
+
+<!-- GECKO-038-TACTILE-MAIN-WIRING-2026-09-27 -->
+## Câblage tactile complet
+MainActivity utilise maintenant `GameModeBoardGeometryPolicy` : chaque mode fige sa propre géométrie, ce qui empêche le plateau GeckoDoku de recouvrir selector/pavé en Sudoku. Le bouton Difficulté est masqué en Sudoku et la difficulté est proposée dans ⚙️ ; son choix indique explicitement qu'une nouvelle grille sera créée. Appui long sur une case jouable ouvre `SudokuQuickPaletteView` en overlay local, sans reflow : valeur 1..9 à gauche, candidats 1..9 à droite, Effacer en bas. Une case donnée refuse la palette. Les actions candidat passent par le même SudokuGameEngine et restent Undo/Redo. Le Prof affiche les candidats logiques en overlay transitoire via le renderer commun, sans toucher l'historique joueur.

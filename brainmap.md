@@ -835,3 +835,9 @@ SudokuBoardView → tap / long-press callbacks. Settings entriesFor(SUDOKU) → 
 
 <!-- GECKO-038-TACTILE-STYLED-CANDIDATES-2026-09-27 -->
 snapshot.notes + transient Prof candidates → SudokuCandidateLayout(3×3) → SudokuDigitRenderer(style courant).
+
+
+<!-- GECKO-038-TACTILE-MAIN-WIRING-2026-09-27 -->
+GameMode → geometry freeze distinct → board overlay ends at boardAnchor actuel.
+Long press cell → popup placement policy → QuickPalette → value(false notes) / candidate(true notes) / erase → SudokuGameEngine.
+Prof hint → logical candidate mask → transient overlay → same renderer.

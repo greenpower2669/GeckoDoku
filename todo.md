@@ -88,3 +88,15 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [x] Candidats Classic/NB/Color dans la grille.
 - [x] Prof candidates via même renderer.
 - [ ] MainActivity : fournir les candidats Prof et popup long press.
+
+
+<!-- GECKO-038-TACTILE-MAIN-WIRING-2026-09-27 -->
+- [x] Géométrie séparée par GameMode.
+- [x] Difficulté déplacée vers ⚙️ en Sudoku.
+- [x] Gros bouton Difficulté masqué en Sudoku.
+- [x] Appui long → palette locale.
+- [x] Valeur/candidat/effacer dans palette.
+- [x] Candidats Prof transitoires via même renderer.
+- [ ] CI GREEN.
+- [ ] APK/AAB.
+- [ ] Validation téléphone : pavé/selector visibles et popup confortable.

@@ -8,6 +8,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.RectF
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
@@ -20,6 +21,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.ScrollView
 import android.widget.TextView
 import java.text.SimpleDateFormat
@@ -67,11 +69,20 @@ class MainActivity : Activity() {
     private lateinit var sudokuRedoButton:
         Button
 
+    private var sudokuPalettePopup:
+        PopupWindow? = null
+
+    private val sudokuPopupPlacementPolicy =
+        SudokuPopupPlacementPolicy()
+
+    private val sudokuProfessorCandidatePolicy =
+        SudokuProfessorCandidatePolicy()
+
     private lateinit var boardAnchor:
         View
 
     private val boardGeometryPolicy =
-        BoardGeometryPolicy()
+        GameModeBoardGeometryPolicy()
 
     private lateinit var status:
         TextView
@@ -582,6 +593,14 @@ class MainActivity : Activity() {
                             (cell.row + 1) +
                             "," +
                             (cell.col + 1)
+                }
+
+                onLongPressCell = {
+                        cell ->
+
+                    showSudokuCellPalette(
+                        cell
+                    )
                 }
             }
 
@@ -2368,6 +2387,8 @@ class MainActivity : Activity() {
 
         val geometry =
             boardGeometryPolicy.resolve(
+                mode =
+                    selectedGameMode,
                 windowWidth =
                     screenRoot.width,
                 windowHeight =
@@ -2668,7 +2689,14 @@ class MainActivity : Activity() {
 
         AlertDialog.Builder(this)
             .setTitle(
-                "Difficulté logique réelle"
+                if (
+                    selectedGameMode ==
+                        GameMode.SUDOKU
+                ) {
+                    "Difficulté Sudoku • nouvelle grille"
+                } else {
+                    "Difficulté logique réelle"
+                }
             )
             .setSingleChoiceItems(
                 labels,
@@ -3657,6 +3685,15 @@ class MainActivity : Activity() {
         }
 
         clearProfessorSession()
+        dismissSudokuPalette()
+
+        if (
+            ::sudokuValueOverlay
+                .isInitialized
+        ) {
+            sudokuValueOverlay
+                .clearProfessorCandidates()
+        }
 
         selectedGameMode = mode
         gameModePreferences.gameMode =
@@ -3703,6 +3740,16 @@ class MainActivity : Activity() {
     private fun startSudokuPuzzle(
         next: SudokuPuzzle
     ) {
+        dismissSudokuPalette()
+
+        if (
+            ::sudokuValueOverlay
+                .isInitialized
+        ) {
+            sudokuValueOverlay
+                .clearProfessorCandidates()
+        }
+
         sudokuPuzzle = next
         sudokuEngine =
             SudokuGameEngine(next)
@@ -3873,6 +3920,18 @@ class MainActivity : Activity() {
         }
 
         if (
+            ::difficultyButton
+                .isInitialized
+        ) {
+            difficultyButton.visibility =
+                if (sudoku) {
+                    View.GONE
+                } else {
+                    View.VISIBLE
+                }
+        }
+
+        if (
             ::saveButton
                 .isInitialized
         ) {
@@ -3950,7 +4009,9 @@ class MainActivity : Activity() {
     }
 
     private fun handleSudokuDigit(
-        digit: Int
+        digit: Int,
+        notesModeOverride:
+            Boolean? = null
     ) {
         val cell =
             sudokuSelectedCell
@@ -3990,13 +4051,19 @@ class MainActivity : Activity() {
 
         recordBoardAction()
         clearProfessorSession()
+        sudokuValueOverlay
+            .clearProfessorCandidates()
+
+        val notesMode =
+            notesModeOverride
+                ?: sudokuNotesMode
 
         when (
             engine.enterDigit(
                 cell,
                 digit,
                 notesMode =
-                    sudokuNotesMode
+                    notesMode
             )
         ) {
             SudokuActionFeedback
@@ -4112,6 +4179,9 @@ class MainActivity : Activity() {
     }
 
     private fun eraseSudokuSelection() {
+        sudokuValueOverlay
+            .clearProfessorCandidates()
+
         val cell =
             sudokuSelectedCell
                 ?: run {
@@ -4150,6 +4220,9 @@ class MainActivity : Activity() {
     }
 
     private fun undoSudoku() {
+        sudokuValueOverlay
+            .clearProfessorCandidates()
+
         val result =
             sudokuEngine
                 ?.undo()
@@ -4171,6 +4244,9 @@ class MainActivity : Activity() {
     }
 
     private fun redoSudoku() {
+        sudokuValueOverlay
+            .clearProfessorCandidates()
+
         val result =
             sudokuEngine
                 ?.redo()
@@ -4224,14 +4300,19 @@ class MainActivity : Activity() {
             sudoku.difficulty
         )
 
+        val snapshot =
+            engine.snapshot()
+
         val hint =
             SudokuHintEngine
                 .nextHint(
                     sudoku,
-                    engine.snapshot()
+                    snapshot
                 )
 
         if (hint == null) {
+            sudokuValueOverlay
+                .clearProfessorCandidates()
             fx.blocked()
             showProfessorBubble(
                 "Je ne vois pas encore de déduction simple sûre. Vérifie les candidats déjà posés."
@@ -4248,7 +4329,17 @@ class MainActivity : Activity() {
             )
 
         sudokuValueOverlay
-            .invalidate()
+            .showProfessorCandidates(
+                cell = hint.cell,
+                candidates =
+                    sudokuProfessorCandidatePolicy
+                        .candidatesFor(
+                            snapshot.values,
+                            hint.cell
+                        ),
+                focusDigit =
+                    hint.digit
+            )
 
         fx.hint()
 
@@ -4471,9 +4562,228 @@ class MainActivity : Activity() {
         sudokuValueOverlay.invalidate()
     }
 
+    private fun showSudokuCellPalette(
+        cell: Cell
+    ) {
+        val engine =
+            sudokuEngine
+                ?: return
+
+        if (
+            engine.snapshot()
+                .isGiven(cell)
+        ) {
+            fx.blocked()
+            status.text =
+                "Ce chiffre est donné."
+            return
+        }
+
+        if (
+            !::screenRoot.isInitialized ||
+            screenRoot.width <= 0 ||
+            screenRoot.height <= 0
+        ) {
+            return
+        }
+
+        dismissSudokuPalette()
+
+        sudokuSelectedCell = cell
+        sudokuBoard
+            .setSelectedCell(cell)
+
+        val palette =
+            SudokuQuickPaletteView(
+                this
+            ).apply {
+                visualStyle =
+                    gameModePreferences
+                        .sudokuVisualStyle
+
+                setActiveCandidates(
+                    engine.snapshot()
+                        .notesAt(cell)
+                )
+
+                onValueDigit = {
+                        digit ->
+
+                    dismissSudokuPalette()
+                    handleSudokuDigit(
+                        digit,
+                        notesModeOverride =
+                            false
+                    )
+                }
+
+                onCandidateDigit = {
+                        digit ->
+
+                    handleSudokuDigit(
+                        digit,
+                        notesModeOverride =
+                            true
+                    )
+
+                    setActiveCandidates(
+                        engine.snapshot()
+                            .notesAt(cell)
+                    )
+                }
+
+                onErase = {
+                    dismissSudokuPalette()
+                    eraseSudokuSelection()
+                }
+            }
+
+        val popupWidth =
+            minOf(
+                (
+                    screenRoot.width -
+                        dp(24)
+                    ).coerceAtLeast(
+                    dp(220)
+                ),
+                dp(320)
+            )
+
+        val popupHeight =
+            minOf(
+                (
+                    screenRoot.height -
+                        dp(24)
+                    ).coerceAtLeast(
+                    dp(180)
+                ),
+                dp(230)
+            )
+
+        val popup =
+            PopupWindow(
+                palette,
+                popupWidth,
+                popupHeight,
+                true
+            ).apply {
+                isOutsideTouchable = true
+                setBackgroundDrawable(
+                    ColorDrawable(
+                        Color.WHITE
+                    )
+                )
+                elevation =
+                    dp(10).toFloat()
+
+                setOnDismissListener {
+                    if (
+                        sudokuPalettePopup ===
+                            this
+                    ) {
+                        sudokuPalettePopup =
+                            null
+                    }
+                }
+            }
+
+        val rootLocation =
+            IntArray(2)
+
+        val boardLocation =
+            IntArray(2)
+
+        screenRoot.getLocationOnScreen(
+            rootLocation
+        )
+
+        sudokuBoard
+            .getLocationOnScreen(
+                boardLocation
+            )
+
+        val cellRect =
+            sudokuBoard
+                .cellRectLocal(cell)
+
+        val anchor =
+            PixelBox(
+                left =
+                    boardLocation[0] -
+                        rootLocation[0] +
+                        cellRect.left
+                            .toInt(),
+                top =
+                    boardLocation[1] -
+                        rootLocation[1] +
+                        cellRect.top
+                            .toInt(),
+                right =
+                    boardLocation[0] -
+                        rootLocation[0] +
+                        cellRect.right
+                            .toInt(),
+                bottom =
+                    boardLocation[1] -
+                        rootLocation[1] +
+                        cellRect.bottom
+                            .toInt()
+            )
+
+        val position =
+            sudokuPopupPlacementPolicy
+                .place(
+                    screenWidth =
+                        screenRoot.width,
+                    screenHeight =
+                        screenRoot.height,
+                    anchor = anchor,
+                    popupWidth =
+                        popupWidth,
+                    popupHeight =
+                        popupHeight,
+                    margin =
+                        dp(8)
+                )
+
+        sudokuPalettePopup =
+            popup
+
+        popup.showAtLocation(
+            screenRoot,
+            Gravity.TOP or
+                Gravity.START,
+            position.x,
+            position.y
+        )
+
+        status.text =
+            "Sudoku • saisie rapide case " +
+                (cell.row + 1) +
+                "," +
+                (cell.col + 1)
+    }
+
+    private fun dismissSudokuPalette() {
+        val popup =
+            sudokuPalettePopup
+
+        sudokuPalettePopup = null
+
+        if (
+            popup != null &&
+            popup.isShowing
+        ) {
+            popup.dismiss()
+        }
+    }
+
     private fun showSettings() {
         val entries =
-            settingsMenuPolicy.entries
+            settingsMenuPolicy
+                .entriesFor(
+                    selectedGameMode
+                )
 
         val labels =
             entries.map {
@@ -4489,6 +4799,11 @@ class MainActivity : Activity() {
                         } else {
                             "🎮 Mode : GeckoDoku"
                         }
+
+                    SettingsEntry.DIFFICULTY ->
+                        "🎯 Difficulté : " +
+                            currentDifficulty()
+                                .label
 
                     SettingsEntry.SOUND ->
                         if (fx.enabled) {
@@ -4519,6 +4834,11 @@ class MainActivity : Activity() {
                     SettingsEntry.GAME_MODE -> {
                         dialog.dismiss()
                         showGameModeChooser()
+                    }
+
+                    SettingsEntry.DIFFICULTY -> {
+                        dialog.dismiss()
+                        chooseDifficulty()
                     }
 
                     SettingsEntry.SOUND -> {
@@ -6308,6 +6628,8 @@ class MainActivity : Activity() {
     }
 
     override fun onPause() {
+        dismissSudokuPalette()
+
         professorPausedAtMs =
             SystemClock.elapsedRealtime()
 

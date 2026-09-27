@@ -1256,3 +1256,7 @@ Premier sous-bloc runtime : long press détectable et difficulté déclarée dan
 
 <!-- GECKO-038-TACTILE-STYLED-CANDIDATES-2026-09-27 -->
 Suppression du rendu de notes Classic dans SudokuBoardView : une seule chaîne de rendu gère maintenant valeurs + candidats stylés. PNG canoniques inchangés.
+
+
+<!-- GECKO-038-TACTILE-MAIN-WIRING-2026-09-27 -->
+Correction de la cause téléphone appliquée : le freeze géométrique n'est plus partagé entre GECKODOKU et SUDOKU. DifficultyButton GONE en Sudoku ; Settings ajoute Difficulty. Popup long press est un PopupWindow overlay et n'affecte pas le root layout. Given = blocage sûr. Les candidats Prof sont nettoyés dès qu'une action joueur modifie la grille.
