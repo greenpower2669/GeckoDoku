@@ -990,3 +990,12 @@ CI push includes gecko-039-sudoku-tap-gecko-gomoku.
 
 <!-- GECKO-039-COMPILE-FIX-2026-09-27 -->
 status Professor move → digit.toString() + " posé".
+
+
+<!-- GECKO-039-CANDIDATE-0113-2026-09-27 -->
+0.11.3-dev/code31 → CI candidate → APK/AAB → test téléphone Fab.
+Tap empty Sudoku → toggle Gecko marker.
+Tap given/filled → select only.
+Long press → palette.
+Professor raw text → normalize leading speaker → identical Bubble/Pierre text.
+Gomoku → future only / no runtime code.

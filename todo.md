@@ -298,3 +298,19 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 <!-- GECKO-039-COMPILE-FIX-2026-09-27 -->
 - [x] Corriger compilation status « N posé » après retrait du préfixe Prof.
 - [ ] CI suivante GREEN.
+
+
+<!-- GECKO-039-CANDIDATE-0113-2026-09-27 -->
+## Validation téléphone 0.11.3-dev
+- [x] CI #179 GREEN avant bump version.
+- [x] Candidate 0.11.3-dev / code 31 préparée.
+- [ ] CI candidate versionnée GREEN.
+- [ ] Tap case vide → Gecko apparaît.
+- [ ] Retap même case → Gecko disparaît.
+- [ ] Tap given → aucun Gecko.
+- [ ] Tap case remplie → aucun Gecko.
+- [ ] Long press → palette toujours disponible.
+- [ ] Gecko animé si Animations ON, statique si OFF.
+- [ ] Bulbe Prof : aucun préfixe « Prof Gecko : » redondant.
+- [ ] Status Sudoku : aucun préfixe « Prof Gecko • » redondant.
+- [ ] Aucun code Gomoku avant GO distinct.

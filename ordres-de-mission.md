@@ -375,3 +375,10 @@ Tap Gecko Sudoku et invariant dialogue central sont implémentés. Attente CI. P
 
 <!-- GECKO-039-COMPILE-FIX-2026-09-27 -->
 #178 compile fix local ; aucune modification du périmètre. Gomoku toujours non codé.
+
+
+<!-- GECKO-039-CANDIDATE-0113-2026-09-27 -->
+## STATUT CANDIDATE
+PARTIE A + invariant PARTIE B sont GREEN sur #179 et figés en `0.11.3-dev / code31`.
+Attente : CI candidate puis test téléphone Fab.
+PARTIE C Gomoku reste BRAINSTORM UNIQUEMENT / NE PAS CODER SANS GO DISTINCT.

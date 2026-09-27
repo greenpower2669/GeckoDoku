@@ -2429,3 +2429,22 @@ La branche GECKO-039 est désormais ajoutée au workflow CI automatique.
 
 <!-- GECKO-039-COMPILE-FIX-2026-09-27 -->
 Correctif compilation uniquement : après suppression du préfixe status, conversion explicite du digit en String pour le libellé « N posé ». Aucun changement fonctionnel.
+
+
+<!-- GECKO-039-CANDIDATE-0113-2026-09-27 -->
+# GECKO-039 — candidate 0.11.3-dev / code 31
+
+CI #179 : GREEN complet sur le code fonctionnel GECKO-039.
+
+Fonctionnalités candidate :
+- tap simple sur case Sudoku vide jouable = pose/retire le petit Gecko-repère ;
+- tap sur given ou case déjà remplie = sélection seulement, jamais de repère ;
+- appui long case = palette locale inchangée ;
+- Gecko-repère reste annotation pure, Undo/Redo, animé selon réglage Animations ;
+- invariant dialogue centralisé par `ProfessorDialogTextPolicy` ;
+- même texte normalisé envoyé à ProfessorBubbleView et Pierre ;
+- préfixes redondants `Prof Gecko :` / `Prof Gecko •` supprimés uniquement en tête ;
+- mentions naturelles du nom au milieu des phrases conservées ;
+- workflow CI activé sur la branche GECKO-039.
+
+Le futur mode Gomoku est toujours strictement non codé.

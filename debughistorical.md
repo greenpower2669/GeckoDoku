@@ -1386,3 +1386,10 @@ Le commit RED n'a pas lancé GitHub Actions car la nouvelle branche n'était pas
 
 <!-- GECKO-039-COMPILE-FIX-2026-09-27 -->
 CI #178 : échec compileDebugKotlin unique sur concaténation Int + String dans le nouveau status sans préfixe. Correction syntaxique locale.
+
+
+<!-- GECKO-039-CANDIDATE-0113-2026-09-27 -->
+## 2026-09-27 — GECKO-039 GREEN #179
+La première CI de la nouvelle branche a nécessité l'ajout de cette branche au filtre du workflow. #178 a ensuite identifié une unique erreur Kotlin issue du nettoyage du status (`Int + String`). Correction locale dans `ca4f7b...`. #179 est GREEN complet avec tests + APK + AAB + artifact.
+
+Candidate versionnée ensuite 0.11.3-dev/code31.
