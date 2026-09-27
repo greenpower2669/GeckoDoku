@@ -1268,3 +1268,8 @@ Pré-CI : import Rect manquant détecté après déplacement du renderer de cand
 
 <!-- GECKO-038-TACTILE-GEOMETRY-RESET-2026-09-27 -->
 CI #161 : deux appels historiques reset() ne correspondaient plus au routeur multi-mode ; méthode de compatibilité ajoutée, sans modifier MainActivity.
+
+
+<!-- GECKO-038-TACTILE-CANDIDATE-0111-2026-09-27 -->
+## 2026-09-27 — candidate tactile 0.11.1-dev
+Après CI #163 GREEN complet, version bump 28→29 et 0.11.0-dev→0.11.1-dev pour distinguer clairement l'APK tactile. Aucun changement fonctionnel dans ce commit.

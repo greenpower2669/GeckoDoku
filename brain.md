@@ -2115,3 +2115,8 @@ Correctif de compilation local : import android.graphics.Rect restauré pour Sud
 
 <!-- GECKO-038-TACTILE-GEOMETRY-RESET-2026-09-27 -->
 GameModeBoardGeometryPolicy expose reset() comme contrat de compatibilité pour les changements d'insets : les deux freezes de mode sont invalidés ensemble lorsque la fenêtre utile change.
+
+
+<!-- GECKO-038-TACTILE-CANDIDATE-0111-2026-09-27 -->
+# Candidate tactile Sudoku 0.11.1-dev
+La mission UX tactile est figée en versionName `0.11.1-dev`, versionCode `29`, sur la branche `gecko-038-sudoku-mode`. Cette candidate contient : géométrie distincte par mode, difficulté dans ⚙️ en Sudoku, pavé/selector réservés par le layout Sudoku, appui long avec palette locale, candidats 1..9 stylés, candidats pédagogiques Prof transitoires et invariant Pierre↔bulle préservé. Aucune fusion main ni release.

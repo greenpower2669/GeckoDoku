@@ -460,3 +460,7 @@ Correction syntaxique/import uniquement ; attente CI suivante.
 
 <!-- GECKO-038-TACTILE-GEOMETRY-RESET-2026-09-27 -->
 #161 compilation corrigée : Rect + reset multi-mode. Attente CI courante.
+
+
+<!-- GECKO-038-TACTILE-CANDIDATE-0111-2026-09-27 -->
+Candidate 0.11.1-dev/code29 préparée. Ne plus ajouter de fonctionnalité avant CI candidate et test téléphone Fab.

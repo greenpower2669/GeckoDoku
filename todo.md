@@ -108,3 +108,15 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 
 <!-- GECKO-038-TACTILE-GEOMETRY-RESET-2026-09-27 -->
 - [x] Compatibilité reset géométrie après insets.
+
+
+<!-- GECKO-038-TACTILE-CANDIDATE-0111-2026-09-27 -->
+- [x] CI #163 GREEN complet avant version bump.
+- [x] Candidate 0.11.1-dev / code 29 préparée.
+- [ ] CI candidate versionnée GREEN.
+- [ ] Télécharger APK/AAB candidate.
+- [ ] Test téléphone Fab : pavé visible.
+- [ ] Test téléphone Fab : sélecteur visible.
+- [ ] Test téléphone Fab : appui long/palette.
+- [ ] Test téléphone Fab : candidats Classic/NB/Color.
+- [ ] Test téléphone Fab : Prof candidats.

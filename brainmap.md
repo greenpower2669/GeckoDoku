@@ -849,3 +849,7 @@ Renderer contract inchangé ; Rect import only.
 
 <!-- GECKO-038-TACTILE-GEOMETRY-RESET-2026-09-27 -->
 system insets change → geometryPolicy.reset() → reset GECKODOKU + SUDOKU freezes.
+
+
+<!-- GECKO-038-TACTILE-CANDIDATE-0111-2026-09-27 -->
+0.11.1-dev/code29 → CI candidate → APK/AAB → validation téléphone Fab : pavé + selector + long press + candidats 3 styles.
