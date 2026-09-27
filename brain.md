@@ -2425,3 +2425,7 @@ GO reçu. Deux contrats sont posés avant runtime : un tap sur case Sudoku vide 
 `ProfessorDialogTextPolicy` centralise l'invariant multi-mode : un préfixe de locuteur en tête (`Prof Gecko :` ou `Prof Gecko •`) est supprimé avant affichage ET avant parole, donc le contrat bulle↔voix reste exact. Les mentions naturelles de « Prof Gecko » au milieu d'une phrase restent intactes.
 
 La branche GECKO-039 est désormais ajoutée au workflow CI automatique.
+
+
+<!-- GECKO-039-COMPILE-FIX-2026-09-27 -->
+Correctif compilation uniquement : après suppression du préfixe status, conversion explicite du digit en String pour le libellé « N posé ». Aucun changement fonctionnel.

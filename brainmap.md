@@ -986,3 +986,7 @@ Professor text → ProfessorDialogTextPolicy.normalize → same normalized body 
 tap Sudoku → select cell → CellTapPolicy → empty=toggle marker | given/filled=select only.
 Professor message → normalize once → identical normalized text to Bubble + Pierre.
 CI push includes gecko-039-sudoku-tap-gecko-gomoku.
+
+
+<!-- GECKO-039-COMPILE-FIX-2026-09-27 -->
+status Professor move → digit.toString() + " posé".

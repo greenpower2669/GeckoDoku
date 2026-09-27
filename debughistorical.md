@@ -1382,3 +1382,7 @@ Tests ajoutés avant câblage : tap simple Gecko et normalisation centrale du pr
 <!-- GECKO-039-TAP-GECKO-GREEN-2026-09-27 -->
 ## 2026-09-27 — câblage GECKO-039
 Le commit RED n'a pas lancé GitHub Actions car la nouvelle branche n'était pas encore whitelistée dans build.yml. Cause identifiée avant conclusion de test. Le GREEN ajoute simultanément la branche au workflow et implémente les deux policies. Le Gomoku n'est toujours pas codé.
+
+
+<!-- GECKO-039-COMPILE-FIX-2026-09-27 -->
+CI #178 : échec compileDebugKotlin unique sur concaténation Int + String dans le nouveau status sans préfixe. Correction syntaxique locale.

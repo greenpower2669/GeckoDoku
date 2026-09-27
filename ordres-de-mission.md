@@ -371,3 +371,7 @@ GO reçu pour PARTIE A et garde-fou PARTIE B. RED posé. PARTIE C Gomoku reste e
 <!-- GECKO-039-TAP-GECKO-GREEN-2026-09-27 -->
 ## EXÉCUTION PARTIE A/B
 Tap Gecko Sudoku et invariant dialogue central sont implémentés. Attente CI. PARTIE C GOMOKU reste NON CODÉE sans GO distinct.
+
+
+<!-- GECKO-039-COMPILE-FIX-2026-09-27 -->
+#178 compile fix local ; aucune modification du périmètre. Gomoku toujours non codé.

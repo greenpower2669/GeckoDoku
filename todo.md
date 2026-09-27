@@ -293,3 +293,8 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] CI GREEN.
 - [ ] Version candidate + APK/AAB.
 - [ ] Test téléphone Fab.
+
+
+<!-- GECKO-039-COMPILE-FIX-2026-09-27 -->
+- [x] Corriger compilation status « N posé » après retrait du préfixe Prof.
+- [ ] CI suivante GREEN.

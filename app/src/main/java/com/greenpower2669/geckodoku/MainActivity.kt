@@ -4590,7 +4590,8 @@ class MainActivity : Activity() {
                 .VALUE_SET -> {
                 fx.hint()
                 status.text =
-                    hint.digit +
+                    hint.digit
+                        .toString() +
                         " posé"
             }
 
