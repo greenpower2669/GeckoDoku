@@ -429,3 +429,11 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Mesurer performances Android avant choix final minimax/negamax/alpha-beta.
 - [ ] Produire des explications Prof à partir de la vraie analyse tactique lorsque possible.
 
+
+
+<!-- GECKO-039-PHASE1-RED-2026-09-27 -->
+- [x] RED grille Classic plus large.
+- [ ] Confirmer RED CI.
+- [ ] Implémenter policy et GeckoBoardView.
+- [ ] Mutualiser pipeline animation sans régression.
+- [ ] CI GREEN Phase 1.

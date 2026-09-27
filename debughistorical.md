@@ -1467,3 +1467,8 @@ Les niveaux élevés doivent reconnaître et préparer des pièges, doubles mena
 Pas de triche : seule l'anticipation augmente.
 Aucun code applicatif modifié dans cette intervention.
 
+
+
+<!-- GECKO-039-PHASE1-RED-2026-09-27 -->
+## 2026-09-27 — Phase 1 Classic RED
+Contrat de géométrie lisible posé avant modification de GeckoBoardView.

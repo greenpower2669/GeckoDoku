@@ -1085,3 +1085,7 @@ L1 immediate tactics
 → L4 traps / bait / forced replies / counter-traps
 Higher difficulty = deeper future projection, not cheating.
 
+
+
+<!-- GECKO-039-PHASE1-RED-2026-09-27 -->
+CLASSIC RED → ClassicBoardReadabilityPolicy(width,height,gutter) → max width / no overflow.

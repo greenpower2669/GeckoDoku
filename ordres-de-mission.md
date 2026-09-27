@@ -1000,3 +1000,7 @@ Fab vérifie :
 ```
 
 Le travail est compartimenté pour permettre à Fab de tester chaque mode simplement avant de poursuivre.
+
+
+<!-- GECKO-039-PHASE1-RED-2026-09-27 -->
+Phase 1 en exécution : RED géométrie Classic posé avant code runtime.

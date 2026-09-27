@@ -2602,3 +2602,7 @@ La difficulté doit provenir d'une meilleure anticipation, jamais d'une triche.
 
 Les niveaux élevés doivent autant que possible conserver une analyse explicable : Pierre peut verbaliser le plan qu'il vient réellement de calculer.
 
+
+
+<!-- GECKO-039-PHASE1-RED-2026-09-27 -->
+Phase 1 Classic RED : la grille doit utiliser presque toute la largeur disponible lorsque la hauteur le permet, avec 3 px internes par côté, tout en restant bornée par la hauteur et le gutter historique.
