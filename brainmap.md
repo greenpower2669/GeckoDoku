@@ -945,3 +945,7 @@ candidate mini → CandidateVisualPolicy → CLASSIC + mini=true → BLACK. Over
 
 <!-- GECKO-038-GREEN-BOARD-PALETTE-2026-09-27 -->
 BoardView inner margin=0px. QuickPalette: Value→VisualStyle ; Candidate→BLACK mini number.
+
+
+<!-- GECKO-038-GREEN-FULLWIDTH-LAYOUT-2026-09-27 -->
+SUDOKU → reserve boardAnchor(screenWidth-6, weight0) → overlay left3 square → selector48 → undo/redo40. GECKODOKU → boardAnchor height0 weight1 historique.

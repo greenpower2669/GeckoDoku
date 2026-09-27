@@ -217,3 +217,12 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [x] BoardView marge interne 0.
 - [x] Palette candidats noirs.
 - [ ] Activity : plein largeur + contrôles compacts + Prof tap/tap/longpress.
+
+
+<!-- GECKO-038-GREEN-FULLWIDTH-LAYOUT-2026-09-27 -->
+- [x] MainActivity plein largeur 3px.
+- [x] Anchor réserve le carré Sudoku.
+- [x] Pavé permanent retiré au profit du long press.
+- [x] Undo/Redo compacts + selector48.
+- [ ] Câbler Prof tap/tap/longpress.
+- [ ] CI GREEN.

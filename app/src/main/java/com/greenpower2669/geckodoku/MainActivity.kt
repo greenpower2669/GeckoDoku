@@ -78,6 +78,11 @@ class MainActivity : Activity() {
     private val sudokuProfessorCandidatePolicy =
         SudokuProfessorCandidatePolicy()
 
+    private val sudokuFullWidthBoardPolicy =
+        SudokuFullWidthBoardPolicy(
+            horizontalMarginPx = 3
+        )
+
     private lateinit var boardAnchor:
         View
 
@@ -1093,7 +1098,7 @@ class MainActivity : Activity() {
             sudokuStyleSelector,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(66)
+                dp(48)
             )
         )
 
@@ -2350,7 +2355,21 @@ class MainActivity : Activity() {
             !::boardAnchor.isInitialized ||
             !::board.isInitialized ||
             screenRoot.width <= 0 ||
-            screenRoot.height <= 0 ||
+            screenRoot.height <= 0
+        ) {
+            return
+        }
+
+        if (
+            !ensureBoardAnchorForMode()
+        ) {
+            boardAnchor.post {
+                positionFloatingBoard()
+            }
+            return
+        }
+
+        if (
             boardAnchor.width <= 0 ||
             boardAnchor.height <= 0
         ) {
@@ -2371,19 +2390,35 @@ class MainActivity : Activity() {
             anchorLocation
         )
 
+        val anchorTop =
+            anchorLocation[1] -
+                rootLocation[1]
+
         val proposed =
-            BoardGeometry(
-                left =
-                    anchorLocation[0] -
-                        rootLocation[0],
-                top =
-                    anchorLocation[1] -
-                        rootLocation[1],
-                width =
-                    boardAnchor.width,
-                height =
-                    boardAnchor.height
-            )
+            if (
+                selectedGameMode ==
+                    GameMode.SUDOKU
+            ) {
+                sudokuFullWidthBoardPolicy
+                    .geometry(
+                        usefulWidthPx =
+                            screenRoot.width,
+                        topPx =
+                            anchorTop
+                    )
+            } else {
+                BoardGeometry(
+                    left =
+                        anchorLocation[0] -
+                            rootLocation[0],
+                    top =
+                        anchorTop,
+                    width =
+                        boardAnchor.width,
+                    height =
+                        boardAnchor.height
+                )
+            }
 
         val geometry =
             boardGeometryPolicy.resolve(
@@ -2436,7 +2471,9 @@ class MainActivity : Activity() {
                 event =
                     "BOARD_GEOMETRY_ANCHORED",
                 detail =
-                    "left=" +
+                    "mode=" +
+                        selectedGameMode +
+                        " left=" +
                         geometry.left +
                         " top=" +
                         geometry.top +
@@ -2460,6 +2497,57 @@ class MainActivity : Activity() {
             sudokuValueOverlay,
             geometry
         )
+    }
+
+    private fun ensureBoardAnchorForMode():
+        Boolean {
+        val params =
+            boardAnchor.layoutParams
+                as? LinearLayout.LayoutParams
+                ?: return true
+
+        if (
+            selectedGameMode ==
+                GameMode.SUDOKU
+        ) {
+            val boardSide =
+                sudokuFullWidthBoardPolicy
+                    .geometry(
+                        usefulWidthPx =
+                            screenRoot.width,
+                        topPx = 0
+                    )
+                    .height
+
+            val changed =
+                params.height !=
+                    boardSide ||
+                    params.weight !=
+                    0f
+
+            if (changed) {
+                params.height =
+                    boardSide
+                params.weight = 0f
+                boardAnchor.layoutParams =
+                    params
+            }
+
+            return !changed
+        }
+
+        val changed =
+            params.height != 0 ||
+                params.weight != 1f
+
+        if (changed) {
+            params.height = 0
+            params.weight = 1f
+            boardAnchor.layoutParams =
+                params
+        }
+
+        return !changed
     }
 
     private fun positionProfessorBubble() {
@@ -3501,70 +3589,11 @@ class MainActivity : Activity() {
 
     private fun createSudokuControlsPanel():
         LinearLayout {
-        fun digitButton(
-            digit: Int
-        ): Button =
-            Button(this).apply {
-                text = digit.toString()
-                textSize = 20f
-                minHeight = dp(46)
-                setOnClickListener {
-                    handleSudokuDigit(digit)
-                }
-            }
-
-        fun digitRow(
-            digits: IntRange
-        ): LinearLayout =
-            LinearLayout(this).apply {
-                orientation =
-                    LinearLayout.HORIZONTAL
-
-                for (digit in digits) {
-                    addView(
-                        digitButton(digit),
-                        LinearLayout.LayoutParams(
-                            0,
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
-                            1f
-                        )
-                    )
-                }
-            }
-
-        sudokuNotesButton =
-            Button(this).apply {
-                text = "✏️ Notes"
-                textSize = 14f
-                minHeight = dp(46)
-                setOnClickListener {
-                    sudokuNotesMode =
-                        !sudokuNotesMode
-                    refreshSudokuToolLabels()
-                    status.text =
-                        if (sudokuNotesMode) {
-                            "Mode notes activé."
-                        } else {
-                            "Mode notes désactivé."
-                        }
-                }
-            }
-
-        sudokuEraseButton =
-            Button(this).apply {
-                text = "⌫ Effacer"
-                textSize = 14f
-                minHeight = dp(46)
-                setOnClickListener {
-                    eraseSudokuSelection()
-                }
-            }
-
         sudokuUndoButton =
             Button(this).apply {
-                text = "↶"
-                textSize = 20f
-                minHeight = dp(46)
+                text = "↶ Annuler"
+                textSize = 15f
+                minHeight = dp(40)
                 contentDescription =
                     "Annuler"
                 setOnClickListener {
@@ -3574,9 +3603,9 @@ class MainActivity : Activity() {
 
         sudokuRedoButton =
             Button(this).apply {
-                text = "↷"
-                textSize = 20f
-                minHeight = dp(46)
+                text = "↷ Refaire"
+                textSize = 15f
+                minHeight = dp(40)
                 contentDescription =
                     "Refaire"
                 setOnClickListener {
@@ -3584,54 +3613,27 @@ class MainActivity : Activity() {
                 }
             }
 
-        val tools =
-            LinearLayout(this).apply {
-                orientation =
-                    LinearLayout.HORIZONTAL
-
-                addView(
-                    sudokuNotesButton,
-                    LinearLayout.LayoutParams(
-                        0,
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        2f
-                    )
-                )
-
-                addView(
-                    sudokuEraseButton,
-                    LinearLayout.LayoutParams(
-                        0,
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        2f
-                    )
-                )
-
-                addView(
-                    sudokuUndoButton,
-                    LinearLayout.LayoutParams(
-                        0,
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        1f
-                    )
-                )
-
-                addView(
-                    sudokuRedoButton,
-                    LinearLayout.LayoutParams(
-                        0,
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        1f
-                    )
-                )
-            }
-
         return LinearLayout(this).apply {
             orientation =
-                LinearLayout.VERTICAL
-            addView(digitRow(1..5))
-            addView(digitRow(6..9))
-            addView(tools)
+                LinearLayout.HORIZONTAL
+
+            addView(
+                sudokuUndoButton,
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1f
+                )
+            )
+
+            addView(
+                sudokuRedoButton,
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1f
+                )
+            )
         }
     }
 

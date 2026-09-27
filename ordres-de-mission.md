@@ -664,3 +664,7 @@ Rendu candidat noir GREEN posé ; valeurs principales Gecko inchangées.
 
 <!-- GECKO-038-GREEN-BOARD-PALETTE-2026-09-27 -->
 Vues GREEN prêtes. Dernier bloc fonctionnel : MainActivity.
+
+
+<!-- GECKO-038-GREEN-FULLWIDTH-LAYOUT-2026-09-27 -->
+Layout pleine largeur codé. Reste uniquement câblage comportement Prof puis CI.

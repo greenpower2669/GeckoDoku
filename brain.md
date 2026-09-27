@@ -2315,3 +2315,7 @@ SudokuDigitRenderer traite désormais tout rendu mini comme un chiffre Classic n
 
 <!-- GECKO-038-GREEN-BOARD-PALETTE-2026-09-27 -->
 SudokuBoardView retire également les 4dp internes : quadrillage réel jusqu'au bord de son conteneur. La palette locale garde les valeurs principales dans le style courant, mais sa colonne Candidats utilise des mini-chiffres noirs comme la grille.
+
+
+<!-- GECKO-038-GREEN-FULLWIDTH-LAYOUT-2026-09-27 -->
+MainActivity réserve désormais au Sudoku un carré égal à largeur écran - 6 px, left=3 px, avant les commandes. Le mode GeckoDoku retrouve son anchor weight=1 historique. Le pavé/Notes/Effacer permanents sont retirés : la palette long press garde ces fonctions ; Undo/Redo restent visibles en ligne compacte. Selector réduit de 66dp à 48dp.

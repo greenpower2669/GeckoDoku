@@ -1334,3 +1334,7 @@ Troisième bloc GREEN : renderer/overlay seulement. La valeur principale conserv
 
 <!-- GECKO-038-GREEN-BOARD-PALETTE-2026-09-27 -->
 Quatrième bloc GREEN : alignement BoardView/Overlay sur marge interne zéro et cohérence palette candidats noirs.
+
+
+<!-- GECKO-038-GREEN-FULLWIDTH-LAYOUT-2026-09-27 -->
+Bloc layout GREEN : correction structurelle plutôt qu'overlay qui recouvre les boutons. La grille prend d'abord sa hauteur carrée pleine largeur, puis les contrôles compacts sont layoutés dessous.
