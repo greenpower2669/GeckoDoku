@@ -120,3 +120,24 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Test téléphone Fab : appui long/palette.
 - [ ] Test téléphone Fab : candidats Classic/NB/Color.
 - [ ] Test téléphone Fab : Prof candidats.
+
+
+<!-- GECKO-038-TACTILE-CI164-GREEN-2026-09-27 -->
+## Validation téléphone candidate 0.11.1-dev
+- [x] CI #164 GREEN complet.
+- [x] APK produit.
+- [x] AAB produit.
+- [ ] Vérifier que le pavé 1–9 est visible.
+- [ ] Vérifier que le sélecteur 3 états est visible.
+- [ ] Vérifier que le bouton Difficulté principal a disparu en Sudoku.
+- [ ] Vérifier Difficulté dans ⚙️.
+- [ ] Appui long sur case vide → palette locale.
+- [ ] Tester valeur 1..9 depuis la palette.
+- [ ] Tester plusieurs candidats depuis la palette sans fermer entre chaque candidat.
+- [ ] Tester Effacer.
+- [ ] Vérifier candidats Classic.
+- [ ] Vérifier candidats Gecko N/B.
+- [ ] Vérifier candidats Gecko couleur.
+- [ ] Vérifier appui long sur given = blocage propre.
+- [ ] Vérifier Prof Gecko : candidats affichés dans la case sans modifier Undo joueur.
+- [ ] Vérifier GeckoDoku historique sans régression.

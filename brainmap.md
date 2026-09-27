@@ -853,3 +853,8 @@ system insets change → geometryPolicy.reset() → reset GECKODOKU + SUDOKU fre
 
 <!-- GECKO-038-TACTILE-CANDIDATE-0111-2026-09-27 -->
 0.11.1-dev/code29 → CI candidate → APK/AAB → validation téléphone Fab : pavé + selector + long press + candidats 3 styles.
+
+
+<!-- GECKO-038-TACTILE-CI164-GREEN-2026-09-27 -->
+0.11.1-dev/code29 → CI #164 GREEN → APK/AAB → TEST FAB
+TEST FAB : selector visible + pad visible + long press + palette + candidats 3 styles + Prof candidats + GeckoDoku historique.

@@ -1273,3 +1273,8 @@ CI #161 : deux appels historiques reset() ne correspondaient plus au routeur mul
 <!-- GECKO-038-TACTILE-CANDIDATE-0111-2026-09-27 -->
 ## 2026-09-27 — candidate tactile 0.11.1-dev
 Après CI #163 GREEN complet, version bump 28→29 et 0.11.0-dev→0.11.1-dev pour distinguer clairement l'APK tactile. Aucun changement fonctionnel dans ce commit.
+
+
+<!-- GECKO-038-TACTILE-CI164-GREEN-2026-09-27 -->
+## 2026-09-27 — CI #164 GREEN
+La candidate tactile 0.11.1-dev passe le workflow complet : tests unitaires, assembleDebug, bundleDebug, renommage APK/AAB, upload artifact. Aucun merge main, aucune release. Les failures #157-#162 correspondent au cycle RED et aux petites corrections de compilation (policies absentes attendues, import Rect, reset multi-mode) avant le GREEN #163 puis la candidate #164.

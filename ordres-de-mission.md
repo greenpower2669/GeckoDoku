@@ -464,3 +464,8 @@ Correction syntaxique/import uniquement ; attente CI suivante.
 
 <!-- GECKO-038-TACTILE-CANDIDATE-0111-2026-09-27 -->
 Candidate 0.11.1-dev/code29 préparée. Ne plus ajouter de fonctionnalité avant CI candidate et test téléphone Fab.
+
+
+<!-- GECKO-038-TACTILE-CI164-GREEN-2026-09-27 -->
+STATUT : CODE GREEN / ATTENTE TEST TÉLÉPHONE FAB.
+Ne plus ajouter de fonctionnalité avant retour téléphone sur 0.11.1-dev. Corriger seulement les défauts réellement observés, dans la couche Sudoku concernée. Aucun merge main, aucune release sans GO explicite.

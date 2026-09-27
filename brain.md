@@ -2120,3 +2120,26 @@ GameModeBoardGeometryPolicy expose reset() comme contrat de compatibilité pour 
 <!-- GECKO-038-TACTILE-CANDIDATE-0111-2026-09-27 -->
 # Candidate tactile Sudoku 0.11.1-dev
 La mission UX tactile est figée en versionName `0.11.1-dev`, versionCode `29`, sur la branche `gecko-038-sudoku-mode`. Cette candidate contient : géométrie distincte par mode, difficulté dans ⚙️ en Sudoku, pavé/selector réservés par le layout Sudoku, appui long avec palette locale, candidats 1..9 stylés, candidats pédagogiques Prof transitoires et invariant Pierre↔bulle préservé. Aucune fusion main ni release.
+
+
+<!-- GECKO-038-TACTILE-CI164-GREEN-2026-09-27 -->
+# GECKO-038 — UX tactile Sudoku candidate GREEN
+Candidate : `0.11.1-dev`, versionCode `29`.
+Commit candidate : `7247449eec390d4b683420fbf7bd6979af33f97a`.
+CI #164 : GREEN complet, tests + APK + AAB + artifact.
+Artifact : `GeckoDoku-v0.11.1-dev-Android`, digest `sha256:98fffb3df3f2113fc09633154c752d91fad6121d1fe8b3f136c94098f903f70f`.
+
+Fonctions prêtes pour validation téléphone :
+- géométrie figée indépendamment pour GECKODOKU et SUDOKU ;
+- selector et pavé placés sous l'ancre Sudoku au lieu d'être recouverts par l'ancien freeze GeckoDoku ;
+- gros bouton Difficulté masqué en Sudoku ;
+- Difficulté disponible dans ⚙️ ;
+- appui long sur case jouable → palette locale overlay ;
+- valeurs 1..9 + candidats 1..9 + Effacer ;
+- case given protégée ;
+- candidats joueur 3×3 dans la case ;
+- candidats suivent Classic / Gecko N/B / Gecko Color ;
+- Prof peut afficher les candidats logiques avec le même renderer, en overlay transitoire sans polluer Undo/Redo ;
+- invariant Pierre ↔ bulle préservé.
+
+Autorité finale : test téléphone Fab.
