@@ -498,3 +498,18 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Confirmer RED CI.
 - [ ] GREEN core Gomoku.
 - [ ] Ajouter mode/UI/rendu jaune.
+
+
+<!-- GECKO-039-GOMOKU-CORE-GREEN-2026-09-27 -->
+- [x] GameMode.GOMOKU.
+- [x] GomokuGameEngine + snapshot + builder.
+- [x] WinDetector 5+.
+- [x] Viewport 12×12 + pan + zoom.
+- [x] Profils difficulté / profondeur / traps.
+- [x] IA victoire/blocage/menaces + alpha-beta borné.
+- [ ] CI core GREEN.
+- [ ] Vue Android Gomoku.
+- [ ] Câblage MainActivity / mode chooser.
+- [ ] Gecko jaune dynamique.
+- [ ] Gestes pan/pinch/tap.
+- [ ] Dialogues Prof Gomoku.

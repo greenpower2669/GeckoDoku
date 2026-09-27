@@ -1512,3 +1512,8 @@ Ancre textuelle trop large lors du patch modèle ; méthode déplacée vers le b
 <!-- GECKO-039-PHASE3-RED-2026-09-27 -->
 ## 2026-09-27 — Phase 3 Gomoku RED
 Contrats moteur/viewport/IA posés après Sudoku #188 GREEN.
+
+
+<!-- GECKO-039-GOMOKU-CORE-GREEN-2026-09-27 -->
+## 2026-09-27 — Gomoku core GREEN implémenté
+Suite au RED #189 (symboles Gomoku absents), ajout du cœur pur. Pas encore de vue Android ni de branchement MainActivity dans ce commit.

@@ -1121,3 +1121,7 @@ SudokuSnapshot.customMarkerAt(cell) → customMarkers map.
 
 <!-- GECKO-039-PHASE3-RED-2026-09-27 -->
 GOMOKU RED → Engine + ViewportPolicy + DifficultyProfile/AiDecision.
+
+
+<!-- GECKO-039-GOMOKU-CORE-GREEN-2026-09-27 -->
+GOMOKU core: Snapshot → Engine.play → WinDetector. ViewportPolicy → initial12 / pan / focal zoom. DifficultyProfile → depth/beam/trapAware. AI → immediate win → immediate block → ordered threats → bounded alpha-beta.

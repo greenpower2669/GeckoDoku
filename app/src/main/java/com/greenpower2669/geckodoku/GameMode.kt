@@ -4,7 +4,8 @@ import android.content.Context
 
 enum class GameMode {
     GECKODOKU,
-    SUDOKU
+    SUDOKU,
+    GOMOKU
 }
 
 enum class SudokuVisualStyle {

@@ -2638,3 +2638,8 @@ Correctif compilation local : customMarkerAt appartient à SudokuSnapshot, pas S
 
 <!-- GECKO-039-PHASE3-RED-2026-09-27 -->
 Phase 3 Gomoku RED : moteur 5 alignés/turn lock, viewport par défaut 12 zoomable/pannable, difficulté = profondeur + beam + pièges, IA gagne immédiatement avant tout plan long.
+
+
+<!-- GECKO-039-GOMOKU-CORE-GREEN-2026-09-27 -->
+# Gomoku core — implémentation
+Ajout du troisième enum `GameMode.GOMOKU`, modèle/engine Gomoku indépendant, WinDetector 5+, viewport logique avec 12×12 par défaut + pan/zoom focal, profils de difficulté à profondeur croissante et IA déterministe. IA : victoire immédiate, blocage immédiat, scoring lignes ouvertes, bonus doubles menaces/pièges aux niveaux hauts, puis recherche alpha-beta bornée par beam. Aucun UI Gomoku encore dans ce commit.

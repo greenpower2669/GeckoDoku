@@ -1036,3 +1036,8 @@ Correctif compilation Phase 2 appliqué, aucun changement fonctionnel.
 
 <!-- GECKO-039-PHASE3-RED-2026-09-27 -->
 Phase 3 en exécution : RED moteur/viewport/difficulté posé après Phase 2 GREEN.
+
+
+<!-- GECKO-039-GOMOKU-CORE-GREEN-2026-09-27 -->
+## EXÉCUTION PHASE 3 — CORE
+Cœur Gomoku implémenté après RED #189. Attendre CI GREEN avant d'intégrer la vue Android et MainActivity.
