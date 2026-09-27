@@ -969,3 +969,9 @@ Gecko marker → engine annotation → Undo/Redo → overlay watermark → anima
 
 <!-- GECKO-038-CI177-GREEN-2026-09-27 -->
 CI #177 GREEN → APK/AAB 0.11.2-dev → test téléphone Fab → corrections perceptuelles ciblées seulement.
+
+<!-- GECKO-039-MESSAGE-INVARIANT-2026-09-27 -->
+Professor event → raw natural phrase → ProfessorBubbleView(header="Prof Gecko", body=phrase) → Pierre voice.
+Status → action/technique only, never speaker-prefix duplication.
+Invariant shared by GECKODOKU / SUDOKU / future GOMOKU.
+

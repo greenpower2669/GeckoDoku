@@ -1359,3 +1359,16 @@ Le gecko-repère ne participe jamais à la logique Sudoku.
 <!-- GECKO-038-CI177-GREEN-2026-09-27 -->
 ## 2026-09-27 — CI #177 GREEN
 Le commit candidat 0.11.2-dev/code30 passe tests, assembleDebug, bundleDebug, renommage et upload artifact. Le cycle gecko-repère : #171 RED attendu, #172 moteur GREEN, #173 rendu/palette GREEN, #174 câblage Prof+repère GREEN, #175 footer palette GREEN, #176 animation setting GREEN, #177 candidate versionnée GREEN.
+
+<!-- GECKO-039-MESSAGE-INVARIANT-2026-09-27 -->
+## 2026-09-27 — préfixe Prof redondant en Sudoku
+
+Capture téléphone : la bulle affichait l'en-tête « Prof Gecko » puis le corps « Prof Gecko : cette case... », et le status affichait « Prof Gecko • candidat unique ».
+
+Cause : préfixe encodé dans certaines explications SudokuHintEngine + préfixe ajouté dans les status Sudoku.
+
+Correction sur la branche GECKO-039 :
+- retirer le préfixe du corps des hints Sudoku ;
+- status Sudoku = technique/action uniquement ;
+- invariant ajouté pour éviter la même erreur dans le futur mode Gomoku.
+

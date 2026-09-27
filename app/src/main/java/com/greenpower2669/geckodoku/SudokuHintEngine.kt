@@ -41,7 +41,7 @@ object SudokuHintEngine {
                     digit =
                         candidates.single(),
                     explanation =
-                        "Prof Gecko : cette case n'a plus qu'un seul candidat possible. Le " +
+                        "Cette case n'a plus qu'un seul candidat possible. Le " +
                             candidates.single() +
                             " est donc certain."
                 )
@@ -131,7 +131,7 @@ object SudokuHintEngine {
                         digit =
                             digit,
                         explanation =
-                            "Prof Gecko : dans " +
+                            "Dans " +
                                 unitLabel +
                                 ", le " +
                                 digit +

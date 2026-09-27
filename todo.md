@@ -261,3 +261,11 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Fab : test Gecko-repère, animation et suppression.
 - [ ] Fab : test Animations OFF = Gecko-repère statique.
 - [ ] Fab : contrôle régression GeckoDoku historique.
+
+<!-- GECKO-039-MESSAGE-INVARIANT-2026-09-27 -->
+- [x] Retirer `Prof Gecko :` des explications Sudoku.
+- [x] Retirer `Prof Gecko •` des status Sudoku concernés.
+- [x] Invariant multi-mode documenté.
+- [ ] Ajouter test source/contrat empêchant un futur préfixe redondant.
+- [ ] Appliquer le même invariant à toute future banque de phrases Gomoku.
+

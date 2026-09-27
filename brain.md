@@ -2387,3 +2387,27 @@ Digest artifact : `sha256:8b9ea884ec64333b9c7addcf06e945eb2fa88aba775a460d8af740
 - GeckoDoku historique sans régression.
 
 Aucune fusion main. Aucune release. Fab reste l'autorité finale téléphone.
+
+<!-- GECKO-039-MESSAGE-INVARIANT-2026-09-27 -->
+# Invariant multi-mode — texte du Prof sans préfixe redondant
+
+La bulle possède déjà son en-tête visuel « Prof Gecko ».
+
+Donc le corps d'une phrase prononcée par Pierre ne doit jamais commencer par :
+- `Prof Gecko :`
+- `Prof Gecko •`
+
+Le texte de dialogue contient uniquement la phrase naturelle.
+
+Exemple correct :
+`Cette case n'a plus qu'un seul candidat possible. Le 1 est donc certain.`
+
+Le `status` n'est pas une seconde signature du personnage. Il décrit seulement l'état ou la technique :
+- `Candidat unique`
+- `1 posé`
+- `Grille terminée`
+- `Étape devenue obsolète`
+
+Cette règle vaut pour GeckoDoku, Sudoku et le futur Gomoku.
+Les futures banques de phrases Gomoku doivent stocker les phrases sans nom de locuteur.
+

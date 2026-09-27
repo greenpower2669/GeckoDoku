@@ -4511,8 +4511,7 @@ class MainActivity : Activity() {
         )
 
         status.text =
-            "Prof Gecko • " +
-                hint.technique.label
+            hint.technique.label
     }
 
     private fun applySudokuProfessorMove(
@@ -4559,8 +4558,7 @@ class MainActivity : Activity() {
                 .VALUE_SET -> {
                 fx.hint()
                 status.text =
-                    "Prof Gecko • " +
-                        hint.digit +
+                    hint.digit +
                         " posé"
             }
 
@@ -4568,14 +4566,14 @@ class MainActivity : Activity() {
                 .COMPLETED -> {
                 fx.complete()
                 status.text =
-                    "Prof Gecko • grille terminée"
+                    "Grille terminée"
                 completeSudokuGame()
             }
 
             else -> {
                 fx.blocked()
                 status.text =
-                    "Prof Gecko • étape devenue obsolète"
+                    "Étape devenue obsolète"
             }
         }
 
