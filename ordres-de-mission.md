@@ -1138,3 +1138,8 @@ Correction appliquée :
 - suppression de `Voix_encouragements.mp3` du dépôt ;
 - suppression des anciens tests imposant RECORDED ;
 - conservation de `SpeechOrigin.ENCOURAGEMENT`, `onFinished`, ProfParle et priorité voix.
+
+
+<!-- GECKO-037-RECORDED-ENCOURAGEMENTS-CI132-2026-09-27 -->
+## 46 — Preuve CI
+Run #132 : SUCCESS complet après suppression des encouragements enregistrés. Tests, APK, AAB et artifact sont verts. Le retrait du MP3 est acquis pour la suite de GECKO-037.

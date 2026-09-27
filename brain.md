@@ -824,3 +824,8 @@ Contrat actuel :
 `onFinished` reste propagé afin de préserver la musique de célébration en fin de grille.
 
 `PierreEncouragements` est provisoire : GECKO-037 doit ensuite faire converger ces réactions vers le catalogue contextuel des 309 phrases.
+
+
+<!-- GECKO-037-RECORDED-ENCOURAGEMENTS-CI132-2026-09-27 -->
+## Preuve technique — encouragements enregistrés
+CI #132 GREEN complet après retrait de la source RECORDED et de `Voix_encouragements.mp3`. Le contrat actif est désormais Pierre uniquement pour les encouragements vocaux, en attendant leur migration vers le selector contextuel 309.

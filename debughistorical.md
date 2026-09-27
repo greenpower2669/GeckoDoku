@@ -983,3 +983,8 @@ RED ajouté avant suppression.
 ## 2026-09-27 — encouragements enregistrés supprimés
 RED #131 a confirmé le contrat absent.
 L'ancien chemin alternait aléatoirement entre 13 segments du master `Voix_encouragements.mp3` et Pierre. Ce doublon est retiré : plus de source RECORDED ni de selector de segments. Le runtime utilise Pierre uniquement, sans modifier les autres musiques.
+
+
+<!-- GECKO-037-RECORDED-ENCOURAGEMENTS-CI132-2026-09-27 -->
+## 2026-09-27 — #132 GREEN
+Suppression complète du chemin enregistré d'encouragement validée par CI : tests, APK, AAB et artifact réussis.

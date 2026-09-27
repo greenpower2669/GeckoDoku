@@ -455,3 +455,11 @@ Aucune mission active.
 - [x] onFinished / célébration préservés.
 - [ ] CI GREEN du retrait.
 - [ ] Plus tard : remplacer PierreEncouragements provisoire par selector 309 contextuel.
+
+
+<!-- GECKO-037-RECORDED-ENCOURAGEMENTS-CI132-2026-09-27 -->
+## GECKO-037 — encouragements enregistrés après #132
+- [x] CI #132 GREEN complet.
+- [x] APK/AAB produits.
+- [x] Ancien MP3 d'encouragement hors architecture.
+- [ ] Étape suivante GECKO-037 : moteur 309 phrases + contexte/mood/history.

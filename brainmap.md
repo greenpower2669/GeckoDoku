@@ -313,3 +313,8 @@ GECKO_CONFIRMED
 → celebration flow
 
 RECORDED / Voix_encouragements.mp3 : SUPPRIMÉ.
+
+
+<!-- GECKO-037-RECORDED-ENCOURAGEMENTS-CI132-2026-09-27 -->
+Encouragements enregistrés → RETIRÉS → CI #132 GREEN.
+Chemin actif provisoire : succès joueur → PierreEncouragements → ENCOURAGEMENT → ProfParle/PNG.
