@@ -37,6 +37,11 @@ data class SudokuPuzzle(
             cell.col
     }
 
+    fun customMarkerAt(
+        cell: Cell
+    ): CustomMarker? =
+        customMarkers[cell]
+
     fun isGiven(
         cell: Cell
     ): Boolean =
@@ -62,6 +67,8 @@ enum class SudokuActionFeedback {
     VALUE_SET,
     NOTE_TOGGLED,
     MARKER_TOGGLED,
+    PERSONAL_MARKER_SET,
+    PERSONAL_MARKER_CLEARED,
     ERASED,
     WRONG_VALUE,
     GIVEN_LOCKED,
@@ -79,7 +86,10 @@ data class SudokuSnapshot(
     val mistakes: Int,
     val complete: Boolean,
     val lastMoveOrigin:
-        SudokuMoveOrigin? = null
+        SudokuMoveOrigin? = null,
+    val customMarkers:
+        Map<Cell, CustomMarker> =
+        emptyMap()
 ) {
     fun valueAt(
         cell: Cell
@@ -139,5 +149,7 @@ data class SudokuHint(
     val technique: SudokuTechnique,
     val cell: Cell,
     val digit: Int,
-    val explanation: String
+    val explanation: String,
+    val reasoning:
+        SudokuReasoningTrace? = null
 )

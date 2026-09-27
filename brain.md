@@ -2614,3 +2614,7 @@ Phase 1 Classic implémentée : GeckoBoardView utilise ClassicBoardReadabilityPo
 
 <!-- GECKO-039-PHASE2-RED-2026-09-27 -->
 Phase 2 Sudoku RED : repères personnels persistants/Undo, double tap distinct du long press, titre application indépendant du mode, et ReasoningTrace réel associé à chaque hint.
+
+
+<!-- GECKO-039-PHASE2-MODELS-2026-09-27 -->
+Phase 2 modèles : GesturePolicy explicite, AppTitlePolicy invariant, structures SudokuReasoningTrace/Step/Elimination, et Snapshot préparé pour les repères personnels.

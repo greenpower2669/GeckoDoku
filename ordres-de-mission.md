@@ -1012,3 +1012,7 @@ Phase 1 code posée : grille Classic plus large + pipeline animation partagé. A
 
 <!-- GECKO-039-PHASE2-RED-2026-09-27 -->
 Phase 2 en exécution : RED repères/double-tap/titre/ReasoningTrace posé après Phase 1 GREEN.
+
+
+<!-- GECKO-039-PHASE2-MODELS-2026-09-27 -->
+Phase 2 : modèles/policies posés, moteur et UI à suivre.

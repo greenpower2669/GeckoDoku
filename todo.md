@@ -454,3 +454,10 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [x] RED trace raisonnement Prof.
 - [ ] Confirmer RED CI.
 - [ ] GREEN Phase 2.
+
+
+<!-- GECKO-039-PHASE2-MODELS-2026-09-27 -->
+- [x] Modèles/policies Phase 2.
+- [ ] Moteur repères personnels.
+- [ ] HintEngine produit ReasoningTrace.
+- [ ] UI Phase 2.

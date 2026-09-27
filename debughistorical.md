@@ -1482,3 +1482,8 @@ Réduction du gutter historique 76dp→38dp et utilisation de toute la largeur o
 <!-- GECKO-039-PHASE2-RED-2026-09-27 -->
 ## 2026-09-27 — Phase 2 Sudoku RED
 Contrats posés après Phase 1 #182 GREEN.
+
+
+<!-- GECKO-039-PHASE2-MODELS-2026-09-27 -->
+## Phase 2 modèles
+Modèles/policies ajoutés avant câblage moteur/UI.

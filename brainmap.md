@@ -1097,3 +1097,7 @@ Classic board → full screenRoot width → ClassicBoardReadabilityPolicy(3px) �
 
 <!-- GECKO-039-PHASE2-RED-2026-09-27 -->
 SUDOKU RED → GesturePolicy + custom marker state + AppTitlePolicy + SudokuReasoningTrace.
+
+
+<!-- GECKO-039-PHASE2-MODELS-2026-09-27 -->
+Sudoku gestures → intent policy. ReasoningTrace → steps/eliminations. App title → mode independent.
