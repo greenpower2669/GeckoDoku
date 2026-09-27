@@ -2111,3 +2111,7 @@ MainActivity utilise maintenant `GameModeBoardGeometryPolicy` : chaque mode fige
 
 <!-- GECKO-038-TACTILE-RECT-IMPORT-2026-09-27 -->
 Correctif de compilation local : import android.graphics.Rect restauré pour SudokuNumberSheetLayout. Aucun changement fonctionnel.
+
+
+<!-- GECKO-038-TACTILE-GEOMETRY-RESET-2026-09-27 -->
+GameModeBoardGeometryPolicy expose reset() comme contrat de compatibilité pour les changements d'insets : les deux freezes de mode sont invalidés ensemble lorsque la fenêtre utile change.

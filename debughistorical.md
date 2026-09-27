@@ -1264,3 +1264,7 @@ Correction de la cause téléphone appliquée : le freeze géométrique n'est pl
 
 <!-- GECKO-038-TACTILE-RECT-IMPORT-2026-09-27 -->
 Pré-CI : import Rect manquant détecté après déplacement du renderer de candidats ; correction locale uniquement.
+
+
+<!-- GECKO-038-TACTILE-GEOMETRY-RESET-2026-09-27 -->
+CI #161 : deux appels historiques reset() ne correspondaient plus au routeur multi-mode ; méthode de compatibilité ajoutée, sans modifier MainActivity.

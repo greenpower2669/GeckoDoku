@@ -30,6 +30,10 @@ class GameModeBoardGeometryPolicy {
             .reset()
     }
 
+    fun reset() {
+        resetAll()
+    }
+
     fun resetAll() {
         geckoPolicy.reset()
         sudokuPolicy.reset()

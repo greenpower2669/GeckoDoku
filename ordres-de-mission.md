@@ -456,3 +456,7 @@ Câblage runtime terminé. Étape courante : CI puis corrections ciblées unique
 
 <!-- GECKO-038-TACTILE-RECT-IMPORT-2026-09-27 -->
 Correction syntaxique/import uniquement ; attente CI suivante.
+
+
+<!-- GECKO-038-TACTILE-GEOMETRY-RESET-2026-09-27 -->
+#161 compilation corrigée : Rect + reset multi-mode. Attente CI courante.

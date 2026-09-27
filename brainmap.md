@@ -845,3 +845,7 @@ Prof hint → logical candidate mask → transient overlay → same renderer.
 
 <!-- GECKO-038-TACTILE-RECT-IMPORT-2026-09-27 -->
 Renderer contract inchangé ; Rect import only.
+
+
+<!-- GECKO-038-TACTILE-GEOMETRY-RESET-2026-09-27 -->
+system insets change → geometryPolicy.reset() → reset GECKODOKU + SUDOKU freezes.

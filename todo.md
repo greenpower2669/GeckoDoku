@@ -104,3 +104,7 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 
 <!-- GECKO-038-TACTILE-RECT-IMPORT-2026-09-27 -->
 - [x] Import Rect du sheet layout restauré.
+
+
+<!-- GECKO-038-TACTILE-GEOMETRY-RESET-2026-09-27 -->
+- [x] Compatibilité reset géométrie après insets.
