@@ -2094,3 +2094,7 @@ Décision Prof/candidats après audit du mode 1 : comme `GeckoBoardView.showProf
 <!-- GECKO-038-TACTILE-GREEN-CORE-2026-09-27 -->
 ## Cœur de l'UX tactile implémenté
 Ajout des policies pures : géométrie indépendante par GameMode, layout candidats 3×3, hit-test/placement de palette, candidats pédagogiques transitoires. Ajout d'un renderer commun Classic/NB/Color et d'une vue de palette tactile locale. Le Prof suit le précédent du mode 1 : ses candidats sont un overlay pédagogique transitoire, rendu par le même renderer, sans modifier Undo/Redo joueur.
+
+
+<!-- GECKO-038-TACTILE-INPUT-SETTINGS-2026-09-27 -->
+SudokuBoardView devient input/grid uniquement : tap + long press ; les notes quittent cette vue pour le renderer overlay. SettingsMenuPolicy ajoute DIFFICULTY uniquement en mode Sudoku, sans modifier la liste historique GeckoDoku.

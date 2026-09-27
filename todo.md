@@ -75,3 +75,10 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Câbler SudokuBoardView long press.
 - [ ] Déplacer rendu notes dans overlay stylé.
 - [ ] Câbler Settings difficulté + géométrie par mode.
+
+
+<!-- GECKO-038-TACTILE-INPUT-SETTINGS-2026-09-27 -->
+- [x] SudokuBoardView tap + long press.
+- [x] Difficulté disponible via policy Settings Sudoku.
+- [ ] Overlay candidats stylés.
+- [ ] MainActivity/popup/géométrie.

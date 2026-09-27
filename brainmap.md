@@ -827,3 +827,7 @@ Prof candidate hint → transient candidate overlay → SAME candidate renderer 
 <!-- GECKO-038-TACTILE-GREEN-CORE-2026-09-27 -->
 Policies pures → GameModeBoardGeometryPolicy / SudokuCandidateLayout / SudokuPaletteLayoutPolicy / SudokuPopupPlacementPolicy / SudokuProfessorCandidatePolicy.
 Renderer commun → SudokuDigitRenderer → grille + palette + futurs candidats Prof.
+
+
+<!-- GECKO-038-TACTILE-INPUT-SETTINGS-2026-09-27 -->
+SudokuBoardView → tap / long-press callbacks. Settings entriesFor(SUDOKU) → GAME_MODE + DIFFICULTY + réglages historiques.

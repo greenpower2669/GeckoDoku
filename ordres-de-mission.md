@@ -440,3 +440,7 @@ GO reçu. HEAD de départ `baac7df072786bad770b1b8236aada091390744f`. Phase actu
 
 <!-- GECKO-038-TACTILE-GREEN-CORE-2026-09-27 -->
 Bloc core posé. Étape suivante : câblage runtime, puis CI. Ne pas toucher GeckoBoardView.
+
+
+<!-- GECKO-038-TACTILE-INPUT-SETTINGS-2026-09-27 -->
+Sous-bloc input/settings posé ; prochaine étape renderer candidats puis Activity.

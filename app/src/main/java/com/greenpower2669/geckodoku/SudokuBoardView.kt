@@ -6,6 +6,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.view.GestureDetector
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import kotlin.math.min
@@ -20,6 +22,9 @@ class SudokuBoardView @JvmOverloads constructor(
     var onCellSelected:
         ((Cell) -> Unit)? = null
 
+    var onLongPressCell:
+        ((Cell) -> Unit)? = null
+
     var selectedCell: Cell? = null
         private set
 
@@ -31,13 +36,63 @@ class SudokuBoardView @JvmOverloads constructor(
 
     private var cellSize = 1f
 
+    private val gestures =
+        GestureDetector(
+            context,
+            object :
+                GestureDetector
+                    .SimpleOnGestureListener() {
+                override fun onDown(
+                    e: MotionEvent
+                ): Boolean = true
+
+                override fun onSingleTapUp(
+                    e: MotionEvent
+                ): Boolean {
+                    val cell =
+                        cellAt(
+                            e.x,
+                            e.y
+                        )
+                            ?: return false
+
+                    selectedCell = cell
+                    onCellSelected
+                        ?.invoke(cell)
+                    performClick()
+                    invalidate()
+                    return true
+                }
+
+                override fun onLongPress(
+                    e: MotionEvent
+                ) {
+                    val cell =
+                        cellAt(
+                            e.x,
+                            e.y
+                        )
+                            ?: return
+
+                    selectedCell = cell
+                    performHapticFeedback(
+                        HapticFeedbackConstants
+                            .LONG_PRESS
+                    )
+                    onLongPressCell
+                        ?.invoke(cell)
+                    invalidate()
+                }
+            }
+        )
+
     init {
         isClickable = true
         isFocusable = true
         importantForAccessibility =
             IMPORTANT_FOR_ACCESSIBILITY_YES
         contentDescription =
-            "Grille Sudoku 9 par 9. Touchez une case puis choisissez un chiffre."
+            "Grille Sudoku 9 par 9. Touchez une case puis choisissez un chiffre. Appui long pour la palette locale."
     }
 
     fun setSelectedCell(
@@ -51,7 +106,8 @@ class SudokuBoardView @JvmOverloads constructor(
         invalidate()
     }
 
-    override fun performClick(): Boolean {
+    override fun performClick():
+        Boolean {
         super.performClick()
         return true
     }
@@ -62,36 +118,18 @@ class SudokuBoardView @JvmOverloads constructor(
         oldw: Int,
         oldh: Int
     ) {
-        updateBoardRect(w, h)
+        updateBoardRect(
+            w,
+            h
+        )
     }
 
     override fun onTouchEvent(
         event: MotionEvent
-    ): Boolean {
-        if (
-            event.actionMasked ==
-                MotionEvent.ACTION_UP
-        ) {
-            val cell =
-                cellAt(
-                    event.x,
-                    event.y
-                )
-
-            if (cell != null) {
-                selectedCell = cell
-                onCellSelected?.invoke(cell)
-                performClick()
-                invalidate()
-                return true
-            }
-        }
-
-        return event.actionMasked ==
-            MotionEvent.ACTION_DOWN ||
-            event.actionMasked ==
-                MotionEvent.ACTION_MOVE
-    }
+    ): Boolean =
+        gestures.onTouchEvent(
+            event
+        )
 
     override fun onDraw(
         canvas: Canvas
@@ -105,7 +143,10 @@ class SudokuBoardView @JvmOverloads constructor(
             return
         }
 
-        if (boardRect.width() <= 0f) {
+        if (
+            boardRect.width() <=
+                0f
+        ) {
             updateBoardRect(
                 width,
                 height
@@ -120,21 +161,22 @@ class SudokuBoardView @JvmOverloads constructor(
             state
         )
         drawGrid(canvas)
-        drawNotes(
-            canvas,
-            state
-        )
     }
 
     private fun updateBoardRect(
         w: Int,
         h: Int
     ) {
-        if (w <= 0 || h <= 0) {
+        if (
+            w <= 0 ||
+            h <= 0
+        ) {
             return
         }
 
-        val margin = dp(4f)
+        val margin =
+            dp(4f)
+
         val side =
             min(
                 w - margin * 2f,
@@ -178,14 +220,17 @@ class SudokuBoardView @JvmOverloads constructor(
 
                 paint.color =
                     when {
-                        selectedCell == cell ->
+                        selectedCell ==
+                            cell ->
                             Color.rgb(
                                 219,
                                 238,
                                 224
                             )
 
-                        state.isGiven(cell) ->
+                        state.isGiven(
+                            cell
+                        ) ->
                             Color.rgb(
                                 238,
                                 241,
@@ -195,7 +240,8 @@ class SudokuBoardView @JvmOverloads constructor(
                         (
                             row / 3 +
                                 col / 3
-                            ) % 2 == 0 ->
+                            ) % 2 ==
+                            0 ->
                             Color.rgb(
                                 252,
                                 252,
@@ -236,11 +282,12 @@ class SudokuBoardView @JvmOverloads constructor(
             paint.strokeWidth =
                 dp(
                     if (
-                        i % 3 == 0
+                        i % 3 ==
+                            0
                     ) {
                         2.8f
                     } else {
-                        0.8f
+                        .8f
                     }
                 )
 
@@ -267,89 +314,6 @@ class SudokuBoardView @JvmOverloads constructor(
                 y,
                 paint
             )
-        }
-    }
-
-    private fun drawNotes(
-        canvas: Canvas,
-        state: SudokuSnapshot
-    ) {
-        paint.style =
-            Paint.Style.FILL
-        paint.textAlign =
-            Paint.Align.CENTER
-        paint.color =
-            Color.rgb(
-                70,
-                80,
-                72
-            )
-        paint.textSize =
-            cellSize * .19f
-        paint.isFakeBoldText = false
-
-        for (row in 0..8) {
-            for (col in 0..8) {
-                val cell =
-                    Cell(row, col)
-
-                if (
-                    state.valueAt(cell) != 0
-                ) {
-                    continue
-                }
-
-                val notes =
-                    state.notesAt(cell)
-
-                if (notes.isEmpty()) {
-                    continue
-                }
-
-                val rect =
-                    cellRect(cell)
-
-                for (digit in notes) {
-                    val zero =
-                        digit - 1
-
-                    val noteRow =
-                        zero / 3
-
-                    val noteCol =
-                        zero % 3
-
-                    val x =
-                        rect.left +
-                            cellSize *
-                            (
-                                noteCol +
-                                    .5f
-                                ) / 3f
-
-                    val centerY =
-                        rect.top +
-                            cellSize *
-                            (
-                                noteRow +
-                                    .5f
-                                ) / 3f
-
-                    val y =
-                        centerY -
-                            (
-                                paint.ascent() +
-                                    paint.descent()
-                                ) / 2f
-
-                    canvas.drawText(
-                        digit.toString(),
-                        x,
-                        y,
-                        paint
-                    )
-                }
-            }
         }
     }
 

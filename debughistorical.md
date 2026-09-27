@@ -1248,3 +1248,7 @@ GO Fab sur `gecko-038-sudoku-mode`, HEAD `baac7df072786bad770b1b8236aada09139074
 
 <!-- GECKO-038-TACTILE-GREEN-CORE-2026-09-27 -->
 Bloc GREEN core ajouté avant câblage Activity : aucune modification GeckoBoardView. Les nouvelles classes sont isolées et testables ; la palette ne contient ni difficulté ni réglages globaux.
+
+
+<!-- GECKO-038-TACTILE-INPUT-SETTINGS-2026-09-27 -->
+Premier sous-bloc runtime : long press détectable et difficulté déclarée dans les réglages Sudoku. Aucun câblage Activity/popup encore dans ce commit.
