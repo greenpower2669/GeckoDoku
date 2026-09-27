@@ -2411,3 +2411,8 @@ Le `status` n'est pas une seconde signature du personnage. Il décrit seulement 
 Cette règle vaut pour GeckoDoku, Sudoku et le futur Gomoku.
 Les futures banques de phrases Gomoku doivent stocker les phrases sans nom de locuteur.
 
+
+
+<!-- GECKO-039-TAP-GECKO-RED-2026-09-27 -->
+## GECKO-039 — RED tap Gecko + dialogue Prof
+GO reçu. Deux contrats sont posés avant runtime : un tap sur case Sudoku vide jouable doit produire TOGGLE_GECKO_MARKER, tandis qu'une given ou une case déjà remplie reste SELECT_ONLY ; un texte de Prof est normalisé pour supprimer uniquement un préfixe de locuteur en tête (`Prof Gecko :` / `Prof Gecko •`) sans toucher aux mentions naturelles au milieu d'une phrase.

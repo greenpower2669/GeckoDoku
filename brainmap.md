@@ -975,3 +975,8 @@ Professor event → raw natural phrase → ProfessorBubbleView(header="Prof Geck
 Status → action/technique only, never speaker-prefix duplication.
 Invariant shared by GECKODOKU / SUDOKU / future GOMOKU.
 
+
+
+<!-- GECKO-039-TAP-GECKO-RED-2026-09-27 -->
+Sudoku tap → SudokuCellTapPolicy → empty playable=TOGGLE_GECKO_MARKER | given/filled=SELECT_ONLY.
+Professor text → ProfessorDialogTextPolicy.normalize → same normalized body for bubble + Pierre.

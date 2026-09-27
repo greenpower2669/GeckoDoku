@@ -269,3 +269,14 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Ajouter test source/contrat empêchant un futur préfixe redondant.
 - [ ] Appliquer le même invariant à toute future banque de phrases Gomoku.
 
+
+
+<!-- GECKO-039-TAP-GECKO-RED-2026-09-27 -->
+- [x] RED tap simple case vide → Gecko-repère.
+- [x] RED given/filled → sélection seule.
+- [x] RED suppression préfixe Prof en tête seulement.
+- [ ] Confirmer RED CI.
+- [ ] Implémenter policies.
+- [ ] Câbler tap simple MainActivity.
+- [ ] Normaliser tous les chemins de parole Prof sans casser bulle↔voix.
+- [ ] CI/APK/AAB.

@@ -361,3 +361,8 @@ PARTIE B — invariant message Prof :
 
 PARTIE C — Gomoku :
 **brainstorm seulement. NE PAS CODER SANS GO EXPLICITE DE FAB.**
+
+
+<!-- GECKO-039-TAP-GECKO-RED-2026-09-27 -->
+## ÉTAT D'EXÉCUTION GECKO-039
+GO reçu pour PARTIE A et garde-fou PARTIE B. RED posé. PARTIE C Gomoku reste explicitement NON CODÉE.

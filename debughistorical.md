@@ -1372,3 +1372,8 @@ Correction sur la branche GECKO-039 :
 - status Sudoku = technique/action uniquement ;
 - invariant ajouté pour éviter la même erreur dans le futur mode Gomoku.
 
+
+
+<!-- GECKO-039-TAP-GECKO-RED-2026-09-27 -->
+## 2026-09-27 — GECKO-039 RED
+Tests ajoutés avant câblage : tap simple Gecko et normalisation centrale du préfixe locuteur. Le Gomoku reste non codé.
