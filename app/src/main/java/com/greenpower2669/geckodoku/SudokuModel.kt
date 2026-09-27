@@ -61,6 +61,7 @@ enum class SudokuMoveOrigin {
 enum class SudokuActionFeedback {
     VALUE_SET,
     NOTE_TOGGLED,
+    MARKER_TOGGLED,
     ERASED,
     WRONG_VALUE,
     GIVEN_LOCKED,
@@ -73,6 +74,7 @@ enum class SudokuActionFeedback {
 data class SudokuSnapshot(
     val values: IntArray,
     val notes: List<Set<Int>>,
+    val geckoMarkers: BooleanArray,
     val givens: BooleanArray,
     val mistakes: Int,
     val complete: Boolean,
@@ -92,6 +94,15 @@ data class SudokuSnapshot(
         cell: Cell
     ): Set<Int> =
         notes[
+            cell.row *
+                SudokuPuzzle.SIZE +
+                cell.col
+        ]
+
+    fun hasGeckoMarker(
+        cell: Cell
+    ): Boolean =
+        geckoMarkers[
             cell.row *
                 SudokuPuzzle.SIZE +
                 cell.col

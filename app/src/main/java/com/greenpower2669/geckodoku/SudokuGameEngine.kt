@@ -16,6 +16,11 @@ class SudokuGameEngine(
             linkedSetOf<Int>()
         }
 
+    private var geckoMarkers =
+        BooleanArray(
+            SudokuPuzzle.CELL_COUNT
+        )
+
     private val givenMask =
         BooleanArray(
             SudokuPuzzle.CELL_COUNT
@@ -42,6 +47,8 @@ class SudokuGameEngine(
                 notes.map {
                     it.toSet()
                 },
+            geckoMarkers =
+                geckoMarkers.copyOf(),
             givens =
                 givenMask.copyOf(),
             mistakes = mistakes,
@@ -108,6 +115,7 @@ class SudokuGameEngine(
 
         values[index] = digit
         notes[index].clear()
+        geckoMarkers[index] = false
         lastMoveOrigin =
             origin
         removePeerNote(
@@ -128,6 +136,34 @@ class SudokuGameEngine(
         }
     }
 
+    fun toggleGeckoMarker(
+        cell: Cell
+    ): SudokuActionFeedback {
+        val index =
+            puzzle.indexOf(cell)
+
+        if (givenMask[index]) {
+            return SudokuActionFeedback
+                .GIVEN_LOCKED
+        }
+
+        if (values[index] != 0) {
+            return SudokuActionFeedback
+                .NOTHING_CHANGED
+        }
+
+        pushUndo()
+
+        geckoMarkers[index] =
+            !geckoMarkers[index]
+
+        lastMoveOrigin =
+            SudokuMoveOrigin.PLAYER
+
+        return SudokuActionFeedback
+            .MARKER_TOGGLED
+    }
+
     fun erase(
         cell: Cell
     ): SudokuActionFeedback {
@@ -141,7 +177,8 @@ class SudokuGameEngine(
 
         if (
             values[index] == 0 &&
-            notes[index].isEmpty()
+            notes[index].isEmpty() &&
+            !geckoMarkers[index]
         ) {
             return SudokuActionFeedback
                 .NOTHING_CHANGED
@@ -150,6 +187,7 @@ class SudokuGameEngine(
         pushUndo()
         values[index] = 0
         notes[index].clear()
+        geckoMarkers[index] = false
         lastMoveOrigin =
             SudokuMoveOrigin.PLAYER
 
@@ -215,6 +253,8 @@ class SudokuGameEngine(
                 notes.map {
                     it.toSet()
                 },
+            geckoMarkers =
+                geckoMarkers.copyOf(),
             lastMoveOrigin =
                 lastMoveOrigin
         )
@@ -229,6 +269,9 @@ class SudokuGameEngine(
             state.notes.map {
                 it.toMutableSet()
             }.toMutableList()
+
+        geckoMarkers =
+            state.geckoMarkers.copyOf()
 
         lastMoveOrigin =
             state.lastMoveOrigin
@@ -280,6 +323,7 @@ class SudokuGameEngine(
     private data class EngineState(
         val values: IntArray,
         val notes: List<Set<Int>>,
+        val geckoMarkers: BooleanArray,
         val lastMoveOrigin:
             SudokuMoveOrigin?
     )
