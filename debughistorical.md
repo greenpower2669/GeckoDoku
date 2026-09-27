@@ -923,3 +923,8 @@ v0.10.14-dev téléphone : INTRO et ProfParle peuvent recevoir VIDEO_RENDERING_S
 ## 2026-09-27 — cause affinée et correction du gel
 RED #125 confirme le nouveau contrat absent.
 La première correction GECKO-036 avait introduit une purge booléenne `frameAvailable=false` à l'armement. Les logs téléphone ont montré INTRO et ProfParle bloqués après VIDEO_RENDERING_START, avec timeouts répétés. La purge est supprimée : toutes les frames sont consommées, la fraîcheur utilise désormais un serial monotone. INTRO n'est plus armée par ce gate.
+
+
+<!-- GECKO-036-V01015-CANDIDATE-2026-09-27 -->
+## 2026-09-27 — candidate v0.10.15-dev
+#125 RED attendu sur FreshFrameSerialGate / FirstFrameGateActivationPolicy. #126 GREEN complet après suppression de la purge frameAvailable et passage au serial monotone. Candidate code 26 préparée.

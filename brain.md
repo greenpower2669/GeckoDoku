@@ -722,3 +722,8 @@ Une frame SurfaceTexture disponible ne doit jamais être supprimée en remettant
 <!-- GECKO-036-FRAME-SERIAL-GREEN-2026-09-27 -->
 ## Invariant SurfaceTexture corrigé
 Ne jamais jeter une notification de frame pour déterminer sa fraîcheur. Les frames sont toujours consommées via `updateTexImage()`; leur fraîcheur est déterminée par un serial monotone. Un gate de première frame n'est armé que pour un playback qui demande réellement `revealOnFirstFrame`. Les intros restent hors gate.
+
+
+<!-- GECKO-036-V01015-CANDIDATE-2026-09-27 -->
+## Référence candidate GECKO-036 corrigée
+v0.10.15-dev remplace la purge de frame dangereuse de v0.10.14-dev par un compteur monotone produit/consommé. Les intros hors gate ne sont plus armées. Ce mécanisme doit préserver la fluidité INTRO et permettre à ProfParle d'obtenir une vraie première frame sans timeout artificiel.

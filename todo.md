@@ -318,3 +318,16 @@ Aucun ordre de mission actif actuellement.
 - [ ] v0.10.15-dev.
 - [ ] Fab : Intro 1 fluide.
 - [ ] Fab : ProfParle sans timeouts répétés.
+
+
+<!-- GECKO-036-V01015-CANDIDATE-2026-09-27 -->
+## Candidate v0.10.15-dev
+- [x] #125 RED attendu.
+- [x] #126 GREEN complet.
+- [x] versionCode 26 / versionName 0.10.15-dev.
+- [ ] CI finale versionnée GREEN.
+- [ ] Fab : Intro 1 fluide et non figée.
+- [ ] Fab : Prof_actions fluide.
+- [ ] Fab : ProfParle obtient VIDEO_FIRST_FRAME sans timeout répété.
+- [ ] Fab : Pierre reste prioritaire.
+- [ ] Fab : bulle QUICK_TALK toujours correcte.

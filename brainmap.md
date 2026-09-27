@@ -226,3 +226,7 @@ gate arm(gen) → baseline=producedSerial
 stale consumedSerial<=baseline → consommée, non validante
 fresh consumedSerial>baseline + bonne gen → VIDEO_FIRST_FRAME
 INTRO gate=false → aucun arm.
+
+
+<!-- GECKO-036-V01015-CANDIDATE-2026-09-27 -->
+v0.10.15-dev → frame serial safe → INTRO hors gate + ProfParle gate sans perte de frame → CI finale → téléphone Fab.
