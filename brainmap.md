@@ -822,3 +822,8 @@ GECKO geometry freeze ─┐
 SUDOKU geometry freeze ┘
 
 Prof candidate hint → transient candidate overlay → SAME candidate renderer → no player undo mutation.
+
+
+<!-- GECKO-038-TACTILE-GREEN-CORE-2026-09-27 -->
+Policies pures → GameModeBoardGeometryPolicy / SudokuCandidateLayout / SudokuPaletteLayoutPolicy / SudokuPopupPlacementPolicy / SudokuProfessorCandidatePolicy.
+Renderer commun → SudokuDigitRenderer → grille + palette + futurs candidats Prof.

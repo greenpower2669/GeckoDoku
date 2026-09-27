@@ -436,3 +436,7 @@ La CI prouve la cohérence technique.
 <!-- GECKO-038-TACTILE-RED-2026-09-27 -->
 ## ÉTAT D'EXÉCUTION
 GO reçu. HEAD de départ `baac7df072786bad770b1b8236aada091390744f`. Phase actuelle : RED des contrats purs avant modification runtime. La policy Prof retenue suit le précédent du mode 1 : overlay pédagogique transitoire utilisant le même renderer, sans altérer l'historique joueur.
+
+
+<!-- GECKO-038-TACTILE-GREEN-CORE-2026-09-27 -->
+Bloc core posé. Étape suivante : câblage runtime, puis CI. Ne pas toucher GeckoBoardView.

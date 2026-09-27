@@ -2089,3 +2089,8 @@ HEAD réel au GO : `baac7df072786bad770b1b8236aada091390744f`.
 Cause du chevauchement confirmée : `BoardGeometryPolicy` fige une géométrie par dimensions de fenêtre. La bascule de mode garde donc la géométrie GeckoDoku alors que le root Sudoku a ajouté selector/pavé/outils. Cible : gel indépendant par GameMode, sans changer le contrat historique dans chaque mode.
 
 Décision Prof/candidats après audit du mode 1 : comme `GeckoBoardView.showProfessorHint()` utilise un overlay pédagogique séparé du GameSnapshot, les candidats montrés par Prof Sudoku seront **transitoires**, dessinés par le même renderer que les candidats joueur, mais n'altéreront pas les notes ni Undo/Redo du joueur.
+
+
+<!-- GECKO-038-TACTILE-GREEN-CORE-2026-09-27 -->
+## Cœur de l'UX tactile implémenté
+Ajout des policies pures : géométrie indépendante par GameMode, layout candidats 3×3, hit-test/placement de palette, candidats pédagogiques transitoires. Ajout d'un renderer commun Classic/NB/Color et d'une vue de palette tactile locale. Le Prof suit le précédent du mode 1 : ses candidats sont un overlay pédagogique transitoire, rendu par le même renderer, sans modifier Undo/Redo joueur.

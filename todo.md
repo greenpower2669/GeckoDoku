@@ -66,3 +66,12 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] GREEN long press + palette.
 - [ ] GREEN candidats 3 styles + Prof.
 - [ ] CI/APK/AAB + téléphone Fab.
+
+
+<!-- GECKO-038-TACTILE-GREEN-CORE-2026-09-27 -->
+- [x] Policies géométrie/candidats/popup ajoutées.
+- [x] Renderer de chiffres/geckos commun ajouté.
+- [x] Vue palette long press ajoutée.
+- [ ] Câbler SudokuBoardView long press.
+- [ ] Déplacer rendu notes dans overlay stylé.
+- [ ] Câbler Settings difficulté + géométrie par mode.

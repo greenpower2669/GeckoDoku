@@ -1244,3 +1244,7 @@ Attention historique : une interprétation temporaire « appui long hors grille 
 <!-- GECKO-038-TACTILE-RED-2026-09-27 -->
 ## 2026-09-27 — lancement code UX tactile
 GO Fab sur `gecko-038-sudoku-mode`, HEAD `baac7df072786bad770b1b8236aada091390744f`. Audit : le masquage pavé/selector provient du freeze géométrique partagé entre modes, pas du pavé lui-même. RED ajouté pour géométrie par mode, grille candidats 3×3, palette long press/placement, Prof candidats transitoires et Difficulté dans Settings.
+
+
+<!-- GECKO-038-TACTILE-GREEN-CORE-2026-09-27 -->
+Bloc GREEN core ajouté avant câblage Activity : aucune modification GeckoBoardView. Les nouvelles classes sont isolées et testables ; la palette ne contient ni difficulté ni réglages globaux.
