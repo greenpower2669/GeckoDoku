@@ -1692,3 +1692,23 @@ Il doit contenir assez d'information pour :
 `todo.md` ne contient que les actions encore réellement en attente.
 `ordres-de-mission.md` reste vide lorsqu'aucune mission active n'existe.
 
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-RED-2026-09-27 -->
+# ISSUE INTEMPORELLE — DIALOGUE PROF / BULLE ↔ PIERRE
+
+## Invariant durable
+
+**Toute phrase effectivement prononcée par Pierre est affichée dans `ProfessorBubbleView` pendant la parole. La ligne `status` n'est jamais utilisée comme conteneur du dialogue du Prof. Les seules exceptions possibles doivent être intentionnelles, documentées et testées.**
+
+Le texte de la bulle doit être exactement le texte confié à la voix, sauf nécessité technique explicitement documentée.
+
+`status` reste réservé aux états UI courts.
+
+Audit HEAD `e854a6d8096a5b16227f38e0d3f998075e9e5fe6` :
+- conforme : `showProfessorBubble()` / PROF_BUTTON, bulle pédagogique persistante ;
+- conforme : `speakLivingProfessor()` pour QUICK_TALK, AMBIENT 309, ENCOURAGEMENT, erreurs, RETURN_AFTER_PAUSE, END_GAME Sudoku ;
+- défaut : `speakProfessorAmbient(message)` parle en AMBIENT et met le dialogue dans status sans bulle ;
+- défaut : `announcePlayerStats()` parle en STATS sans bulle ;
+- aucun appel direct supplémentaire de `professorSpeech.speak()` hors `speakWithProfessorVisual()`.
+
+Correction cible : un chemin commun de parole simple avec bulle, origine conservée, callback réel de fin, délai 1 s, protection générationnelle et nettoyage si refus.
+

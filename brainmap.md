@@ -653,3 +653,32 @@ correction ciblée OU prochaine mission
 
 État : aucune mission active ; ordre de mission vidé.
 
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-RED-2026-09-27 -->
+# Invariant dialogue Prof
+
+```text
+source événement
+   ↓
+parole simple acceptée ?
+   ↓
+armement token petite bulle
+   ↓
+ProfessorBubbleView = texte exact
+   ↓
+status = "Prof Gecko"
+   ↓
+ProfessorSpeech / SpeechOrigin conservée
+   ↓
+ProfParle
+   ↓
+callback FIN RÉELLE
+   ↓
+ProfessorQuickBubbleClosePolicy
+   ↓
++ ~1 seconde
+   ↓
+fermeture si token/generation toujours valide
+```
+
+PROF_BUTTON pédagogique reste hors de ce flux auto-close.
+

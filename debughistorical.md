@@ -1152,3 +1152,14 @@ Après #153 (accolade locale du helper crop), #154 passe tests, assembleDebug, b
 
 Cette intervention est strictement documentaire : aucun fichier source applicatif, asset, build ou test n'est modifié.
 
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-RED-2026-09-27 -->
+## 2026-09-27 — issue intemporelle Pierre ↔ bulle ouverte
+
+Symptôme téléphone : les propositions automatiques d'aide/sauvegarde sont prononcées par Pierre mais apparaissent intégralement dans la ligne status, pas dans ProfessorBubbleView.
+
+Cause confirmée : `speakProfessorAmbient()` appelle directement `speakWithProfessorVisual(... AMBIENT)` puis écrit le message dans `status.text`. Audit global : `announcePlayerStats()` présente le même défaut avec `SpeechOrigin.STATS`.
+
+Les chemins via `speakLivingProfessor()` et `showProfessorBubble()` sont déjà conformes et doivent rester inchangés dans leur sémantique.
+
+RED ajouté avant correction via `ProfessorSimpleSpeechCoordinatorTest`.
+

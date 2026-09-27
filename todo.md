@@ -38,3 +38,18 @@ GECKO-038 est techniquement gelé sur la candidate **0.11.0-dev / code 28**, CI 
 - [ ] Ne pas empiler de nouvelles fonctionnalités avant le retour téléphone.
 
 Le détail fonctionnel complet de GECKO-038 est désormais canonique dans `brain.md`.
+
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-RED-2026-09-27 -->
+## Garde-fou permanent — dialogue Prof
+- [ ] RED confirmé pour le contrat parole simple.
+- [ ] Factoriser AMBIENT fixe + STATS + moteur 309 vers un chemin simple partagé.
+- [ ] Garantir bubbleText == speechText.
+- [ ] Garantir status court.
+- [ ] Garantir origine SpeechOrigin conservée.
+- [ ] Garantir aucune bulle orpheline sur refus.
+- [ ] Garantir callback réel + ~1 s + token générationnel.
+- [ ] Réauditer tous les chemins de parole après correction.
+- [ ] CI tests/APK/AAB GREEN.
+- [ ] Validation téléphone Fab.
+- [ ] **Permanent : toute nouvelle parole de Pierre doit passer par ProfessorBubbleView.**
+
