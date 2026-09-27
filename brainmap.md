@@ -759,3 +759,58 @@ fermeture si token courant
 
 Validation Fab téléphone : OK.
 
+<!-- GECKO-038-SUDOKU-TACTILE-UX-MISSION-2026-09-27 -->
+# GECKO-038 — UX Sudoku tactile cible
+
+```text
+ÉCRAN SUDOKU
+    |
+    +-- grille 9×9
+    |
+    +-- selector CLASSIC / NB / COLOR
+    |
+    +-- pavé 1..9
+    |
+    +-- Notes / Effacer / Undo / Redo
+    |
+    +-- Nouvelle / ! / ⚙️
+             |
+             +-- Mode
+             +-- Difficulté
+             +-- Son / Animations / Journal
+```
+
+```text
+TAP CASE
+   → sélection
+   → pavé 1..9 / Notes
+
+LONG PRESS CASE
+   → palette locale tactile
+   → valeur 1..9
+   → candidats 1..9
+   → effacer
+```
+
+```text
+Candidates = positions fixes 3×3 dans la case
+
+1 2 3
+4 5 6
+7 8 9
+
+        ↓ VisualStyle
+CLASSIC / GECKO_NB / GECKO_COLORED
+        ↓
+même style pour valeur principale ET mini-candidats
+```
+
+```text
+Player candidate action ─┐
+                         ├→ même candidate model → même renderer
+Professor hint action ───┘
+```
+
+Overlay local / bulle / selector :
+**aucun reflow du plateau**.
+

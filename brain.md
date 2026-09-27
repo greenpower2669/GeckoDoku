@@ -1779,3 +1779,305 @@ Références :
 
 Cette issue devient un **invariant intemporel validé**. Toute évolution future de la parole de Pierre doit préserver ce contrat.
 
+<!-- GECKO-038-SUDOKU-TACTILE-UX-MISSION-2026-09-27 -->
+# GECKO-038 — ÉVOLUTION UX SUDOKU TACTILE / CANDIDATS VIVANTS
+
+STATUT : **SPÉCIFICATION FONCTIONNELLE VALIDÉE — AUCUN CODE DANS CETTE INTERVENTION.**
+Branche impérative future : `gecko-038-sudoku-mode`.
+HEAD documentaire de départ : `929889b075a89be170fbad756dd7c5d4a32af50f`.
+
+## Retour téléphone à l'origine de cette évolution
+
+Le mode Sudoku fonctionne sur téléphone et la grille 9×9 est bien visible.
+
+La capture téléphone montre cependant un défaut d'ergonomie verticale :
+- le pavé de saisie 1–9 n'est pas visible ;
+- le sélecteur visuel 3 états n'est pas visible ;
+- les boutons Notes / Effacer / Undo / Redo restent visibles ;
+- le gros bouton de difficulté `FACILE` occupe une ligne entière ;
+- la difficulté est déjà affichée sous le titre (`Sudoku 9×9 • Facile • ...`).
+
+Décision : déplacer le choix de difficulté dans ⚙️ Réglages et garantir structurellement que le pavé numérique et le sélecteur ne puissent jamais être masqués ou recouverts par la grille flottante.
+
+IMPORTANT : retirer le gros bouton Difficulté libère de la hauteur mais **ne doit pas être considéré comme l'unique correction**. La géométrie doit explicitement réserver la zone des contrôles Sudoku.
+
+## Contrôles Sudoku — hiérarchie cible
+
+Ordre visuel souhaité :
+
+```text
+Titre + résumé Sudoku
+        ↓
+grille 9×9
+        ↓
+sélecteur 3 états
+Classic ↔ Gecko N/B ↔ Gecko couleur
+        ↓
+pavé 1–9 toujours visible
+        ↓
+Notes | Effacer | Undo | Redo
+        ↓
+Nouvelle | ! | ⚙️
+        ↓
+Rejouer
+        ↓
+Prof Gecko
+```
+
+La grille ne doit jamais passer au-dessus du sélecteur ou du pavé 1–9.
+
+## Difficulté Sudoku
+
+Le gros bouton de difficulté présent dans l'écran principal Sudoku doit disparaître.
+
+La difficulté devient un réglage dans ⚙️.
+
+Exemple :
+
+```text
+⚙️ Réglages
+- Mode de jeu : Sudoku
+- Difficulté : Facile
+- Son
+- Animations
+- Journal vidéo
+...
+```
+
+Le résumé sous le titre continue d'indiquer la difficulté active.
+
+Changer la difficulté ne doit pas modifier une partie en cours silencieusement : le comportement exact de confirmation / nouvelle grille doit rester explicite et testé lors de l'implémentation.
+
+## Appui simple
+
+Appui simple sur une case Sudoku :
+- sélectionne la case ;
+- conserve le fonctionnement actuel ;
+- le pavé 1–9 reste utilisable ;
+- Notes / Effacer / Undo / Redo restent utilisables.
+
+Le nouvel appui long est une voie rapide supplémentaire, pas un remplacement du contrôle simple.
+
+## Appui long sur une case Sudoku
+
+Un appui long sur une case jouable ouvre une **palette tactile locale** liée à cette case.
+
+Objectif :
+- réduire les déplacements du doigt ;
+- permettre une saisie locale rapide ;
+- garder la grille au centre de l'interaction ;
+- ne pas imposer le pavé inférieur aux joueurs qui préfèrent l'interaction directe.
+
+La palette doit rester suffisamment grande pour le tactile et se positionner intelligemment pour éviter de sortir de l'écran ou de masquer inutilement la zone utile.
+
+### Actions de la palette
+
+La palette doit permettre au minimum :
+- poser une valeur 1–9 ;
+- basculer / utiliser le mode candidats ;
+- ajouter ou retirer un candidat 1–9 ;
+- effacer la valeur / les candidats de la case selon le contexte ;
+- fermer naturellement la palette en validant une action ou en touchant ailleurs.
+
+Ne pas transformer cette palette locale en écran de réglages.
+La difficulté, le mode de jeu et les options globales restent dans ⚙️.
+
+## Candidats Sudoku — modèle visuel
+
+Une case vide peut afficher jusqu'à **9 mini-candidats**, uniquement **dans la case de la grille**.
+
+Disposition canonique 3×3 :
+
+```text
+1 2 3
+4 5 6
+7 8 9
+```
+
+Chaque position correspond toujours au même candidat.
+
+Les candidats peuvent être visuellement serrés : c'est accepté, mais ils ne doivent jamais déborder hors de leur case ni chevaucher les lignes de grille au point de devenir ambigus.
+
+Quand une valeur principale est posée dans la case, elle remplace l'affichage des mini-candidats de cette case.
+
+## Les candidats suivent le style visuel actif
+
+Règle durable :
+
+**Toute représentation d'une valeur Sudoku suit le VisualStyle actif, y compris les mini-candidats.**
+
+### CLASSIC_NUMBERS
+- valeur principale = chiffre classique ;
+- candidat = petit chiffre classique.
+
+### GECKO_NB
+- valeur principale = Gecko/chiffre stylisé N/B ;
+- candidat = mini représentation du même Gecko/chiffre N/B.
+
+### GECKO_COLORED
+- valeur principale = Gecko/chiffre coloré ;
+- candidat = mini représentation du même Gecko/chiffre coloré.
+
+Il ne doit pas exister un style principal Gecko avec des candidats rendus dans une autre convention, sauf fallback d'accessibilité explicitement décidé plus tard.
+
+Les deux planches PNG canoniques restent utilisées sans conversion ni réexport.
+
+## Prof Gecko et candidats
+
+Prof Gecko peut lui aussi **placer, montrer ou retirer les mini-candidats directement dans les cases de la grille**, dans l'esprit du mode GeckoDoku historique.
+
+Le Prof ne crée pas un second système visuel de candidats.
+
+Même modèle :
+- mêmes positions 1–9 ;
+- même VisualStyle courant ;
+- même grille ;
+- même renderer.
+
+Une intervention pédagogique peut donc :
+- sélectionner une case ;
+- montrer les candidats possibles ;
+- retirer les candidats impossibles ;
+- attirer l'attention sur un candidat ;
+- mener progressivement à une déduction.
+
+Le Prof doit privilégier l'explication d'une technique humaine avant de donner directement la réponse.
+
+La représentation graphique utilisée par le Prof doit être exactement celle du système candidat normal.
+
+## Données : candidat ≠ décoration
+
+Les candidats restent des données Sudoku, pas des sprites autonomes.
+
+Conceptuellement :
+
+```text
+CellState
+ ├─ value: 0..9
+ └─ candidates: Set<1..9>
+          ↓
+      VisualStyle
+   ┌──────┼──────────┐
+CLASSIC   NB       COLORED
+   ↓       ↓          ↓
+mini rendu dans la même case
+```
+
+Le renderer choisit seulement l'apparence.
+
+## Unification joueur / Prof
+
+Le joueur et le Prof doivent manipuler le **même modèle de candidats**.
+
+```text
+JOUEUR
+appui long / Notes
+      ↓
+Candidate action
+      ↓
+SudokuGameEngine / candidate state
+      ↓
+renderer
+
+PROF
+explication
+      ↓
+Candidate action pédagogique
+      ↓
+même candidate state / même renderer
+```
+
+Pas de duplication `playerCandidates` vs `profCandidates` uniquement pour l'affichage.
+
+Si une provenance interne est utile pour l'animation ou l'historique, elle peut être conservée comme métadonnée, mais l'état Sudoku reste cohérent et l'apparence visible est commune.
+
+## Undo / Redo
+
+Toutes les actions de candidats déclenchées par le joueur doivent respecter Undo / Redo :
+- ajouter candidat ;
+- retirer candidat ;
+- effacer les candidats ;
+- poser une valeur qui modifie les candidats des pairs.
+
+Les actions pédagogiques du Prof doivent avoir une politique explicite :
+- soit visuelles/transitoires ;
+- soit intégrées au modèle avec une action clairement identifiable.
+
+Ne pas mélanger silencieusement des modifications du Prof avec l'historique du joueur.
+
+Le choix précis doit être fixé avant code après audit du comportement du mode 1.
+
+## Positionnement intelligent de la palette d'appui long
+
+La palette locale ne doit pas sortir de l'écran.
+
+Exemples :
+- case haute → palette peut s'ouvrir dessous ;
+- case basse → palette peut s'ouvrir au-dessus ;
+- case gauche → favoriser la droite ;
+- case droite → favoriser la gauche.
+
+Elle reste un overlay et ne déclenche aucun reflow du plateau.
+
+## Accessibilité
+
+Le système reste utilisable sans appui long :
+- pavé 1–9 visible ;
+- bouton Notes ;
+- Effacer ;
+- Undo / Redo ;
+- Prof.
+
+L'appui long est un accélérateur tactile, pas la seule façon de jouer.
+
+Les cibles tactiles de la palette doivent être suffisamment grandes.
+
+Le mode Classic doit rester la référence de lisibilité maximale.
+
+## Non-régressions absolues
+
+Ne pas casser :
+- GeckoBoardView historique ;
+- mode GeckoDoku ;
+- moteur Sudoku déjà GREEN ;
+- génération unique ;
+- notes actuelles ;
+- Undo / Redo ;
+- Prof Gecko / Pierre ;
+- invariant bulle ↔ voix validé téléphone ;
+- sélecteur 3 états et preview live ;
+- assets PNG canoniques ;
+- intro ;
+- ProfParle ;
+- audio ;
+- célébration ;
+- géométrie sans reflow ;
+- accessibilité ;
+- clavier physique.
+
+## Principe d'implémentation futur
+
+1. Audit de la géométrie réelle téléphone.
+2. RED : pavé / sélecteur ne peuvent pas être recouverts.
+3. Déplacer Difficulté dans Settings sans changer le moteur.
+4. Corriger la réservation verticale des contrôles.
+5. RED puis implémenter le modèle/policy d'appui long.
+6. Réutiliser le modèle de candidats existant autant que possible.
+7. Adapter le renderer de candidats aux trois VisualStyle.
+8. Adapter Prof Sudoku au même système candidat.
+9. Vérifier Undo / Redo.
+10. CI.
+11. APK/AAB.
+12. Validation téléphone Fab.
+
+## Autorité finale
+
+Le comportement téléphone de Fab reste l'autorité finale pour :
+- taille du popup ;
+- confort du long press ;
+- lisibilité des 9 mini-candidats ;
+- rendu N/B ;
+- rendu couleur ;
+- visibilité permanente du pavé ;
+- visibilité permanente du sélecteur.
+

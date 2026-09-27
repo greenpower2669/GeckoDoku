@@ -1,99 +1,56 @@
 # TODO — GeckoDoku
 
-## État actuel
+## Mission active documentaire
 
-Aucune mission de code active.
+GECKO-038 — UX Sudoku tactile / candidats vivants.
 
-GECKO-038 est techniquement gelé sur la candidate **0.11.0-dev / code 28**, CI **#154 GREEN**, en attente du retour téléphone de Fab.
+STATUT : spécification prête, code non lancé dans cette intervention.
 
-## Validation téléphone à faire
+## Retour téléphone déjà acquis
 
-- [ ] Vérifier que le mode GeckoDoku historique est inchangé.
-- [ ] Ouvrir Réglages → Mode de jeu → Sudoku.
-- [ ] Vérifier la taille et la lisibilité de la grille 9×9.
-- [ ] Tester sélection de case + saisie 1..9.
-- [ ] Tester Notes ✏️.
-- [ ] Tester Effacer.
-- [ ] Tester Undo / Redo.
-- [ ] Tester Prof Gecko en Sudoku.
-- [ ] Vérifier Pierre / bulle / ProfParle.
-- [ ] Glisser le sélecteur gauche ↔ milieu ↔ droite sans relever le doigt.
-- [ ] Vérifier que la grille change en direct pendant le glissement.
-- [ ] Vérifier le style Classic.
-- [ ] Vérifier le cadrage Gecko N/B.
-- [ ] Vérifier le cadrage Gecko couleur.
-- [ ] Vérifier qu'aucune couche Gecko ne bloque les touches.
-- [ ] Vérifier qu'aucune régression Intro / audio / célébration n'apparaît.
+- [x] Mode Sudoku visible sur téléphone.
+- [x] Grille 9×9 visible.
+- [x] Notes / Effacer / Undo / Redo visibles.
+- [x] Défaut constaté : pavé 1–9 non visible.
+- [x] Défaut constaté : sélecteur 3 états non visible.
+- [x] Gros bouton Difficulté identifié comme consommation verticale inutile.
+- [x] Issue intemporelle Pierre ↔ bulle validée téléphone.
 
-## Après le retour Fab
+## Prochaine mission de code — après GO Fab
 
-- [ ] Corriger uniquement les défauts réellement observés.
-- [ ] Revalider CI après toute correction.
-- [ ] Décider ensuite seulement d'une nouvelle mission : pédagogie Sudoku avancée, animations Gecko, ergonomie ou autre.
-
-## Interdictions actuelles
-
-- [ ] Ne pas fusionner dans `main` sans validation explicite de Fab.
-- [ ] Ne pas publier de release sans validation explicite de Fab.
-- [ ] Ne pas empiler de nouvelles fonctionnalités avant le retour téléphone.
-
-Le détail fonctionnel complet de GECKO-038 est désormais canonique dans `brain.md`.
-
-<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-RED-2026-09-27 -->
-## Garde-fou permanent — dialogue Prof
-- [ ] RED confirmé pour le contrat parole simple.
-- [ ] Factoriser AMBIENT fixe + STATS + moteur 309 vers un chemin simple partagé.
-- [ ] Garantir bubbleText == speechText.
-- [ ] Garantir status court.
-- [ ] Garantir origine SpeechOrigin conservée.
-- [ ] Garantir aucune bulle orpheline sur refus.
-- [ ] Garantir callback réel + ~1 s + token générationnel.
-- [ ] Réauditer tous les chemins de parole après correction.
-- [ ] CI tests/APK/AAB GREEN.
-- [x] Validation téléphone Fab — issue Pierre ↔ bulle : OK.
-- [ ] **Permanent : toute nouvelle parole de Pierre doit passer par ProfessorBubbleView.**
-
-<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-GREEN-CODE-2026-09-27 -->
-- [x] RED #155 confirmé.
-- [x] Coordinator pur parole simple.
-- [x] AMBIENT fixe → bulle.
-- [x] STATS → bulle.
-- [x] moteur 309 → même helper commun.
-- [x] Refus tardif → fermeture sûre de la bulle courante seulement.
-- [x] Prof pédagogique laissé hors auto-close.
-- [ ] CI GREEN du correctif.
-- [ ] Audit final exhaustif après CI.
-- [ ] APK/AAB GREEN.
+- [ ] Relire HEAD réel de `gecko-038-sudoku-mode`.
+- [ ] Audit géométrie et superposition téléphone.
+- [ ] Ajouter RED garantissant pavé et sélecteur non recouverts.
+- [ ] Déplacer Difficulté dans ⚙️.
+- [ ] Retirer le gros bouton Difficulté de l'écran Sudoku.
+- [ ] Réserver explicitement l'espace du sélecteur 3 états.
+- [ ] Réserver explicitement l'espace du pavé 1–9.
+- [ ] Conserver Notes / Effacer / Undo / Redo.
+- [ ] Ajouter appui long sur case Sudoku.
+- [ ] Ajouter palette locale tactile 1–9 / candidats / effacer.
+- [ ] Afficher 9 mini-candidats maximum en grille 3×3 dans la case.
+- [ ] Rendre les candidats selon CLASSIC / GECKO_NB / GECKO_COLORED.
+- [ ] Réutiliser les PNG canoniques sans conversion.
+- [ ] Faire utiliser le même modèle de candidats au joueur et au Prof.
+- [ ] Définir explicitement la politique Undo/Redo des actions du Prof.
+- [ ] Vérifier popup sans reflow et positionnement intelligent.
+- [ ] Préserver clavier physique.
+- [ ] Tests unitaires/policies.
+- [ ] CI GREEN.
+- [ ] APK/AAB.
 - [ ] Validation téléphone Fab.
-- [ ] **Permanent : surveiller toute nouvelle parole de Pierre qui contournerait `speakSimpleProfessorBubble()` ou `showProfessorBubble()`.**
 
-<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-CI156-GREEN-2026-09-27 -->
-## État issue intemporelle
-- [x] Tests RED ajoutés.
-- [x] RED #155 confirmé.
-- [x] AMBIENT aide automatique synchronisé avec la bulle.
-- [x] AMBIENT Sauver synchronisé avec la bulle.
-- [x] STATS synchronisé avec la bulle.
-- [x] Moteur 309 factorisé sur le même chemin simple.
-- [x] Refus tardif nettoie seulement la bulle du token courant.
-- [x] Callback obsolète protégé.
-- [x] Délai de fermeture = vraie fin + 1 s.
-- [x] Prof pédagogique hors auto-close.
-- [x] Aucun reflow de plateau.
-- [x] Audit final des chemins runtime.
-- [x] CI #156 GREEN.
-- [x] APK/AAB produits.
-- [ ] Validation téléphone Fab.
-- [ ] **GARDE-FOU PERMANENT : toute nouvelle parole de Pierre doit afficher exactement son texte dans `ProfessorBubbleView`.**
+## Garde-fous permanents
 
-<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-PHONE-VALIDATED-2026-09-27 -->
-## Garde-fou permanent validé
-- [x] Test téléphone Pierre ↔ bulle validé par Fab.
-- [x] AMBIENT aide affiché dans la vraie bulle.
-- [x] AMBIENT Sauver affiché dans la vraie bulle.
-- [x] STATS affiché dans la vraie bulle.
-- [x] Fermeture naturelle après fin réelle de Pierre.
-- [ ] **Permanent : toute nouvelle parole de Pierre doit continuer à afficher exactement son texte dans `ProfessorBubbleView`.**
+- [ ] Toute nouvelle parole de Pierre affiche exactement son texte dans `ProfessorBubbleView`.
+- [ ] Une anomalie Sudoku ne se corrige pas en régressant `GeckoBoardView`.
+- [ ] VisualStyle ne modifie jamais les données Sudoku.
+- [ ] Une couche visuelle ne bloque pas les touches.
+- [ ] Une popup / bulle / overlay ne modifie pas la géométrie de la grille.
+- [ ] Les candidats restent dans leur case.
+- [ ] Les candidats suivent le style visuel actif.
 
-Aucune mission active pour cette issue.
+## Interdictions
 
+- [ ] Pas de merge `main` sans GO explicite Fab.
+- [ ] Pas de release sans GO explicite Fab.

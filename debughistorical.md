@@ -1218,3 +1218,24 @@ Aucune modification de code lors de cette clôture documentaire.
 Aucun merge `main`.
 Aucune release créée.
 
+<!-- GECKO-038-SUDOKU-TACTILE-UX-MISSION-2026-09-27 -->
+## 2026-09-27 — retour téléphone UX Sudoku après candidate
+
+Observation Fab sur téléphone :
+- Sudoku 9×9 visible et jouable visuellement ;
+- Notes / Effacer / Undo / Redo visibles ;
+- gros bouton `FACILE` visible ;
+- pavé 1–9 non visible ;
+- sélecteur 3 états non visible dans la zone utile.
+
+Décision :
+- déplacer le choix Difficulté dans ⚙️ ;
+- ne pas considérer cette suppression comme suffisante : la géométrie doit réserver explicitement l'espace du pavé et du sélecteur ;
+- ajouter à terme un appui long sur une case ouvrant une palette locale de saisie ;
+- afficher jusqu'à 9 mini-candidats dans chaque case en 3×3 ;
+- les mini-candidats suivent le VisualStyle actif ;
+- Prof Gecko utilise le même système de candidats que le joueur, comme outil pédagogique ;
+- aucune modification de code dans cette intervention documentaire.
+
+Attention historique : une interprétation temporaire « appui long hors grille » a été écartée après clarification de Fab. La décision canonique concerne les **mini-candidats dans les cases de la grille** et l'appui long contextuel sur une case Sudoku.
+
