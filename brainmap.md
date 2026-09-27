@@ -1147,3 +1147,18 @@ GomokuBoardView → snapshotProvider → draw logical board through GomokuViewpo
 
 <!-- GECKO-039-GOMOKU-MAINACTIVITY-2026-09-27 -->
 Mode chooser → GOMOKU → startGomokuGame → GomokuBoardView. Player tap→engine.play→green animation→PROF turn. Prof button→background GomokuAi→UI apply yellow move→PLAYER turn. Win→center line→lock→reaction.
+
+<!-- GECKO-039-CANDIDATE-0120-2026-09-27 -->
+0.12.0-dev/code32
+├─ Classic GREEN
+├─ Sudoku GREEN
+└─ Gomoku GREEN integration #196
+   ├─ 19x19 logical board
+   ├─ viewport default ~12x12
+   ├─ tap play / drag pan / pinch zoom
+   ├─ PLAYER green Gecko
+   ├─ PROFESSOR same sprite + yellow matrix
+   └─ background bounded AI → Prof button move
+
+Next → candidate CI → APK/AAB → Fab phone validation.
+

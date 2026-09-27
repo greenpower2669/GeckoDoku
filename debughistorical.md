@@ -1545,3 +1545,15 @@ Première brique UI isolée : rendu plateau + gestes + filtre jaune dynamique. A
 <!-- GECKO-039-GOMOKU-MAINACTIVITY-2026-09-27 -->
 ## 2026-09-27 — intégration MainActivity Gomoku
 Après GomokuBoardView GREEN #195, branchement du troisième mode. Calcul IA déplacé hors thread UI et protégé par generation token pour éviter d'appliquer un coup après changement de mode/replay.
+
+<!-- GECKO-039-CANDIDATE-0120-2026-09-27 -->
+## 2026-09-27 — candidate 0.12.0-dev
+
+La phase 3 Gomoku est passée GREEN en intégration (#196) après :
+- core #192 ;
+- policies UI #194 ;
+- board view #195 ;
+- MainActivity #196.
+
+Candidate versionnée 0.12.0-dev/code32. L'IA est volontairement bornée et exécutée hors UI thread pour réduire le risque de freeze Android.
+

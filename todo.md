@@ -565,3 +565,27 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] CI intégration MainActivity.
 - [ ] Vérifier performances IA haut niveau.
 - [ ] Candidate APK/AAB et test téléphone.
+
+<!-- GECKO-039-CANDIDATE-0120-2026-09-27 -->
+## Validation téléphone 0.12.0-dev
+- [x] Classic Phase 1 GREEN.
+- [x] Sudoku Phase 2 GREEN.
+- [x] Gomoku core GREEN.
+- [x] Gomoku vue GREEN #195.
+- [x] Gomoku intégration GREEN #196.
+- [x] Candidate 0.12.0-dev / code32 préparée.
+- [ ] CI candidate versionnée GREEN.
+- [ ] Fab : Classic grille plus large.
+- [ ] Fab : Sudoku animations Gecko Classic.
+- [ ] Fab : Sudoku double tap repères personnels.
+- [ ] Fab : Prof Sudoku projection + explication synchronisées.
+- [ ] Fab : choisir le 3e mode Gomoku.
+- [ ] Fab : vérifier vue ~12×12.
+- [ ] Fab : drag/pan.
+- [ ] Fab : pinch zoom-in / zoom-out.
+- [ ] Fab : tap pose Gecko vert sans conflit avec drag.
+- [ ] Fab : bouton Prof pose Gecko jaune.
+- [ ] Fab : vérifier difficulté basse vs haute.
+- [ ] Fab : vérifier fluidité IA niveau Infernal.
+- [ ] Fab : victoire 5 alignés + recentrage.
+

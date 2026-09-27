@@ -1065,3 +1065,18 @@ GomokuBoardView implémentée isolément. Prochaine étape après CI : intégrat
 <!-- GECKO-039-GOMOKU-MAINACTIVITY-2026-09-27 -->
 ## EXÉCUTION PHASE 3 — INTÉGRATION
 Vue Gomoku GREEN #195 puis câblage MainActivity complet. Prochaine porte : CI GREEN, audit performance niveau haut, version candidate et APK téléphone.
+
+<!-- GECKO-039-CANDIDATE-0120-2026-09-27 -->
+## STATUT CANDIDATE
+
+Les trois phases sont codées et l'intégration complète est GREEN sur CI #196.
+
+Candidate : `0.12.0-dev / code 32`.
+
+Attendre maintenant :
+1. CI candidate versionnée ;
+2. APK/AAB ;
+3. test téléphone Fab des trois modes.
+
+Ne pas fusionner main ni publier de release sans GO explicite.
+

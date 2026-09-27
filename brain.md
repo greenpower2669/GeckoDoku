@@ -2665,3 +2665,23 @@ GomokuBoardView ajouté : plateau visuel type Go, viewport 12×12 par défaut, d
 
 <!-- GECKO-039-GOMOKU-MAINACTIVITY-2026-09-27 -->
 Gomoku branché dans MainActivity : sélecteur 3 modes, lifecycle nouvelle/rejouer, visibilité indépendante, plateau carré plein largeur, difficulté, joueur vert par tap, Pierre jaune via bouton Prof, IA calculée hors UI thread avec garde de génération, recentrage si coup hors viewport, victoire/draw et animation shared pour le Gecko joueur.
+
+<!-- GECKO-039-CANDIDATE-0120-2026-09-27 -->
+# GECKO-039 — candidate 0.12.0-dev / code 32
+
+CI d'intégration #196 : GREEN complet.
+
+Contenu :
+- Classic : grille élargie et pipeline Gecko mutualisé ;
+- Sudoku : tap/retap Gecko-repère, animations Classic partagées, titre `GeckoDoku 🦎`, double tap repères personnels, Prof avec ReasoningTrace + projection synchronisée ;
+- Gomoku : troisième mode jouable, moteur 19×19 par défaut, viewport ~12×12, drag/pan, pinch zoom, même sprite vert/jaune dynamique, IA stratégique et pièges, tour Pierre via bouton Prof.
+
+Performance IA :
+- calcul hors thread UI ;
+- searchDepth bornée à 4 ;
+- beamWidth borné à 11 ;
+- alpha-beta + candidats locaux ;
+- garde de génération avant application du coup.
+
+Aucun merge main. Aucune release. Test téléphone Fab requis avant suite.
+
