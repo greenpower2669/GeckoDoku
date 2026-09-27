@@ -1247,3 +1247,8 @@ Cette séparation GameMode / VisualStyle est un contrat architectural durable.
 <!-- GECKO-038-RED-START-2026-09-27 -->
 ## GECKO-038 — lancement autorisé
 Fab donne le GO explicite. Branche isolée `gecko-038-sudoku-mode`. Première étape : RED de contrat pur avant implémentation. Aucun merge main ni release autorisé.
+
+
+<!-- GECKO-038-CORE-GREEN-2026-09-27 -->
+## GECKO-038 — cœur Sudoku
+RED CI #145 confirmé. Cœur pur ajouté : GameMode séparé du VisualStyle, SudokuPuzzle 9×9, moteur de saisie/notes/undo-redo, solveur de comptage, générateur conservant une solution unique et hints humains single nu/caché. La couche UI n'est pas encore câblée à ce commit.

@@ -216,3 +216,7 @@ Fab valide :
 ## ÉTAT D'EXÉCUTION GECKO-038
 GO reçu le 2026-09-27. Branche active : `gecko-038-sudoku-mode`.
 Étape courante : RED de contrat, puis cœur Sudoku pur. Interdiction de merge main/release sans validation Fab.
+
+
+### Avancement
+RED #145 confirmé. Cœur Sudoku implémenté ; attendre preuve CI GREEN avant câblage UI final. GeckoBoardView historique n'a pas été modifié dans cette tranche.

@@ -1090,3 +1090,8 @@ Aucun fichier source applicatif n'a été modifié par cette intervention docume
 <!-- GECKO-038-RED-START-2026-09-27 -->
 ## 2026-09-27 — GECKO-038 lancé
 GO explicite de Fab. Branche `gecko-038-sudoku-mode` créée depuis la spécification. RED ajouté avant toute classe Sudoku : moteur, génération unique, hint sans hasard, séparation GameMode/VisualStyle. Le workflow CI est étendu à la branche. Échec attendu avant GREEN.
+
+
+<!-- GECKO-038-CORE-GREEN-2026-09-27 -->
+## 2026-09-27 — RED #145 puis cœur GREEN candidat
+CI #145 échoue volontairement après ajout des contrats RED. Implémentation du cœur pur sans toucher GeckoBoardView : moteur Sudoku distinct, génération unique via countSolutions(limit=2), notes et historique undo/redo, hints sans guessing. Prochaine étape : CI cœur puis UI isolée.

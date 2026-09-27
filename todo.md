@@ -703,3 +703,14 @@ Aucune mission active.
 - [ ] Prof Sudoku.
 - [ ] CI finale APK/AAB.
 - [ ] Validation téléphone Fab.
+
+
+<!-- GECKO-038-CORE-GREEN-2026-09-27 -->
+- [x] CI #145 RED attendu confirmé.
+- [x] GameMode / VisualStyle séparés.
+- [x] SudokuEngine pur.
+- [x] Génération 9×9 avec unicité vérifiée.
+- [x] Notes + undo/redo.
+- [x] Hints single nu / caché.
+- [ ] Confirmer CI cœur GREEN.
+- [ ] UI / assets / sélecteur.
