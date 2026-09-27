@@ -2626,3 +2626,7 @@ SudokuGameEngine stocke désormais les CustomMarker visuels dans l'historique Un
 
 <!-- GECKO-039-PHASE2-VIEWS-2026-09-27 -->
 SudokuBoardView distingue désormais single-confirmed, double tap et long press. SudokuValueOverlayView sait rendre repères personnels discrets et ReasoningTrace : source encadrée, projection trait/bloc, croix d'élimination et case finale encadrée. Pas de dépendance couleur seule.
+
+
+<!-- GECKO-039-PHASE2-MAIN-WIRING-2026-09-27 -->
+Phase 2 UI câblée : double tap ouvre les CustomMarker Sudoku, simple tap reste Gecko, long press reste palette. Gecko-repère utilise le pipeline Classic d'apparition/disparition et scheduler d'action longue. AppTitlePolicy appliquée. ReasoningTrace déroulée étape par étape avec même narration dans overlay/bulle/voix.

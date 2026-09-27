@@ -1024,3 +1024,7 @@ Phase 2 moteur : repères personnels historiques + trace réelle des contraintes
 
 <!-- GECKO-039-PHASE2-VIEWS-2026-09-27 -->
 Phase 2 vues prêtes : geste double distinct et projection graphique structurée. MainActivity à câbler.
+
+
+<!-- GECKO-039-PHASE2-MAIN-WIRING-2026-09-27 -->
+Phase 2 câblage terminé. Attente CI GREEN avant Phase 3.

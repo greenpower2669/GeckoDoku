@@ -1497,3 +1497,8 @@ Le texte détaillé est désormais dérivable des mêmes contraintes structurée
 <!-- GECKO-039-PHASE2-VIEWS-2026-09-27 -->
 ## Phase 2 vues
 Double tap ne peut plus être interprété comme deux single taps grâce à onSingleTapConfirmed.
+
+
+<!-- GECKO-039-PHASE2-MAIN-WIRING-2026-09-27 -->
+## Phase 2 MainActivity
+Les séquences pédagogiques sont annulées sur mutation pour éviter les callbacks visuels obsolètes.

@@ -1109,3 +1109,7 @@ Engine customMarkers ↔ Undo/Redo. HintEngine → conflictFor(row/col/box) → 
 
 <!-- GECKO-039-PHASE2-VIEWS-2026-09-27 -->
 SudokuBoardView → single confirmed / double / long. Overlay → custom marker + cumulative reasoning projection.
+
+
+<!-- GECKO-039-PHASE2-MAIN-WIRING-2026-09-27 -->
+doubleTap→marker dialog. Gecko toggle→shared Classic video. Reasoning step→overlay + bubble + Pierre→next on speech completion.

@@ -84,6 +84,12 @@ class MainActivity : Activity() {
     private val sudokuCellTapPolicy =
         SudokuCellTapPolicy()
 
+    private val sudokuGesturePolicy =
+        SudokuGesturePolicy()
+
+    private var sudokuReasoningGeneration =
+        0
+
     private val sudokuFullWidthBoardPolicy =
         SudokuFullWidthBoardPolicy(
             horizontalMarginPx = 3
@@ -628,6 +634,24 @@ class MainActivity : Activity() {
                                     "," +
                                     (cell.col + 1)
                             }
+                    }
+                }
+
+                onDoubleTapCell = {
+                        cell ->
+
+                    if (
+                        sudokuGesturePolicy
+                            .actionFor(
+                                SudokuGesture
+                                    .DOUBLE_TAP
+                            ) ==
+                            SudokuGestureAction
+                                .OPEN_PERSONAL_MARKERS
+                    ) {
+                        showSudokuPersonalMarkerPalette(
+                            cell
+                        )
                     }
                 }
 
@@ -1682,6 +1706,16 @@ class MainActivity : Activity() {
 
     private fun refreshGameUi() {
         applyGameModeVisibility()
+
+        if (
+            ::titleView.isInitialized
+        ) {
+            titleView.text =
+                AppTitlePolicy
+                    .titleFor(
+                        selectedGameMode
+                    )
+        }
 
         if (
             selectedGameMode ==
@@ -3798,6 +3832,7 @@ class MainActivity : Activity() {
     private fun startSudokuPuzzle(
         next: SudokuPuzzle
     ) {
+        cancelSudokuReasoningPresentation()
         sudokuProfessorInteractionPolicy
             .invalidate()
         dismissSudokuPalette()
@@ -3889,7 +3924,10 @@ class MainActivity : Activity() {
         refreshSudokuToolLabels()
 
         titleView.text =
-            "GeckoDoku • Sudoku 🦎"
+            AppTitlePolicy
+                .titleFor(
+                    GameMode.SUDOKU
+                )
 
         info.text =
             "Sudoku 9×9 • " +
@@ -4113,6 +4151,7 @@ class MainActivity : Activity() {
                 Long.MAX_VALUE
             }
 
+        cancelSudokuReasoningPresentation()
         sudokuProfessorInteractionPolicy
             .invalidate()
         recordBoardAction()
@@ -4257,6 +4296,7 @@ class MainActivity : Activity() {
             sudokuEngine
                 ?: return false
 
+        cancelSudokuReasoningPresentation()
         sudokuProfessorInteractionPolicy
             .invalidate()
 
@@ -4288,6 +4328,51 @@ class MainActivity : Activity() {
                 sudokuBoard.refresh()
                 sudokuValueOverlay.invalidate()
 
+                playSharedGeckoCellAnimation(
+                    kind =
+                        if (active) {
+                            RichMediaKind
+                                .GECKO_APPEARANCE
+                        } else {
+                            RichMediaKind
+                                .GECKO_DISAPPEARANCE
+                        },
+                    screenRect =
+                        sudokuBoard
+                            .cellRectOnScreen(
+                                cell
+                            ),
+                    maskColor =
+                        sudokuBoard
+                            .cellBackgroundColor(
+                                cell
+                            ),
+                    onFinished =
+                        if (active) {
+                            {
+                                maybePlaySharedGeckoLongAction(
+                                    screenRect =
+                                        sudokuBoard
+                                            .cellRectOnScreen(
+                                                cell
+                                            ),
+                                    maskColor =
+                                        sudokuBoard
+                                            .cellBackgroundColor(
+                                                cell
+                                            ),
+                                    eligible =
+                                        engine.snapshot()
+                                            .hasGeckoMarker(
+                                                cell
+                                            )
+                                )
+                            }
+                        } else {
+                            null
+                        }
+                )
+
                 active
             }
 
@@ -4307,6 +4392,7 @@ class MainActivity : Activity() {
     }
 
     private fun eraseSudokuSelection() {
+        cancelSudokuReasoningPresentation()
         sudokuProfessorInteractionPolicy
             .invalidate()
         sudokuValueOverlay
@@ -4350,6 +4436,7 @@ class MainActivity : Activity() {
     }
 
     private fun undoSudoku() {
+        cancelSudokuReasoningPresentation()
         sudokuProfessorInteractionPolicy
             .invalidate()
         sudokuValueOverlay
@@ -4376,6 +4463,7 @@ class MainActivity : Activity() {
     }
 
     private fun redoSudoku() {
+        cancelSudokuReasoningPresentation()
         sudokuProfessorInteractionPolicy
             .invalidate()
         sudokuValueOverlay
@@ -4536,18 +4624,150 @@ class MainActivity : Activity() {
 
         fx.hint()
 
-        showProfessorBubble(
-            hint.explanation
-        )
+        val reasoning =
+            hint.reasoning
+
+        if (
+            reasoning != null &&
+            reasoning.steps
+                .isNotEmpty()
+        ) {
+            startSudokuReasoningPresentation(
+                reasoning
+            )
+        } else {
+            showProfessorBubble(
+                hint.explanation
+            )
+        }
 
         status.text =
             hint.technique.label
+    }
+
+    private fun startSudokuReasoningPresentation(
+        trace: SudokuReasoningTrace
+    ) {
+        val generation =
+            ++sudokuReasoningGeneration
+
+        playSudokuReasoningStep(
+            trace = trace,
+            stepIndex = 0,
+            generation =
+                generation
+        )
+    }
+
+    private fun playSudokuReasoningStep(
+        trace: SudokuReasoningTrace,
+        stepIndex: Int,
+        generation: Int
+    ) {
+        if (
+            generation !=
+                sudokuReasoningGeneration
+        ) {
+            return
+        }
+
+        val step =
+            trace.steps
+                .getOrNull(
+                    stepIndex
+                )
+                ?: return
+
+        sudokuValueOverlay
+            .showReasoningStep(
+                trace,
+                stepIndex
+            )
+
+        showProfessorBubbleVisualOnly(
+            step.narration
+        )
+
+        sudokuBoard
+            .announceForAccessibility(
+                step.narration
+            )
+
+        val accepted =
+            speakWithProfessorVisual(
+                text =
+                    ProfessorDialogTextPolicy
+                        .normalize(
+                            step.narration
+                        ),
+                origin =
+                    SpeechOrigin
+                        .PROF_BUTTON,
+                onCompletion = {
+                    if (
+                        generation ==
+                            sudokuReasoningGeneration &&
+                        stepIndex <
+                            trace.steps
+                                .lastIndex
+                    ) {
+                        screenRoot.postDelayed(
+                            {
+                                playSudokuReasoningStep(
+                                    trace =
+                                        trace,
+                                    stepIndex =
+                                        stepIndex +
+                                            1,
+                                    generation =
+                                        generation
+                                )
+                            },
+                            280L
+                        )
+                    }
+                }
+            )
+
+        if (
+            !accepted &&
+            stepIndex <
+                trace.steps
+                    .lastIndex
+        ) {
+            screenRoot.postDelayed(
+                {
+                    playSudokuReasoningStep(
+                        trace = trace,
+                        stepIndex =
+                            stepIndex + 1,
+                        generation =
+                            generation
+                    )
+                },
+                1400L
+            )
+        }
+    }
+
+    private fun cancelSudokuReasoningPresentation() {
+        sudokuReasoningGeneration += 1
+
+        if (
+            ::sudokuValueOverlay
+                .isInitialized
+        ) {
+            sudokuValueOverlay
+                .clearReasoning()
+        }
     }
 
     private fun applySudokuProfessorMove(
         hint: SudokuHint,
         announce: Boolean
     ) {
+        cancelSudokuReasoningPresentation()
+
         val engine =
             sudokuEngine
                 ?: return
@@ -4591,6 +4811,16 @@ class MainActivity : Activity() {
                     hint.digit
                         .toString() +
                         " posé"
+
+                if (!announce) {
+                    speakSimpleProfessorBubble(
+                        text =
+                            "Je le pose.",
+                        origin =
+                            SpeechOrigin
+                                .PROF_BUTTON
+                    )
+                }
             }
 
             SudokuActionFeedback
@@ -4613,6 +4843,7 @@ class MainActivity : Activity() {
     }
 
     private fun showSudokuNoHint() {
+        cancelSudokuReasoningPresentation()
         sudokuProfessorInteractionPolicy
             .invalidate()
 
@@ -4834,6 +5065,115 @@ class MainActivity : Activity() {
         sudokuBoard
             .setSelectedCell(next)
         sudokuValueOverlay.invalidate()
+    }
+
+    private fun showSudokuPersonalMarkerPalette(
+        cell: Cell
+    ) {
+        val engine =
+            sudokuEngine
+                ?: return
+
+        val snapshot =
+            engine.snapshot()
+
+        if (
+            snapshot.isGiven(cell) ||
+            snapshot.valueAt(cell) != 0
+        ) {
+            fx.blocked()
+            status.text =
+                if (
+                    snapshot.isGiven(
+                        cell
+                    )
+                ) {
+                    "Ce chiffre est donné."
+                } else {
+                    "Cette case contient déjà une valeur."
+                }
+            return
+        }
+
+        sudokuSelectedCell = cell
+        sudokuBoard
+            .setSelectedCell(
+                cell
+            )
+
+        val markers =
+            CustomMarker.entries
+
+        val labels =
+            markers.map {
+                it.symbol +
+                    "  " +
+                    it.label
+            }.toMutableList()
+
+        labels.add(
+            "⌫  Effacer le repère personnel"
+        )
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Repère personnel Sudoku"
+            )
+            .setItems(
+                labels.toTypedArray()
+            ) {
+                    _,
+                    which ->
+
+                cancelSudokuReasoningPresentation()
+                sudokuProfessorInteractionPolicy
+                    .invalidate()
+                sudokuValueOverlay
+                    .clearProfessorCandidates()
+
+                val result =
+                    if (
+                        which ==
+                            markers.size
+                    ) {
+                        engine.setCustomMarker(
+                            cell,
+                            null
+                        )
+                    } else {
+                        engine.setCustomMarker(
+                            cell,
+                            markers[which]
+                        )
+                    }
+
+                when (result) {
+                    SudokuActionFeedback
+                        .PERSONAL_MARKER_SET -> {
+                        fx.marker()
+                        status.text =
+                            "Repère personnel posé."
+                    }
+
+                    SudokuActionFeedback
+                        .PERSONAL_MARKER_CLEARED -> {
+                        fx.marker()
+                        status.text =
+                            "Repère personnel retiré."
+                    }
+
+                    else ->
+                        fx.blocked()
+                }
+
+                sudokuBoard.refresh()
+                sudokuValueOverlay.invalidate()
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
     }
 
     private fun showSudokuCellPalette(

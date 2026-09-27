@@ -476,3 +476,11 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [x] Rendu repères personnels.
 - [x] Overlay raisonnement accessible par traits/croix.
 - [ ] Câblage MainActivity + animation Classic + séquence voix/bulle.
+
+
+<!-- GECKO-039-PHASE2-MAIN-WIRING-2026-09-27 -->
+- [x] Double tap repères personnels.
+- [x] Animation Classic sur Gecko Sudoku.
+- [x] Titre invariant.
+- [x] Séquence raisonnement overlay+bulle+voix.
+- [ ] CI GREEN Phase 2.
