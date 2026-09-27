@@ -1184,3 +1184,8 @@ Ajout ProfessorPhraseHistory avec cooldown exact 48 h, lastPhraseId et storage S
 <!-- GECKO-037-RUNTIME-GREEN-2026-09-27 -->
 ## GREEN 4 — runtime vivant branché
 MainActivity utilise désormais ProfessorLifeController pour observer GAME_STARTED, CORRECT_MOVE, WRONG_MOVE/RAPID_WRONG_MOVE, LONG_THINKING, HINT_REQUESTED, LEVEL_COMPLETED, AMBIENT et RETURN_AFTER_PAUSE. Le bouton !, smalltalk ambiant, réactions d'erreur et encouragements utilisent le selector 309. Les petites bulles partagent exactement le texte prononcé et ferment 1 s après onCompletion réel avec token protégé. Les bulles Prof pédagogiques invalident l'auto-close.
+
+
+<!-- GECKO-037-RUNTIME-CLEANUP-2026-09-27 -->
+## GREEN 5 — retrait des anciens chemins random runtime
+Les champs MainActivity pierreSmallTalkSelector, ProfessorQuickTalkPolicy, QuickTalkPresentationPolicy et lastSmallTalkIndex sont retirés. Ils n'étaient plus utilisés depuis le branchement du selector 309. Le runtime ne conserve donc aucun ancien tirage smalltalk par index.

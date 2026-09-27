@@ -854,3 +854,8 @@ Une phrase est identifiée par ID, marquée utilisée à la sélection et reste 
 <!-- GECKO-037-RUNTIME-GREEN-2026-09-27 -->
 ## GECKO-037 runtime
 Le moteur 309 est maintenant la source unique des petites paroles runtime : !, ambient, encouragements et réactions contextuelles. Les erreurs sont classées approximativement par délai depuis l'action précédente : >=15 s = réflexion longue, <=2,5 s = rapide ; une seule erreur rapide ne suffit pas à rendre le Prof taquin. Retour après pause >=60 s alimente RETURN. Les explications Prof restent sur leur chemin pédagogique séparé.
+
+
+<!-- GECKO-037-RUNTIME-CLEANUP-2026-09-27 -->
+## Non-régression sélection
+MainActivity ne possède plus d'ancien selector par index pour le smalltalk. Le chemin runtime des petites phrases passe exclusivement par ProfessorLifeController → ProfessorPhraseSelector → ProfessorPhraseCatalog.

@@ -1013,3 +1013,8 @@ Le vieux anti-repeat par index est remplacé fonctionnellement par lastPhraseId 
 <!-- GECKO-037-RUNTIME-GREEN-2026-09-27 -->
 ## 2026-09-27 — GREEN 4 runtime GECKO-037
 Remplacement runtime des anciens Random.nextInt smalltalk/PierreEncouragements par le selector 309. Ajout classification légère de l'erreur par délai de réflexion, logs PROF_CONTEXT/POOL/SELECTED/FALLBACK/FORCED_OLDEST et fermeture de bulle basée sur vraie completion Pierre.
+
+
+<!-- GECKO-037-RUNTIME-CLEANUP-2026-09-27 -->
+## 2026-09-27 — nettoyage runtime GECKO-037
+Après #138 GREEN, suppression des champs morts issus du système quicktalk historique afin d'éviter une réactivation accidentelle du tirage par index.

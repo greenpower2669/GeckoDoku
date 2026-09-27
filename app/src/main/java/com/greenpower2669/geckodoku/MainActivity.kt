@@ -176,12 +176,6 @@ class MainActivity : Activity() {
     private val professorAmbientPolicy =
         ProfessorAmbientPolicy()
 
-    private val pierreSmallTalkSelector =
-        PierreSmallTalkSelector()
-
-    private val professorQuickTalkPolicy =
-        ProfessorQuickTalkPolicy()
-
     private val professorSpeechLaunchPolicy =
         ProfessorSpeechLaunchPolicy()
 
@@ -193,9 +187,6 @@ class MainActivity : Activity() {
 
     private val professorPortraitContinuityPolicy =
         ProfessorPortraitContinuityPolicy()
-
-    private val quickTalkPresentationPolicy =
-        QuickTalkPresentationPolicy()
 
     private var professorVisualGeneration = 0
     private var professorVisualPreparing = false
@@ -210,7 +201,6 @@ class MainActivity : Activity() {
     private var ambientSaveOffered = false
     private var nextSmallTalkAtMs = 0L
     private var nextAmbientAllowedAtMs = 0L
-    private var lastSmallTalkIndex: Int? = null
 
     private val professorAmbientRunnable =
         Runnable {
@@ -2826,7 +2816,6 @@ class MainActivity : Activity() {
                     .smallTalkDelayMs(
                         Random.nextInt()
                     )
-        lastSmallTalkIndex = null
     }
 
     private fun recordBoardAction() {

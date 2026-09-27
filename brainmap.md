@@ -350,3 +350,7 @@ Selector → RARE(4% max) / FAB(3%) → weighted category → cooldown 48h → !
 MainActivity events → ProfessorLifeController.observe → context/mood
 canAccept(origin) → controller.choose → phrase ID/history → bubble(text) + Pierre(same text) → real completion → guarded +1000ms close
 Prof button pedagogy → pedagogical bubble token → no auto-close.
+
+
+<!-- GECKO-037-RUNTIME-CLEANUP-2026-09-27 -->
+MainActivity small speech → ProfessorLifeController ONLY. Ancien PierreSmallTalkSelector/QuickTalkPresentationPolicy : hors runtime.

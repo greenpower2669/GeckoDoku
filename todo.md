@@ -14,7 +14,7 @@
 - [x] Stats locales actives.
 - [x] Bulle Prof overlay sans reflow.
 - [x] Pierre + priorités de parole.
-- [x] Encouragements enregistrés + Pierre.
+- [x] Encouragements enregistrés retirés ; Pierre + moteur contextuel 309.
 - [x] Célébration.
 - [x] Icône launcher validée téléphone.
 - [x] Médaillon titre validé téléphone.
@@ -538,3 +538,11 @@ Aucune mission active.
 - [ ] CI GREEN runtime.
 - [ ] Nettoyage anciens sélecteurs devenus inutilisés.
 - [ ] Version candidate + APK/AAB.
+
+
+<!-- GECKO-037-RUNTIME-CLEANUP-2026-09-27 -->
+## GECKO-037 GREEN 5
+- [x] Aucun ancien selector smalltalk par index dans MainActivity.
+- [x] Runtime petites phrases = moteur 309 uniquement.
+- [ ] Versionner candidate.
+- [ ] CI finale + APK/AAB.
