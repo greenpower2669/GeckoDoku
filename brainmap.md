@@ -941,3 +941,7 @@ enterDigit(origin=PLAYER default | PROFESSOR) → EngineState.lastMoveOrigin →
 
 <!-- GECKO-038-GREEN-BLACK-CANDIDATES-2026-09-27 -->
 candidate mini → CandidateVisualPolicy → CLASSIC + mini=true → BLACK. Overlay inner margin=0px.
+
+
+<!-- GECKO-038-GREEN-BOARD-PALETTE-2026-09-27 -->
+BoardView inner margin=0px. QuickPalette: Value→VisualStyle ; Candidate→BLACK mini number.

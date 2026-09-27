@@ -1330,3 +1330,7 @@ Deuxième bloc GREEN : modèle + moteur seulement. Aucun comportement joueur exi
 
 <!-- GECKO-038-GREEN-BLACK-CANDIDATES-2026-09-27 -->
 Troisième bloc GREEN : renderer/overlay seulement. La valeur principale conserve VisualStyle ; seuls les mini-candidats basculent en noir.
+
+
+<!-- GECKO-038-GREEN-BOARD-PALETTE-2026-09-27 -->
+Quatrième bloc GREEN : alignement BoardView/Overlay sur marge interne zéro et cohérence palette candidats noirs.

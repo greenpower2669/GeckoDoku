@@ -175,7 +175,9 @@ class SudokuBoardView @JvmOverloads constructor(
         }
 
         val margin =
-            dp(4f)
+            SudokuFullWidthBoardPolicy
+                .INNER_GRID_MARGIN_PX
+                .toFloat()
 
         val side =
             min(

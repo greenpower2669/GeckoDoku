@@ -660,3 +660,7 @@ Moteur provenance GREEN posé ; appels historiques restent PLAYER par défaut.
 
 <!-- GECKO-038-GREEN-BLACK-CANDIDATES-2026-09-27 -->
 Rendu candidat noir GREEN posé ; valeurs principales Gecko inchangées.
+
+
+<!-- GECKO-038-GREEN-BOARD-PALETTE-2026-09-27 -->
+Vues GREEN prêtes. Dernier bloc fonctionnel : MainActivity.

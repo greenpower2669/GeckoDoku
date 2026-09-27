@@ -211,3 +211,9 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] SudokuBoardView marge interne 0.
 - [ ] Palette candidats noirs.
 - [ ] Activity/layout.
+
+
+<!-- GECKO-038-GREEN-BOARD-PALETTE-2026-09-27 -->
+- [x] BoardView marge interne 0.
+- [x] Palette candidats noirs.
+- [ ] Activity : plein largeur + contrôles compacts + Prof tap/tap/longpress.

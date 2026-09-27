@@ -40,6 +40,9 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
     private val renderer =
         SudokuDigitRenderer(context)
 
+    private val candidateVisualPolicy =
+        SudokuCandidateVisualPolicy()
+
     private val paint =
         Paint(Paint.ANTI_ALIAS_FLAG)
 
@@ -257,7 +260,15 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                         inner.height() * .12f
                 ),
             digit = digit,
-            style = visualStyle,
+            style =
+                if (candidate) {
+                    candidateVisualPolicy
+                        .styleForCandidate(
+                            visualStyle
+                        )
+                } else {
+                    visualStyle
+                },
             given = false,
             mini = candidate
         )

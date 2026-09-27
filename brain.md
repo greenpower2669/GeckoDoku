@@ -2311,3 +2311,7 @@ SudokuGameEngine accepte désormais une provenance de mouvement PLAYER/PROFESSOR
 
 <!-- GECKO-038-GREEN-BLACK-CANDIDATES-2026-09-27 -->
 SudokuDigitRenderer traite désormais tout rendu mini comme un chiffre Classic noir, même si la valeur principale est Gecko N/B ou Gecko couleur. SudokuValueOverlayView applique explicitement CandidateVisualPolicy et supprime ses 4dp internes : marge réelle du quadrillage = celle du conteneur plein écran.
+
+
+<!-- GECKO-038-GREEN-BOARD-PALETTE-2026-09-27 -->
+SudokuBoardView retire également les 4dp internes : quadrillage réel jusqu'au bord de son conteneur. La palette locale garde les valeurs principales dans le style courant, mais sa colonne Candidats utilise des mini-chiffres noirs comme la grille.
