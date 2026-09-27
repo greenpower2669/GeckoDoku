@@ -965,3 +965,7 @@ SUDOKU → reserve boardAnchor(screenWidth-6, weight0) → overlay left3 square 
     └─ Erase
 
 Gecko marker → engine annotation → Undo/Redo → overlay watermark → animated iff Animations ON.
+
+
+<!-- GECKO-038-CI177-GREEN-2026-09-27 -->
+CI #177 GREEN → APK/AAB 0.11.2-dev → test téléphone Fab → corrections perceptuelles ciblées seulement.

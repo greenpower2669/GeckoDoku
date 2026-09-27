@@ -248,3 +248,16 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Fab : poser / retirer petit gecko-repère.
 - [ ] Fab : vérifier son animation mignonne.
 - [ ] Fab : vérifier Animations OFF = repère statique.
+
+
+<!-- GECKO-038-CI177-GREEN-2026-09-27 -->
+- [x] CI #177 GREEN complet.
+- [x] APK 0.11.2-dev produit.
+- [x] AAB 0.11.2-dev produit.
+- [ ] Fab : test grille 3 px.
+- [ ] Fab : test candidats noirs.
+- [ ] Fab : test Prof tap / retap / long press.
+- [ ] Fab : test Undo coup Prof.
+- [ ] Fab : test Gecko-repère, animation et suppression.
+- [ ] Fab : test Animations OFF = Gecko-repère statique.
+- [ ] Fab : contrôle régression GeckoDoku historique.

@@ -672,3 +672,7 @@ Layout pleine largeur codé. Reste uniquement câblage comportement Prof puis CI
 
 <!-- GECKO-038-CANDIDATE-0112-2026-09-27 -->
 STATUT : candidate `0.11.2-dev / code 30` préparée après CI #176 GREEN. Le gecko-repère demandé à la volée est maintenant intégré et documenté sans refaire la structure de mission. Geler les nouvelles fonctions jusqu'au test téléphone Fab. Aucun merge main / release sans GO explicite.
+
+
+<!-- GECKO-038-CI177-GREEN-2026-09-27 -->
+STATUT : CI #177 GREEN, candidate 0.11.2-dev prête pour test téléphone. Mission de code gelée jusqu'au retour Fab. Ne corriger ensuite que les défauts réellement observés. Aucun merge main / release sans GO explicite.

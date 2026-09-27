@@ -2364,3 +2364,26 @@ CI #171 = RED attendu du contrat marqueur.
 CI #172, #173, #174, #175 et #176 = GREEN successifs après moteur, rendu, câblage, test palette et respect du réglage Animations.
 
 Aucun merge main. Aucune release. Téléphone Fab = autorité finale.
+
+
+<!-- GECKO-038-CI177-GREEN-2026-09-27 -->
+# Candidate 0.11.2-dev — VALIDATION TECHNIQUE GREEN
+
+Commit candidat : `c258681e6d064f940d80ff8ac80f78ca6c58fcd0`.
+CI #177 : GREEN complet.
+APK + AAB produits sous l'artifact `GeckoDoku-v0.11.2-dev-Android`.
+Digest artifact : `sha256:8b9ea884ec64333b9c7addcf06e945eb2fa88aba775a460d8af7406bee80da4c`.
+
+État à tester sur téléphone :
+- grille quasi pleine largeur, 3 px de marge volontaire par côté ;
+- mini-candidats noirs ;
+- appui long case → palette locale ;
+- 🦎 Repère joueur dans la palette ;
+- gecko-repère en filigrane animé, Undo/Redo, non logique ;
+- premier tap Prof = explique ;
+- deuxième tap Prof = joue la déduction encore valide ;
+- long press Prof = joue directement une déduction sûre ;
+- Undo du coup Prof ;
+- GeckoDoku historique sans régression.
+
+Aucune fusion main. Aucune release. Fab reste l'autorité finale téléphone.

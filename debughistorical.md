@@ -1354,3 +1354,8 @@ Ajout à la volée demandé par Fab : gecko-repère joueur, analogue fonctionnel
 - #176 respect du toggle Animations GREEN.
 
 Le gecko-repère ne participe jamais à la logique Sudoku.
+
+
+<!-- GECKO-038-CI177-GREEN-2026-09-27 -->
+## 2026-09-27 — CI #177 GREEN
+Le commit candidat 0.11.2-dev/code30 passe tests, assembleDebug, bundleDebug, renommage et upload artifact. Le cycle gecko-repère : #171 RED attendu, #172 moteur GREEN, #173 rendu/palette GREEN, #174 câblage Prof+repère GREEN, #175 footer palette GREEN, #176 animation setting GREEN, #177 candidate versionnée GREEN.
