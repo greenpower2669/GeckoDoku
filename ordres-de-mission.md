@@ -1057,3 +1057,7 @@ Core phase 3 validé CI #192. RED UI posé avant GomokuBoardView : gestes sépar
 
 <!-- GECKO-039-GOMOKU-UI-POLICIES-GREEN-2026-09-27 -->
 Policies tactiles/couleur/layout Gomoku posées après RED #193. Prochaine étape après GREEN : vue Android et câblage complet.
+
+<!-- GECKO-039-GOMOKU-BOARDVIEW-2026-09-27 -->
+## EXÉCUTION PHASE 3
+GomokuBoardView implémentée isolément. Prochaine étape après CI : intégration MainActivity, sélecteur 3 modes, tours joueur/Prof, recentrage et candidate.

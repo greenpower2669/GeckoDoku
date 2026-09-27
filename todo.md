@@ -542,3 +542,13 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [x] Difficulté settings Gomoku.
 - [ ] CI policies GREEN.
 - [ ] GomokuBoardView + MainActivity.
+
+<!-- GECKO-039-GOMOKU-BOARDVIEW-2026-09-27 -->
+- [x] GomokuBoardView rendu plateau.
+- [x] Pan + pinch zoom + tap séparés dans la vue.
+- [x] Même sprite filtré jaune pour Prof.
+- [x] Highlight victoire + animation légère de pose.
+- [ ] Câbler vue dans MainActivity.
+- [ ] Tour joueur / bouton Prof / recentrage.
+- [ ] Shared rich-media animation joueur.
+- [ ] CI de cette brique.

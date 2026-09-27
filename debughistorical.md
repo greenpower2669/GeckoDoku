@@ -1537,3 +1537,7 @@ Le moteur pur est validé. Les prochains tests verrouillent les gestes tactiles 
 <!-- GECKO-039-GOMOKU-UI-POLICIES-GREEN-2026-09-27 -->
 ## Après RED #193
 Implémentation pure des policies UI Gomoku, sans vue Android dans ce commit. Filtre jaune agit uniquement sur RGB ; ligne alpha identité.
+
+<!-- GECKO-039-GOMOKU-BOARDVIEW-2026-09-27 -->
+## 2026-09-27 — GomokuBoardView
+Première brique UI isolée : rendu plateau + gestes + filtre jaune dynamique. Aucun branchement MainActivity encore, afin de valider compilation séparément.

@@ -2659,3 +2659,6 @@ CI #192 GREEN valide le core Gomoku. RED UI suivant : gesture policy tap/pan/pin
 
 <!-- GECKO-039-GOMOKU-UI-POLICIES-GREEN-2026-09-27 -->
 Gomoku UI policies implémentées : geste pur PLAY/PAN/ZOOM avec seuil, matrice jaune dynamique augmentant le rouge depuis le vert et préservant alpha, layout carré plein-largeur, difficulté disponible dans Settings pour Sudoku et Gomoku.
+
+<!-- GECKO-039-GOMOKU-BOARDVIEW-2026-09-27 -->
+GomokuBoardView ajouté : plateau visuel type Go, viewport 12×12 par défaut, drag/pan, pinch zoom focal, tap distinct du drag, rendu même sprite Gecko vert/jaune via ColorMatrix, surbrillance victoire et rebond de pose. Vue encore non câblée à MainActivity dans ce commit.

@@ -1141,3 +1141,6 @@ Gomoku UI RED → GesturePolicy(PLAY|PAN|ZOOM) + YellowFilterPolicy + Settings d
 
 <!-- GECKO-039-GOMOKU-UI-POLICIES-GREEN-2026-09-27 -->
 GesturePolicy: >=2 pointers|scale→ZOOM ; 1 pointer distance>=threshold→PAN ; sinon PLAY. Yellow filter: R<-R+G, G conservé, B réduit, A identité. Settings difficulty for non-Classic modes.
+
+<!-- GECKO-039-GOMOKU-BOARDVIEW-2026-09-27 -->
+GomokuBoardView → snapshotProvider → draw logical board through GomokuViewport. Touch: tap→onPlayCell | drag→pan | pinch→zoom. Professor sprite = same bitmap + yellow ColorMatrix.
