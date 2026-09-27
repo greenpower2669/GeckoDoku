@@ -2647,3 +2647,7 @@ Ajout du troisième enum `GameMode.GOMOKU`, modèle/engine Gomoku indépendant, 
 
 <!-- GECKO-039-GOMOKU-GEOMETRY-COMPILE-FIX-2026-09-27 -->
 Compile fix strict : GameModeBoardGeometryPolicy possède désormais un BoardGeometryPolicy indépendant pour GOMOKU, comme pour Classic et Sudoku.
+
+
+<!-- GECKO-039-THREE-MODE-TEST-FIX-2026-09-27 -->
+Le contrat historique `GameMode.entries.size == 2` est devenu obsolète avec le troisième mode GOMOKU. Test mis à jour à 3 ; les 3 styles Sudoku restent indépendants et inchangés.

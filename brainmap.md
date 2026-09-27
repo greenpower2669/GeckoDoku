@@ -1129,3 +1129,7 @@ GOMOKU core: Snapshot → Engine.play → WinDetector. ViewportPolicy → initia
 
 <!-- GECKO-039-GOMOKU-GEOMETRY-COMPILE-FIX-2026-09-27 -->
 GameModeBoardGeometryPolicy: GECKODOKU→geckoPolicy | SUDOKU→sudokuPolicy | GOMOKU→gomokuPolicy.
+
+
+<!-- GECKO-039-THREE-MODE-TEST-FIX-2026-09-27 -->
+GameMode = GECKODOKU | SUDOKU | GOMOKU ; SudokuVisualStyle reste 3 styles indépendants.

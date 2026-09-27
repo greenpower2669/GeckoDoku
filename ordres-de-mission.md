@@ -1045,3 +1045,7 @@ Cœur Gomoku implémenté après RED #189. Attendre CI GREEN avant d'intégrer l
 
 <!-- GECKO-039-GOMOKU-GEOMETRY-COMPILE-FIX-2026-09-27 -->
 CI #190 : compile bloquée uniquement par le nouveau GameMode dans la policy de géométrie. Correctif local posé ; revalidation core requise.
+
+
+<!-- GECKO-039-THREE-MODE-TEST-FIX-2026-09-27 -->
+CI #191 : core compile ; seul le vieux contrat `2 modes` échoue. Test corrigé à 3 modes, styles Sudoku inchangés.

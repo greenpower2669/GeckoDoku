@@ -1522,3 +1522,8 @@ Suite au RED #189 (symboles Gomoku absents), ajout du cœur pur. Pas encore de v
 <!-- GECKO-039-GOMOKU-GEOMETRY-COMPILE-FIX-2026-09-27 -->
 ## CI #190
 Échec compile attendu après ajout enum GOMOKU : when non exhaustif dans GameModeBoardGeometryPolicy. Correctif local uniquement, sans changement moteur/IA.
+
+
+<!-- GECKO-039-THREE-MODE-TEST-FIX-2026-09-27 -->
+## CI #191
+Compilation core Gomoku réussie. Unique échec test : SudokuVisualStylePolicyTest attendait encore 2 GameMode. Mise à jour du contrat à 3, sans changement runtime.

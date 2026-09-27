@@ -518,3 +518,8 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 <!-- GECKO-039-GOMOKU-GEOMETRY-COMPILE-FIX-2026-09-27 -->
 - [x] Ajouter branche géométrie GOMOKU après CI #190.
 - [ ] Revalider core Gomoku GREEN.
+
+
+<!-- GECKO-039-THREE-MODE-TEST-FIX-2026-09-27 -->
+- [x] Mettre à jour le test historique de 2 à 3 modes après CI #191.
+- [ ] Revalider core Gomoku.
