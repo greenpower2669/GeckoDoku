@@ -508,3 +508,16 @@ Aucune mission active.
 - [x] PierreSmallTalk compatibilité 100.
 - [ ] History/selector.
 - [ ] Runtime.
+
+
+<!-- GECKO-037-GREEN-HISTORY-SELECTOR-2026-09-27 -->
+## GECKO-037 GREEN 3
+- [x] Cooldown 48 h exact.
+- [x] Storage SharedPreferences.
+- [x] lastPhraseId persistant.
+- [x] Selector pondéré.
+- [x] Fallback voisin/GENERAL.
+- [x] Oldest-first sans clear.
+- [x] Anti-répétition immédiate.
+- [ ] Vérifier RED global devenu GREEN côté cœur.
+- [ ] Brancher runtime MainActivity.

@@ -340,3 +340,7 @@ ProfessorPhraseCatalog = legacy(100) + modern(209) = 309
 legacy IDs 001..100 immuables
 modern IDs prof_* fournis par Fab
 normalizeText + textSimilarity + nearDuplicatePairs.
+
+
+<!-- GECKO-037-GREEN-HISTORY-SELECTOR-2026-09-27 -->
+Selector → RARE(4% max) / FAB(3%) → weighted category → cooldown 48h → !lastPhraseId → fallback categories → GENERAL → forced oldest-first → history.markUsed(id).

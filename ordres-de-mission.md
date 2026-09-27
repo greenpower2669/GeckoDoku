@@ -1174,3 +1174,8 @@ Ajout des modèles ProfessorPhrase/catégories/rareté/mood, Clock/Random inject
 <!-- GECKO-037-GREEN-CATALOG-309-2026-09-27 -->
 ## GREEN 2 — catalogue canonique 309
 ProfessorPhraseCatalog contient désormais exactement 309 phrases : 100 legacy IDs legacy_smalltalk_001..100 + 209 nouvelles de l'ordre de mission. Contrôle avant commit : 309 textes uniques après normalisation. PierreSmallTalk reste une façade de compatibilité sur les 100 legacy.
+
+
+<!-- GECKO-037-GREEN-HISTORY-SELECTOR-2026-09-27 -->
+## GREEN 3 — mémoire et sélection
+Ajout ProfessorPhraseHistory avec cooldown exact 48 h, lastPhraseId et storage SharedPreferences. ProfessorPhraseSelector applique rareté, poids mood/event, cooldown, anti-répétition, fallback voisin/GENERAL puis oldest-first sans effacer l'historique. TAQUIN est sous-pondéré immédiatement après TAQUIN.

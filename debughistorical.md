@@ -1003,3 +1003,8 @@ Après RED #134, première tranche pure : modèles, context tracker, mood policy
 <!-- GECKO-037-GREEN-CATALOG-309-2026-09-27 -->
 ## 2026-09-27 — catalogue 309 créé
 Le corpus a été généré depuis les 100 chaînes historiques du dépôt et les 209 lignes ID/text de l'ordre GECKO-037. Vérification pré-écriture : 100 + 209, 209 IDs modernes uniques, 309 textes uniques après normalisation.
+
+
+<!-- GECKO-037-GREEN-HISTORY-SELECTOR-2026-09-27 -->
+## 2026-09-27 — GREEN 3 history/selector
+Le vieux anti-repeat par index est remplacé fonctionnellement par lastPhraseId persistant + cooldown par ID. Le fallback n'efface jamais la mémoire globale et force la phrase compatible la plus ancienne.

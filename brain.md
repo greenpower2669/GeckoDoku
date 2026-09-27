@@ -844,3 +844,8 @@ Le contexte joueur est un état léger : mastery/impulsivity/momentum plus compt
 <!-- GECKO-037-GREEN-CATALOG-309-2026-09-27 -->
 ## Catalogue canonique GECKO-037
 ProfessorPhraseCatalog est la source d'identité persistante : 309 entrées, IDs stables, catégories, rareté et affinités mood. PierreSmallTalk.lines n'est plus qu'une vue texte des 100 legacy afin de préserver les anciens tests/appels pendant migration.
+
+
+<!-- GECKO-037-GREEN-HISTORY-SELECTOR-2026-09-27 -->
+## Mémoire/sélection GECKO-037
+Une phrase est identifiée par ID, marquée utilisée à la sélection et reste normalement exclue 48 h. lastPhraseId est persisté et toujours exclu. Si le pool est épuisé, l'historique n'est jamais vidé : le selector choisit la plus ancienne phrase compatible hors lastPhraseId. SharedPreferences suffit pour cette mémoire légère.
