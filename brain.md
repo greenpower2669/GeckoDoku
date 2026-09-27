@@ -891,3 +891,91 @@ Référence candidate :
 - les priorités de `ProfessorSpeech` empêchent le smalltalk de préempter une parole prioritaire.
 
 La validation téléphone de Fab reste l'autorité finale avant clôture de GECKO-037.
+
+
+<!-- GECKO-037-TECHNICAL-CLOSE-2026-09-27 -->
+# GECKO-037 — BASE TECHNIQUE CONSOLIDÉE
+
+État de référence technique :
+- version candidate : `0.10.16-dev` ;
+- versionCode : `27` ;
+- CI cœur : #137 GREEN ;
+- CI runtime : #138 GREEN ;
+- nettoyage ancien sélecteur : #139 GREEN ;
+- CI candidate : #140 GREEN ;
+- HEAD documentaire précédent : #141 GREEN.
+
+## Prof Gecko vivant
+Le moteur de petites phrases est désormais structuré autour de :
+- 309 phrases ;
+- 100 historiques conservées avec IDs stables `legacy_smalltalk_001..100` ;
+- 200 V2 ;
+- 4 FAB ;
+- 5 TAQUIN ;
+- catégories et rareté ;
+- déduplication normalisée + diagnostic de proximité ;
+- cooldown individuel persistant de 48 h ;
+- `lastPhraseId` persistant ;
+- anti-répétition immédiate ;
+- fallback voisin / GENERAL / oldest-first ;
+- catégorie RARE limitée à environ 4 % ;
+- FAB semi-rares.
+
+## Contexte joueur
+Le contexte actif utilise :
+- mastery ;
+- impulsivity ;
+- momentum ;
+- difficulté courante ;
+- événements haut niveau du jeu.
+
+Le mood interne adapte les poids sans être exposé comme jauge :
+- NEUTRAL ;
+- PROUD ;
+- IMPRESSED ;
+- TAQUIN ;
+- PEDAGOGICAL ;
+- ENCOURAGING ;
+- CURIOUS.
+
+Règle durable :
+**taquiner le comportement, jamais rabaisser le joueur.**
+
+Une erreur réfléchie ou commise sur forte difficulté ne doit pas déclencher une moquerie injuste. Le mood décroît naturellement vers NEUTRAL.
+
+## Runtime petites phrases
+Les chemins :
+- bouton `!` ;
+- smalltalk ambiant ;
+- encouragements ;
+- réactions d’erreur ;
+passent par le moteur contextuel 309.
+
+La bulle affiche exactement le texte prononcé par Pierre.
+
+Petites réactions :
+- vraie fin Pierre ;
+- attendre environ 1 s ;
+- fermeture protégée par token/generation ;
+- un callback ancien ne ferme jamais une nouvelle bulle.
+
+Les bulles pédagogiques structurées restent ouvertes.
+
+## Encouragements
+L’ancien MP3 `Voix_encouragements.mp3` et tout le chemin RECORDED ont été retirés.
+Les encouragements passent par Pierre et le moteur contextuel.
+
+## Non-régression
+Préserver :
+- Prof pédagogique ;
+- HumanSolver / HypothesisSolver / Gecko X-Wing ;
+- ProfParle / PNG fallback ;
+- pipeline SurfaceTexture serial validé ;
+- grille flottante immuable ;
+- intros ;
+- célébration ;
+- priorité Pierre ;
+- menu ⚙️ / journal média.
+
+Cette consolidation est techniquement validée par CI.
+La validation perceptuelle téléphone GECKO-037 reste une vigilance utilisateur, pas une mission de code active.

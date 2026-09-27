@@ -386,3 +386,38 @@ Prof button / solver explanation
 → no auto-close.
 
 Phone validation Fab → pending.
+
+
+<!-- GECKO-037-TECHNICAL-CLOSE-2026-09-27 -->
+GECKO-037 — ARCHITECTURE CONSOLIDÉE
+
+GameEvent
+→ ProfessorPlayerContext
+   ├── mastery
+   ├── impulsivity
+   ├── momentum
+   └── difficulty
+→ ProfessorMoodPolicy
+→ weighted PhraseCategory
+→ ProfessorPhraseCatalog[309]
+→ ProfessorPhraseHistory
+   ├── lastUsedAt[id] / 48h
+   └── lastPhraseId
+→ ProfessorPhraseSelector
+   ├── contextual pool
+   ├── neighbor fallback
+   ├── GENERAL
+   └── forced oldest-first
+→ selected ProfessorPhrase
+→ same text → ProfessorBubbleView + Pierre
+→ real speech completion
+→ +1s guarded close for simple reactions only
+
+Pedagogical bubble path
+→ no auto-close.
+
+Recorded encouragement path
+→ removed.
+
+Media / grid / ProfParle pipeline
+→ unchanged and protected.

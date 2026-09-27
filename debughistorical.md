@@ -1038,3 +1038,21 @@ La candidate v0.10.16-dev / code 27 passe la CI complète après :
 Tests, APK, AAB et artifact sont produits. Aucun changement du pipeline vidéo GECKO-036 n'a été requis pour GECKO-037.
 
 Correction documentaire : après le câblage GREEN 4, les encouragements ne passent plus par `PierreEncouragements` mais par le selector contextuel 309.
+
+
+<!-- GECKO-037-TECHNICAL-CLOSE-2026-09-27 -->
+## 2026-09-27 — clôture technique GECKO-037
+
+GECKO-037 a été implémenté par étapes TDD :
+- #134 : RED global attendu ;
+- #137 : cœur GREEN ;
+- #138 : runtime GREEN ;
+- #139 : suppression des anciens sélecteurs aléatoires ;
+- #140 : candidate v0.10.16-dev GREEN avec APK/AAB ;
+- #141 : documentation candidate GREEN.
+
+Le système 309 phrases, mémoire 48 h, lastPhraseId, contexte joueur, mood adaptatif, rareté, oldest-first, bulle synchronisée et auto-close sécurisé est présent.
+
+L’ancien chemin d’encouragement enregistré MP3 a été supprimé auparavant avec #131 RED puis #132/#133 GREEN.
+
+Aucun bug téléphone GECKO-037 n’est déclaré corrigé sans retour explicite de Fab. La mission de code est néanmoins techniquement close ; les observations téléphone futures deviennent des retours de validation ou de nouvelles missions.

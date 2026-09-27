@@ -615,3 +615,41 @@ Aucune mission active.
 - [ ] Fab : confirmer GECKO-037 comme validé.
 
 Mission active jusqu'à cette validation.
+
+
+<!-- GECKO-037-TECHNICAL-CLOSE-2026-09-27 -->
+# ÉTAT CANONIQUE APRÈS GECKO-037
+
+## Acquis techniques
+- [x] Catalogue 309.
+- [x] IDs stables.
+- [x] Cooldown persistant 48 h.
+- [x] lastPhraseId persistant.
+- [x] Anti-répétition immédiate.
+- [x] Fallback oldest-first.
+- [x] RARE contrôlée.
+- [x] Contexte mastery / impulsivity / momentum.
+- [x] Mood adaptatif + retour au neutre.
+- [x] Difficulté prise en compte.
+- [x] Anti-moquerie injuste.
+- [x] ! / ambient / encouragement / erreur via moteur 309.
+- [x] Bulle = texte prononcé.
+- [x] Auto-close +1 s après vraie fin Pierre.
+- [x] Protection timer obsolète.
+- [x] Pédagogie non auto-fermée.
+- [x] Ancien encouragement MP3 supprimé.
+- [x] ProfParle / grille / intro préservés.
+- [x] CI #140 GREEN + APK/AAB.
+- [x] CI #141 GREEN documentation.
+
+## Vigilance téléphone, pas mission active
+- [ ] Observer le naturel des réactions/contextes.
+- [ ] Observer la variété/bienveillance du mood.
+- [ ] Vérifier qu’une erreur réfléchie/difficile ne provoque pas de pique injuste.
+- [ ] Vérifier fermeture naturelle ~1 s des petites bulles.
+- [ ] Vérifier que la pédagogie reste ouverte.
+- [ ] Vérifier absence de régression Intro / ProfParle / grille.
+
+## Mission active
+Aucune mission active.
+`ordres-de-mission.md` reste vide jusqu’au prochain ordre explicite de Fab.
