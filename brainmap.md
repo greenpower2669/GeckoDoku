@@ -891,3 +891,37 @@ Valeur principale → CLASSIC / GECKO_NB / GECKO_COLORED
 Mini-candidats    → NOIR, lisibilité prioritaire
 ```
 
+<!-- GECKO-038-PROF-PLAY-GESTURE-2026-09-27 -->
+# Prof Sudoku — interaction canonique
+
+```text
+TAP PROF
+  ↓
+chercher déduction sûre
+  ↓
+expliquer + montrer candidats
+  ↓
+PendingProfessorSudokuMove
+  ↓
+TAP PROF à nouveau
+  ↓
+pending encore valide ?
+  ├─ non → recalculer / expliquer
+  └─ oui → jouer origin=PROFESSOR
+```
+
+```text
+LONG PRESS PROF
+  ↓
+recalculer déduction sûre
+  ↓
+valide ?
+  ├─ non → aucune mutation
+  └─ oui → jouer origin=PROFESSOR
+```
+
+```text
+mutation grille / undo / redo / new / replay / mode / difficulté
+  ↓
+invalider ou revalider le pending
+```

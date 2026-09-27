@@ -592,3 +592,54 @@ La prochaine candidate est acceptable seulement si, sur le téléphone de Fab :
 
 **La grille ne s'adapte plus aux boutons. Les boutons s'adaptent à la grille.**
 
+<!-- GECKO-038-PROF-PLAY-GESTURE-2026-09-27 -->
+# 27 — PROF GECKO : EXPLIQUER PUIS JOUER
+
+Cette section complète la mission actuelle sans ajouter de nouveau bouton permanent.
+
+## 27.1 Gestes
+Premier appui court : explique seulement et crée un pending.
+Deuxième appui court : si ce pending est toujours valide, joue le chiffre démontré.
+Appui long sur Prof : recalcule et joue directement la prochaine déduction humaine sûre.
+Appui long sur une case : reste la palette locale valeur/candidats/effacer.
+
+## 27.2 Pending Prof
+Le pending contient au minimum : révision/fingerprint de grille, cellule, chiffre, technique, candidats éventuels.
+Il doit être invalidé ou revalidé après saisie joueur, candidat, effacer, Undo, Redo, Nouvelle, Rejouer, difficulté, changement de mode ou remplacement de puzzle.
+Interdit : appliquer un pending obsolète.
+
+## 27.3 Provenance
+Ajouter une provenance PLAYER / PROFESSOR.
+Un coup Prof utilise le même moteur Sudoku, est Undoable/Redoable, ne compte pas comme erreur et ne doit pas être crédité comme réussite autonome du joueur.
+
+## 27.4 Candidats Prof
+Avant application : overlay transitoire, petits chiffres noirs, aucune mutation des notes joueur, aucun Undo.
+Après application : nettoyer l'overlay ; la vraie valeur suit le VisualStyle principal.
+
+## 27.5 Pierre / bulle
+Préserver l'invariant intemporel : tout texte prononcé par Pierre apparaît dans ProfessorBubbleView.
+
+## 27.6 TDD obligatoire
+1. premier tap explique et crée un pending sans changer la valeur ;
+2. second tap même état applique exactement cellule/chiffre ;
+3. second tap après mutation ne joue jamais un pending obsolète ;
+4. long press recalcule et applique une déduction sûre ;
+5. aucun hint sûr = aucune mutation ;
+6. origin du coup auto = PROFESSOR ;
+7. coup Prof Undoable ;
+8. Redo restaure le coup Prof ;
+9. pas de CORRECT_MOVE joueur artificiel ;
+10. candidats Prof transitoires absents de Undo ;
+11. overlay nettoyé après application ;
+12. New/Replay/Difficulty/Mode invalident le pending ;
+13. invariant Pierre↔bulle reste GREEN ;
+14. long press case reste la palette locale.
+
+## 27.7 Critère téléphone
+tap Prof → explique et montre le candidat ;
+tap Prof à nouveau → pose ce chiffre ;
+long press Prof → joue directement la prochaine déduction sûre ;
+Undo permet de revenir en arrière.
+
+Aucun nouveau bouton permanent ne doit réduire la grille.
+Le téléphone de Fab reste l'autorité finale.

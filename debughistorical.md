@@ -1299,3 +1299,17 @@ Décision corrective documentaire :
 
 Aucun code modifié dans cette intervention.
 
+<!-- GECKO-038-PROF-PLAY-GESTURE-2026-09-27 -->
+## 2026-09-27 — décision UX Prof Sudoku « explique puis joue »
+
+Observation téléphone : Prof sait déjà sélectionner une case, afficher un candidat pédagogique et expliquer un single.
+
+Décision Fab :
+- premier appui Prof = explication uniquement ;
+- deuxième appui sur la même déduction encore valide = Prof pose le chiffre ;
+- appui long sur Prof = Prof joue directement la prochaine déduction sûre ;
+- long press case reste réservé à la palette locale Sudoku.
+
+Décision d'architecture : pending avec garde d'état, provenance PLAYER/PROFESSOR, coup Prof Undo/Redo, candidats pédagogiques transitoires, aucune attribution erronée au joueur.
+
+Aucun code modifié dans cette intervention.

@@ -160,3 +160,20 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] APK/AAB.
 - [ ] Validation téléphone Fab : grille quasi plein écran en largeur.
 
+<!-- GECKO-038-PROF-PLAY-GESTURE-2026-09-27 -->
+## Prof Sudoku — explique puis joue
+- [x] Premier tap = expliquer.
+- [x] Second tap = jouer la même déduction encore valide.
+- [x] Long press Prof = jouer directement une déduction sûre.
+- [x] Long press case = palette locale, inchangé.
+- [ ] Ajouter PendingProfessorSudokuMove ou abstraction équivalente.
+- [ ] Ajouter provenance PLAYER / PROFESSOR.
+- [ ] Invalider / revalider le pending sur mutations pertinentes.
+- [ ] Second tap : revalider avant application.
+- [ ] Long press Prof : recalculer avant application.
+- [ ] Coup Prof dans Undo/Redo.
+- [ ] Coup Prof non compté comme réussite autonome joueur.
+- [ ] Nettoyer overlay Prof après application.
+- [ ] Aucune déduction sûre → aucune mutation.
+- [ ] Préserver invariant Pierre ↔ bulle.
+- [ ] CI + APK/AAB + téléphone Fab.

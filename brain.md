@@ -2231,3 +2231,66 @@ Sur le téléphone de Fab :
 
 Le test téléphone de Fab reste l'autorité finale.
 
+<!-- GECKO-038-PROF-PLAY-GESTURE-2026-09-27 -->
+# GECKO-038 — PROF GECKO : EXPLIQUER PUIS JOUER
+
+STATUT : SPÉCIFICATION FONCTIONNELLE — AUCUN CODE DANS CETTE INTERVENTION.
+
+## Contrat tactile du bouton Prof en Sudoku
+
+### Premier appui court
+- chercher la prochaine déduction humaine sûre ;
+- sélectionner / mettre en évidence la case ;
+- montrer les candidats pédagogiques transitoires si utile ;
+- expliquer dans ProfessorBubbleView ;
+- Pierre prononce exactement le même texte ;
+- ne pas encore jouer la valeur ;
+- mémoriser une déduction Prof en attente.
+
+### Deuxième appui court
+Si la même déduction est encore valide, Prof Gecko applique le coup démontré.
+Exemple : premier appui explique « le 8 est certain », deuxième appui pose réellement le 8.
+
+Le coup doit passer par le moteur Sudoku, jamais par une écriture directe dans la vue.
+
+### Appui long sur le bouton Prof
+L'appui long signifie : « Pierre, joue directement la prochaine déduction sûre pour moi. »
+Le Prof recalcule depuis l'état courant, vérifie la déduction puis l'applique directement.
+Aucun guess ni injection opaque de la solution complète.
+
+### Appui long sur une case Sudoku
+Reste réservé à la palette locale valeur / candidats / effacer. Ne pas mélanger ces deux gestes.
+
+## PendingProfessorSudokuMove
+Après une explication, mémoriser conceptuellement :
+- révision / fingerprint de grille ;
+- cellule ;
+- chiffre ;
+- technique ;
+- candidats pédagogiques éventuels.
+
+Toute mutation pertinente invalide ou force la revalidation du pending : saisie, candidat, effacer, Undo, Redo, Nouvelle, Rejouer, difficulté, mode, puzzle remplacé.
+Un vieux pending ne doit jamais jouer un chiffre sur une grille modifiée.
+
+## Provenance du coup
+Introduire une provenance équivalente à PLAYER / PROFESSOR.
+Un coup PROFESSOR :
+- est une vraie modification Sudoku ;
+- reste Undo/Redo ;
+- ne compte pas comme erreur joueur ;
+- ne déclenche pas une félicitation laissant croire que le joueur l'a trouvé seul ;
+- marque l'usage du Prof ;
+- ne gonfle pas artificiellement les statistiques de réussite autonome.
+
+## Candidats pédagogiques
+Avant application, les candidats du Prof restent un overlay transitoire, en petits chiffres noirs, sans mutation des notes joueur et sans entrée Undo.
+Quand Prof joue réellement le coup, seule la pose de valeur entre dans Undo/Redo et l'overlay pédagogique est nettoyé.
+
+## Sécurité logique
+Le Prof ne joue automatiquement que des déductions réellement justifiées par SudokuHintEngine ou une technique humaine implémentée.
+Si aucune déduction sûre n'est disponible : aucune mutation.
+
+## Invariant UI
+Pas de nouveau bouton permanent « Jouer ».
+Le geste porte la sémantique : 1 tap = explique ; 2e tap = joue cette explication ; long press Prof = joue directement.
+Cette règle aide à conserver la grille maximale en largeur.
