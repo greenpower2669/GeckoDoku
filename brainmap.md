@@ -230,3 +230,7 @@ INTRO gate=false → aucun arm.
 
 <!-- GECKO-036-V01015-CANDIDATE-2026-09-27 -->
 v0.10.15-dev → frame serial safe → INTRO hors gate + ProfParle gate sans perte de frame → CI finale → téléphone Fab.
+
+
+<!-- GECKO-036-CI127-GREEN-2026-09-27 -->
+v0.10.15-dev → CI #127 GREEN → APK/AAB → test téléphone Intro + Prof.

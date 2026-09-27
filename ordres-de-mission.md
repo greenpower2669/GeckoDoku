@@ -186,3 +186,8 @@ RED ajouté avant production.
 <!-- GECKO-036-V01015-CANDIDATE-2026-09-27 -->
 ## Candidate téléphone v0.10.15-dev
 Après #125 RED attendu puis #126 GREEN complet du correctif serial SurfaceTexture : versionCode 26 / versionName 0.10.15-dev. CI finale versionnée requise avant livraison.
+
+
+<!-- GECKO-036-CI127-GREEN-2026-09-27 -->
+## Preuve CI candidate corrigée
+Run #127 : SUCCESS complet sur v0.10.15-dev (versionCode 26), tests + APK + AAB + artifact. Validation téléphone encore requise pour Intro/Prof.

@@ -928,3 +928,8 @@ La première correction GECKO-036 avait introduit une purge booléenne `frameAva
 <!-- GECKO-036-V01015-CANDIDATE-2026-09-27 -->
 ## 2026-09-27 — candidate v0.10.15-dev
 #125 RED attendu sur FreshFrameSerialGate / FirstFrameGateActivationPolicy. #126 GREEN complet après suppression de la purge frameAvailable et passage au serial monotone. Candidate code 26 préparée.
+
+
+<!-- GECKO-036-CI127-GREEN-2026-09-27 -->
+## 2026-09-27 — #127 GREEN
+Le remplacement de la purge booléenne par serial produit/consommé et l'exclusion des intros du gate passent la CI complète en v0.10.15-dev.

@@ -727,3 +727,8 @@ Ne jamais jeter une notification de frame pour déterminer sa fraîcheur. Les fr
 <!-- GECKO-036-V01015-CANDIDATE-2026-09-27 -->
 ## Référence candidate GECKO-036 corrigée
 v0.10.15-dev remplace la purge de frame dangereuse de v0.10.14-dev par un compteur monotone produit/consommé. Les intros hors gate ne sont plus armées. Ce mécanisme doit préserver la fluidité INTRO et permettre à ProfParle d'obtenir une vraie première frame sans timeout artificiel.
+
+
+<!-- GECKO-036-CI127-GREEN-2026-09-27 -->
+## Preuve technique v0.10.15-dev
+Run #127 GREEN complet. Le correctif serial SurfaceTexture compile et passe les tests. Le téléphone de Fab reste l'autorité pour confirmer la disparition du gel Intro/Prof.

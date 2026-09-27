@@ -331,3 +331,13 @@ Aucun ordre de mission actif actuellement.
 - [ ] Fab : ProfParle obtient VIDEO_FIRST_FRAME sans timeout répété.
 - [ ] Fab : Pierre reste prioritaire.
 - [ ] Fab : bulle QUICK_TALK toujours correcte.
+
+
+<!-- GECKO-036-CI127-GREEN-2026-09-27 -->
+## GECKO-036 après #127
+- [x] CI candidate v0.10.15-dev GREEN.
+- [x] APK/AAB produits.
+- [ ] Fab : vérifier Intro 1 non figée.
+- [ ] Fab : vérifier Prof_actions non figé.
+- [ ] Fab : vérifier ProfParle sans timeout répété.
+- [ ] Fab : vérifier aucune régression PNG/bulle/grille.
