@@ -177,3 +177,15 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Aucune déduction sûre → aucune mutation.
 - [ ] Préserver invariant Pierre ↔ bulle.
 - [ ] CI + APK/AAB + téléphone Fab.
+
+
+<!-- GECKO-038-FULLWIDTH-PROF-RED-2026-09-27 -->
+- [x] RED pleine largeur 3 px réel.
+- [x] RED candidats noirs.
+- [x] RED Prof tap/tap/long press.
+- [x] RED provenance PROFESSOR + Undo/Redo.
+- [ ] Confirmer RED CI.
+- [ ] Implémenter policies + moteur.
+- [ ] Câbler Activity + long press Prof.
+- [ ] Compacter contrôles pour laisser la grille prioritaire.
+- [ ] CI GREEN + APK/AAB.

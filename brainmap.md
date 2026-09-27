@@ -925,3 +925,7 @@ mutation grille / undo / redo / new / replay / mode / difficulté
   ↓
 invalider ou revalider le pending
 ```
+
+
+<!-- GECKO-038-FULLWIDTH-PROF-RED-2026-09-27 -->
+RED contracts → FullWidthBoard(3px) + CandidateVisual(black) + ProfessorInteraction(pending) + MoveOrigin(PLAYER/PROFESSOR).

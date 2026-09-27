@@ -2294,3 +2294,8 @@ Si aucune déduction sûre n'est disponible : aucune mutation.
 Pas de nouveau bouton permanent « Jouer ».
 Le geste porte la sémantique : 1 tap = explique ; 2e tap = joue cette explication ; long press Prof = joue directement.
 Cette règle aide à conserver la grille maximale en largeur.
+
+
+<!-- GECKO-038-FULLWIDTH-PROF-RED-2026-09-27 -->
+## Exécution RED — grille pleine largeur + Prof joue
+HEAD de départ code : `7b02a7379f09b39b858106408553d9e486df9de4`. RED posé pour : marge réelle 3 px (incluant marge interne nulle), candidats noirs indépendants du VisualStyle, interaction Prof 1er tap Explain / 2e tap Apply / long press Apply, et provenance PROFESSOR conservée par Undo/Redo.

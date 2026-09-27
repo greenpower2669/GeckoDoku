@@ -1313,3 +1313,8 @@ Décision Fab :
 Décision d'architecture : pending avec garde d'état, provenance PLAYER/PROFESSOR, coup Prof Undo/Redo, candidats pédagogiques transitoires, aucune attribution erronée au joueur.
 
 Aucun code modifié dans cette intervention.
+
+
+<!-- GECKO-038-FULLWIDTH-PROF-RED-2026-09-27 -->
+## 2026-09-27 — RED pleine largeur / Prof joue
+Tests ajoutés avant correctif. Le test de marge vérifie aussi INNER_GRID_MARGIN_PX=0 afin d'éviter de respecter 3 px sur le conteneur tout en gardant les anciens 4dp internes. Les tests Prof couvrent stale pending après mutation de note et provenance Undo/Redo.
