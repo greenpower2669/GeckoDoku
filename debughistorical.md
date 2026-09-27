@@ -1527,3 +1527,8 @@ Suite au RED #189 (symboles Gomoku absents), ajout du cœur pur. Pas encore de v
 <!-- GECKO-039-THREE-MODE-TEST-FIX-2026-09-27 -->
 ## CI #191
 Compilation core Gomoku réussie. Unique échec test : SudokuVisualStylePolicyTest attendait encore 2 GameMode. Mise à jour du contrat à 3, sans changement runtime.
+
+
+<!-- GECKO-039-GOMOKU-UI-RED-2026-09-27 -->
+## 2026-09-27 — core Gomoku GREEN #192, UI RED lancé
+Le moteur pur est validé. Les prochains tests verrouillent les gestes tactiles et le filtre jaune avant création de GomokuBoardView.

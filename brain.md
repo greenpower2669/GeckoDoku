@@ -2651,3 +2651,7 @@ Compile fix strict : GameModeBoardGeometryPolicy possède désormais un BoardGeo
 
 <!-- GECKO-039-THREE-MODE-TEST-FIX-2026-09-27 -->
 Le contrat historique `GameMode.entries.size == 2` est devenu obsolète avec le troisième mode GOMOKU. Test mis à jour à 3 ; les 3 styles Sudoku restent indépendants et inchangés.
+
+
+<!-- GECKO-039-GOMOKU-UI-RED-2026-09-27 -->
+CI #192 GREEN valide le core Gomoku. RED UI suivant : gesture policy tap/pan/pinch, filtre colorimétrique jaune conservant alpha, difficulté visible en mode Gomoku et géométrie indépendante.

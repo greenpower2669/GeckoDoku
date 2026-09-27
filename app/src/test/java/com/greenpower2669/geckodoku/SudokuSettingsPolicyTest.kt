@@ -23,5 +23,12 @@ class SudokuSettingsPolicyTest {
                     GameMode.GECKODOKU
                 )
         )
+
+        assertTrue(
+            SettingsEntry.DIFFICULTY in
+                policy.entriesFor(
+                    GameMode.GOMOKU
+                )
+        )
     }
 }

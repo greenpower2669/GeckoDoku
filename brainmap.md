@@ -1133,3 +1133,7 @@ GameModeBoardGeometryPolicy: GECKODOKU→geckoPolicy | SUDOKU→sudokuPolicy | G
 
 <!-- GECKO-039-THREE-MODE-TEST-FIX-2026-09-27 -->
 GameMode = GECKODOKU | SUDOKU | GOMOKU ; SudokuVisualStyle reste 3 styles indépendants.
+
+
+<!-- GECKO-039-GOMOKU-UI-RED-2026-09-27 -->
+Gomoku UI RED → GesturePolicy(PLAY|PAN|ZOOM) + YellowFilterPolicy + Settings difficulty + geometry isolation.

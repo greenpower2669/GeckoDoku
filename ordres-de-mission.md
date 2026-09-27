@@ -1049,3 +1049,7 @@ CI #190 : compile bloquée uniquement par le nouveau GameMode dans la policy de 
 
 <!-- GECKO-039-THREE-MODE-TEST-FIX-2026-09-27 -->
 CI #191 : core compile ; seul le vieux contrat `2 modes` échoue. Test corrigé à 3 modes, styles Sudoku inchangés.
+
+
+<!-- GECKO-039-GOMOKU-UI-RED-2026-09-27 -->
+Core phase 3 validé CI #192. RED UI posé avant GomokuBoardView : gestes séparés, filtre jaune, difficulté et géométrie.

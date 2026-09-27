@@ -523,3 +523,13 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 <!-- GECKO-039-THREE-MODE-TEST-FIX-2026-09-27 -->
 - [x] Mettre à jour le test historique de 2 à 3 modes après CI #191.
 - [ ] Revalider core Gomoku.
+
+
+<!-- GECKO-039-GOMOKU-UI-RED-2026-09-27 -->
+- [x] Core Gomoku CI #192 GREEN.
+- [x] RED gesture tap/pan/pinch.
+- [x] RED filtre jaune/alpha.
+- [x] RED difficulté réglages Gomoku.
+- [ ] Implémenter policies UI.
+- [ ] Créer GomokuBoardView.
+- [ ] Câbler MainActivity.

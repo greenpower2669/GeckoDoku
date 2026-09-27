@@ -61,4 +61,28 @@ class GameModeBoardGeometryPolicyTest {
             )
         )
     }
+
+    @Test
+    fun gomokuGeometryIsIndependentFromClassicAndSudoku() {
+        val policy =
+            GameModeBoardGeometryPolicy()
+
+        val gomoku =
+            BoardGeometry(
+                left = 3,
+                top = 120,
+                width = 714,
+                height = 714
+            )
+
+        assertEquals(
+            gomoku,
+            policy.resolve(
+                mode = GameMode.GOMOKU,
+                windowWidth = 720,
+                windowHeight = 1500,
+                proposed = gomoku
+            )
+        )
+    }
 }
