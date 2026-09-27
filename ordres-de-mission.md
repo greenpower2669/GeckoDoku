@@ -252,3 +252,7 @@ Les ajustements futurs de cadrage doivent modifier uniquement SudokuNumberSheetL
 
 <!-- GECKO-038-CROP-SYNTAX-FIX-2026-09-27 -->
 #153 est un incident syntaxique local au helper de crop, sans impact sur l'architecture ni GeckoBoardView.
+
+
+<!-- GECKO-038-CI154-GREEN-2026-09-27 -->
+CI #154 GREEN. Mission de code gelée au stade candidate 0.11.0-dev pour validation téléphone. Ne pas empiler de nouvelles techniques ou animations avant retour perceptuel de Fab. Toute anomalie Sudoku doit d'abord être isolée dans la couche Sudoku ; GeckoBoardView historique reste protégé.

@@ -774,3 +774,20 @@ Aucune mission active.
 - [x] Diagnostiquer CI #153 : syntaxe helper crop uniquement.
 - [x] Corriger l'accolade sans modifier la logique.
 - [ ] CI suivante GREEN.
+
+
+<!-- GECKO-038-CI154-GREEN-2026-09-27 -->
+## Validation téléphone GECKO-038
+- [x] CI #154 GREEN complet.
+- [x] APK 0.11.0-dev produit.
+- [x] AAB 0.11.0-dev produit.
+- [ ] Fab : vérifier GeckoDoku historique inchangé.
+- [ ] Fab : basculer Réglages → Mode Sudoku.
+- [ ] Fab : tester saisie 1..9, Notes, Effacer, Undo/Redo.
+- [ ] Fab : tester le sélecteur glissé gauche/milieu/droite sans relever le doigt.
+- [ ] Fab : confirmer preview live de la grille avant relâchement.
+- [ ] Fab : confirmer cadrage Gecko N/B.
+- [ ] Fab : confirmer cadrage Gecko couleur.
+- [ ] Fab : tester Prof Sudoku et Pierre.
+- [ ] Après retour Fab seulement : corriger visuel/ergonomie ou poursuivre pédagogie avancée.
+- [ ] Aucun merge main / release avant validation explicite.

@@ -1287,3 +1287,8 @@ Les PNG restent intacts. Le renderer utilise des rectangles source : planche cou
 
 <!-- GECKO-038-CROP-SYNTAX-FIX-2026-09-27 -->
 Correctif syntaxique du helper de crop : suppression d'une accolade surnuméraire, sans changement du contrat de rendu.
+
+
+<!-- GECKO-038-CI154-GREEN-2026-09-27 -->
+# GECKO-038 — CANDIDATE TECHNIQUE GREEN
+Référence : 0.11.0-dev / code 28. CI #154 GREEN complet après correction des rectangles source Gecko. APK et AAB produits. Le mode historique GeckoDoku reste dans GeckoBoardView inchangé ; Sudoku est une surface/moteur séparés. Validation téléphone de Fab reste obligatoire avant toute fusion/release.

@@ -593,3 +593,8 @@ canonical PNG → sourceRect only at draw time → cell target. NB uses per-digi
 
 <!-- GECKO-038-CROP-SYNTAX-FIX-2026-09-27 -->
 SudokuNumberSheetLayout : structure Kotlin corrigée, logique sourceRect inchangée.
+
+
+<!-- GECKO-038-CI154-GREEN-2026-09-27 -->
+GECKO-038 0.11.0-dev code28 → CI #154 GREEN → APK/AAB → TEST FAB
+TEST FAB doit couvrir : GECKODOKU historique ; SUDOKU tactile ; 3-state selector live ; CLASSIC/NB/COLOR crops ; Prof/Pierre ; notes/undo/redo.

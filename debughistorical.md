@@ -1130,3 +1130,8 @@ Inspection visuelle des sources : découpe 5 colonnes égales sur NB coupait/con
 
 <!-- GECKO-038-CROP-SYNTAX-FIX-2026-09-27 -->
 CI #153 : échec compilation ligne 515, accolade surnuméraire introduite dans le patch de crop. Diagnostic immédiat ; suppression de cette seule accolade.
+
+
+<!-- GECKO-038-CI154-GREEN-2026-09-27 -->
+## 2026-09-27 — GECKO-038 CI #154 GREEN
+Après #153 (accolade locale du helper crop), #154 passe tests, assembleDebug, bundleDebug et artifact upload. Les blobs des deux planches restent exactement ceux de main : Colored 188cb2cf8a7a4c43b5118337bcfad3d969a34040 ; NB d507a670299733ff0b6859774cd1d5c2e334ecd5. Candidate 0.11.0-dev prête pour validation téléphone, sans merge ni release.
