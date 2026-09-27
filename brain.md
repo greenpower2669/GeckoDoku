@@ -2081,3 +2081,11 @@ Le comportement téléphone de Fab reste l'autorité finale pour :
 - visibilité permanente du pavé ;
 - visibilité permanente du sélecteur.
 
+
+
+<!-- GECKO-038-TACTILE-RED-2026-09-27 -->
+## GECKO-038 tactile — audit avant code
+HEAD réel au GO : `baac7df072786bad770b1b8236aada091390744f`.
+Cause du chevauchement confirmée : `BoardGeometryPolicy` fige une géométrie par dimensions de fenêtre. La bascule de mode garde donc la géométrie GeckoDoku alors que le root Sudoku a ajouté selector/pavé/outils. Cible : gel indépendant par GameMode, sans changer le contrat historique dans chaque mode.
+
+Décision Prof/candidats après audit du mode 1 : comme `GeckoBoardView.showProfessorHint()` utilise un overlay pédagogique séparé du GameSnapshot, les candidats montrés par Prof Sudoku seront **transitoires**, dessinés par le même renderer que les candidats joueur, mais n'altéreront pas les notes ni Undo/Redo du joueur.

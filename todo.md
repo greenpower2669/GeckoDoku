@@ -54,3 +54,15 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 
 - [ ] Pas de merge `main` sans GO explicite Fab.
 - [ ] Pas de release sans GO explicite Fab.
+
+
+<!-- GECKO-038-TACTILE-RED-2026-09-27 -->
+- [x] GO code reçu.
+- [x] Cause géométrie identifiée.
+- [x] Politique candidats Prof décidée : transitoire, même renderer, pas Undo joueur.
+- [x] RED géométrie / candidats / popup / settings posé.
+- [ ] Confirmer RED CI.
+- [ ] GREEN géométrie + difficulté Settings.
+- [ ] GREEN long press + palette.
+- [ ] GREEN candidats 3 styles + Prof.
+- [ ] CI/APK/AAB + téléphone Fab.

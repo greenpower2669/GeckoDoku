@@ -814,3 +814,11 @@ Professor hint action ───┘
 Overlay local / bulle / selector :
 **aucun reflow du plateau**.
 
+
+
+<!-- GECKO-038-TACTILE-RED-2026-09-27 -->
+GECKO geometry freeze ─┐
+                       ├→ GameModeBoardGeometryPolicy → overlay board
+SUDOKU geometry freeze ┘
+
+Prof candidate hint → transient candidate overlay → SAME candidate renderer → no player undo mutation.

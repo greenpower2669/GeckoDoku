@@ -431,3 +431,8 @@ La mission sera réussie si :
 La CI prouve la cohérence technique.
 
 **Le téléphone de Fab décide du confort réel.**
+
+
+<!-- GECKO-038-TACTILE-RED-2026-09-27 -->
+## ÉTAT D'EXÉCUTION
+GO reçu. HEAD de départ `baac7df072786bad770b1b8236aada091390744f`. Phase actuelle : RED des contrats purs avant modification runtime. La policy Prof retenue suit le précédent du mode 1 : overlay pédagogique transitoire utilisant le même renderer, sans altérer l'historique joueur.
