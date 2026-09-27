@@ -354,3 +354,7 @@ Prof button pedagogy → pedagogical bubble token → no auto-close.
 
 <!-- GECKO-037-RUNTIME-CLEANUP-2026-09-27 -->
 MainActivity small speech → ProfessorLifeController ONLY. Ancien PierreSmallTalkSelector/QuickTalkPresentationPolicy : hors runtime.
+
+
+<!-- GECKO-037-V01016-CANDIDATE-2026-09-27 -->
+v0.10.16-dev → GECKO-037 complete runtime → CI versionnée → validation téléphone Fab.

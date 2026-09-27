@@ -859,3 +859,8 @@ Le moteur 309 est maintenant la source unique des petites paroles runtime : !, a
 <!-- GECKO-037-RUNTIME-CLEANUP-2026-09-27 -->
 ## Non-régression sélection
 MainActivity ne possède plus d'ancien selector par index pour le smalltalk. Le chemin runtime des petites phrases passe exclusivement par ProfessorLifeController → ProfessorPhraseSelector → ProfessorPhraseCatalog.
+
+
+<!-- GECKO-037-V01016-CANDIDATE-2026-09-27 -->
+## Référence candidate Prof vivant
+v0.10.16-dev / code 27 est la première candidate intégrant GECKO-037. La base v0.10.15 vidéo reste inchangée ; GECKO-037 se superpose au catalogue/sélection/contexte/bulle.

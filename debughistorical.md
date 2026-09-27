@@ -1018,3 +1018,8 @@ Remplacement runtime des anciens Random.nextInt smalltalk/PierreEncouragements p
 <!-- GECKO-037-RUNTIME-CLEANUP-2026-09-27 -->
 ## 2026-09-27 — nettoyage runtime GECKO-037
 Après #138 GREEN, suppression des champs morts issus du système quicktalk historique afin d'éviter une réactivation accidentelle du tirage par index.
+
+
+<!-- GECKO-037-V01016-CANDIDATE-2026-09-27 -->
+## 2026-09-27 — candidate GECKO-037
+#134 RED global attendu, #137 GREEN cœur, #138 GREEN runtime. Candidate v0.10.16-dev / code 27 préparée après nettoyage des anciens selectors runtime.

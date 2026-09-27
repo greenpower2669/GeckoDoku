@@ -546,3 +546,14 @@ Aucune mission active.
 - [x] Runtime petites phrases = moteur 309 uniquement.
 - [ ] Versionner candidate.
 - [ ] CI finale + APK/AAB.
+
+
+<!-- GECKO-037-V01016-CANDIDATE-2026-09-27 -->
+## Candidate v0.10.16-dev
+- [x] #134 RED global attendu.
+- [x] #137 cœur GREEN complet.
+- [x] #138 runtime GREEN complet.
+- [x] versionCode 27 / versionName 0.10.16-dev.
+- [ ] CI finale versionnée GREEN.
+- [ ] APK/AAB candidate.
+- [ ] Fab : valider comportement vivant sur téléphone.

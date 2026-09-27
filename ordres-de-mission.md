@@ -1189,3 +1189,8 @@ MainActivity utilise désormais ProfessorLifeController pour observer GAME_START
 <!-- GECKO-037-RUNTIME-CLEANUP-2026-09-27 -->
 ## GREEN 5 — retrait des anciens chemins random runtime
 Les champs MainActivity pierreSmallTalkSelector, ProfessorQuickTalkPolicy, QuickTalkPresentationPolicy et lastSmallTalkIndex sont retirés. Ils n'étaient plus utilisés depuis le branchement du selector 309. Le runtime ne conserve donc aucun ancien tirage smalltalk par index.
+
+
+<!-- GECKO-037-V01016-CANDIDATE-2026-09-27 -->
+## Candidate GECKO-037 — v0.10.16-dev
+versionCode 27 / versionName 0.10.16-dev. Contient le moteur 309, mémoire 48 h persistante, lastPhraseId, contexte/mood, fallback oldest-first, smalltalk/encouragement/réactions runtime et bulle auto-close sécurisée. CI finale versionnée requise avant livraison téléphone.
