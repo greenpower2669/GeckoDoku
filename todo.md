@@ -632,3 +632,17 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [x] Teinte vidéo jaune optionnelle.
 - [ ] Câbler ces fonctions dans MainActivity Gomoku.
 - [ ] Vérifier CI puis test téléphone pan/zoom/keycolor/jaune.
+
+
+<!-- GECKO-039-MAIN-INTEGRATION-TODO-2026-09-27 -->
+- [x] Choix UI Gomoku contre Prof Gecko / humain contre humain.
+- [x] Tour Prof jaune automatique.
+- [x] Clic Prof = conseil ; long VS = joue pour humain ; long H2H = analyse sans coup.
+- [x] H2H sans IA joueuse.
+- [x] Vidéo Gomoku dynamique pan/zoom, sans rectangle de masque, teinte jaune.
+- [x] Bouton Prof Sudoku réactivé.
+- [ ] CI GREEN.
+- [ ] Corriger toute régression révélée par CI.
+- [ ] Produire/récupérer APK/AAB candidate.
+- [ ] Test téléphone Fab.
+- [ ] Après validation téléphone, nettoyer ordre/todo terminés.

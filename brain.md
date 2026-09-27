@@ -2725,3 +2725,7 @@ Core ajouté : GomokuMatchMode persiste la configuration VS_PROFESSOR / HUMAN_VS
 
 <!-- GECKO-039-MEDIA-DYNAMIC-2026-09-27 -->
 Pipeline média Gomoku : RichMediaOverlayView accepte un targetProvider dynamique ; MainActivity pourra rafraîchir les bounds à chaque viewport. GomokuBoardView expose geckoRectOnScreen calé sur l'inset réel du PNG et peut masquer uniquement le PNG de la cellule animée. ChromaKeyVideoView possède une teinte jaune optionnelle appliquée après extraction du fond bleu.
+
+
+<!-- GECKO-039-MAIN-INTEGRATION-2026-09-27 -->
+MainActivity câble désormais les deux variantes sur le même engine. VS_PROFESSOR : vert humain, jaune Prof automatique ; clic Prof conseille ; long joue le vert pour l'humain puis relance le jaune automatique. HUMAN_VS_HUMAN : alternance verte/jaune humaine, conseil Prof sur le camp courant et aucun coup Prof. La difficulté IA est masquée en H2H. Sudoku réactive explicitement le bouton Prof.

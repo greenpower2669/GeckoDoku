@@ -1588,3 +1588,7 @@ Première tranche code post-test : séparation configuration de match / moteur. 
 
 <!-- GECKO-039-MEDIA-DYNAMIC-2026-09-27 -->
 Correctif structurel préparé pour le bug téléphone vidéo : l'overlay sait désormais suivre une cible mobile/zoomable au lieu de rester figé sur le RectF initial. Le Goban peut masquer le PNG exact sans rectangle de couleur. Le shader sait jaunir le Gecko après chroma-key. Classic/Sudoku gardent les paramètres historiques par défaut.
+
+
+<!-- GECKO-039-MAIN-INTEGRATION-2026-09-27 -->
+Ancien défaut : le bouton Prof était uniquement actif au tour jaune et déclenchait manuellement l'IA ; les chaînes UI demandaient « Appuie » et affichaient Pierre. Correction : tour jaune automatique en VS Prof, bouton réaffecté au conseil pendant le tour humain, variante H2H sans IA joueuse. Le pipeline vidéo Gomoku utilise maintenant geckoRectOnScreen dynamique, aucun maskView coloré, suppression/restauration ciblée du PNG et teinte jaune du camp jaune.

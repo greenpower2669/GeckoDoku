@@ -1220,3 +1220,16 @@ GomokuBoardView.geckoRectOnScreen(cell)
   → ChromaKeyVideoView bounds.
 Video shader : blue key/despill → optional yellow tint → alpha blend.
 Static stone : setMediaStoneSuppressed(cell,true) après première frame visible → restore à la fin.
+
+
+<!-- GECKO-039-MAIN-INTEGRATION-2026-09-27 -->
+Mode chooser(4 choix UI)
+  → GameMode.GOMOKU + GomokuMatchMode.
+Board tap
+  → VS_PROFESSOR : GREEN human → auto playGomokuProfessorTurn(YELLOW)
+  → HUMAN_VS_HUMAN : currentPlayer human → alternate.
+Prof button
+  → short: showGomokuProfessorAdvice(apply=false)
+  → long VS: advice + engine.play(GREEN) → auto YELLOW
+  → long H2H: deep advice only.
+Viewport change → RichMediaOverlayView.refreshDynamicTargets.

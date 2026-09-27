@@ -212,6 +212,9 @@ class MainActivity : Activity() {
     private var gomokuProfessorThinking =
         false
 
+    private var gomokuMatchMode =
+        GomokuMatchMode.VS_PROFESSOR
+
     private var gomokuGeneration =
         0
 
@@ -386,6 +389,10 @@ class MainActivity : Activity() {
         selectedGameMode =
             gameModePreferences
                 .gameMode
+
+        gomokuMatchMode =
+            gameModePreferences
+                .gomokuMatchMode
 
         createPuzzle(
             recordStart =
@@ -713,6 +720,14 @@ class MainActivity : Activity() {
                             GameMode.GOMOKU
                     ) {
                         refreshGomokuInfo()
+
+                        if (
+                            ::richMediaOverlay
+                                .isInitialized
+                        ) {
+                            richMediaOverlay
+                                .refreshDynamicTargets()
+                        }
                     }
                 }
             }
@@ -953,14 +968,28 @@ class MainActivity : Activity() {
                 }
 
                 setOnLongClickListener {
-                    if (
-                        selectedGameMode ==
-                            GameMode.SUDOKU
+                    when (
+                        selectedGameMode
                     ) {
-                        playSudokuProfessorDirect()
-                        true
-                    } else {
-                        false
+                        GameMode.SUDOKU -> {
+                            playSudokuProfessorDirect()
+                            true
+                        }
+
+                        GameMode.GOMOKU -> {
+                            showGomokuProfessorAdvice(
+                                applyMoveForHuman =
+                                    gomokuMatchMode ==
+                                        GomokuMatchMode
+                                            .VS_PROFESSOR,
+                                deepAnalysis =
+                                    true
+                            )
+                            true
+                        }
+
+                        GameMode.GECKODOKU ->
+                            false
                     }
                 }
             }
@@ -1556,7 +1585,15 @@ class MainActivity : Activity() {
                 refreshGameUi()
 
                 status.text =
-                    "Nouvelle partie Gomoku. À toi de poser le premier Gecko 🦎"
+                    if (
+                        gomokuMatchMode ==
+                            GomokuMatchMode
+                                .VS_PROFESSOR
+                    ) {
+                        "Nouvelle partie contre Prof Gecko. À toi de jouer vert 🦎"
+                    } else {
+                        "Nouvelle partie humain contre humain. Au joueur Vert."
+                    }
             }
 
             GameMode.GECKODOKU -> {
@@ -2209,7 +2246,12 @@ class MainActivity : Activity() {
             selectedGameMode ==
                 GameMode.GOMOKU
         ) {
-            playGomokuProfessorTurn()
+            showGomokuProfessorAdvice(
+                applyMoveForHuman =
+                    false,
+                deepAnalysis =
+                    false
+            )
             return
         }
 
@@ -3864,24 +3906,35 @@ class MainActivity : Activity() {
     }
 
     private fun showGameModeChooser() {
-        val values =
-            arrayOf(
-                GameMode.GECKODOKU,
-                GameMode.SUDOKU,
-                GameMode.GOMOKU
-            )
-
         val labels =
             arrayOf(
                 "🦎 GeckoDoku",
                 "🔢 Sudoku",
-                "🟩 Gomoku contre Pierre"
+                "🟩 Gomoku contre Prof Gecko",
+                "👥 Gomoku humain contre humain"
             )
 
         val checked =
-            values.indexOf(
+            when (
                 selectedGameMode
-            ).coerceAtLeast(0)
+            ) {
+                GameMode.GECKODOKU ->
+                    0
+
+                GameMode.SUDOKU ->
+                    1
+
+                GameMode.GOMOKU ->
+                    if (
+                        gomokuMatchMode ==
+                            GomokuMatchMode
+                                .VS_PROFESSOR
+                    ) {
+                        2
+                    } else {
+                        3
+                    }
+            }
 
         AlertDialog.Builder(this)
             .setTitle("Mode de jeu")
@@ -3892,9 +3945,29 @@ class MainActivity : Activity() {
                     dialog,
                     which ->
 
-                setGameMode(
-                    values[which]
-                )
+                when (which) {
+                    0 ->
+                        setGameMode(
+                            GameMode.GECKODOKU
+                        )
+
+                    1 ->
+                        setGameMode(
+                            GameMode.SUDOKU
+                        )
+
+                    2 ->
+                        selectGomokuMatchMode(
+                            GomokuMatchMode
+                                .VS_PROFESSOR
+                        )
+
+                    3 ->
+                        selectGomokuMatchMode(
+                            GomokuMatchMode
+                                .HUMAN_VS_HUMAN
+                        )
+                }
 
                 dialog.dismiss()
             }
@@ -3905,6 +3978,58 @@ class MainActivity : Activity() {
             .show()
     }
 
+    private fun selectGomokuMatchMode(
+        matchMode: GomokuMatchMode
+    ) {
+        if (
+            selectedGameMode ==
+                GameMode.GOMOKU &&
+            gomokuMatchMode ==
+                matchMode
+        ) {
+            return
+        }
+
+        val hadGomokuEngine =
+            gomokuEngine != null
+
+        gomokuMatchMode =
+            matchMode
+
+        gameModePreferences
+            .gomokuMatchMode =
+            matchMode
+
+        if (
+            selectedGameMode !=
+                GameMode.GOMOKU
+        ) {
+            setGameMode(
+                GameMode.GOMOKU
+            )
+
+            if (hadGomokuEngine) {
+                startGomokuGame()
+            }
+        } else {
+            startGomokuGame()
+        }
+
+        applyGameModeVisibility()
+        refreshGameUi()
+
+        status.text =
+            if (
+                gomokuMatchMode ==
+                    GomokuMatchMode
+                        .VS_PROFESSOR
+            ) {
+                "Gomoku contre Prof Gecko. À toi de jouer vert 🦎"
+            } else {
+                "Gomoku humain contre humain. Au joueur Vert."
+            }
+    }
+
     private fun setGameMode(
         mode: GameMode
     ) {
@@ -3913,6 +4038,15 @@ class MainActivity : Activity() {
                 selectedGameMode
         ) {
             return
+        }
+
+        if (
+            selectedGameMode ==
+                GameMode.GOMOKU &&
+            mode !=
+                GameMode.GOMOKU
+        ) {
+            stopGomokuPieceMedia()
         }
 
         clearProfessorSession()
@@ -3988,7 +4122,15 @@ class MainActivity : Activity() {
                     "Mode Sudoku activé 🔢"
 
                 GameMode.GOMOKU ->
-                    "Mode Gomoku activé. Pose ton Gecko vert 🦎"
+                    if (
+                        gomokuMatchMode ==
+                            GomokuMatchMode
+                                .VS_PROFESSOR
+                    ) {
+                        "Gomoku contre Prof Gecko. Pose ton Gecko vert 🦎"
+                    } else {
+                        "Gomoku humain contre humain. Au joueur Vert."
+                    }
 
                 GameMode.GECKODOKU ->
                     "Mode GeckoDoku activé 🦎"
@@ -4094,21 +4236,22 @@ class MainActivity : Activity() {
                     "🧑‍🏫 Partie terminée"
 
                 gomokuProfessorThinking ->
-                    "🧑‍🏫 Pierre réfléchit…"
-
-                snapshot.currentPlayer ==
-                    GomokuPlayer.PROFESSOR ->
-                    "🧑‍🏫 À moi de jouer"
+                    "🧑‍🏫 Prof Gecko réfléchit…"
 
                 else ->
                     "🧑‍🏫 Prof Gecko"
             }
 
         professorButton.isEnabled =
-            !snapshot.gameOver &&
-                !gomokuProfessorThinking &&
-                snapshot.currentPlayer ==
-                    GomokuPlayer.PROFESSOR
+            GomokuMatchPolicy
+                .professorCanAdvise(
+                    mode =
+                        gomokuMatchMode,
+                    snapshot =
+                        snapshot,
+                    thinking =
+                        gomokuProfessorThinking
+                )
     }
 
     private fun refreshGomokuInfo() {
@@ -4137,19 +4280,43 @@ class MainActivity : Activity() {
                 12
             }
 
+        val matchText =
+            if (
+                gomokuMatchMode ==
+                    GomokuMatchMode
+                        .VS_PROFESSOR
+            ) {
+                "Prof • " +
+                    selectedDifficulty.label
+            } else {
+                "Humain vs humain"
+            }
+
         info.text =
             "Gomoku " +
                 snapshot.size +
                 "×" +
                 snapshot.size +
                 " • " +
-                selectedDifficulty.label +
+                matchText +
                 " • vue ~" +
                 span +
                 "×" +
                 span +
                 " • glisser / pincer"
     }
+
+    private fun gomokuCampLabel(
+        player: GomokuPlayer
+    ): String =
+        if (
+            player ==
+                GomokuPlayer.PLAYER
+        ) {
+            "Vert"
+        } else {
+            "Jaune"
+        }
 
     private fun handleGomokuPlayerMove(
         cell: Cell
@@ -4168,16 +4335,28 @@ class MainActivity : Activity() {
             return
         }
 
+        if (gomokuProfessorThinking) {
+            fx.blocked()
+            status.text =
+                "Prof Gecko termine son analyse."
+            return
+        }
+
         if (
+            gomokuMatchMode ==
+                GomokuMatchMode
+                    .VS_PROFESSOR &&
             before.currentPlayer !=
-                GomokuPlayer.PLAYER ||
-            gomokuProfessorThinking
+                GomokuPlayer.PLAYER
         ) {
             fx.blocked()
             status.text =
-                "C'est à Pierre de jouer."
+                "Prof Gecko réfléchit déjà à son coup."
             return
         }
+
+        val playedBy =
+            before.currentPlayer
 
         clearProfessorSession()
         recordBoardAction()
@@ -4214,44 +4393,41 @@ class MainActivity : Activity() {
 
                 gomokuBoard.animatePlacement(
                     cell,
-                    GomokuPlayer.PLAYER
+                    playedBy
                 )
 
-                gomokuBoard
-                    .cellRectOnScreen(
-                        cell
-                    )
-                    ?.let {
-                        rect ->
-
-                        playSharedGeckoCellAnimation(
-                            kind =
-                                RichMediaKind
-                                    .GECKO_APPEARANCE,
-                            screenRect =
-                                rect,
-                            maskColor =
-                                gomokuBoard
-                                    .cellBackgroundColor(),
-                            onFinished = {
-                                maybePlaySharedGeckoLongAction(
-                                    screenRect =
-                                        rect,
-                                    maskColor =
-                                        gomokuBoard
-                                            .cellBackgroundColor(),
-                                    eligible =
-                                        gomokuEngine
-                                            ?.snapshot()
-                                            ?.gameOver ==
-                                            false
-                                )
-                            }
+                playGomokuPieceAnimation(
+                    kind =
+                        RichMediaKind
+                            .GECKO_APPEARANCE,
+                    cell = cell,
+                    player = playedBy,
+                    onFinished = {
+                        maybePlayGomokuLongAction(
+                            cell = cell,
+                            player = playedBy
                         )
                     }
+                )
 
-                status.text =
-                    "À Pierre. Appuie sur Prof Gecko pour son coup."
+                if (
+                    gomokuMatchMode ==
+                        GomokuMatchMode
+                            .VS_PROFESSOR
+                ) {
+                    status.text =
+                        "Prof Gecko réfléchit…"
+                    playGomokuProfessorTurn()
+                } else {
+                    status.text =
+                        "Au joueur " +
+                            gomokuCampLabel(
+                                engine
+                                    .snapshot()
+                                    .currentPlayer
+                            ) +
+                            "."
+                }
             }
 
             GomokuMoveResult.WIN -> {
@@ -4259,11 +4435,19 @@ class MainActivity : Activity() {
 
                 gomokuBoard.animatePlacement(
                     cell,
-                    GomokuPlayer.PLAYER
+                    playedBy
+                )
+
+                playGomokuPieceAnimation(
+                    kind =
+                        RichMediaKind
+                            .GECKO_APPEARANCE,
+                    cell = cell,
+                    player = playedBy
                 )
 
                 completeGomokuGame(
-                    GomokuPlayer.PLAYER
+                    playedBy
                 )
             }
 
@@ -4283,6 +4467,14 @@ class MainActivity : Activity() {
     }
 
     private fun playGomokuProfessorTurn() {
+        if (
+            gomokuMatchMode !=
+                GomokuMatchMode
+                    .VS_PROFESSOR
+        ) {
+            return
+        }
+
         val engine =
             gomokuEngine
                 ?: return
@@ -4291,25 +4483,11 @@ class MainActivity : Activity() {
             engine.snapshot()
 
         if (
-            snapshot.gameOver
-        ) {
-            fx.blocked()
-            status.text =
-                "La partie est terminée."
-            return
-        }
-
-        if (
+            snapshot.gameOver ||
             snapshot.currentPlayer !=
-                GomokuPlayer.PROFESSOR
+                GomokuPlayer.PROFESSOR ||
+            gomokuProfessorThinking
         ) {
-            fx.blocked()
-            status.text =
-                "Pose d'abord ton Gecko vert."
-            return
-        }
-
-        if (gomokuProfessorThinking) {
             return
         }
 
@@ -4322,20 +4500,23 @@ class MainActivity : Activity() {
         professorButton.isEnabled =
             false
         professorButton.text =
-            "🧑‍🏫 Pierre réfléchit…"
+            "🧑‍🏫 Prof Gecko réfléchit…"
         status.text =
-            "Pierre projette les suites possibles…"
+            "Prof Gecko projette les suites possibles…"
 
         val difficulty =
             selectedDifficulty
 
         Thread {
             val decision =
-                GomokuAi.chooseMove(
+                GomokuAi.chooseMoveFor(
                     snapshot =
                         snapshot,
                     difficulty =
-                        difficulty
+                        difficulty,
+                    player =
+                        GomokuPlayer
+                            .PROFESSOR
                 )
 
             runOnUiThread {
@@ -4344,6 +4525,9 @@ class MainActivity : Activity() {
                         gomokuGeneration ||
                     selectedGameMode !=
                         GameMode.GOMOKU ||
+                    gomokuMatchMode !=
+                        GomokuMatchMode
+                            .VS_PROFESSOR ||
                     gomokuEngine !==
                         engine
                 ) {
@@ -4356,7 +4540,7 @@ class MainActivity : Activity() {
                 if (decision == null) {
                     fx.blocked()
                     status.text =
-                        "Pierre ne trouve aucun coup disponible."
+                        "Prof Gecko ne trouve aucun coup disponible."
                     refreshGomokuUi()
                     return@runOnUiThread
                 }
@@ -4389,8 +4573,28 @@ class MainActivity : Activity() {
                                     .PROFESSOR
                             )
 
+                        playGomokuPieceAnimation(
+                            kind =
+                                RichMediaKind
+                                    .GECKO_APPEARANCE,
+                            cell =
+                                decision.cell,
+                            player =
+                                GomokuPlayer
+                                    .PROFESSOR,
+                            onFinished = {
+                                maybePlayGomokuLongAction(
+                                    cell =
+                                        decision.cell,
+                                    player =
+                                        GomokuPlayer
+                                            .PROFESSOR
+                                )
+                            }
+                        )
+
                         status.text =
-                            "Pierre a joué. À toi."
+                            "Prof Gecko a joué. À toi."
 
                         if (
                             shouldCommentGomokuDecision(
@@ -4413,6 +4617,17 @@ class MainActivity : Activity() {
                                     .PROFESSOR
                             )
 
+                        playGomokuPieceAnimation(
+                            kind =
+                                RichMediaKind
+                                    .GECKO_APPEARANCE,
+                            cell =
+                                decision.cell,
+                            player =
+                                GomokuPlayer
+                                    .PROFESSOR
+                        )
+
                         completeGomokuGame(
                             winner =
                                 GomokuPlayer
@@ -4431,7 +4646,228 @@ class MainActivity : Activity() {
                     else -> {
                         fx.blocked()
                         status.text =
-                            "Le coup de Pierre est devenu indisponible."
+                            "Le coup de Prof Gecko est devenu indisponible."
+                    }
+                }
+
+                refreshGomokuUi()
+            }
+        }.start()
+    }
+
+    private fun showGomokuProfessorAdvice(
+        applyMoveForHuman: Boolean,
+        deepAnalysis: Boolean
+    ) {
+        val engine =
+            gomokuEngine
+                ?: return
+
+        val snapshot =
+            engine.snapshot()
+
+        if (
+            snapshot.gameOver
+        ) {
+            fx.blocked()
+            status.text =
+                "La partie est terminée."
+            return
+        }
+
+        if (gomokuProfessorThinking) {
+            return
+        }
+
+        if (
+            gomokuMatchMode ==
+                GomokuMatchMode
+                    .VS_PROFESSOR &&
+            snapshot.currentPlayer !=
+                GomokuPlayer.PLAYER
+        ) {
+            fx.blocked()
+            status.text =
+                "Prof Gecko est en train de jouer son propre tour."
+            return
+        }
+
+        val advisedPlayer =
+            snapshot.currentPlayer
+
+        val shouldApply =
+            applyMoveForHuman &&
+                GomokuMatchPolicy
+                    .longPressAppliesHumanMove(
+                        mode =
+                            gomokuMatchMode,
+                        snapshot =
+                            snapshot
+                    )
+
+        gomokuProfessorThinking = true
+        professorUsed = true
+
+        val generation =
+            gomokuGeneration
+
+        professorButton.isEnabled =
+            false
+        professorButton.text =
+            "🧑‍🏫 Prof Gecko réfléchit…"
+        status.text =
+            if (deepAnalysis) {
+                "Prof Gecko pousse l'analyse plus loin…"
+            } else {
+                "Prof Gecko analyse la position…"
+            }
+
+        val analysisDifficulty =
+            if (
+                deepAnalysis &&
+                gomokuMatchMode ==
+                    GomokuMatchMode
+                        .HUMAN_VS_HUMAN
+            ) {
+                GameDifficulty.EXPERT
+            } else {
+                selectedDifficulty
+            }
+
+        Thread {
+            val decision =
+                GomokuAi.chooseMoveFor(
+                    snapshot =
+                        snapshot,
+                    difficulty =
+                        analysisDifficulty,
+                    player =
+                        advisedPlayer
+                )
+
+            runOnUiThread {
+                if (
+                    generation !=
+                        gomokuGeneration ||
+                    selectedGameMode !=
+                        GameMode.GOMOKU ||
+                    gomokuEngine !==
+                        engine
+                ) {
+                    return@runOnUiThread
+                }
+
+                gomokuProfessorThinking =
+                    false
+
+                if (decision == null) {
+                    fx.blocked()
+                    status.text =
+                        "Prof Gecko ne trouve pas de conseil sûr ici."
+                    refreshGomokuUi()
+                    return@runOnUiThread
+                }
+
+                val camp =
+                    gomokuCampLabel(
+                        advisedPlayer
+                    )
+
+                val explanation =
+                    if (shouldApply) {
+                        "Pour toi, camp " +
+                            camp +
+                            " : " +
+                            decision.reason +
+                            "\n\nJe joue cette intersection pour toi."
+                    } else {
+                        "Conseil pour le camp " +
+                            camp +
+                            " : " +
+                            decision.reason +
+                            "\n\nIntersection conseillée : ligne " +
+                            (decision.cell.row + 1) +
+                            ", colonne " +
+                            (decision.cell.col + 1) +
+                            "."
+                    }
+
+                showProfessorBubble(
+                    explanation
+                )
+
+                if (!shouldApply) {
+                    fx.hint()
+                    status.text =
+                        "Prof Gecko • conseil pour le camp " +
+                            camp
+                    refreshGomokuUi()
+                    return@runOnUiThread
+                }
+
+                when (
+                    val result =
+                        engine.play(
+                            decision.cell
+                        )
+                ) {
+                    GomokuMoveResult.PLACED -> {
+                        fx.gecko()
+
+                        gomokuBoard
+                            .animatePlacement(
+                                decision.cell,
+                                advisedPlayer
+                            )
+
+                        playGomokuPieceAnimation(
+                            kind =
+                                RichMediaKind
+                                    .GECKO_APPEARANCE,
+                            cell =
+                                decision.cell,
+                            player =
+                                advisedPlayer
+                        )
+
+                        status.text =
+                            "Prof Gecko a joué ton Gecko vert. À lui maintenant."
+                        playGomokuProfessorTurn()
+                    }
+
+                    GomokuMoveResult.WIN -> {
+                        fx.complete()
+
+                        gomokuBoard
+                            .animatePlacement(
+                                decision.cell,
+                                advisedPlayer
+                            )
+
+                        playGomokuPieceAnimation(
+                            kind =
+                                RichMediaKind
+                                    .GECKO_APPEARANCE,
+                            cell =
+                                decision.cell,
+                            player =
+                                advisedPlayer
+                        )
+
+                        completeGomokuGame(
+                            advisedPlayer
+                        )
+                    }
+
+                    GomokuMoveResult.DRAW ->
+                        completeGomokuGame(
+                            null
+                        )
+
+                    else -> {
+                        fx.blocked()
+                        status.text =
+                            "Le conseil n'est plus applicable."
                     }
                 }
 
@@ -4484,11 +4920,25 @@ class MainActivity : Activity() {
         professorButton.isEnabled =
             false
 
+        val humanVsHuman =
+            gomokuMatchMode ==
+                GomokuMatchMode
+                    .HUMAN_VS_HUMAN
+
         if (
             ::celebrationView
                 .isInitialized &&
-            winner ==
-                GomokuPlayer.PLAYER
+            (
+                (
+                    humanVsHuman &&
+                    winner != null
+                ) ||
+                (
+                    !humanVsHuman &&
+                    winner ==
+                        GomokuPlayer.PLAYER
+                )
+                )
         ) {
             celebrationView.start(
                 selectedDifficulty
@@ -4496,34 +4946,60 @@ class MainActivity : Activity() {
         }
 
         val message =
-            when (winner) {
-                GomokuPlayer.PLAYER ->
-                    "Bien joué ! Tu as aligné cinq Geckos avant moi."
+            if (humanVsHuman) {
+                when (winner) {
+                    GomokuPlayer.PLAYER ->
+                        "Les verts alignent cinq Geckos. Belle ligne !"
 
-                GomokuPlayer.PROFESSOR ->
-                    (
-                        professorReason
-                            ?.plus(
-                                "\n\n"
-                            )
-                            ?: ""
-                        ) +
-                        "Et de cinq ! Une jolie ligne de Geckos."
+                    GomokuPlayer.PROFESSOR ->
+                        "Les jaunes alignent cinq Geckos. Belle ligne !"
 
-                null ->
-                    "Plateau rempli : match nul. On en refait une ?"
+                    null ->
+                        "Plateau rempli : match nul. On en refait une ?"
+                }
+            } else {
+                when (winner) {
+                    GomokuPlayer.PLAYER ->
+                        "Bien joué ! Tu as aligné cinq Geckos avant moi."
+
+                    GomokuPlayer.PROFESSOR ->
+                        (
+                            professorReason
+                                ?.plus(
+                                    "\n\n"
+                                )
+                                ?: ""
+                            ) +
+                            "Et de cinq ! Une jolie ligne de Geckos."
+
+                    null ->
+                        "Plateau rempli : match nul. On en refait une ?"
+                }
             }
 
         status.text =
-            when (winner) {
-                GomokuPlayer.PLAYER ->
-                    "Victoire ! Cinq Geckos alignés 🦎"
+            if (humanVsHuman) {
+                when (winner) {
+                    GomokuPlayer.PLAYER ->
+                        "Victoire du joueur Vert 🦎"
 
-                GomokuPlayer.PROFESSOR ->
-                    "Pierre aligne cinq Geckos."
+                    GomokuPlayer.PROFESSOR ->
+                        "Victoire du joueur Jaune 🦎"
 
-                null ->
-                    "Match nul."
+                    null ->
+                        "Match nul."
+                }
+            } else {
+                when (winner) {
+                    GomokuPlayer.PLAYER ->
+                        "Victoire ! Cinq Geckos alignés 🦎"
+
+                    GomokuPlayer.PROFESSOR ->
+                        "Prof Gecko aligne cinq Geckos."
+
+                    null ->
+                        "Match nul."
+                }
             }
 
         gomokuBoard
@@ -4648,6 +5124,8 @@ class MainActivity : Activity() {
 
         professorButton.text =
             "🧑‍🏫 Prof Gecko"
+        professorButton.isEnabled =
+            true
     }
 
     private fun applyGameModeVisibility() {
@@ -4753,7 +5231,15 @@ class MainActivity : Activity() {
                 .isInitialized
         ) {
             difficultyButton.visibility =
-                if (sudoku) {
+                if (
+                    sudoku ||
+                    (
+                        gomoku &&
+                        gomokuMatchMode ==
+                            GomokuMatchMode
+                                .HUMAN_VS_HUMAN
+                        )
+                ) {
                     View.GONE
                 } else {
                     View.VISIBLE
@@ -6146,6 +6632,17 @@ class MainActivity : Activity() {
                 .entriesFor(
                     selectedGameMode
                 )
+                .filterNot {
+                    entry ->
+                    selectedGameMode ==
+                        GameMode.GOMOKU &&
+                        gomokuMatchMode ==
+                            GomokuMatchMode
+                                .HUMAN_VS_HUMAN &&
+                        entry ==
+                            SettingsEntry
+                                .DIFFICULTY
+                }
 
         val labels =
             entries.map {
@@ -6158,7 +6655,15 @@ class MainActivity : Activity() {
                                 "🎮 Mode : Sudoku"
 
                             GameMode.GOMOKU ->
-                                "🎮 Mode : Gomoku"
+                                if (
+                                    gomokuMatchMode ==
+                                        GomokuMatchMode
+                                            .VS_PROFESSOR
+                                ) {
+                                    "🎮 Mode : Gomoku contre Prof Gecko"
+                                } else {
+                                    "🎮 Mode : Gomoku humain contre humain"
+                                }
 
                             GameMode.GECKODOKU ->
                                 "🎮 Mode : GeckoDoku"
@@ -6522,6 +7027,215 @@ class MainActivity : Activity() {
             onFinished =
                 onFinished
         )
+    }
+
+    private fun gomokuOverlayTarget(
+        cell: Cell
+    ): RectF? {
+        if (
+            !::gomokuBoard.isInitialized ||
+            !::screenRoot.isInitialized
+        ) {
+            return null
+        }
+
+        val screenRect =
+            gomokuBoard
+                .geckoRectOnScreen(
+                    cell
+                )
+                ?: return null
+
+        val rootLocation =
+            IntArray(2)
+
+        screenRoot.getLocationOnScreen(
+            rootLocation
+        )
+
+        return RectF(screenRect).apply {
+            offset(
+                -rootLocation[0].toFloat(),
+                -rootLocation[1].toFloat()
+            )
+        }
+    }
+
+    private fun playGomokuPieceAnimation(
+        kind: RichMediaKind,
+        cell: Cell,
+        player: GomokuPlayer,
+        onFinished: (() -> Unit)? = null
+    ) {
+        val celebrationVisible =
+            ::celebrationView.isInitialized &&
+                celebrationView.visibility ==
+                    View.VISIBLE
+
+        if (
+            !richMediaSettings.enabled ||
+            !::richMediaOverlay.isInitialized ||
+            celebrationVisible
+        ) {
+            onFinished?.invoke()
+            return
+        }
+
+        val asset =
+            GeckoCellAnimationAssetPolicy
+                .assetFor(kind)
+                ?: run {
+                    onFinished?.invoke()
+                    return
+                }
+
+        val initialTarget =
+            gomokuOverlayTarget(
+                cell
+            )
+                ?: run {
+                    onFinished?.invoke()
+                    return
+                }
+
+        var suppressed =
+            false
+
+        fun restoreStaticStone() {
+            if (
+                suppressed &&
+                ::gomokuBoard.isInitialized
+            ) {
+                gomokuBoard
+                    .setMediaStoneSuppressed(
+                        cell,
+                        false
+                    )
+            }
+            suppressed = false
+        }
+
+        val accepted =
+            richMediaOverlay.play(
+                kind = kind,
+                assetPath = asset,
+                muted =
+                    GeckoMediaAudioPolicy
+                        .mustMute(kind),
+                target =
+                    initialTarget,
+                targetProvider = {
+                    gomokuOverlayTarget(
+                        cell
+                    )
+                },
+                titleText = null,
+                skippable =
+                    kind ==
+                        RichMediaKind
+                            .GECKO_LONG_ACTION,
+                maskTarget = null,
+                yellowTint =
+                    player ==
+                        GomokuPlayer
+                            .PROFESSOR,
+                onFirstFrameVisible = {
+                    if (
+                        ::gomokuBoard.isInitialized
+                    ) {
+                        suppressed = true
+                        gomokuBoard
+                            .setMediaStoneSuppressed(
+                                cell,
+                                true
+                            )
+                    }
+                },
+                onFinished = {
+                    restoreStaticStone()
+                    onFinished
+                        ?.invoke()
+                }
+            )
+
+        if (!accepted) {
+            restoreStaticStone()
+            onFinished?.invoke()
+        }
+    }
+
+    private fun maybePlayGomokuLongAction(
+        cell: Cell,
+        player: GomokuPlayer
+    ) {
+        if (
+            !richMediaSettings.enabled ||
+            !::richMediaOverlay.isInitialized ||
+            (
+                ::celebrationView.isInitialized &&
+                    celebrationView.visibility ==
+                        View.VISIBLE
+                )
+        ) {
+            return
+        }
+
+        val eligible =
+            gomokuEngine
+                ?.snapshot()
+                ?.gameOver ==
+                false
+
+        val shouldPlay =
+            richMediaScheduler
+                .shouldPlayLongAction(
+                    nowMs =
+                        SystemClock
+                            .elapsedRealtime(),
+                    randomValue =
+                        Random.nextInt(100),
+                    eligible =
+                        eligible,
+                    busy =
+                        richMediaOverlay
+                            .isBusy
+                )
+
+        if (!shouldPlay) {
+            return
+        }
+
+        playGomokuPieceAnimation(
+            kind =
+                RichMediaKind
+                    .GECKO_LONG_ACTION,
+            cell = cell,
+            player = player
+        )
+    }
+
+    private fun stopGomokuPieceMedia() {
+        if (
+            ::richMediaOverlay
+                .isInitialized
+        ) {
+            richMediaOverlay.stopKind(
+                RichMediaKind
+                    .GECKO_APPEARANCE
+            )
+            richMediaOverlay.stopKind(
+                RichMediaKind
+                    .GECKO_LONG_ACTION
+            )
+        }
+
+        if (
+            ::gomokuBoard
+                .isInitialized
+        ) {
+            gomokuBoard
+                .clearMediaStoneSuppression()
+        }
     }
 
     private fun playSharedGeckoCellAnimation(
