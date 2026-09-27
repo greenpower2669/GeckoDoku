@@ -343,3 +343,19 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Test téléphone Fab.
 - [ ] Gomoku : NE PAS CODER avant GO distinct.
 
+<!-- GECKO-039-DOUBLE-TAP-MARKERS-PROF-REASONING-2026-09-27 -->
+## GECKO-039 — nouveaux travaux
+- [ ] Double tap case Sudoku → ouvrir clavier / palette des repères personnels.
+- [ ] Vérifier qu'un double tap ne déclenche pas deux toggles Gecko.
+- [ ] Conserver tap simple Gecko-repère et long press palette Sudoku.
+- [ ] Auditer/réutiliser le système de repères personnels du mode classique.
+- [ ] Définir un modèle pur de ReasoningTrace Sudoku.
+- [ ] Enrichir les hints pour conserver sources, projections et éliminations réelles.
+- [ ] Créer la projection graphique synchronisée avec ReasoningTrace.
+- [ ] Créer la narration détaillée à partir de la même ReasoningTrace.
+- [ ] Layout large : projection à gauche / texte à droite.
+- [ ] Layout petit écran : projection au-dessus / texte en dessous.
+- [ ] Accessibilité projections : traits/flèches/croix/hachures, pas couleur seule.
+- [ ] Tester que texte et graphique décrivent exactement les mêmes étapes.
+- [ ] Tester que le Prof ne saute jamais directement à la conclusion quand une explication détaillée est disponible.
+

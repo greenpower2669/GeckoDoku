@@ -1011,3 +1011,38 @@ Sudoku Gecko marker → reuse CLASSIC Gecko animation pipeline/media → keep ta
 Title → always "GeckoDoku 🦎" → mode identity below title.
 Gomoku → mission only / no code without explicit GO.
 
+<!-- GECKO-039-DOUBLE-TAP-MARKERS-PROF-REASONING-2026-09-27 -->
+# Sudoku — gestes + aide Prof
+
+```text
+SINGLE TAP empty cell
+  → toggle Gecko-repère
+
+DOUBLE TAP cell
+  → open personal-marker keyboard/palette
+
+LONG PRESS cell
+  → Sudoku local palette
+    → value 1..9
+    → candidates 1..9
+    → erase
+```
+
+```text
+SudokuHintEngine / reasoning engine
+  ↓
+ReasoningTrace
+  ├─ technique
+  ├─ target digit
+  ├─ source cells
+  ├─ projections
+  ├─ eliminated cells/candidates
+  ├─ surviving target
+  └─ ordered steps
+       ↓
+       ├────────→ GraphicReasoningOverlay
+       └────────→ DetailedProfessorNarration
+
+Same trace = no text/graphic contradiction.
+```
+

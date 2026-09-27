@@ -139,6 +139,271 @@ Ce contrat devra être respecté dès le premier code du futur Gomoku.
 
 ---
 
+# 3A — SUDOKU : DOUBLE TAP = CLAVIER DES REPÈRES PERSONNELS
+
+## OBJECTIF
+
+En mode Sudoku, ajouter un geste distinct :
+
+**DOUBLE TAP SUR UNE CASE**
+→ ouvrir le clavier / la palette des repères personnels.
+
+Le but est de permettre au joueur d'ajouter rapidement ses propres repères visuels, en complément :
+- du Gecko-repère ;
+- des candidats 1–9 ;
+- des valeurs Sudoku.
+
+## CONTRAT DES GESTES
+
+```text
+TAP SIMPLE sur case vide
+→ pose / retire le Gecko-repère
+
+DOUBLE TAP sur case
+→ ouvre le clavier / la palette des repères personnels
+
+APPUI LONG sur case
+→ ouvre la palette Sudoku locale
+   - valeurs 1..9
+   - candidats 1..9
+   - effacer
+```
+
+IMPORTANT :
+- ne pas confondre double tap et deux taps simples successifs ;
+- un double tap ne doit pas poser puis retirer instantanément le Gecko-repère ;
+- un double tap ne doit pas saisir automatiquement une valeur Sudoku ;
+- réutiliser autant que possible le système de repères personnels du mode classique ;
+- ne pas mélanger les repères personnels avec les notes/candidats Sudoku dans le moteur logique ;
+- les repères personnels restent purement visuels ;
+- ils ne doivent jamais influencer SudokuSolver ou SudokuHintEngine ;
+- conserver l'accessibilité et les grandes cibles tactiles.
+
+---
+
+# 3B — CORRECTION PROF GECKO
+## EXPLICATION VISUELLE ET RAISONNEMENT DÉTAILLÉ
+
+## PROBLÈME CONSTATÉ
+
+Actuellement Prof Gecko peut afficher par exemple :
+
+`Dans cette ligne, le 6 ne peut aller qu'à cet endroit.`
+
+C'est insuffisant.
+
+Le joueur voit la réponse, mais ne comprend pas pourquoi les autres positions sont impossibles.
+
+## OBJECTIF
+
+Quand Prof Gecko donne une aide logique, l'écran doit présenter :
+
+### À GAUCHE
+La projection graphique du raisonnement directement sur la grille / mini-grille.
+
+### À DROITE
+L'explication détaillée de Pierre correspondant exactement à cette projection.
+
+Sur petit écran Android, autoriser une disposition adaptative :
+
+```text
+[ projection ]
+[ explication ]
+```
+
+si deux colonnes deviennent illisibles.
+
+## RÈGLE FONDAMENTALE
+
+Le Prof ne doit jamais se contenter de donner la conclusion.
+
+Il doit expliquer les éliminations successives qui permettent d'y arriver.
+
+Exemple de style attendu :
+
+`Regarde le 6 déjà présent ici.`
+
+`Il se projette sur cette ligne : toutes ces cases deviennent impossibles pour un autre 6.`
+
+`Ensuite, ce deuxième 6 se projette dans cette direction.`
+
+`Zut ! Cette deuxième possibilité est elle aussi éliminée.`
+
+`Dans cette zone, il ne reste maintenant qu'une seule case possible pour le 6.`
+
+`Donc le 6 doit forcément être placé ici.`
+
+Le texte exact dépend obligatoirement de la grille réelle.
+
+## PROJECTION GRAPHIQUE
+
+Pendant chaque étape :
+
+1. mettre en évidence le chiffre source utilisé ;
+2. dessiner la projection réellement utilisée :
+   - ligne ;
+   - colonne ;
+   - bloc 3×3 ;
+3. montrer graphiquement les cases rendues impossibles ;
+4. afficher une deuxième projection lorsqu'une seconde contrainte intervient ;
+5. marquer clairement les possibilités éliminées ;
+6. terminer par la seule case restante.
+
+Exemple conceptuel :
+
+```text
+6 source
+   ↓
+projection ─────────────── X X X
+
+autre 6
+   ↓
+projection │
+           X
+           X
+
+une seule case encore possible
+           ↓
+          [ 6 ]
+```
+
+## SYNCHRONISATION TEXTE / GRAPHISME
+
+Les explications apparaissent étape par étape.
+
+### ÉTAPE 1
+Graphique :
+projection du premier 6.
+
+Texte :
+`Ce 6 interdit toute cette ligne.`
+
+### ÉTAPE 2
+Graphique :
+projection du deuxième 6.
+
+Texte :
+`Celui-ci élimine aussi cette possibilité.`
+
+### ÉTAPE 3
+Graphique :
+cases impossibles barrées / atténuées.
+
+Texte :
+`Il ne reste donc plus qu'une case possible.`
+
+### ÉTAPE 4
+Graphique :
+case solution très clairement mise en évidence.
+
+Texte :
+`Voilà ! Le 6 doit être ici.`
+
+## SOURCE UNIQUE DE VÉRITÉ : TRACE DE RAISONNEMENT
+
+Le moteur doit expliquer **le raisonnement réel qui a conduit à la suggestion**.
+
+Interdit :
+- obtenir une case solution ;
+- puis fabriquer après coup une phrase générique qui semble expliquer cette solution.
+
+Le système d'aide doit conserver une structure de preuve, nom libre, équivalente à :
+
+`SudokuReasoningTrace`
+
+contenant au minimum :
+- technique utilisée ;
+- valeur recherchée ;
+- chiffres/cases sources de contraintes ;
+- type de chaque projection ;
+- cases candidates initiales ;
+- cases/candidats éliminés ;
+- raison de chaque élimination ;
+- dernière case restante ;
+- ordre logique des étapes.
+
+Cette même trace sert ensuite à générer :
+1. l'animation / projection graphique ;
+2. l'explication du Prof.
+
+**Le dessin et le texte ne doivent jamais provenir de deux calculs indépendants.**
+
+## TECHNIQUES CONCERNÉES
+
+Commencer par les techniques déjà réellement implémentées :
+- candidat unique / naked single ;
+- chiffre unique dans une ligne ;
+- chiffre unique dans une colonne ;
+- chiffre unique dans un bloc 3×3.
+
+Pour chacune :
+- produire une trace exacte ;
+- n'afficher que les contraintes réellement nécessaires ;
+- ne pas inventer une projection qui n'a pas servi au raisonnement.
+
+Les techniques futures devront adopter la même architecture.
+
+## ERGONOMIE
+
+Zone d'explication :
+
+```text
+[ projection / mini-grille ] [ raisonnement détaillé ]
+```
+
+La projection doit rester suffisamment grande pour être comprise.
+
+Le texte doit rester lisible et suivre exactement l'étape graphique courante.
+
+Prévoir :
+- étape suivante automatique lente ou pilotable ;
+- possibilité de revoir une étape si nécessaire ;
+- aucune animation trop rapide ;
+- aucune projection qui masque définitivement la grille.
+
+## ACCESSIBILITÉ
+
+Les projections ne doivent jamais être indiquées uniquement par la couleur.
+
+Utiliser aussi :
+- traits ;
+- flèches ;
+- hachures ;
+- croix ;
+- contours ;
+- variation de luminosité ;
+- surbrillance ;
+- petite animation si utile.
+
+La case finale doit être extrêmement facile à identifier.
+
+## INVARIANT PIERRE ↔ BULLE
+
+Le contrat existant reste obligatoire :
+tout texte réellement prononcé par Pierre apparaît dans ProfessorBubbleView.
+
+L'en-tête visuel contient déjà `Prof Gecko`, donc le corps ne répète pas ce préfixe.
+
+## CRITÈRES DE SUCCÈS
+
+Une aide Prof est validée seulement si le joueur peut répondre à la question :
+
+**« Pourquoi cette case et pas les autres ? »**
+
+en regardant la projection et en lisant/écoutant Pierre.
+
+Le Prof est un professeur.
+
+Son rôle n'est pas :
+`Voici la réponse.`
+
+Son rôle est :
+`Je vais te montrer pourquoi cette réponse est forcément correcte.`
+
+Le joueur doit pouvoir reproduire ensuite le raisonnement seul.
+
+---
+
 # 4 — FUTUR MODE GOMOKU AVEC PROF GECKO
 
 STATUT :
@@ -458,8 +723,12 @@ DÉJÀ FAIT / À NE PAS REFAIRE :
 1. remplacer / mutualiser l'animation du Gecko-repère Sudoku avec les animations du mode classique ;
 2. corriger le titre Sudoku en `GeckoDoku 🦎` ;
 3. audit rapide du principe de titre sur les autres modes ;
-4. tests + CI + APK/AAB ;
-5. test téléphone Fab.
+4. double tap Sudoku → clavier / palette des repères personnels ;
+5. construire la trace de raisonnement réelle du Prof ;
+6. projection graphique + narration détaillée synchronisées ;
+7. tests accessibilité / cohérence texte-graphisme ;
+8. tests + CI + APK/AAB ;
+9. test téléphone Fab.
 
 FUTUR :
 - Gomoku complet uniquement après un GO distinct de Fab.

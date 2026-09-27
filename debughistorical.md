@@ -1414,3 +1414,15 @@ Action documentaire :
 - Gomoku conservé comme futur uniquement.
 Aucun code applicatif modifié dans cette intervention.
 
+<!-- GECKO-039-DOUBLE-TAP-MARKERS-PROF-REASONING-2026-09-27 -->
+## 2026-09-27 — clarification gestes Sudoku + pédagogie Prof
+
+Fab ajoute deux exigences documentaires :
+1. double tap sur une case Sudoku ouvre le clavier / la palette des repères personnels ;
+2. le Prof doit expliquer visuellement et verbalement le raisonnement complet, pas uniquement annoncer la conclusion.
+
+Point clé d'architecture :
+la visualisation et le texte doivent être dérivés d'une trace de raisonnement commune et structurée. Une phrase générique ajoutée après calcul de la solution est interdite.
+
+Aucun code applicatif modifié dans cette intervention.
+

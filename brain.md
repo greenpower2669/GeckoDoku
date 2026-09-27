@@ -2496,3 +2496,54 @@ Nouvel invariant titre :
 
 Le futur Gomoku reste dans l'ordre de mission mais demeure strictement non codé sans GO distinct.
 
+<!-- GECKO-039-DOUBLE-TAP-MARKERS-PROF-REASONING-2026-09-27 -->
+# GECKO-039 — nouvelles règles UX Sudoku
+
+## Double tap = repères personnels
+
+En mode Sudoku :
+- tap simple sur case vide = toggle du Gecko-repère ;
+- retap simple = retrait du Gecko-repère ;
+- **double tap sur une case = ouverture du clavier / de la palette des repères personnels** ;
+- appui long = palette Sudoku locale valeurs 1–9 / candidats / effacer.
+
+Le double tap ne doit pas poser deux Geckos ni déclencher une saisie de valeur par erreur.
+Réutiliser autant que possible le système de repères personnels déjà présent dans le mode classique, sans mélanger leurs données avec les notes Sudoku.
+
+## Prof Gecko = raisonnement visuel démontré, pas conclusion seule
+
+Quand Pierre explique une déduction Sudoku, il doit transmettre le **raisonnement réel** qui a produit la solution :
+- technique utilisée ;
+- chiffre recherché ;
+- cellules/chiffres sources de contraintes ;
+- projections ligne/colonne/bloc ;
+- candidats / cases éliminés ;
+- case finale restante ;
+- ordre logique des éliminations.
+
+Ces données de preuve constituent la source unique de :
+1. la projection graphique ;
+2. l'explication textuelle.
+
+Le graphique et le texte doivent donc être générés à partir de la même trace de raisonnement, afin de ne jamais se contredire.
+
+Présentation cible :
+- écran large : projection/grille à gauche, explication détaillée à droite ;
+- petit Android : disposition adaptative verticale projection puis texte.
+
+Chaque étape est synchronisée :
+1. source mise en évidence ;
+2. projection / contrainte montrée ;
+3. possibilités éliminées marquées ;
+4. contraintes supplémentaires montrées ;
+5. dernière case mise en évidence ;
+6. conclusion seulement après la démonstration.
+
+Accessibilité :
+- ne jamais dépendre uniquement de la couleur ;
+- utiliser traits, flèches, croix, hachures, surbrillance et animation légère si utile ;
+- case finale très clairement identifiable.
+
+Principe permanent :
+**Prof Gecko ne dit pas seulement « voici la réponse » ; il montre pourquoi cette réponse est nécessaire.**
+
