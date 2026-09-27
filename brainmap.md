@@ -980,3 +980,9 @@ Invariant shared by GECKODOKU / SUDOKU / future GOMOKU.
 <!-- GECKO-039-TAP-GECKO-RED-2026-09-27 -->
 Sudoku tap → SudokuCellTapPolicy → empty playable=TOGGLE_GECKO_MARKER | given/filled=SELECT_ONLY.
 Professor text → ProfessorDialogTextPolicy.normalize → same normalized body for bubble + Pierre.
+
+
+<!-- GECKO-039-TAP-GECKO-GREEN-2026-09-27 -->
+tap Sudoku → select cell → CellTapPolicy → empty=toggle marker | given/filled=select only.
+Professor message → normalize once → identical normalized text to Bubble + Pierre.
+CI push includes gecko-039-sudoku-tap-gecko-gomoku.

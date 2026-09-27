@@ -280,3 +280,16 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Câbler tap simple MainActivity.
 - [ ] Normaliser tous les chemins de parole Prof sans casser bulle↔voix.
 - [ ] CI/APK/AAB.
+
+
+<!-- GECKO-039-TAP-GECKO-GREEN-2026-09-27 -->
+- [x] SudokuCellTapPolicy implémentée.
+- [x] Tap simple case vide → toggle Gecko-repère.
+- [x] Given / case remplie → sélection seule.
+- [x] Long press case → palette inchangée.
+- [x] ProfessorDialogTextPolicy centralisée.
+- [x] Même texte normalisé pour bulle et voix.
+- [x] Branche GECKO-039 ajoutée à la CI.
+- [ ] CI GREEN.
+- [ ] Version candidate + APK/AAB.
+- [ ] Test téléphone Fab.

@@ -81,6 +81,9 @@ class MainActivity : Activity() {
     private val sudokuProfessorInteractionPolicy =
         SudokuProfessorInteractionPolicy()
 
+    private val sudokuCellTapPolicy =
+        SudokuCellTapPolicy()
+
     private val sudokuFullWidthBoardPolicy =
         SudokuFullWidthBoardPolicy(
             horizontalMarginPx = 3
@@ -593,14 +596,39 @@ class MainActivity : Activity() {
                         cell
                     )
 
-                    sudokuValueOverlay
-                        .invalidate()
+                    val snapshot =
+                        sudokuEngine
+                            ?.snapshot()
 
-                    status.text =
-                        "Sudoku • case " +
-                            (cell.row + 1) +
-                            "," +
-                            (cell.col + 1)
+                    if (
+                        snapshot != null &&
+                        sudokuCellTapPolicy
+                            .actionFor(
+                                snapshot,
+                                cell
+                            ) ==
+                            SudokuCellTapAction
+                                .TOGGLE_GECKO_MARKER
+                    ) {
+                        toggleSudokuGeckoMarker()
+                    } else {
+                        sudokuValueOverlay
+                            .invalidate()
+
+                        status.text =
+                            if (
+                                snapshot
+                                    ?.isGiven(cell) ==
+                                    true
+                            ) {
+                                "Ce chiffre est donné."
+                            } else {
+                                "Sudoku • case " +
+                                    (cell.row + 1) +
+                                    "," +
+                                    (cell.col + 1)
+                            }
+                    }
                 }
 
                 onLongPressCell = {
@@ -2296,16 +2324,20 @@ class MainActivity : Activity() {
     private fun showProfessorBubble(
         message: String
     ) {
+        val normalizedMessage =
+            ProfessorDialogTextPolicy
+                .normalize(message)
+
         cancelProfessorQuickBubbleClose()
         professorQuickBubbleClosePolicy
             .onPedagogicalBubbleShown()
 
         showProfessorBubbleVisualOnly(
-            message
+            normalizedMessage
         )
 
         speakWithProfessorVisual(
-            text = message,
+            text = normalizedMessage,
             origin =
                 SpeechOrigin
                     .PROF_BUTTON
@@ -5772,10 +5804,14 @@ class MainActivity : Activity() {
         onCompletion:
             (() -> Unit)? = null
     ): Boolean {
+        val normalizedText =
+            ProfessorDialogTextPolicy
+                .normalize(text)
+
         val plan =
             professorSimpleSpeechCoordinator
                 .begin(
-                    text = text,
+                    text = normalizedText,
                     origin = origin,
                     canAccept =
                         professorSpeech

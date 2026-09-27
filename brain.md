@@ -2416,3 +2416,12 @@ Les futures banques de phrases Gomoku doivent stocker les phrases sans nom de lo
 <!-- GECKO-039-TAP-GECKO-RED-2026-09-27 -->
 ## GECKO-039 — RED tap Gecko + dialogue Prof
 GO reçu. Deux contrats sont posés avant runtime : un tap sur case Sudoku vide jouable doit produire TOGGLE_GECKO_MARKER, tandis qu'une given ou une case déjà remplie reste SELECT_ONLY ; un texte de Prof est normalisé pour supprimer uniquement un préfixe de locuteur en tête (`Prof Gecko :` / `Prof Gecko •`) sans toucher aux mentions naturelles au milieu d'une phrase.
+
+
+<!-- GECKO-039-TAP-GECKO-GREEN-2026-09-27 -->
+## GECKO-039 — tap Gecko câblé
+`SudokuCellTapPolicy` rend le geste déterministe : case vide jouable = toggle du Gecko-repère ; given ou case déjà remplie = sélection seulement. Le long press reste inchangé et ouvre la palette locale.
+
+`ProfessorDialogTextPolicy` centralise l'invariant multi-mode : un préfixe de locuteur en tête (`Prof Gecko :` ou `Prof Gecko •`) est supprimé avant affichage ET avant parole, donc le contrat bulle↔voix reste exact. Les mentions naturelles de « Prof Gecko » au milieu d'une phrase restent intactes.
+
+La branche GECKO-039 est désormais ajoutée au workflow CI automatique.

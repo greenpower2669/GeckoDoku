@@ -366,3 +366,8 @@ PARTIE C — Gomoku :
 <!-- GECKO-039-TAP-GECKO-RED-2026-09-27 -->
 ## ÉTAT D'EXÉCUTION GECKO-039
 GO reçu pour PARTIE A et garde-fou PARTIE B. RED posé. PARTIE C Gomoku reste explicitement NON CODÉE.
+
+
+<!-- GECKO-039-TAP-GECKO-GREEN-2026-09-27 -->
+## EXÉCUTION PARTIE A/B
+Tap Gecko Sudoku et invariant dialogue central sont implémentés. Attente CI. PARTIE C GOMOKU reste NON CODÉE sans GO distinct.
