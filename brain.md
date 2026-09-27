@@ -839,3 +839,8 @@ La mission « Prof vivant » est désormais protégée par un RED global couvran
 <!-- GECKO-037-GREEN-MODEL-MOOD-BUBBLE-2026-09-27 -->
 ## GECKO-037 GREEN 1
 Le contexte joueur est un état léger : mastery/impulsivity/momentum plus compteurs courts. Une erreur réfléchie ou en difficulté élevée est ENCOURAGING avant toute logique TAQUIN. Mood est une politique de ton et revient vers NEUTRAL. La fermeture auto des petites bulles est générationnelle et la pédagogie n'est jamais auto-fermée.
+
+
+<!-- GECKO-037-GREEN-CATALOG-309-2026-09-27 -->
+## Catalogue canonique GECKO-037
+ProfessorPhraseCatalog est la source d'identité persistante : 309 entrées, IDs stables, catégories, rareté et affinités mood. PierreSmallTalk.lines n'est plus qu'une vue texte des 100 legacy afin de préserver les anciens tests/appels pendant migration.

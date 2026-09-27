@@ -496,3 +496,15 @@ Aucune mission active.
 - [ ] Catalogue 309.
 - [ ] History/selector.
 - [ ] Runtime.
+
+
+<!-- GECKO-037-GREEN-CATALOG-309-2026-09-27 -->
+## GECKO-037 GREEN 2
+- [x] Catalogue 309 exact.
+- [x] 100 legacy conservées avec IDs stables.
+- [x] 209 nouvelles exactes.
+- [x] Déduplication normalisée.
+- [x] Diagnostic similarité Jaccard.
+- [x] PierreSmallTalk compatibilité 100.
+- [ ] History/selector.
+- [ ] Runtime.

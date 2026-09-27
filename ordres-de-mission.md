@@ -1169,3 +1169,8 @@ Avant production, RED ajouté pour :
 <!-- GECKO-037-GREEN-MODEL-MOOD-BUBBLE-2026-09-27 -->
 ## GREEN 1 — modèles, contexte, humeur, bulle
 Ajout des modèles ProfessorPhrase/catégories/rareté/mood, Clock/Random injectables, tracker mastery/impulsivity/momentum avec difficulté et décroissance, MoodPolicy anti-moquerie injuste, et policy de fermeture de petite bulle par token + 1000 ms après vraie fin.
+
+
+<!-- GECKO-037-GREEN-CATALOG-309-2026-09-27 -->
+## GREEN 2 — catalogue canonique 309
+ProfessorPhraseCatalog contient désormais exactement 309 phrases : 100 legacy IDs legacy_smalltalk_001..100 + 209 nouvelles de l'ordre de mission. Contrôle avant commit : 309 textes uniques après normalisation. PierreSmallTalk reste une façade de compatibilité sur les 100 legacy.

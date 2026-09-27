@@ -998,3 +998,8 @@ Audit confirmé : smalltalk actuel utilise encore PierreSmallTalkSelector/Random
 <!-- GECKO-037-GREEN-MODEL-MOOD-BUBBLE-2026-09-27 -->
 ## 2026-09-27 — GREEN 1 GECKO-037
 Après RED #134, première tranche pure : modèles, context tracker, mood policy et close policy. Aucun câblage MainActivity dans ce commit.
+
+
+<!-- GECKO-037-GREEN-CATALOG-309-2026-09-27 -->
+## 2026-09-27 — catalogue 309 créé
+Le corpus a été généré depuis les 100 chaînes historiques du dépôt et les 209 lignes ID/text de l'ordre GECKO-037. Vérification pré-écriture : 100 + 209, 209 IDs modernes uniques, 309 textes uniques après normalisation.

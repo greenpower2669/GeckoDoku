@@ -333,3 +333,10 @@ GECKO-037 RED
 <!-- GECKO-037-GREEN-MODEL-MOOD-BUBBLE-2026-09-27 -->
 PlayerEvent → ProfessorPlayerContextTracker → ProfessorMoodPolicy → weighted categories
 Speech completion → ProfessorQuickBubbleClosePolicy(token) → +1000ms close seulement si token courant/simple.
+
+
+<!-- GECKO-037-GREEN-CATALOG-309-2026-09-27 -->
+ProfessorPhraseCatalog = legacy(100) + modern(209) = 309
+legacy IDs 001..100 immuables
+modern IDs prof_* fournis par Fab
+normalizeText + textSimilarity + nearDuplicatePairs.
