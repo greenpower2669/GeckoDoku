@@ -2811,3 +2811,6 @@ Décisions :
 - Hall of Fame par mode puis difficulté ;
 - personnalité Gomoku indépendante de la difficulté : Prof Gecko reste teigneux même en Découverte ;
 - le mordant reste une couche de présentation, l'analyse IA reste exacte.
+
+<!-- GECKO-041-V013-COMPILE-FIX-2026-09-28 -->
+0.13 compile fix : assistancePoints ne doit être incrémenté que dans showGomokuProfessorAdvice, où shouldApply existe. Le tour automatique jaune du Prof est un adversaire, pas une aide demandée par le joueur.

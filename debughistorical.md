@@ -1669,3 +1669,8 @@ Correctif :
 - aide Gomoku prise en compte pour les étoiles ;
 - persona Gomoku dédiée, indépendante de la difficulté ;
 - test explicite Découverte == Infernal pour la personnalité.
+
+<!-- GECKO-041-V013-CI208-RED-2026-09-28 -->
+CI #208 RED : MainActivity.kt unresolved reference shouldApply dans playGomokuProfessorTurn.
+Cause : insertion textuelle ancrée sur le premier bloc gomokuProfessorThinking/professorUsed au lieu du bloc showGomokuProfessorAdvice.
+Correction : retirer l'incrément du tour adversaire automatique et l'insérer après le calcul de shouldApply dans la fonction de conseil.

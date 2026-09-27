@@ -5280,16 +5280,6 @@ class MainActivity : Activity() {
 
         gomokuProfessorThinking = true
         professorUsed = true
-        assistancePoints +=
-            if (shouldApply) {
-                AssistanceKind
-                    .DIRECT_MOVE
-                    .points
-            } else {
-                AssistanceKind
-                    .ADVICE
-                    .points
-            }
 
         val generation =
             gomokuGeneration
@@ -5511,6 +5501,16 @@ class MainActivity : Activity() {
 
         gomokuProfessorThinking = true
         professorUsed = true
+        assistancePoints +=
+            if (shouldApply) {
+                AssistanceKind
+                    .DIRECT_MOVE
+                    .points
+            } else {
+                AssistanceKind
+                    .ADVICE
+                    .points
+            }
 
         val generation =
             gomokuGeneration

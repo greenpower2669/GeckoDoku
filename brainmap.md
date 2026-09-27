@@ -1312,3 +1312,7 @@ b72f149 (stars/Hall/profile) → #205 GREEN
    ├─ Découverte n'adoucit pas le ton
    ├─ conseils exacts
    └─ habillage taquin familial
+
+<!-- GECKO-041-V013-FIX-MAP-2026-09-28 -->
+Gomoku auto turn (Prof jaune) → aucune assistance.
+Gomoku advice/long press demandé → assistancePoints selon ADVICE/DIRECT_MOVE.
