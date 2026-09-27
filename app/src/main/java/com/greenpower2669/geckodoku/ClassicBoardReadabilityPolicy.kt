@@ -37,16 +37,22 @@ class ClassicBoardReadabilityPolicy(
                     topMarginPx
                 ).coerceAtLeast(1)
 
+        val side =
+            min(
+                widthLimited,
+                heightLimited
+            )
+
         return ClassicGridGeometry(
             left =
-                horizontalMarginPx,
+                (
+                    viewWidthPx -
+                        side
+                    ) / 2,
             top =
                 topMarginPx,
             side =
-                min(
-                    widthLimited,
-                    heightLimited
-                )
+                side
         )
     }
 }

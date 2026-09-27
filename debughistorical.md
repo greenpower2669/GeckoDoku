@@ -1626,3 +1626,7 @@ Nouvelles exigences produit :
 - export/import complet des paramètres et sauvegardes.
 
 Aucun code applicatif modifié dans cette intervention documentaire.
+
+
+<!-- GECKO-040-PHASE1-2026-09-28 -->
+Cause du décentrage Classic confirmée : left restait fixé à 3px même lorsque la hauteur limitait le carré. Fix structurel : centrage du side calculé. Une ligne de commandes est supprimée en déplaçant Sauver/Journal vers ⚙️. Le fallback de difficulté venait du generate() borné ; un chemin strict generateExact boucle désormais jusqu'au niveau demandé, sans bloquer l'UI.

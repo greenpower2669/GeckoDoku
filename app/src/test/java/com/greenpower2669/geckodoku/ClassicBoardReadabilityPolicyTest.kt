@@ -34,5 +34,6 @@ class ClassicBoardReadabilityPolicyTest {
             )
 
         assertEquals(497, geometry.side)
+        assertEquals(111, geometry.left)
     }
 }

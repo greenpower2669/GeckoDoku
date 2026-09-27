@@ -1276,3 +1276,8 @@ UserDataBackup
   → settings + saves + progress + stats + history + hall of fame + profile
   → validation/migration
   → transactional import.
+
+
+<!-- GECKO-040-PHASE1-2026-09-28 -->
+Classic boardAnchor → GeckoBoardView → ClassicBoardReadabilityPolicy → side=min(width,height-gutter) → left=(width-side)/2.
+Difficulty UI → requestClassicPuzzle(token) → background generateExact → repeated bounded batches → exact DifficultyIndexer profile → apply only if token still current.

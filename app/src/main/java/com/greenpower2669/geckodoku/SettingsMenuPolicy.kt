@@ -3,6 +3,8 @@ package com.greenpower2669.geckodoku
 enum class SettingsEntry {
     GAME_MODE,
     DIFFICULTY,
+    SAVE_GRID,
+    JOURNAL,
     SOUND,
     ANIMATIONS,
     MEDIA_LOG
@@ -32,7 +34,14 @@ class SettingsMenuPolicy {
                 SettingsEntry.MEDIA_LOG
             )
         } else {
-            entries
+            listOf(
+                SettingsEntry.GAME_MODE,
+                SettingsEntry.SAVE_GRID,
+                SettingsEntry.JOURNAL,
+                SettingsEntry.SOUND,
+                SettingsEntry.ANIMATIONS,
+                SettingsEntry.MEDIA_LOG
+            )
         }
 
     val affectsBoardLayout:

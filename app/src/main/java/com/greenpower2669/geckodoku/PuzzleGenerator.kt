@@ -94,6 +94,64 @@ object PuzzleGenerator {
             )
     }
 
+    fun generateExact(
+        size: Int,
+        requested: GameDifficulty,
+        seed: Long = System.nanoTime(),
+        shouldCancel: () -> Boolean = {
+            false
+        },
+        onBatchCompleted:
+            ((Int) -> Unit)? = null
+    ): Puzzle? {
+        require(size in 5..12)
+
+        var batch = 0
+
+        while (!shouldCancel()) {
+            val candidate =
+                generate(
+                    size = size,
+                    requested = requested,
+                    seed =
+                        seed +
+                            batch.toLong() *
+                                104_729L
+                )
+
+            if (shouldCancel()) {
+                return null
+            }
+
+            val report =
+                DifficultyIndexer
+                    .analyze(candidate)
+
+            if (
+                report.logicallySolvable &&
+                report.ratedDifficulty ==
+                    requested &&
+                meetsProfile(
+                    report,
+                    requested
+                ) &&
+                countSolutions(
+                    candidate,
+                    2
+                ) ==
+                    1
+            ) {
+                return candidate
+            }
+
+            batch += 1
+            onBatchCompleted
+                ?.invoke(batch)
+        }
+
+        return null
+    }
+
     private fun attachTrace(
         puzzle: Puzzle
     ): Puzzle {

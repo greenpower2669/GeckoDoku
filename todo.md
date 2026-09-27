@@ -48,3 +48,13 @@
 - [ ] CI GREEN.
 - [ ] APK/AAB candidate.
 - [ ] Test téléphone Fab.
+
+
+<!-- GECKO-040-PHASE1-2026-09-28 -->
+- [x] Sauver + Journal dans ⚙️.
+- [x] Commandes Classic compactées sur 2 lignes.
+- [x] Grille Classic centrée structurellement.
+- [x] Recherche stricte de difficulté hors UI, annulable.
+- [ ] CI GREEN phase 1.
+- [ ] Étoiles + Hall of Fame + GeckoTétu + historique.
+- [ ] Export/import complet.

@@ -320,6 +320,14 @@ class MainActivity : Activity() {
 
     private var selectedSize = 5
 
+    @Volatile
+    private var classicGenerationToken =
+        0
+
+    @Volatile
+    private var classicGenerationActive =
+        false
+
     private var selectedDifficulty =
         GameDifficulty.EASY
 
@@ -857,9 +865,25 @@ class MainActivity : Activity() {
                 minHeight = dp(46)
 
                 setOnClickListener {
-                    createActivePuzzle()
-                    refreshGameUi()
-                    playLevelStartMusic()
+                    if (
+                        selectedGameMode ==
+                            GameMode.GECKODOKU &&
+                        classicGenerationActive
+                    ) {
+                        cancelClassicPuzzleSearch(
+                            announce = true
+                        )
+                    } else {
+                        createActivePuzzle()
+
+                        if (
+                            selectedGameMode !=
+                                GameMode.GECKODOKU
+                        ) {
+                            refreshGameUi()
+                            playLevelStartMusic()
+                        }
+                    }
                 }
             }
 
@@ -1167,7 +1191,16 @@ class MainActivity : Activity() {
                     LinearLayout.LayoutParams(
                         0,
                         LinearLayout.LayoutParams.WRAP_CONTENT,
-                        1f
+                        1.3f
+                    )
+                )
+
+                addView(
+                    replayButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1.3f
                     )
                 )
 
@@ -1185,7 +1218,7 @@ class MainActivity : Activity() {
                     LinearLayout.LayoutParams(
                         0,
                         LinearLayout.LayoutParams.WRAP_CONTENT,
-                        1f
+                        .6f
                     )
                 )
 
@@ -1194,43 +1227,9 @@ class MainActivity : Activity() {
                     LinearLayout.LayoutParams(
                         0,
                         LinearLayout.LayoutParams.WRAP_CONTENT,
-                        1f
+                        .6f
                     )
                 )
-            }
-
-        val row3 =
-            LinearLayout(this).apply {
-                orientation =
-                    LinearLayout.HORIZONTAL
-
-                addView(
-                    replayButton,
-                    LinearLayout.LayoutParams(
-                        0,
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        1f
-                    )
-                )
-
-                addView(
-                    saveButton,
-                    LinearLayout.LayoutParams(
-                        0,
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        1f
-                    )
-                )
-
-                addView(
-                    journalButton,
-                    LinearLayout.LayoutParams(
-                        0,
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        1f
-                    )
-                )
-
             }
 
         controlsPanel =
@@ -1240,7 +1239,6 @@ class MainActivity : Activity() {
 
                 addView(row1)
                 addView(row2)
-                addView(row3)
             }
 
         root.addView(
@@ -1479,9 +1477,146 @@ class MainActivity : Activity() {
                 startGomokuGame()
 
             GameMode.GECKODOKU ->
-                createPuzzle(
+                requestClassicPuzzle(
                     recordStart = true
                 )
+        }
+    }
+
+    private fun requestClassicPuzzle(
+        recordStart: Boolean
+    ) {
+        classicGenerationToken += 1
+
+        val token =
+            classicGenerationToken
+        val requestedSize =
+            selectedSize
+        val requestedDifficulty =
+            selectedDifficulty
+
+        classicGenerationActive = true
+
+        if (::newButton.isInitialized) {
+            newButton.text =
+                "✕ Annuler"
+        }
+
+        if (::status.isInitialized) {
+            status.text =
+                "Recherche d'une grille " +
+                    requestedDifficulty.label +
+                    "…"
+        }
+
+        Thread {
+            val generated =
+                PuzzleGenerator.generateExact(
+                    size =
+                        requestedSize,
+                    requested =
+                        requestedDifficulty,
+                    shouldCancel = {
+                        token !=
+                            classicGenerationToken ||
+                            Thread
+                                .currentThread()
+                                .isInterrupted
+                    },
+                    onBatchCompleted = {
+                        batch ->
+
+                        if (
+                            batch == 1 ||
+                            batch % 2 == 0
+                        ) {
+                            runOnUiThread {
+                                if (
+                                    token ==
+                                        classicGenerationToken &&
+                                    classicGenerationActive &&
+                                    selectedGameMode ==
+                                        GameMode.GECKODOKU
+                                ) {
+                                    status.text =
+                                        "Recherche d'une grille " +
+                                            requestedDifficulty.label +
+                                            "… série " +
+                                            (batch + 1)
+                                }
+                            }
+                        }
+                    }
+                )
+
+            runOnUiThread {
+                if (
+                    token !=
+                        classicGenerationToken
+                ) {
+                    return@runOnUiThread
+                }
+
+                classicGenerationActive =
+                    false
+
+                if (::newButton.isInitialized) {
+                    newButton.text =
+                        "↻ Nouvelle"
+                }
+
+                if (
+                    generated == null ||
+                    selectedGameMode !=
+                        GameMode.GECKODOKU ||
+                    selectedSize !=
+                        requestedSize ||
+                    selectedDifficulty !=
+                        requestedDifficulty
+                ) {
+                    return@runOnUiThread
+                }
+
+                startPuzzle(
+                    generated,
+                    recordStart
+                )
+                refreshGameUi()
+
+                status.text =
+                    "Grille " +
+                        generated.difficulty.label +
+                        " trouvée • " +
+                        generated.givens.size +
+                        " Gecko(s) donné(s)."
+
+                playLevelStartMusic()
+            }
+        }.start()
+    }
+
+    private fun cancelClassicPuzzleSearch(
+        announce: Boolean
+    ) {
+        if (!classicGenerationActive) {
+            return
+        }
+
+        classicGenerationToken += 1
+        classicGenerationActive =
+            false
+
+        if (::newButton.isInitialized) {
+            newButton.text =
+                "↻ Nouvelle"
+        }
+
+        if (
+            announce &&
+            ::status.isInitialized
+        ) {
+            status.text =
+                "Recherche de grille annulée."
         }
     }
 
@@ -1659,7 +1794,7 @@ class MainActivity : Activity() {
                     "📚 Journal de grilles"
                 )
                 .setMessage(
-                    "Le journal est vide. Utilise ⭐ Sauver pour conserver une grille."
+                    "Le journal est vide. Utilise ⚙️ puis « Sauver la grille » pour conserver une grille."
                 )
                 .setPositiveButton(
                     "OK",
@@ -3004,11 +3139,9 @@ class MainActivity : Activity() {
 
                 dialog.dismiss()
 
-                createPuzzle(
+                requestClassicPuzzle(
                     recordStart = true
                 )
-
-                refreshGameUi()
             }
             .show()
     }
@@ -3046,9 +3179,17 @@ class MainActivity : Activity() {
 
                 dialog.dismiss()
 
-                createActivePuzzle()
-
-                refreshGameUi()
+                if (
+                    selectedGameMode ==
+                        GameMode.GECKODOKU
+                ) {
+                    requestClassicPuzzle(
+                        recordStart = true
+                    )
+                } else {
+                    createActivePuzzle()
+                    refreshGameUi()
+                }
             }
             .show()
     }
@@ -4047,6 +4188,17 @@ class MainActivity : Activity() {
                 GameMode.GOMOKU
         ) {
             stopGomokuPieceMedia()
+        }
+
+        if (
+            selectedGameMode ==
+                GameMode.GECKODOKU &&
+            mode !=
+                GameMode.GECKODOKU
+        ) {
+            cancelClassicPuzzleSearch(
+                announce = false
+            )
         }
 
         clearProfessorSession()
@@ -6674,6 +6826,22 @@ class MainActivity : Activity() {
                             currentDifficulty()
                                 .label
 
+                    SettingsEntry.SAVE_GRID ->
+                        if (
+                            selectedGameMode ==
+                                GameMode.GECKODOKU &&
+                            journalStore.contains(
+                                puzzle.id
+                            )
+                        ) {
+                            "★ Grille sauvegardée"
+                        } else {
+                            "⭐ Sauver la grille"
+                        }
+
+                    SettingsEntry.JOURNAL ->
+                        "📚 Journal de grilles"
+
                     SettingsEntry.SOUND ->
                         if (fx.enabled) {
                             "🔊 Son : ON"
@@ -6708,6 +6876,16 @@ class MainActivity : Activity() {
                     SettingsEntry.DIFFICULTY -> {
                         dialog.dismiss()
                         chooseDifficulty()
+                    }
+
+                    SettingsEntry.SAVE_GRID -> {
+                        dialog.dismiss()
+                        saveCurrentPuzzle()
+                    }
+
+                    SettingsEntry.JOURNAL -> {
+                        dialog.dismiss()
+                        showJournal()
                     }
 
                     SettingsEntry.SOUND -> {
@@ -8724,6 +8902,9 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        cancelClassicPuzzleSearch(
+            announce = false
+        )
         cancelProfessorQuickBubbleClose()
         professorQuickBubbleClosePolicy
             .invalidate()

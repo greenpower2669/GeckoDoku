@@ -2762,3 +2762,7 @@ Les statistiques doivent exister globalement et par difficulté. Le Hall of Fame
 
 ## Données utilisateur
 Tous les paramètres et toutes les sauvegardes/données persistantes doivent être exportables/importables via un format portable versionné et validé.
+
+
+<!-- GECKO-040-PHASE1-2026-09-28 -->
+Classic : carré centré par (viewWidth-side)/2, commandes ramenées à 2 lignes, Sauver/Journal dans ⚙️. Les demandes explicites de difficulté Classic utilisent désormais PuzzleGenerator.generateExact hors thread UI ; la recherche continue jusqu'au profil exact ou annulation.

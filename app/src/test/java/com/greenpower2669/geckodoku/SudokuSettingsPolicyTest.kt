@@ -30,5 +30,24 @@ class SudokuSettingsPolicyTest {
                     GameMode.GOMOKU
                 )
         )
+
+        assertTrue(
+            SettingsEntry.SAVE_GRID in
+                policy.entriesFor(
+                    GameMode.GECKODOKU
+                )
+        )
+        assertTrue(
+            SettingsEntry.JOURNAL in
+                policy.entriesFor(
+                    GameMode.GECKODOKU
+                )
+        )
+        assertFalse(
+            SettingsEntry.SAVE_GRID in
+                policy.entriesFor(
+                    GameMode.SUDOKU
+                )
+        )
     }
 }
