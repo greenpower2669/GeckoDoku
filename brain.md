@@ -779,3 +779,29 @@ Cette validation téléphone clôt les régressions GECKO-036 et transforme les 
 - validation téléphone Fab : **OK, tout corrigé**
 
 Cette version devient la nouvelle base comportementale de référence pour les missions suivantes.
+
+
+<!-- GECKO-037-LIVING-PROF-MISSION-2026-09-27 -->
+# GECKO-037 — CIBLE DURABLE : PROF GECKO VIVANT
+
+Nouvelle mission active : faire évoluer le small talk de Prof Gecko vers un système de 309 phrases identifiées, catégorisées et sélectionnées par contexte.
+
+Principes à préserver :
+- 100 phrases historiques conservées et dotées d'IDs stables `legacy_smalltalk_001..100` ;
+- 209 nouvelles phrases définies par l'ordre de mission ;
+- cooldown individuel persistant de 48 h ;
+- `lastPhraseId` persistant, aucune répétition immédiate ;
+- fallback oldest-first sans effacement global d'historique ;
+- contexte léger joueur : mastery / impulsivity / momentum ;
+- humeur interne de sélection : NEUTRAL / PROUD / IMPRESSED / TAQUIN / PEDAGOGICAL / ENCOURAGING / CURIOUS ;
+- humeur courte et naturellement décroissante vers NEUTRAL ;
+- difficulté de grille prise en compte pour interpréter une erreur ;
+- une erreur réfléchie ne doit pas déclencher une moquerie injuste ;
+- les phrases RARE restent rares ;
+- la bulle et Pierre utilisent exactement le même texte ;
+- petites phrases : fermeture 1 s après vraie fin de parole avec token/generation anti-callback obsolète ;
+- bulles pédagogiques : jamais auto-fermées par ce mécanisme ;
+- small talk : ne préempte jamais une parole prioritaire.
+
+Philosophie durable :
+**taquiner le comportement, jamais rabaisser le joueur.**

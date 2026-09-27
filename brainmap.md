@@ -258,3 +258,30 @@ v0.10.15-dev / code 26
 ├── Grille
 │   └── rectangle immuable sous overlays
 └── VALIDATION TÉLÉPHONE FAB : OK
+
+
+<!-- GECKO-037-LIVING-PROF-MISSION-2026-09-27 -->
+GECKO-037
+GameEvent
+→ ProfessorPlayerContext
+   ├── mastery
+   ├── impulsivity
+   └── momentum
+→ ProfessorMoodPolicy
+→ weighted categories
+→ ProfessorPhraseCatalog (309)
+→ ProfessorPhraseHistory
+   ├── lastUsedAt[id] 48h
+   └── lastPhraseId
+→ ProfessorPhraseSelector
+   ├── contextual pool
+   ├── neighbor fallback
+   ├── GENERAL
+   └── forced oldest-first
+→ one selected ProfessorPhrase
+→ bubble(text)
+→ Pierre(same text)
+→ real speech completion
+→ +1s guarded close for QUICK/simple only
+
+Pedagogical Professor path remains separate and persistent on-screen.

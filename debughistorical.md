@@ -948,3 +948,23 @@ Historique final :
 - Fab confirme ensuite que, pour lui, tout est corrigé.
 
 Conclusion : GECKO-036 est clôturé. Les comportements ci-dessus deviennent des non-régressions permanentes.
+
+
+<!-- GECKO-037-LIVING-PROF-MISSION-2026-09-27 -->
+## 2026-09-27 — ouverture GECKO-037 « Prof Gecko vivant »
+
+Fab fournit un ordre complet pour remplacer la sélection quasi-aléatoire du small talk par :
+- catalogue structuré 309 phrases ;
+- IDs stables ;
+- mémoire individuelle 48 h persistante ;
+- lastPhraseId persistant ;
+- sélection contextuelle pondérée ;
+- contexte mastery/impulsivity/momentum ;
+- mood caché et décroissant ;
+- fallback oldest-first ;
+- auto-fermeture sûre des petites bulles 1 s après vraie fin de parole.
+
+Le corpus fourni est cohérent :
+200 V2 + 4 FAB + 5 TAQUIN = 209 nouvelles ; avec 100 historiques = 309.
+
+Aucun code n'est modifié lors de cette ouverture de mission.

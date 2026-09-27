@@ -362,3 +362,66 @@ Aucun ordre de mission actif actuellement.
 ## Mission active
 Aucune mission active.
 `ordres-de-mission.md` doit rester vide jusqu'au prochain ordre explicite de Fab.
+
+
+<!-- GECKO-037-LIVING-PROF-MISSION-2026-09-27 -->
+# GECKO-037 — PROF GECKO VIVANT
+
+## Étape 0 — audit/TDD
+- [ ] Vérifier branche/HEAD avant code.
+- [ ] Auditer `PierreSmallTalk.kt`, sélecteur actuel, événements joueur, difficulté et bulle.
+- [ ] Poser RED corpus 309 / IDs uniques / textes uniques.
+- [ ] Poser RED clock 48 h et persistence.
+- [ ] Poser RED lastPhraseId.
+- [ ] Poser RED fallback oldest-first.
+- [ ] Poser RED random injecté.
+- [ ] Poser RED context/mood/décroissance.
+- [ ] Poser RED difficulté / anti-moquerie injuste.
+- [ ] Poser RED rare ≤5%.
+- [ ] Poser RED bulle +1s après vraie fin Pierre.
+- [ ] Poser RED token/generation anti-fermeture obsolète.
+- [ ] Poser RED bulles pédagogiques non auto-fermées.
+
+## Architecture
+- [ ] ProfessorPhrase.
+- [ ] PhraseCategory.
+- [ ] PhraseRarity.
+- [ ] ProfessorPhraseCatalog.
+- [ ] ProfessorPhraseHistory.
+- [ ] ProfessorPhraseSelector.
+- [ ] ProfessorPlayerContext.
+- [ ] ProfessorMood.
+- [ ] ProfessorMoodPolicy.
+- [ ] Clock injectable.
+- [ ] Random injectable.
+- [ ] Persistent store léger.
+
+## Corpus
+- [ ] Migrer 100 historiques avec IDs legacy stables.
+- [ ] Ajouter 200 V2 exactes.
+- [ ] Ajouter 4 FAB.
+- [ ] Ajouter 5 TAQUIN.
+- [ ] Total 309.
+- [ ] Diagnostic proximité texte.
+
+## Runtime
+- [ ] Brancher GameEvent haut niveau.
+- [ ] Calculer mastery.
+- [ ] Calculer impulsivity.
+- [ ] Calculer momentum.
+- [ ] Pondérer mood/catégories.
+- [ ] Cooldown 48 h.
+- [ ] lastPhraseId.
+- [ ] Fallback neighbor/GENERAL/oldest-first.
+- [ ] Logs PROF_CONTEXT / POOL / SELECTED / FALLBACK.
+- [ ] Bulle simple = texte exact de Pierre.
+- [ ] Auto-close 1 s après callback réel.
+- [ ] Annulation timer obsolète.
+- [ ] Aucune fermeture auto pédagogie.
+- [ ] Aucune préemption small talk.
+- [ ] Préserver ProfParle/Pierre/grille/vidéo validés.
+
+## Validation
+- [ ] CI GREEN.
+- [ ] APK/AAB.
+- [ ] Test téléphone Fab.
