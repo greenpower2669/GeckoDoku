@@ -2700,3 +2700,20 @@ Les trois modes sont maintenant présents dans la candidate :
 
 Aucun merge main. Aucune release. Téléphone Fab = validation perceptuelle finale.
 
+
+
+<!-- GECKO-039-POST-TEST-INVARIANTS-2026-09-27 -->
+# Invariants durables après test téléphone GECKO-039
+
+- Un seul moteur Gomoku 19×19 sert deux configurations : VS_PROFESSOR et HUMAN_VS_HUMAN.
+- VS_PROFESSOR : vert humain, jaune IA Prof ; le jaune joue automatiquement après le vert.
+- HUMAN_VS_HUMAN : vert humain, jaune humain ; Prof est conseiller uniquement et ne pose jamais de pierre.
+- Prof conseiller et Prof joueur sont deux responsabilités distinctes.
+- En VS_PROFESSOR : clic Prof = conseil sans jouer ; appui long = conseil + coup vert joué pour l'humain, puis tour jaune automatique si la partie continue.
+- En HUMAN_VS_HUMAN : clic et appui long restent des analyses sans poser de Gecko.
+- UI publique : « Prof Gecko » ; « Pierre » reste seulement un détail interne historique éventuel.
+- Les PNG Gomoku sont la source de vérité géométrique et ne doivent pas être corrigés pour compenser la vidéo.
+- Toute vidéo de pièce Gomoku suit dynamiquement le même rect logique que le PNG pendant pan/zoom.
+- En Gomoku uniquement, la vidéo détourée laisse le Goban visible ; ne pas appliquer ce changement de composition à Classic/Sudoku.
+- Les vidéos du camp jaune doivent conserver une identité jaune cohérente avec les PNG.
+- Un bouton Prof utilisable ne doit pas être présenté comme désactivé.

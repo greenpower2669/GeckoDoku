@@ -1560,3 +1560,23 @@ Candidate versionnée 0.12.0-dev/code32. L'IA est volontairement bornée et exé
 <!-- GECKO-039-CI197-GREEN-2026-09-27 -->
 ## 2026-09-27 — CI #197 GREEN
 Candidate 0.12.0-dev/code32 : tests + assembleDebug + bundleDebug + renommage + artifact upload réussis.
+
+
+<!-- GECKO-039-PHONE-DEBUG-2026-09-27 -->
+# Test téléphone — défauts confirmés avant correction
+
+Observations Fab :
+- PNG Gomoku : pan/zoom corrects.
+- Vidéo Gomoku : position/échelle figées ou décorrélées du Goban pendant drag/zoom.
+- Cause architecturale probable avant audit code : l'overlay reçoit un RectF écran calculé une seule fois au lancement, alors que le PNG est recalculé depuis le viewport à chaque frame.
+- Le masque coloré utilisé pour cacher le PNG peut aussi donner l'apparence d'un fond rectangulaire en Gomoku.
+- Le bouton Prof était activé uniquement au tour jaune et servait à déclencher l'IA ; comportement désormais considéré incorrect.
+- Chaînes UI encore visibles : « Pierre », « Gomoku contre Pierre », « À Pierre... ».
+
+Correction attendue :
+- dynamic target pour overlay média basé sur le rect courant du Gecko ;
+- masquer temporairement le PNG plutôt que peindre un rectangle en Gomoku ;
+- teinte jaune dans le rendu vidéo pour le camp jaune ;
+- tour Prof automatique VS_PROFESSOR ;
+- Prof bouton disponible comme conseiller au tour humain ;
+- variante HUMAN_VS_HUMAN sans IA joueuse.

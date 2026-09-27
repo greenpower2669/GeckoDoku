@@ -594,3 +594,23 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [x] APK 0.12.0-dev produit.
 - [x] AAB 0.12.0-dev produit.
 - [ ] Test téléphone Fab des trois modes.
+
+
+<!-- GECKO-039-POST-TEST-TODO-2026-09-27 -->
+# TODO actif — passe debug téléphone
+
+- [ ] Ajouter configuration Gomoku VS_PROFESSOR / HUMAN_VS_HUMAN au choix de mode sans dupliquer le moteur.
+- [ ] Remplacer les chaînes UI Gomoku « Pierre » par « Prof Gecko ».
+- [ ] VS_PROFESSOR : jouer automatiquement le tour jaune après le vert.
+- [ ] Prof clic court : conseil sans coup.
+- [ ] Prof long VS_PROFESSOR : analyse vert + joue vert pour humain + enchaîne jaune automatique.
+- [ ] Prof long HUMAN_VS_HUMAN : analyse approfondie seulement, aucun coup.
+- [ ] HUMAN_VS_HUMAN : alternance vert/jaune humaine et aucune IA automatique.
+- [ ] Ne pas griser Prof quand il peut conseiller.
+- [ ] Rendre les targets vidéo Gomoku dynamiques pendant pan/zoom.
+- [ ] Supprimer le rectangle de masquage en Gomoku en masquant temporairement le PNG statique.
+- [ ] Teinter la vidéo du camp jaune.
+- [ ] Ajouter tests unitaires pour match mode, analyse par camp et non-régression.
+- [ ] CI GREEN.
+- [ ] APK/AAB candidate puis test téléphone Fab.
+- [ ] Après validation téléphone : nettoyer l'ordre de mission et réduire ce TODO aux restes réels.

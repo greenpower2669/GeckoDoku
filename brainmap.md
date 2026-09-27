@@ -1164,3 +1164,41 @@ Next → candidate CI → APK/AAB → Fab phone validation.
 
 <!-- GECKO-039-CI197-GREEN-2026-09-27 -->
 CI #197 GREEN → artifact 0.12.0-dev → test téléphone Fab → corrections perceptuelles ciblées seulement.
+
+
+<!-- GECKO-039-POST-TEST-ARCH-2026-09-27 -->
+# Architecture cible — Gomoku partagé + Prof conseiller
+
+Mode chooser
+  → GeckoDoku
+  → Sudoku
+  → Gomoku / VS_PROFESSOR
+  → Gomoku / HUMAN_VS_HUMAN
+
+GomokuMatchMode
+  ├─ VS_PROFESSOR
+  │    ├─ GREEN = HUMAN
+  │    └─ YELLOW = PROF_AI (auto-turn)
+  └─ HUMAN_VS_HUMAN
+       ├─ GREEN = HUMAN
+       └─ YELLOW = HUMAN
+
+Les deux variantes
+  → même GomokuGameEngine
+  → même GomokuBoardView
+  → même GomokuViewportPolicy
+  → même pipeline média.
+
+ProfAdvisor
+  → analyse explicitement pour snapshot.currentPlayer / camp demandé
+  → clic = explain only
+  → long VS_PROFESSOR = apply GREEN for human
+  → long HUMAN_VS_HUMAN = deep explain only.
+
+GomokuBoardView PNG rect (source de vérité)
+  → dynamic target provider
+  → RichMediaOverlayView
+  → ChromaKeyVideoView
+  → refresh bounds à chaque onViewportChanged
+  → suppress static stone while overlay active
+  → restore PNG on completion.

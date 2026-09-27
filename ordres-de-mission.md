@@ -1082,3 +1082,100 @@ Ne pas fusionner main ni publier de release sans GO explicite.
 
 <!-- GECKO-039-CI197-GREEN-2026-09-27 -->
 STATUT : candidate 0.12.0-dev/code32 GREEN sur CI #197, prête pour test téléphone. Ne corriger ensuite que les défauts réellement observés. Aucun merge main / release sans GO explicite.
+
+
+<!-- GECKO-039-POST-TEST-CUMULATIVE-2026-09-27 -->
+# ORDRE DE MISSION CUMULATIF — DEBUG TÉLÉPHONE + GOMOKU 2 VARIANTES
+
+Cet addendum est cumulatif avec tout l'ordre GECKO-039 déjà présent. Il remplace uniquement les règles explicitement corrigées ci-dessous.
+
+## Invariants déjà validés à préserver
+
+- Le Goban logique reste 19×19.
+- Vue de référence ~12×12, vrai pan 4 directions/diagonal, vrai pinch zoom-in et zoom-out.
+- Les PNG Gecko Gomoku suivent déjà correctement le pan, le zoom et leur intersection : **ne pas réécrire leur système de coordonnées**.
+- Classic, Sudoku et Gomoku restent compartimentés.
+- Classic conserve la grille élargie.
+- Sudoku conserve double tap repères personnels, long press palette et ReasoningTrace détaillé.
+
+## Bug vidéo Gomoku observé sur téléphone
+
+Le bug est limité à la couche vidéo : les PNG suivent le Goban, les animations vidéo non.
+
+À corriger :
+1. la vidéo doit utiliser exactement le même ancrage logique que le PNG ;
+2. sa position ET son échelle doivent être recalculées pendant drag/pinch ;
+3. PNG → vidéo → PNG sans saut ;
+4. la couleur de fond/keycolor doit disparaître **uniquement en Gomoku** ; Classic/Sudoku gardent leur comportement historique ;
+5. en Gomoku, ne pas masquer le Gecko animé avec un rectangle opaque : masquer temporairement le PNG statique et laisser le Goban visible derrière la vidéo détourée ;
+6. les animations du camp jaune utilisent une teinte jaune cohérente avec le PNG jaune ;
+7. ces règles valent pour les deux variantes Gomoku.
+
+## Interface Prof
+
+- Dans l'UI, afficher **Prof Gecko**, jamais « Pierre ».
+- Le nom interne Pierre peut rester dans les composants historiques si nécessaire.
+- Le bouton Prof ne doit pas paraître grisé quand une aide est réellement disponible.
+
+## Gomoku — deux variantes, UN SEUL moteur
+
+Le choix de mode doit proposer :
+- 🦎 GeckoDoku
+- 🔢 Sudoku
+- 🟩 Gomoku contre Prof Gecko
+- 👥 Gomoku humain contre humain
+
+Les deux choix Gomoku partagent le même GomokuGameEngine, GomokuBoardView, viewport, animations et règles. Ils ne doivent pas dupliquer le moteur.
+
+### Variante A — contre Prof Gecko
+
+- Vert = humain.
+- Jaune = Prof/IA.
+- Après un coup vert valide, Prof joue **automatiquement** son jaune. Aucun clic pour déclencher son tour.
+- Clic court sur PROF GECKO pendant le tour humain = conseil/explication seulement, sans jouer.
+- Appui long pendant le tour humain = Prof analyse pour le camp vert, explique sa stratégie, puis joue réellement le vert à la place du joueur. S'il n'y a pas victoire, il reprend ensuite automatiquement son rôle adverse et joue jaune.
+- Le moteur d'analyse doit explicitement connaître le camp analysé : conseil/joue-pour-moi ≠ tour adverse.
+
+### Variante B — humain contre humain
+
+- Vert = humain 1.
+- Jaune = humain 2.
+- Aucune IA ne pose de pièce.
+- Prof Gecko reste conseiller pour le joueur dont c'est le tour.
+- Clic court = conseil.
+- Appui long = analyse plus poussée possible, **mais aucun Gecko n'est posé**.
+- Ne pas afficher la difficulté de l'adversaire IA dans cette variante.
+
+## Prof pédagogique
+
+Les explications doivent refléter le calcul réel :
+observation → menaces/éliminations → stratégie → conclusion → action éventuelle.
+
+En Sudoku :
+- clic = explication ;
+- appui long = déduction sûre jouée et expliquée ;
+- jamais de devinette si aucune déduction sûre.
+
+## Tests obligatoires de cette passe
+
+- vidéo sur Gecko vert pendant pan gauche/droite/haut/bas/diagonal ;
+- vidéo pendant zoom-in/zoom-out et combinaison pan+pinch ;
+- même série sur Gecko jaune ;
+- fond vidéo transparent uniquement en Gomoku ;
+- aucune régression vidéo Classic/Sudoku ;
+- contre Prof : vert humain → jaune automatique ;
+- clic Prof = conseil sans coup ;
+- appui long Prof = vert joué pour humain → jaune automatique ensuite ;
+- humain vs humain : vert → jaune → vert, jamais d'IA ;
+- Prof conseille les deux humains mais ne joue jamais ;
+- victoire stoppe immédiatement l'alternance ;
+- changement de mode ne laisse aucun overlay/lecteur/IA fantôme.
+
+## Nettoyage documentaire après validation
+
+Quand cette passe est codée + CI GREEN + test téléphone validé :
+- transférer les invariants durables dans brain.md ;
+- architecture dans brainmap.md ;
+- cause/correctifs dans debughistorical.md ;
+- ne garder dans todo.md que les restes réels ;
+- seulement ensuite nettoyer l'ancien ordre de mission terminé.
