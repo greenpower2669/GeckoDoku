@@ -220,3 +220,7 @@ GO reçu le 2026-09-27. Branche active : `gecko-038-sudoku-mode`.
 
 ### Avancement
 RED #145 confirmé. Cœur Sudoku implémenté ; attendre preuve CI GREEN avant câblage UI final. GeckoBoardView historique n'a pas été modifié dans cette tranche.
+
+
+### Incident cœur #146
+Mismatch de type des notes uniquement. Correctif minimal appliqué ; poursuivre seulement après nouvelle CI.

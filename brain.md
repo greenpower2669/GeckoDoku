@@ -1252,3 +1252,7 @@ Fab donne le GO explicite. Branche isolée `gecko-038-sudoku-mode`. Première é
 <!-- GECKO-038-CORE-GREEN-2026-09-27 -->
 ## GECKO-038 — cœur Sudoku
 RED CI #145 confirmé. Cœur pur ajouté : GameMode séparé du VisualStyle, SudokuPuzzle 9×9, moteur de saisie/notes/undo-redo, solveur de comptage, générateur conservant une solution unique et hints humains single nu/caché. La couche UI n'est pas encore câblée à ce commit.
+
+
+<!-- GECKO-038-CORE-COMPILE-FIX-2026-09-27 -->
+Correction cœur : collection des notes typée par son contrat `MutableSet<Int>` pour permettre la restauration undo/redo indépendamment de l'implémentation concrète du Set.

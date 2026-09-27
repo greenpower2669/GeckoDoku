@@ -8,7 +8,8 @@ class SudokuGameEngine(
     private var values =
         puzzle.givens.copyOf()
 
-    private var notes =
+    private var notes:
+        MutableList<MutableSet<Int>> =
         MutableList(
             SudokuPuzzle.CELL_COUNT
         ) {

@@ -1095,3 +1095,7 @@ GO explicite de Fab. Branche `gecko-038-sudoku-mode` créée depuis la spécific
 <!-- GECKO-038-CORE-GREEN-2026-09-27 -->
 ## 2026-09-27 — RED #145 puis cœur GREEN candidat
 CI #145 échoue volontairement après ajout des contrats RED. Implémentation du cœur pur sans toucher GeckoBoardView : moteur Sudoku distinct, génération unique via countSolutions(limit=2), notes et historique undo/redo, hints sans guessing. Prochaine étape : CI cœur puis UI isolée.
+
+
+<!-- GECKO-038-CORE-COMPILE-FIX-2026-09-27 -->
+CI #146 : compilation stoppée dans SudokuGameEngine car Kotlin avait inféré `MutableList<LinkedHashSet<Int>>`. Restore produisait `MutableList<MutableSet<Int>>`. Correction : typer explicitement sur l'interface mutable. Aucun code historique touché.

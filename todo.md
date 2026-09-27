@@ -714,3 +714,9 @@ Aucune mission active.
 - [x] Hints single nu / caché.
 - [ ] Confirmer CI cœur GREEN.
 - [ ] UI / assets / sélecteur.
+
+
+<!-- GECKO-038-CORE-COMPILE-FIX-2026-09-27 -->
+- [x] Diagnostiquer CI #146 : mismatch Set notes.
+- [x] Corriger le contrat de collection.
+- [ ] Reconfirmer GREEN cœur.

@@ -556,3 +556,7 @@ GECKO-038 GO → branch isolated → RED engine/generator/hints/styles → GREEN
 SudokuGenerator → unique puzzle → SudokuGameEngine → values/notes/history
 SudokuSnapshot → SudokuHintEngine → naked single / hidden single row/column/box
 GameMode ⟂ SudokuVisualStyle.
+
+
+<!-- GECKO-038-CORE-COMPILE-FIX-2026-09-27 -->
+notes : MutableList<MutableSet<Int>> → capture Set immuable → restore MutableSet.
