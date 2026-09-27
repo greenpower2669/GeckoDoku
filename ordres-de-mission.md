@@ -232,3 +232,7 @@ Phase UI isolée engagée après GREEN #147. GeckoBoardView demeure intouché. P
 
 <!-- GECKO-038-ASSET-CATALOG-2026-09-27 -->
 Le renderer doit charger les PNG via AssetMediaCatalog ; les blobs sources restent inchangés.
+
+
+<!-- GECKO-038-MAIN-WIRING-2026-09-27 -->
+Câblage minimal derrière GameMode effectué. Exiger CI GREEN avant toute extension des techniques Sudoku. Toute correction de rendu doit rester confinée aux vues Sudoku/selector ; ne pas corriger un problème Sudoku en modifiant GeckoBoardView.

@@ -734,3 +734,15 @@ Aucune mission active.
 
 <!-- GECKO-038-ASSET-CATALOG-2026-09-27 -->
 - [x] Références AssetMediaCatalog des planches Sudoku.
+
+
+<!-- GECKO-038-MAIN-WIRING-2026-09-27 -->
+- [x] GameMode persistant dans Réglages.
+- [x] Grilles GeckoDoku/Sudoku parallèles sans réécriture GeckoBoardView.
+- [x] Pavé 1..9 / Notes / Effacer / Undo / Redo.
+- [x] Clavier physique 1..9 / flèches / Suppr / N / P.
+- [x] Prof Sudoku singles nus/cachés.
+- [x] Contexte vivant alimenté par réussite/erreur Sudoku.
+- [ ] CI câblage MainActivity.
+- [ ] Vérifier découpes PNG sur téléphone.
+- [ ] Validation tactile Fab.

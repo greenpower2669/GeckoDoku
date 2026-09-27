@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.View
 import android.view.WindowInsets
 import android.widget.Button
@@ -41,6 +42,30 @@ class MainActivity : Activity() {
 
     private lateinit var board:
         GeckoBoardView
+
+    private lateinit var sudokuBoard:
+        SudokuBoardView
+
+    private lateinit var sudokuValueOverlay:
+        SudokuValueOverlayView
+
+    private lateinit var sudokuStyleSelector:
+        SudokuStyleSelectorView
+
+    private lateinit var sudokuControlsPanel:
+        LinearLayout
+
+    private lateinit var sudokuNotesButton:
+        Button
+
+    private lateinit var sudokuEraseButton:
+        Button
+
+    private lateinit var sudokuUndoButton:
+        Button
+
+    private lateinit var sudokuRedoButton:
+        Button
 
     private lateinit var boardAnchor:
         View
@@ -122,6 +147,36 @@ class MainActivity : Activity() {
 
     private lateinit var saveButton:
         Button
+
+    private lateinit var newButton:
+        Button
+
+    private lateinit var statsButton:
+        Button
+
+    private lateinit var replayButton:
+        Button
+
+    private lateinit var journalButton:
+        Button
+
+    private lateinit var gameModePreferences:
+        GameModePreferences
+
+    private var selectedGameMode =
+        GameMode.GECKODOKU
+
+    private var sudokuPuzzle:
+        SudokuPuzzle? = null
+
+    private var sudokuEngine:
+        SudokuGameEngine? = null
+
+    private var sudokuSelectedCell:
+        Cell? = null
+
+    private var sudokuNotesMode =
+        false
 
     private lateinit var richMediaSettings:
         RichMediaSettings
@@ -277,9 +332,27 @@ class MainActivity : Activity() {
         journalStore =
             PuzzleJournalStore(this)
 
+        gameModePreferences =
+            GameModePreferences(this)
+
+        selectedGameMode =
+            gameModePreferences
+                .gameMode
+
         createPuzzle(
             recordStart = true
         )
+
+        if (
+            selectedGameMode ==
+                GameMode.SUDOKU
+        ) {
+            startSudokuPuzzle(
+                SudokuGenerator.generate(
+                    selectedDifficulty
+                )
+            )
+        }
 
         val root =
             LinearLayout(this).apply {
@@ -475,6 +548,107 @@ class MainActivity : Activity() {
                 }
             }
 
+        sudokuBoard =
+            SudokuBoardView(this).apply {
+                visibility =
+                    View.GONE
+
+                snapshotProvider = {
+                    requireNotNull(
+                        sudokuEngine
+                    ).snapshot()
+                }
+
+                onCellSelected = {
+                        cell ->
+
+                    sudokuSelectedCell =
+                        cell
+
+                    setSelectedCell(
+                        cell
+                    )
+
+                    sudokuValueOverlay
+                        .invalidate()
+
+                    status.text =
+                        "Sudoku • case " +
+                            (cell.row + 1) +
+                            "," +
+                            (cell.col + 1)
+                }
+            }
+
+        sudokuValueOverlay =
+            SudokuValueOverlayView(this).apply {
+                visibility =
+                    View.GONE
+
+                snapshotProvider = {
+                    requireNotNull(
+                        sudokuEngine
+                    ).snapshot()
+                }
+
+                visualStyle =
+                    gameModePreferences
+                        .sudokuVisualStyle
+            }
+
+        sudokuStyleSelector =
+            SudokuStyleSelectorView(this).apply {
+                visibility =
+                    View.GONE
+
+                setCommittedStyle(
+                    gameModePreferences
+                        .sudokuVisualStyle
+                )
+
+                onPreviewStyle = {
+                        style ->
+
+                    sudokuValueOverlay
+                        .visualStyle =
+                        style
+                }
+
+                onCommitStyle = {
+                        style ->
+
+                    gameModePreferences
+                        .sudokuVisualStyle =
+                        style
+
+                    sudokuValueOverlay
+                        .visualStyle =
+                        style
+
+                    status.text =
+                        when (style) {
+                            SudokuVisualStyle
+                                .CLASSIC_NUMBERS ->
+                                "Style Sudoku : classique."
+
+                            SudokuVisualStyle
+                                .GECKO_NB ->
+                                "Style Sudoku : Gecko noir et blanc."
+
+                            SudokuVisualStyle
+                                .GECKO_COLORED ->
+                                "Style Sudoku : Gecko couleur."
+                        }
+                }
+            }
+
+        sudokuControlsPanel =
+            createSudokuControlsPanel()
+                .apply {
+                    visibility =
+                        View.GONE
+                }
+
         boardAnchor =
             View(this).apply {
                 importantForAccessibility =
@@ -524,22 +698,20 @@ class MainActivity : Activity() {
                 }
             }
 
-        val newButton =
+        newButton =
             Button(this).apply {
                 text = "↻ Nouvelle"
                 textSize = 15f
                 minHeight = dp(46)
 
                 setOnClickListener {
-                    createPuzzle(
-                        recordStart = true
-                    )
+                    createActivePuzzle()
                     refreshGameUi()
                     playLevelStartMusic()
                 }
             }
 
-        val statsButton =
+        statsButton =
             Button(this).apply {
                 text = "Stats"
                 textSize = 15f
@@ -576,7 +748,7 @@ class MainActivity : Activity() {
                 }
             }
 
-        val replayButton =
+        replayButton =
             Button(this).apply {
                 text = "↺ Rejouer"
                 textSize = 14f
@@ -598,7 +770,7 @@ class MainActivity : Activity() {
                 }
             }
 
-        val journalButton =
+        journalButton =
             Button(this).apply {
                 text = "📚 Journal"
                 textSize = 14f
@@ -894,6 +1066,22 @@ class MainActivity : Activity() {
             }
 
         root.addView(
+            sudokuStyleSelector,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(66)
+            )
+        )
+
+        root.addView(
+            sudokuControlsPanel,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        )
+
+        root.addView(
             controlsPanel,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -951,6 +1139,32 @@ class MainActivity : Activity() {
         screenRoot.addView(
             board,
             1,
+            FrameLayout.LayoutParams(
+                1,
+                1
+            ).apply {
+                gravity =
+                    Gravity.TOP or
+                        Gravity.START
+            }
+        )
+
+        screenRoot.addView(
+            sudokuBoard,
+            2,
+            FrameLayout.LayoutParams(
+                1,
+                1
+            ).apply {
+                gravity =
+                    Gravity.TOP or
+                        Gravity.START
+            }
+        )
+
+        screenRoot.addView(
+            sudokuValueOverlay,
+            3,
             FrameLayout.LayoutParams(
                 1,
                 1
@@ -1045,6 +1259,7 @@ class MainActivity : Activity() {
         )
 
         protectFromSystemBars(root)
+        applyGameModeVisibility()
         refreshGameUi()
         applyProfessorIntroVisibility()
         scheduleProfessorIdleAnimation()
@@ -1057,6 +1272,23 @@ class MainActivity : Activity() {
                 positionTitleIdentity()
                 playIntroIfEnabled()
             }
+        }
+    }
+
+    private fun createActivePuzzle() {
+        if (
+            selectedGameMode ==
+                GameMode.SUDOKU
+        ) {
+            startSudokuPuzzle(
+                SudokuGenerator.generate(
+                    selectedDifficulty
+                )
+            )
+        } else {
+            createPuzzle(
+                recordStart = true
+            )
         }
     }
 
@@ -1138,6 +1370,27 @@ class MainActivity : Activity() {
     }
 
     private fun replayCurrentPuzzle() {
+        if (
+            selectedGameMode ==
+                GameMode.SUDOKU
+        ) {
+            val current =
+                sudokuPuzzle
+
+            if (current != null) {
+                startSudokuPuzzle(
+                    current
+                )
+
+                refreshGameUi()
+
+                status.text =
+                    "Même Sudoku réinitialisé."
+            }
+
+            return
+        }
+
         startPuzzle(
             puzzle,
             recordStart = true
@@ -1356,6 +1609,16 @@ class MainActivity : Activity() {
     }
 
     private fun refreshGameUi() {
+        applyGameModeVisibility()
+
+        if (
+            selectedGameMode ==
+                GameMode.SUDOKU
+        ) {
+            refreshSudokuUi()
+            return
+        }
+
         if (::board.isInitialized) {
             board.setPuzzleAndRefresh(
                 puzzle
@@ -1753,6 +2016,14 @@ class MainActivity : Activity() {
     }
 
     private fun showProfessorHint() {
+        if (
+            selectedGameMode ==
+                GameMode.SUDOKU
+        ) {
+            showSudokuProfessorHint()
+            return
+        }
+
         professorUsed = true
 
         if (::professorLife.isInitialized) {
@@ -2153,6 +2424,16 @@ class MainActivity : Activity() {
                         screenRoot.height
             )
         }
+
+        positionSudokuLayer(
+            sudokuBoard,
+            geometry
+        )
+
+        positionSudokuLayer(
+            sudokuValueOverlay,
+            geometry
+        )
     }
 
     private fun positionProfessorBubble() {
@@ -2395,9 +2676,7 @@ class MainActivity : Activity() {
 
                 dialog.dismiss()
 
-                createPuzzle(
-                    recordStart = true
-                )
+                createActivePuzzle()
 
                 refreshGameUi()
             }
@@ -2858,7 +3137,7 @@ class MainActivity : Activity() {
                     introPhase
                 ) ||
             !hasWindowFocus() ||
-            engine.snapshot().complete ||
+            isCurrentGameComplete() ||
             pendingProfessorHypothesis !=
                 null
         ) {
@@ -2922,6 +3201,8 @@ class MainActivity : Activity() {
                     alreadyOffered =
                         ambientSaveOffered,
                     alreadySaved =
+                        selectedGameMode ==
+                            GameMode.SUDOKU ||
                         journalStore
                             .contains(
                                 puzzle.id
@@ -2950,7 +3231,7 @@ class MainActivity : Activity() {
         ) {
             professorLife.observe(
                 ProfessorPlayerEvent.AMBIENT,
-                puzzle.difficulty
+                currentDifficulty()
             )
 
             if (
@@ -3189,6 +3470,994 @@ class MainActivity : Activity() {
             }
     }
 
+    private fun createSudokuControlsPanel():
+        LinearLayout {
+        fun digitButton(
+            digit: Int
+        ): Button =
+            Button(this).apply {
+                text = digit.toString()
+                textSize = 20f
+                minHeight = dp(46)
+                setOnClickListener {
+                    handleSudokuDigit(digit)
+                }
+            }
+
+        fun digitRow(
+            digits: IntRange
+        ): LinearLayout =
+            LinearLayout(this).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+
+                for (digit in digits) {
+                    addView(
+                        digitButton(digit),
+                        LinearLayout.LayoutParams(
+                            0,
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            1f
+                        )
+                    )
+                }
+            }
+
+        sudokuNotesButton =
+            Button(this).apply {
+                text = "✏️ Notes"
+                textSize = 14f
+                minHeight = dp(46)
+                setOnClickListener {
+                    sudokuNotesMode =
+                        !sudokuNotesMode
+                    refreshSudokuToolLabels()
+                    status.text =
+                        if (sudokuNotesMode) {
+                            "Mode notes activé."
+                        } else {
+                            "Mode notes désactivé."
+                        }
+                }
+            }
+
+        sudokuEraseButton =
+            Button(this).apply {
+                text = "⌫ Effacer"
+                textSize = 14f
+                minHeight = dp(46)
+                setOnClickListener {
+                    eraseSudokuSelection()
+                }
+            }
+
+        sudokuUndoButton =
+            Button(this).apply {
+                text = "↶"
+                textSize = 20f
+                minHeight = dp(46)
+                contentDescription =
+                    "Annuler"
+                setOnClickListener {
+                    undoSudoku()
+                }
+            }
+
+        sudokuRedoButton =
+            Button(this).apply {
+                text = "↷"
+                textSize = 20f
+                minHeight = dp(46)
+                contentDescription =
+                    "Refaire"
+                setOnClickListener {
+                    redoSudoku()
+                }
+            }
+
+        val tools =
+            LinearLayout(this).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+
+                addView(
+                    sudokuNotesButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        2f
+                    )
+                )
+
+                addView(
+                    sudokuEraseButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        2f
+                    )
+                )
+
+                addView(
+                    sudokuUndoButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
+                )
+
+                addView(
+                    sudokuRedoButton,
+                    LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
+                )
+            }
+
+        return LinearLayout(this).apply {
+            orientation =
+                LinearLayout.VERTICAL
+            addView(digitRow(1..5))
+            addView(digitRow(6..9))
+            addView(tools)
+        }
+    }
+
+    private fun showGameModeChooser() {
+        val modes =
+            arrayOf(
+                "🦎 GeckoDoku",
+                "🔢 Sudoku"
+            )
+
+        val checked =
+            if (
+                selectedGameMode ==
+                    GameMode.SUDOKU
+            ) 1 else 0
+
+        AlertDialog.Builder(this)
+            .setTitle("Mode de jeu")
+            .setSingleChoiceItems(
+                modes,
+                checked
+            ) {
+                    dialog,
+                    which ->
+
+                setGameMode(
+                    if (which == 1) {
+                        GameMode.SUDOKU
+                    } else {
+                        GameMode.GECKODOKU
+                    }
+                )
+
+                dialog.dismiss()
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
+    }
+
+    private fun setGameMode(
+        mode: GameMode
+    ) {
+        if (
+            mode ==
+                selectedGameMode
+        ) {
+            return
+        }
+
+        clearProfessorSession()
+
+        selectedGameMode = mode
+        gameModePreferences.gameMode =
+            mode
+
+        if (
+            mode ==
+                GameMode.SUDOKU &&
+            sudokuEngine == null
+        ) {
+            startSudokuPuzzle(
+                SudokuGenerator.generate(
+                    selectedDifficulty
+                )
+            )
+        }
+
+        applyGameModeVisibility()
+        refreshGameUi()
+
+        status.text =
+            if (
+                mode ==
+                    GameMode.SUDOKU
+            ) {
+                "Mode Sudoku activé 🔢"
+            } else {
+                "Mode GeckoDoku activé 🦎"
+            }
+    }
+
+    private fun startSudokuPuzzle(
+        next: SudokuPuzzle
+    ) {
+        sudokuPuzzle = next
+        sudokuEngine =
+            SudokuGameEngine(next)
+        sudokuSelectedCell = null
+        sudokuNotesMode = false
+
+        if (
+            ::sudokuBoard
+                .isInitialized
+        ) {
+            sudokuBoard
+                .setSelectedCell(null)
+        }
+
+        if (
+            ::richMediaOverlay
+                .isInitialized
+        ) {
+            richMediaOverlay.stop()
+        }
+
+        if (
+            ::professorSpeech
+                .isInitialized
+        ) {
+            professorSpeech.stop(
+                reason =
+                    SpeechStopReason
+                        .PUZZLE_RESET,
+                caller =
+                    "MainActivity.startSudokuPuzzle"
+            )
+        }
+
+        gameStartedAt =
+            SystemClock.elapsedRealtime()
+
+        if (
+            ::professorLife
+                .isInitialized
+        ) {
+            professorLife.observe(
+                ProfessorPlayerEvent
+                    .GAME_STARTED,
+                next.difficulty
+            )
+        }
+
+        resetProfessorAmbientState()
+        clearProfessorSession()
+    }
+
+    private fun refreshSudokuUi() {
+        val sudoku =
+            sudokuPuzzle
+                ?: return
+
+        sudokuBoard.refresh()
+
+        sudokuValueOverlay
+            .visualStyle =
+            gameModePreferences
+                .sudokuVisualStyle
+
+        sudokuValueOverlay.invalidate()
+
+        sudokuStyleSelector
+            .setCommittedStyle(
+                gameModePreferences
+                    .sudokuVisualStyle
+            )
+
+        refreshSudokuToolLabels()
+
+        titleView.text =
+            "GeckoDoku • Sudoku 🦎"
+
+        info.text =
+            "Sudoku 9×9 • " +
+                sudoku.difficulty.label +
+                " • " +
+                sudoku.givenCount() +
+                " cases données"
+
+        difficultyButton.text =
+            sudoku.difficulty.label
+
+        professorButton.text =
+            "🧑‍🏫 Prof Gecko"
+    }
+
+    private fun applyGameModeVisibility() {
+        if (
+            !::board.isInitialized
+        ) {
+            return
+        }
+
+        val sudoku =
+            selectedGameMode ==
+                GameMode.SUDOKU
+
+        board.visibility =
+            if (sudoku) {
+                View.GONE
+            } else {
+                View.VISIBLE
+            }
+
+        if (
+            ::sudokuBoard
+                .isInitialized
+        ) {
+            sudokuBoard.visibility =
+                if (sudoku) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
+        }
+
+        if (
+            ::sudokuValueOverlay
+                .isInitialized
+        ) {
+            sudokuValueOverlay.visibility =
+                if (sudoku) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
+        }
+
+        if (
+            ::sudokuStyleSelector
+                .isInitialized
+        ) {
+            sudokuStyleSelector.visibility =
+                if (sudoku) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
+        }
+
+        if (
+            ::sudokuControlsPanel
+                .isInitialized
+        ) {
+            sudokuControlsPanel.visibility =
+                if (sudoku) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
+        }
+
+        if (
+            ::sizeButton
+                .isInitialized
+        ) {
+            sizeButton.visibility =
+                if (sudoku) {
+                    View.GONE
+                } else {
+                    View.VISIBLE
+                }
+        }
+
+        if (
+            ::saveButton
+                .isInitialized
+        ) {
+            saveButton.visibility =
+                if (sudoku) {
+                    View.GONE
+                } else {
+                    View.VISIBLE
+                }
+        }
+
+        if (
+            ::journalButton
+                .isInitialized
+        ) {
+            journalButton.visibility =
+                if (sudoku) {
+                    View.GONE
+                } else {
+                    View.VISIBLE
+                }
+        }
+
+        if (
+            ::statsButton
+                .isInitialized
+        ) {
+            statsButton.visibility =
+                if (sudoku) {
+                    View.GONE
+                } else {
+                    View.VISIBLE
+                }
+        }
+
+        if (!sudoku) {
+            titleView.text =
+                "GeckoDoku 🦎"
+        }
+
+        if (
+            ::screenRoot
+                .isInitialized
+        ) {
+            screenRoot.post {
+                positionFloatingBoard()
+            }
+        }
+    }
+
+    private fun positionSudokuLayer(
+        view: View,
+        geometry: BoardGeometry
+    ) {
+        val params =
+            view.layoutParams
+                as? FrameLayout.LayoutParams
+                ?: FrameLayout.LayoutParams(
+                    geometry.width,
+                    geometry.height
+                )
+
+        params.width = geometry.width
+        params.height = geometry.height
+        params.leftMargin =
+            geometry.left
+        params.topMargin =
+            geometry.top
+        params.gravity =
+            Gravity.TOP or
+                Gravity.START
+
+        view.layoutParams =
+            params
+    }
+
+    private fun handleSudokuDigit(
+        digit: Int
+    ) {
+        val cell =
+            sudokuSelectedCell
+
+        val engine =
+            sudokuEngine
+
+        val sudoku =
+            sudokuPuzzle
+
+        if (
+            cell == null ||
+            engine == null ||
+            sudoku == null
+        ) {
+            fx.blocked()
+            status.text =
+                "Choisis d'abord une case."
+            return
+        }
+
+        val now =
+            SystemClock.elapsedRealtime()
+
+        val thinkingMs =
+            if (
+                lastBoardActionAtMs >
+                    0L
+            ) {
+                (
+                    now -
+                        lastBoardActionAtMs
+                    ).coerceAtLeast(0L)
+            } else {
+                Long.MAX_VALUE
+            }
+
+        recordBoardAction()
+        clearProfessorSession()
+
+        when (
+            engine.enterDigit(
+                cell,
+                digit,
+                notesMode =
+                    sudokuNotesMode
+            )
+        ) {
+            SudokuActionFeedback
+                .VALUE_SET -> {
+                fx.gecko()
+
+                if (
+                    thinkingMs >=
+                        15_000L
+                ) {
+                    professorLife.observe(
+                        ProfessorPlayerEvent
+                            .LONG_THINKING,
+                        sudoku.difficulty
+                    )
+                }
+
+                professorLife.observe(
+                    ProfessorPlayerEvent
+                        .CORRECT_MOVE,
+                    sudoku.difficulty
+                )
+
+                status.text =
+                    "Bien vu : " +
+                        digit +
+                        "."
+            }
+
+            SudokuActionFeedback
+                .NOTE_TOGGLED -> {
+                fx.marker()
+                status.text =
+                    "Note " +
+                        digit +
+                        " mise à jour."
+            }
+
+            SudokuActionFeedback
+                .WRONG_VALUE -> {
+                fx.error()
+
+                val playerEvent =
+                    when {
+                        thinkingMs >=
+                            15_000L -> {
+                            professorLife.observe(
+                                ProfessorPlayerEvent
+                                    .LONG_THINKING,
+                                sudoku.difficulty
+                            )
+
+                            ProfessorPlayerEvent
+                                .WRONG_MOVE
+                        }
+
+                        thinkingMs <=
+                            2_500L ->
+                            ProfessorPlayerEvent
+                                .RAPID_WRONG_MOVE
+
+                        else ->
+                            ProfessorPlayerEvent
+                                .WRONG_MOVE
+                    }
+
+                professorLife.observe(
+                    playerEvent,
+                    sudoku.difficulty
+                )
+
+                status.text =
+                    "Ce chiffre ne va pas ici."
+
+                speakLivingProfessor(
+                    event =
+                        playerEvent,
+                    origin =
+                        SpeechOrigin
+                            .QUICK_TALK
+                )
+            }
+
+            SudokuActionFeedback
+                .GIVEN_LOCKED -> {
+                fx.blocked()
+                status.text =
+                    "Ce chiffre est donné."
+            }
+
+            SudokuActionFeedback
+                .COMPLETED -> {
+                fx.complete()
+
+                professorLife.observe(
+                    ProfessorPlayerEvent
+                        .LEVEL_COMPLETED,
+                    sudoku.difficulty
+                )
+
+                completeSudokuGame()
+            }
+
+            SudokuActionFeedback
+                .NOTHING_CHANGED ->
+                Unit
+
+            else -> Unit
+        }
+
+        sudokuBoard.refresh()
+        sudokuValueOverlay.invalidate()
+    }
+
+    private fun eraseSudokuSelection() {
+        val cell =
+            sudokuSelectedCell
+                ?: run {
+                    fx.blocked()
+                    status.text =
+                        "Choisis d'abord une case."
+                    return
+                }
+
+        val result =
+            sudokuEngine
+                ?.erase(cell)
+                ?: return
+
+        when (result) {
+            SudokuActionFeedback
+                .ERASED -> {
+                fx.cross()
+                status.text =
+                    "Case effacée."
+            }
+
+            SudokuActionFeedback
+                .GIVEN_LOCKED -> {
+                fx.blocked()
+                status.text =
+                    "Ce chiffre est donné."
+            }
+
+            else ->
+                fx.blocked()
+        }
+
+        sudokuBoard.refresh()
+        sudokuValueOverlay.invalidate()
+    }
+
+    private fun undoSudoku() {
+        val result =
+            sudokuEngine
+                ?.undo()
+                ?: return
+
+        if (
+            result ==
+                SudokuActionFeedback
+                    .UNDONE
+        ) {
+            fx.marker()
+            status.text =
+                "Action annulée."
+            sudokuBoard.refresh()
+            sudokuValueOverlay.invalidate()
+        } else {
+            fx.blocked()
+        }
+    }
+
+    private fun redoSudoku() {
+        val result =
+            sudokuEngine
+                ?.redo()
+                ?: return
+
+        if (
+            result ==
+                SudokuActionFeedback
+                    .REDONE
+        ) {
+            fx.marker()
+            status.text =
+                "Action rétablie."
+            sudokuBoard.refresh()
+            sudokuValueOverlay.invalidate()
+        } else {
+            fx.blocked()
+        }
+    }
+
+    private fun refreshSudokuToolLabels() {
+        if (
+            !::sudokuNotesButton
+                .isInitialized
+        ) {
+            return
+        }
+
+        sudokuNotesButton.text =
+            if (sudokuNotesMode) {
+                "✏️ Notes ON"
+            } else {
+                "✏️ Notes"
+            }
+    }
+
+    private fun showSudokuProfessorHint() {
+        professorUsed = true
+
+        val sudoku =
+            sudokuPuzzle
+                ?: return
+
+        val engine =
+            sudokuEngine
+                ?: return
+
+        professorLife.observe(
+            ProfessorPlayerEvent
+                .HINT_REQUESTED,
+            sudoku.difficulty
+        )
+
+        val hint =
+            SudokuHintEngine
+                .nextHint(
+                    sudoku,
+                    engine.snapshot()
+                )
+
+        if (hint == null) {
+            fx.blocked()
+            showProfessorBubble(
+                "Je ne vois pas encore de déduction simple sûre. Vérifie les candidats déjà posés."
+            )
+            return
+        }
+
+        sudokuSelectedCell =
+            hint.cell
+
+        sudokuBoard
+            .setSelectedCell(
+                hint.cell
+            )
+
+        sudokuValueOverlay
+            .invalidate()
+
+        fx.hint()
+
+        showProfessorBubble(
+            hint.explanation
+        )
+
+        status.text =
+            "Prof Gecko • " +
+                hint.technique.label
+    }
+
+    private fun completeSudokuGame() {
+        val sudoku =
+            sudokuPuzzle
+                ?: return
+
+        status.text =
+            "Bravo ! Sudoku terminé 🦎"
+
+        if (
+            ::celebrationView
+                .isInitialized
+        ) {
+            celebrationView.start(
+                sudoku.difficulty
+            )
+        }
+
+        sudokuBoard
+            .announceForAccessibility(
+                "Bravo, Sudoku terminé."
+            )
+
+        speakLivingProfessor(
+            event =
+                ProfessorPlayerEvent
+                    .LEVEL_COMPLETED,
+            origin =
+                SpeechOrigin
+                    .END_GAME
+        )
+    }
+
+    private fun currentDifficulty():
+        GameDifficulty =
+        if (
+            selectedGameMode ==
+                GameMode.SUDOKU
+        ) {
+            sudokuPuzzle
+                ?.difficulty
+                ?: selectedDifficulty
+        } else {
+            puzzle.difficulty
+        }
+
+    private fun isCurrentGameComplete():
+        Boolean =
+        if (
+            selectedGameMode ==
+                GameMode.SUDOKU
+        ) {
+            sudokuEngine
+                ?.snapshot()
+                ?.complete
+                ?: false
+        } else {
+            engine.snapshot()
+                .complete
+        }
+
+    override fun onKeyDown(
+        keyCode: Int,
+        event: KeyEvent?
+    ): Boolean {
+        if (
+            selectedGameMode ==
+                GameMode.SUDOKU
+        ) {
+            val digit =
+                when (keyCode) {
+                    KeyEvent.KEYCODE_1,
+                    KeyEvent.KEYCODE_NUMPAD_1 ->
+                        1
+
+                    KeyEvent.KEYCODE_2,
+                    KeyEvent.KEYCODE_NUMPAD_2 ->
+                        2
+
+                    KeyEvent.KEYCODE_3,
+                    KeyEvent.KEYCODE_NUMPAD_3 ->
+                        3
+
+                    KeyEvent.KEYCODE_4,
+                    KeyEvent.KEYCODE_NUMPAD_4 ->
+                        4
+
+                    KeyEvent.KEYCODE_5,
+                    KeyEvent.KEYCODE_NUMPAD_5 ->
+                        5
+
+                    KeyEvent.KEYCODE_6,
+                    KeyEvent.KEYCODE_NUMPAD_6 ->
+                        6
+
+                    KeyEvent.KEYCODE_7,
+                    KeyEvent.KEYCODE_NUMPAD_7 ->
+                        7
+
+                    KeyEvent.KEYCODE_8,
+                    KeyEvent.KEYCODE_NUMPAD_8 ->
+                        8
+
+                    KeyEvent.KEYCODE_9,
+                    KeyEvent.KEYCODE_NUMPAD_9 ->
+                        9
+
+                    else -> null
+                }
+
+            if (digit != null) {
+                handleSudokuDigit(digit)
+                return true
+            }
+
+            when (keyCode) {
+                KeyEvent.KEYCODE_DEL -> {
+                    eraseSudokuSelection()
+                    return true
+                }
+
+                KeyEvent.KEYCODE_N -> {
+                    sudokuNotesMode =
+                        !sudokuNotesMode
+                    refreshSudokuToolLabels()
+                    return true
+                }
+
+                KeyEvent.KEYCODE_P -> {
+                    showSudokuProfessorHint()
+                    return true
+                }
+
+                KeyEvent.KEYCODE_DPAD_LEFT,
+                KeyEvent.KEYCODE_DPAD_RIGHT,
+                KeyEvent.KEYCODE_DPAD_UP,
+                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                    moveSudokuSelection(
+                        keyCode
+                    )
+                    return true
+                }
+            }
+        }
+
+        return super.onKeyDown(
+            keyCode,
+            event
+        )
+    }
+
+    private fun moveSudokuSelection(
+        keyCode: Int
+    ) {
+        val current =
+            sudokuSelectedCell
+                ?: Cell(0, 0)
+
+        val next =
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_LEFT ->
+                    Cell(
+                        current.row,
+                        (
+                            current.col -
+                                1
+                            ).coerceAtLeast(
+                            0
+                        )
+                    )
+
+                KeyEvent.KEYCODE_DPAD_RIGHT ->
+                    Cell(
+                        current.row,
+                        (
+                            current.col +
+                                1
+                            ).coerceAtMost(
+                            8
+                        )
+                    )
+
+                KeyEvent.KEYCODE_DPAD_UP ->
+                    Cell(
+                        (
+                            current.row -
+                                1
+                            ).coerceAtLeast(
+                            0
+                        ),
+                        current.col
+                    )
+
+                else ->
+                    Cell(
+                        (
+                            current.row +
+                                1
+                            ).coerceAtMost(
+                            8
+                        ),
+                        current.col
+                    )
+            }
+
+        sudokuSelectedCell = next
+        sudokuBoard
+            .setSelectedCell(next)
+        sudokuValueOverlay.invalidate()
+    }
+
     private fun showSettings() {
         val entries =
             settingsMenuPolicy.entries
@@ -3198,6 +4467,16 @@ class MainActivity : Activity() {
                 entry ->
 
                 when (entry) {
+                    SettingsEntry.GAME_MODE ->
+                        if (
+                            selectedGameMode ==
+                                GameMode.SUDOKU
+                        ) {
+                            "🎮 Mode : Sudoku"
+                        } else {
+                            "🎮 Mode : GeckoDoku"
+                        }
+
                     SettingsEntry.SOUND ->
                         if (fx.enabled) {
                             "🔊 Son : ON"
@@ -3224,6 +4503,11 @@ class MainActivity : Activity() {
                     which ->
 
                 when (entries[which]) {
+                    SettingsEntry.GAME_MODE -> {
+                        dialog.dismiss()
+                        showGameModeChooser()
+                    }
+
                     SettingsEntry.SOUND -> {
                         toggleSoundSetting()
                         dialog.dismiss()
@@ -3851,7 +5135,7 @@ class MainActivity : Activity() {
     private fun speakQuickProfessorLine() {
         professorLife.observe(
             ProfessorPlayerEvent.AMBIENT,
-            puzzle.difficulty
+            currentDifficulty()
         )
 
         speakLivingProfessor(
@@ -3880,7 +5164,7 @@ class MainActivity : Activity() {
             professorLife.choose(
                 event = event,
                 difficulty =
-                    puzzle.difficulty
+                    currentDifficulty()
             )
                 ?: return false
 

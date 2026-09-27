@@ -569,3 +569,11 @@ SudokuStyleSelectorView DOWN/MOVE → previewStyle → overlay.invalidate ; UP �
 
 <!-- GECKO-038-ASSET-CATALOG-2026-09-27 -->
 AssetMediaCatalog.GECKO_NUMBER_NB / GECKO_NUMBER_COLORED → PNG canoniques assets/gecko.
+
+
+<!-- GECKO-038-MAIN-WIRING-2026-09-27 -->
+Settings GAME_MODE → setGameMode → visibility router
+GECKODOKU → GeckoBoardView + GameEngine historique
+SUDOKU → SudokuBoardView(touch) + SudokuValueOverlay(click-through) + SudokuGameEngine
+Selector MOVE → preview style → overlay ; UP → persist style
+Prof button(SUDOKU) → SudokuHintEngine → pedagogical bubble + Pierre.
