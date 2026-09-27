@@ -2721,3 +2721,7 @@ Aucun merge main. Aucune release. Téléphone Fab = validation perceptuelle fina
 
 <!-- GECKO-039-CORE-MATCH-MODES-2026-09-27 -->
 Core ajouté : GomokuMatchMode persiste la configuration VS_PROFESSOR / HUMAN_VS_HUMAN sans dupliquer GameMode.GOMOKU. GomokuAi.chooseMoveFor permet d'analyser explicitement le camp courant ; l'analyse du camp vert normalise la perspective vers le moteur IA historique sans muter le snapshot.
+
+
+<!-- GECKO-039-MEDIA-DYNAMIC-2026-09-27 -->
+Pipeline média Gomoku : RichMediaOverlayView accepte un targetProvider dynamique ; MainActivity pourra rafraîchir les bounds à chaque viewport. GomokuBoardView expose geckoRectOnScreen calé sur l'inset réel du PNG et peut masquer uniquement le PNG de la cellule animée. ChromaKeyVideoView possède une teinte jaune optionnelle appliquée après extraction du fond bleu.

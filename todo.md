@@ -623,3 +623,12 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Câbler les variantes et interactions Prof dans MainActivity.
 - [ ] Corriger le suivi dynamique des vidéos Gomoku + teinte jaune.
 - [ ] CI GREEN + APK/AAB + test téléphone.
+
+
+<!-- GECKO-039-MEDIA-DYNAMIC-TODO-2026-09-27 -->
+- [x] Infrastructure target vidéo dynamique.
+- [x] Rect vidéo calé sur le rect PNG réel.
+- [x] Masquage ciblé du PNG sans rectangle de fond.
+- [x] Teinte vidéo jaune optionnelle.
+- [ ] Câbler ces fonctions dans MainActivity Gomoku.
+- [ ] Vérifier CI puis test téléphone pan/zoom/keycolor/jaune.

@@ -97,6 +97,9 @@ class GomokuBoardView @JvmOverloads constructor(
     private var animationStartedAtMs =
         0L
 
+    private val mediaSuppressedCells =
+        linkedSetOf<Cell>()
+
     private val scaleDetector =
         ScaleGestureDetector(
             context,
@@ -196,6 +199,7 @@ class GomokuBoardView @JvmOverloads constructor(
 
         animatedCell = null
         animatedPlayer = null
+        mediaSuppressedCells.clear()
 
         invalidate()
     }
@@ -229,6 +233,68 @@ class GomokuBoardView @JvmOverloads constructor(
             SystemClock.uptimeMillis()
 
         invalidate()
+    }
+
+    fun setMediaStoneSuppressed(
+        cell: Cell,
+        suppressed: Boolean
+    ) {
+        if (suppressed) {
+            mediaSuppressedCells.add(
+                cell
+            )
+        } else {
+            mediaSuppressedCells.remove(
+                cell
+            )
+        }
+
+        invalidate()
+    }
+
+    fun clearMediaStoneSuppression() {
+        if (
+            mediaSuppressedCells
+                .isEmpty()
+        ) {
+            return
+        }
+
+        mediaSuppressedCells.clear()
+        invalidate()
+    }
+
+    fun geckoRectOnScreen(
+        cell: Cell
+    ): RectF? {
+        val local =
+            cellRectLocal(cell)
+                ?: return null
+
+        val rect =
+            RectF(local).apply {
+                val insetAmount =
+                    width() * .08f
+
+                inset(
+                    insetAmount,
+                    insetAmount
+                )
+            }
+
+        val location =
+            IntArray(2)
+
+        getLocationOnScreen(
+            location
+        )
+
+        return rect.apply {
+            offset(
+                location[0].toFloat(),
+                location[1].toFloat()
+            )
+        }
     }
 
     fun cellRectOnScreen(
@@ -637,6 +703,15 @@ class GomokuBoardView @JvmOverloads constructor(
     ) {
         snapshot.stones.forEach {
                 entry ->
+
+            if (
+                mediaSuppressedCells
+                    .contains(
+                        entry.key
+                    )
+            ) {
+                return@forEach
+            }
 
             val rect =
                 cellRectLocal(

@@ -1584,3 +1584,7 @@ Correction attendue :
 
 <!-- GECKO-039-CORE-MATCH-MODES-2026-09-27 -->
 Première tranche code post-test : séparation configuration de match / moteur. Aucun second moteur Gomoku n'est créé. Tests de politique ajoutés pour empêcher l'IA de prendre le tour jaune en humain-vs-humain et vérifier l'analyse du point de vue vert.
+
+
+<!-- GECKO-039-MEDIA-DYNAMIC-2026-09-27 -->
+Correctif structurel préparé pour le bug téléphone vidéo : l'overlay sait désormais suivre une cible mobile/zoomable au lieu de rester figé sur le RectF initial. Le Goban peut masquer le PNG exact sans rectangle de couleur. Le shader sait jaunir le Gecko après chroma-key. Classic/Sudoku gardent les paramètres historiques par défaut.

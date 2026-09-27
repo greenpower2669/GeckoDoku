@@ -23,6 +23,8 @@ class RichMediaOverlayView @JvmOverloads constructor(
             ChromaKeyVideoView,
         val maskView:
             View?,
+        val targetProvider:
+            (() -> RectF?)?,
         val titleText:
             String?,
         val skippable:
@@ -131,8 +133,13 @@ class RichMediaOverlayView @JvmOverloads constructor(
         target: RectF?,
         titleText: String?,
         skippable: Boolean,
+        targetProvider:
+            (() -> RectF?)? = null,
         maskTarget: RectF? = null,
         maskColor: Int = Color.WHITE,
+        yellowTint: Boolean = false,
+        onFirstFrameVisible:
+            (() -> Unit)? = null,
         onFinished: (() -> Unit)? = null,
         onSkipped: (() -> Unit)? = null
     ): Boolean {
@@ -206,9 +213,14 @@ class RichMediaOverlayView @JvmOverloads constructor(
                         } else {
                             1f
                         }
+                    setYellowTint(
+                        yellowTint
+                    )
                     applyBounds(
                         this,
-                        target
+                        targetProvider
+                            ?.invoke()
+                            ?: target
                     )
                 }
 
@@ -219,6 +231,8 @@ class RichMediaOverlayView @JvmOverloads constructor(
                 assetPath = assetPath,
                 videoView = videoView,
                 maskView = maskView,
+                targetProvider =
+                    targetProvider,
                 titleText = titleText,
                 skippable = skippable,
                 onFinished = onFinished,
@@ -269,6 +283,9 @@ class RichMediaOverlayView @JvmOverloads constructor(
             onFirstFrameRendered = {
                 session.maskView
                     ?.alpha = 1f
+
+                onFirstFrameVisible
+                    ?.invoke()
 
                 MediaTrace.event(
                     source = "Overlay",
@@ -322,6 +339,35 @@ class RichMediaOverlayView @JvmOverloads constructor(
         )
 
         return true
+    }
+
+    fun refreshDynamicTargets() {
+        sessions.values
+            .forEach {
+                session ->
+
+                val provider =
+                    session.targetProvider
+                        ?: return@forEach
+
+                val bounds =
+                    provider()
+
+                if (bounds == null) {
+                    session.videoView
+                        .visibility =
+                        INVISIBLE
+                } else {
+                    session.videoView
+                        .visibility =
+                        VISIBLE
+
+                    applyBounds(
+                        session.videoView,
+                        bounds
+                    )
+                }
+            }
     }
 
     fun setMuted(

@@ -287,6 +287,18 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         )
     }
 
+    fun setYellowTint(
+        enabled: Boolean
+    ) {
+        queueEvent {
+            chromaRenderer
+                .setYellowTint(
+                    enabled
+                )
+        }
+        requestRender()
+    }
+
     fun stopPlayback() {
         abortFirstFrameReveal(
             "stop"
@@ -749,6 +761,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         private var videoWidth = 1
         private var videoHeight = 1
 
+        private var yellowTintStrength =
+            0f
+
         private val textureMatrix =
             FloatArray(16)
 
@@ -936,6 +951,12 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                     "uDespill"
                 )
 
+            val yellowTintHandle =
+                GLES20.glGetUniformLocation(
+                    program,
+                    "uYellowTint"
+                )
+
             GLES20.glActiveTexture(
                 GLES20.GL_TEXTURE0
             )
@@ -994,6 +1015,11 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 despillHandle,
                 AssetMediaCatalog
                     .KEY_DESPILL
+            )
+
+            GLES20.glUniform1f(
+                yellowTintHandle,
+                yellowTintStrength
             )
 
             GLES20.glDrawArrays(
@@ -1062,6 +1088,17 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             videoHeight =
                 height.coerceAtLeast(1)
             updateVertexBuffer()
+        }
+
+        fun setYellowTint(
+            enabled: Boolean
+        ) {
+            yellowTintStrength =
+                if (enabled) {
+                    1f
+                } else {
+                    0f
+                }
         }
 
         fun releaseSurfaceTexture() {
@@ -1276,6 +1313,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 "uniform float uThreshold;\n" +
                 "uniform float uSoftness;\n" +
                 "uniform float uDespill;\n" +
+                "uniform float uYellowTint;\n" +
                 "varying vec2 vTexCoord;\n" +
                 "void main() {\n" +
                 "  vec4 color = texture2D(sTexture, vTexCoord);\n" +
@@ -1287,6 +1325,10 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 "  vec3 clean = color.rgb;\n" +
                 "  float neutralBlue = maxRG + 0.04;\n" +
                 "  clean.b = mix(clean.b, min(clean.b, neutralBlue), key * uDespill);\n" +
+                "  float greenDominance = max(clean.g - max(clean.r, clean.b), 0.0);\n" +
+                "  float greenMask = smoothstep(0.04, 0.34, greenDominance) * uYellowTint;\n" +
+                "  vec3 yellowized = vec3(max(clean.r, clean.g * 0.95), clean.g, clean.b * 0.25);\n" +
+                "  clean = mix(clean, yellowized, greenMask);\n" +
                 "  float alpha = color.a * (1.0 - key);\n" +
                 "  gl_FragColor = vec4(clean, alpha);\n" +
                 "}\n"

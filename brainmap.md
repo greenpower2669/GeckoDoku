@@ -1211,3 +1211,12 @@ GameMode.GOMOKU + GameModePreferences.gomokuMatchMode
 GomokuAi.chooseMoveFor(snapshot, difficulty, player)
   → PROFESSOR : moteur historique
   → PLAYER : snapshot à rôles inversés → moteur historique.
+
+
+<!-- GECKO-039-MEDIA-DYNAMIC-2026-09-27 -->
+GomokuBoardView.geckoRectOnScreen(cell)
+  → targetProvider
+  → RichMediaOverlayView.refreshDynamicTargets()
+  → ChromaKeyVideoView bounds.
+Video shader : blue key/despill → optional yellow tint → alpha blend.
+Static stone : setMediaStoneSuppressed(cell,true) après première frame visible → restore à la fin.
