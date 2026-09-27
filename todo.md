@@ -720,3 +720,13 @@ Aucune mission active.
 - [x] Diagnostiquer CI #146 : mismatch Set notes.
 - [x] Corriger le contrat de collection.
 - [ ] Reconfirmer GREEN cœur.
+
+
+<!-- GECKO-038-UI-SURFACE-2026-09-27 -->
+- [x] CI #147 cœur GREEN.
+- [x] Surface Sudoku séparée.
+- [x] Overlay valeur click-through.
+- [x] Sélecteur 3 états DOWN/MOVE/UP.
+- [x] PNG NB/couleur copiés bit-identiques depuis main.
+- [ ] Câbler MainActivity et mode switch.
+- [ ] CI surface UI.

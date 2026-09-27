@@ -1256,3 +1256,8 @@ RED CI #145 confirmé. Cœur pur ajouté : GameMode séparé du VisualStyle, Sud
 
 <!-- GECKO-038-CORE-COMPILE-FIX-2026-09-27 -->
 Correction cœur : collection des notes typée par son contrat `MutableSet<Int>` pour permettre la restauration undo/redo indépendamment de l'implémentation concrète du Set.
+
+
+<!-- GECKO-038-UI-SURFACE-2026-09-27 -->
+## GECKO-038 — surface Sudoku isolée
+Après CI #147 GREEN, la couche UI Sudoku est ajoutée en classes séparées : grille/hitboxes Sudoku, overlay de valeurs click-through et sélecteur 3 positions. GeckoBoardView reste inchangé. Les planches PNG canoniques sont copiées par blob Git identique depuis main, sans conversion.

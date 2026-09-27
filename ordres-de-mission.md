@@ -224,3 +224,7 @@ RED #145 confirmé. Cœur Sudoku implémenté ; attendre preuve CI GREEN avant c
 
 ### Incident cœur #146
 Mismatch de type des notes uniquement. Correctif minimal appliqué ; poursuivre seulement après nouvelle CI.
+
+
+<!-- GECKO-038-UI-SURFACE-2026-09-27 -->
+Phase UI isolée engagée après GREEN #147. GeckoBoardView demeure intouché. Prochaine étape : câblage minimal MainActivity derrière GameMode, puis CI avant toute extension pédagogique.

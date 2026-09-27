@@ -1099,3 +1099,8 @@ CI #145 échoue volontairement après ajout des contrats RED. Implémentation du
 
 <!-- GECKO-038-CORE-COMPILE-FIX-2026-09-27 -->
 CI #146 : compilation stoppée dans SudokuGameEngine car Kotlin avait inféré `MutableList<LinkedHashSet<Int>>`. Restore produisait `MutableList<MutableSet<Int>>`. Correction : typer explicitement sur l'interface mutable. Aucun code historique touché.
+
+
+<!-- GECKO-038-UI-SURFACE-2026-09-27 -->
+## 2026-09-27 — surface UI Sudoku isolée
+CI cœur #147 GREEN confirmée. Ajout d'une vue Sudoku séparée, sans modification de GeckoBoardView. Le rendu des valeurs est dans un overlay qui refuse les touches. Le sélecteur tactile 3 crans produit preview pendant MOVE et commit au UP. Les deux PNG sont repris via leurs blobs Git de main, donc octets inchangés.

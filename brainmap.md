@@ -560,3 +560,8 @@ GameMode ⟂ SudokuVisualStyle.
 
 <!-- GECKO-038-CORE-COMPILE-FIX-2026-09-27 -->
 notes : MutableList<MutableSet<Int>> → capture Set immuable → restore MutableSet.
+
+
+<!-- GECKO-038-UI-SURFACE-2026-09-27 -->
+SudokuBoardView (touch + grid + notes) → SudokuValueOverlayView (click-through values) → CLASSIC / NB / COLOR
+SudokuStyleSelectorView DOWN/MOVE → previewStyle → overlay.invalidate ; UP → committed style + persistence (au câblage MainActivity).
