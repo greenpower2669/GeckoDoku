@@ -2580,3 +2580,25 @@ ne pas réduire toutes les positions à des mini-cases illisibles. Le joueur voi
 
 Chaque phase doit produire une candidate testable avant de passer à la suivante.
 
+<!-- GECKO-039-GOMOKU-ZOOM-DIFFICULTY-2026-09-27 -->
+# Gomoku — zoom et difficulté stratégique
+
+Le viewport 12×12 est désormais le **zoom de référence**.
+
+Le joueur pourra :
+- pan/drag pour explorer ;
+- pinch zoom-in pour agrandir les intersections ;
+- pinch zoom-out pour voir davantage de plateau.
+
+Le zoom ne modifie jamais le plateau logique, l'IA ou les règles.
+
+Les difficultés Gomoku correspondent à une profondeur stratégique croissante :
+1. réaction immédiate ;
+2. projection courte ;
+3. séquences multi-coups / doubles menaces ;
+4. pièges, coups d'appât, réponses forcées et contre-pièges.
+
+La difficulté doit provenir d'une meilleure anticipation, jamais d'une triche.
+
+Les niveaux élevés doivent autant que possible conserver une analyse explicable : Pierre peut verbaliser le plan qu'il vient réellement de calculer.
+

@@ -407,3 +407,25 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] CI GREEN + candidate C.
 - [ ] Test téléphone Fab.
 
+<!-- GECKO-039-GOMOKU-ZOOM-DIFFICULTY-2026-09-27 -->
+## Phase 3 Gomoku — zoom
+- [ ] Viewport 12×12 comme zoom de référence.
+- [ ] Pinch zoom-in / zoom-out.
+- [ ] Bornes min/max de zoom.
+- [ ] Zoom autour du point focal sous les doigts.
+- [ ] Pinch ne pose jamais de Gecko.
+- [ ] Pan + zoom compatibles.
+- [ ] IA indépendante du viewport/zoom.
+- [ ] Accessibilité zoom testée.
+
+## Phase 3 Gomoku — difficulté stratégique
+- [ ] Définir abstraction de profondeur/horizon IA.
+- [ ] Niveau bas : tactique immédiate.
+- [ ] Niveau intermédiaire : projection courte.
+- [ ] Niveau fort : séquences multi-coups / doubles menaces.
+- [ ] Niveau très fort : pièges / appâts / réponses forcées / contre-pièges.
+- [ ] Aucun niveau ne triche.
+- [ ] Mapper les difficultés existantes de l'app vers ces comportements.
+- [ ] Mesurer performances Android avant choix final minimax/negamax/alpha-beta.
+- [ ] Produire des explications Prof à partir de la vraie analyse tactique lorsque possible.
+

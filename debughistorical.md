@@ -1449,3 +1449,21 @@ Le Gomoku n'est plus un simple brainstorming séparé : il devient la phase 3 du
 
 Aucun code applicatif modifié dans cette intervention documentaire.
 
+<!-- GECKO-039-GOMOKU-ZOOM-DIFFICULTY-2026-09-27 -->
+## 2026-09-27 — ajout zoom + difficulté Gomoku
+
+Fab précise que la fenêtre 12×12 doit pouvoir être zoomée.
+
+Décision :
+- 12×12 devient le niveau de zoom par défaut ;
+- pinch zoom-in / zoom-out ;
+- pan conservé ;
+- tap, drag et pinch doivent être distingués sans coup accidentel.
+
+Difficulté :
+elle représente une stratégie projetée de plus en plus loin dans le temps.
+Les niveaux élevés doivent reconnaître et préparer des pièges, doubles menaces, coups d'appât, séquences forcées et contre-pièges.
+
+Pas de triche : seule l'anticipation augmente.
+Aucun code applicatif modifié dans cette intervention.
+

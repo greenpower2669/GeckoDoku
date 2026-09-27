@@ -505,6 +505,74 @@ Une taille plus grande que le viewport 12×12 est obligatoire pour que l'explora
 
 La taille initiale exacte sera choisie lors de l'implémentation après test de jouabilité, sans casser l'architecture.
 
+## 3.3A — ZOOM IN / ZOOM OUT
+
+Le viewport 12×12 est le **niveau de zoom de référence**, pas une limite fixe d'affichage.
+
+Le joueur doit pouvoir zoomer par geste tactile, de préférence pinch-to-zoom.
+
+### ZOOM-IN
+
+En zoomant :
+- moins de positions logiques sont visibles ;
+- les cases/intersections deviennent plus grandes ;
+- la précision tactile augmente ;
+- idéal pour les personnes ayant besoin d'un affichage agrandi.
+
+### ZOOM-OUT
+
+En dézoomant :
+- davantage de positions du plateau logique deviennent visibles ;
+- le joueur peut mieux lire les menaces globales ;
+- la taille minimale doit rester raisonnablement lisible.
+
+### CONTRAT GESTUEL
+
+```text
+TAP court
+→ jouer un Gecko
+
+DRAG
+→ déplacer le viewport
+
+PINCH
+→ zoom in / zoom out
+
+PINCH + translation naturelle
+→ conserver autant que possible le point du plateau situé entre les doigts
+```
+
+Le zoom ne doit jamais poser de pion accidentellement.
+
+### BORNES
+
+Définir :
+- un zoom minimum ;
+- un zoom maximum ;
+- un zoom par défaut correspondant à environ 12×12 positions visibles.
+
+Ne pas autoriser :
+- un zoom-out rendant les Geckos inutilisables ;
+- un zoom-in où quelques intersections géantes rendent la navigation incompréhensible.
+
+### STABILITÉ SPATIALE
+
+Pendant un zoom :
+- conserver le centre logique sous les doigts autant que possible ;
+- éviter les sauts de viewport ;
+- borner correctement aux bords du plateau ;
+- préserver la position logique des pions.
+
+Le zoom est une propriété de la **vue**, jamais de l'état logique du Gomoku.
+
+### ACCESSIBILITÉ
+
+Le zoom manuel complète le viewport 12×12 :
+- déficience visuelle → zoom-in ;
+- vision tactique globale → zoom-out.
+
+La logique IA et la détection de victoire restent totalement indépendantes du niveau de zoom.
+
 ## 3.4 — APPARENCE TYPE PLATEAU DE GO
 
 Le rendu doit évoquer un plateau de Go/Gomoku :
@@ -601,6 +669,129 @@ Priorités :
 7. aléatoire léger entre coups de score similaire.
 
 Commencer déterministe et explicable.
+
+## 3.10A — DIFFICULTÉ = PROFONDEUR STRATÉGIQUE
+
+La difficulté du Gomoku ne doit pas être un simple coefficient arbitraire.
+
+Elle représente principalement **jusqu'où Pierre projette les conséquences futures d'un coup**.
+
+Principe :
+
+```text
+DIFFICULTÉ BASSE
+→ réaction locale / immédiate
+
+DIFFICULTÉ PLUS ÉLEVÉE
+→ projection sur plusieurs réponses possibles
+
+DIFFICULTÉ FORTE
+→ préparation de menaces en plusieurs temps
+
+DIFFICULTÉ TRÈS FORTE
+→ pièges, doubles menaces, sacrifices tactiques et contre-pièges
+```
+
+### NIVEAU 1 — LECTURE IMMÉDIATE
+
+Pierre regarde surtout :
+- gagner au prochain coup ;
+- bloquer une victoire immédiate ;
+- créer une menace simple ;
+- proximité des pions.
+
+Horizon stratégique court.
+
+Il peut laisser passer des plans à plusieurs coups.
+
+### NIVEAU 2 — PROJECTION COURTE
+
+Pierre anticipe plusieurs échanges probables.
+
+Il reconnaît mieux :
+- ligne de 4 future ;
+- blocage préparatoire ;
+- intersections créant plusieurs possibilités ;
+- réponses naturelles du joueur.
+
+Il commence à jouer pour **préparer le coup suivant**, pas seulement pour répondre au dernier.
+
+### NIVEAU 3 — STRATÉGIE PROJETÉE
+
+Pierre étudie des séquences plus longues et compare plusieurs branches.
+
+Il peut :
+- créer une menace qui force une réponse ;
+- exploiter la réponse forcée pour construire une deuxième menace ;
+- éviter de bloquer naïvement s'il existe une défense plus active ;
+- préparer des doubles menaces.
+
+Le joueur doit commencer à penser plusieurs coups à l'avance.
+
+### NIVEAU 4 — PIÈGES ET CONTRE-PIÈGES
+
+Pierre projette encore plus loin.
+
+Il peut construire de vrais pièges tactiques :
+- coup d'appât ;
+- menace volontairement visible cachant une seconde menace ;
+- double menace ;
+- séquence de réponses forcées ;
+- sacrifice local pour obtenir un alignement ailleurs ;
+- contre-piège si le joueur prépare lui-même une séquence.
+
+IMPORTANT :
+un « piège » doit provenir de l'analyse réelle du plateau.
+
+Ne jamais simuler l'intelligence avec un coup arbitraire ou une triche sur les règles.
+
+### HORIZON / BUDGET DE RECHERCHE
+
+L'architecture IA doit permettre d'associer la difficulté à :
+- profondeur de recherche ;
+- nombre de branches évaluées ;
+- qualité de l'évaluation positionnelle ;
+- reconnaissance de motifs tactiques ;
+- éventuelle réduction ou augmentation de l'aléatoire.
+
+Le niveau le plus faible peut utiliser essentiellement les priorités locales.
+
+Les niveaux élevés peuvent employer :
+- recherche multi-coups ;
+- minimax / negamax ou architecture équivalente ;
+- alpha-beta si pertinent ;
+- heuristiques de menaces ;
+- motifs Gomoku.
+
+Ne pas choisir l'algorithme final avant audit/performance Android.
+
+### PAS DE TRICHE
+
+Quel que soit le niveau :
+- Pierre ne voit aucune information cachée inexistante ;
+- mêmes règles que le joueur ;
+- aucune case illégale ;
+- pas de bonus artificiel.
+
+La difficulté vient uniquement d'une meilleure anticipation.
+
+### EXPLICABILITÉ
+
+Même à haut niveau, Pierre doit pouvoir expliquer certains plans.
+
+Exemples :
+- `Je t'oblige à répondre ici, parce qu'après je pourrai attaquer de l'autre côté.`
+- `Cette menace n'était pas la vraie. Je préparais surtout cette intersection.`
+- `Si je bloque directement, tu gagnes ailleurs. Je dois couper la séquence plus tôt.`
+
+Les explications doivent être dérivées autant que possible de la vraie analyse IA.
+
+### MAPPING AUX NIVEAUX DE L'APPLICATION
+
+Au moment du code, mapper les niveaux de difficulté existants de GeckoDoku à ces quatre comportements stratégiques sans multiplier inutilement les systèmes de difficulté.
+
+Si l'application n'expose pas exactement quatre niveaux, conserver le principe :
+**plus difficile = horizon plus long + meilleure reconnaissance de pièges + meilleure sélection entre branches.**
 
 ## 3.11 — PERSONNALITÉ DU PROF
 
@@ -721,11 +912,19 @@ Sans forcément tout coder maintenant :
 ## 3.19 — JALON PHASE 3
 
 Tests obligatoires :
-- viewport montre exactement 12×12 positions ;
+- viewport par défaut montre environ 12×12 positions ;
+- zoom-in réduit le nombre de positions visibles et agrandit les cibles ;
+- zoom-out augmente le nombre de positions visibles sans devenir illisible ;
+- pinch ne joue aucun coup ;
+- zoom conserve autant que possible le point logique sous les doigts ;
 - pan explore tout le plateau ;
 - tap ne devient pas drag ;
 - drag ne joue aucun coup ;
 - IA analyse le plateau complet ;
+- difficulté modifie réellement l'horizon stratégique ;
+- niveau bas privilégie réaction immédiate ;
+- niveaux élevés savent préparer doubles menaces / pièges ;
+- aucun niveau ne triche ;
 - Gecko vert/jaune partagent le même asset ;
 - filtre jaune préserve alpha/détails ;
 - victoire 5 directions requises ;
@@ -761,8 +960,10 @@ Fab vérifie :
 ## Candidate C — Gomoku
 Fab vérifie :
 - apparition du 3e mode ;
-- viewport 12×12 ;
+- viewport 12×12 au zoom de référence ;
 - drag/pan ;
+- zoom-in / zoom-out ;
+- difficulté stratégique et pièges ;
 - pose Gecko vert ;
 - coup Pierre Gecko jaune ;
 - alignements ;
@@ -789,8 +990,10 @@ Fab vérifie :
 3. GOMOKU
    → moteur séparé
    → plateau logique plus grand
-   → viewport 12×12
+   → viewport 12×12 par défaut
    → drag/pan
+   → zoom-in / zoom-out
+   → difficulté = profondeur de projection + pièges
    → Gecko vert vs Gecko jaune dynamique
    → IA Pierre
    → candidate testable

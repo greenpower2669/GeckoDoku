@@ -1069,3 +1069,19 @@ GOMOKU
 
 Each mode remains compartmentalized and independently testable.
 
+<!-- GECKO-039-GOMOKU-ZOOM-DIFFICULTY-2026-09-27 -->
+GOMOKU VIEW:
+logical board
+  → viewport transform
+     ├─ pan(dx,dy)
+     └─ pinch(scale around focal logical point)
+default ≈ 12x12 visible
+zoom does NOT mutate game state.
+
+GOMOKU AI DIFFICULTY:
+L1 immediate tactics
+→ L2 short lookahead
+→ L3 multi-move forcing sequences / double threats
+→ L4 traps / bait / forced replies / counter-traps
+Higher difficulty = deeper future projection, not cheating.
+
