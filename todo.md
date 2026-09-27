@@ -552,3 +552,16 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Tour joueur / bouton Prof / recentrage.
 - [ ] Shared rich-media animation joueur.
 - [ ] CI de cette brique.
+
+<!-- GECKO-039-GOMOKU-MAINACTIVITY-2026-09-27 -->
+- [x] GomokuBoardView CI #195 GREEN.
+- [x] Sélecteur 3 modes.
+- [x] Nouvelle/Rejouer Gomoku.
+- [x] Visibilité/layout Gomoku séparés.
+- [x] Tap joueur vert.
+- [x] Bouton Prof → IA asynchrone → Gecko jaune.
+- [x] Recentrage coup Prof hors écran.
+- [x] Victoire/draw + ligne gagnante.
+- [ ] CI intégration MainActivity.
+- [ ] Vérifier performances IA haut niveau.
+- [ ] Candidate APK/AAB et test téléphone.

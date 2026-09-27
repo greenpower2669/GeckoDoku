@@ -1061,3 +1061,7 @@ Policies tactiles/couleur/layout Gomoku posées après RED #193. Prochaine étap
 <!-- GECKO-039-GOMOKU-BOARDVIEW-2026-09-27 -->
 ## EXÉCUTION PHASE 3
 GomokuBoardView implémentée isolément. Prochaine étape après CI : intégration MainActivity, sélecteur 3 modes, tours joueur/Prof, recentrage et candidate.
+
+<!-- GECKO-039-GOMOKU-MAINACTIVITY-2026-09-27 -->
+## EXÉCUTION PHASE 3 — INTÉGRATION
+Vue Gomoku GREEN #195 puis câblage MainActivity complet. Prochaine porte : CI GREEN, audit performance niveau haut, version candidate et APK téléphone.

@@ -1541,3 +1541,7 @@ Implémentation pure des policies UI Gomoku, sans vue Android dans ce commit. Fi
 <!-- GECKO-039-GOMOKU-BOARDVIEW-2026-09-27 -->
 ## 2026-09-27 — GomokuBoardView
 Première brique UI isolée : rendu plateau + gestes + filtre jaune dynamique. Aucun branchement MainActivity encore, afin de valider compilation séparément.
+
+<!-- GECKO-039-GOMOKU-MAINACTIVITY-2026-09-27 -->
+## 2026-09-27 — intégration MainActivity Gomoku
+Après GomokuBoardView GREEN #195, branchement du troisième mode. Calcul IA déplacé hors thread UI et protégé par generation token pour éviter d'appliquer un coup après changement de mode/replay.

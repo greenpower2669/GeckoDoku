@@ -1144,3 +1144,6 @@ GesturePolicy: >=2 pointers|scale→ZOOM ; 1 pointer distance>=threshold→PAN ;
 
 <!-- GECKO-039-GOMOKU-BOARDVIEW-2026-09-27 -->
 GomokuBoardView → snapshotProvider → draw logical board through GomokuViewport. Touch: tap→onPlayCell | drag→pan | pinch→zoom. Professor sprite = same bitmap + yellow ColorMatrix.
+
+<!-- GECKO-039-GOMOKU-MAINACTIVITY-2026-09-27 -->
+Mode chooser → GOMOKU → startGomokuGame → GomokuBoardView. Player tap→engine.play→green animation→PROF turn. Prof button→background GomokuAi→UI apply yellow move→PLAYER turn. Win→center line→lock→reaction.

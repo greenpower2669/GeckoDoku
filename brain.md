@@ -2662,3 +2662,6 @@ Gomoku UI policies implémentées : geste pur PLAY/PAN/ZOOM avec seuil, matrice 
 
 <!-- GECKO-039-GOMOKU-BOARDVIEW-2026-09-27 -->
 GomokuBoardView ajouté : plateau visuel type Go, viewport 12×12 par défaut, drag/pan, pinch zoom focal, tap distinct du drag, rendu même sprite Gecko vert/jaune via ColorMatrix, surbrillance victoire et rebond de pose. Vue encore non câblée à MainActivity dans ce commit.
+
+<!-- GECKO-039-GOMOKU-MAINACTIVITY-2026-09-27 -->
+Gomoku branché dans MainActivity : sélecteur 3 modes, lifecycle nouvelle/rejouer, visibilité indépendante, plateau carré plein largeur, difficulté, joueur vert par tap, Pierre jaune via bouton Prof, IA calculée hors UI thread avec garde de génération, recentrage si coup hors viewport, victoire/draw et animation shared pour le Gecko joueur.
