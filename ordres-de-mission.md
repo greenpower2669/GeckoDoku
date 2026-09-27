@@ -1143,3 +1143,24 @@ Correction appliquée :
 <!-- GECKO-037-RECORDED-ENCOURAGEMENTS-CI132-2026-09-27 -->
 ## 46 — Preuve CI
 Run #132 : SUCCESS complet après suppression des encouragements enregistrés. Tests, APK, AAB et artifact sont verts. Le retrait du MP3 est acquis pour la suite de GECKO-037.
+
+
+<!-- GECKO-037-FULL-RED-2026-09-27 -->
+# 47 — TDD RED GLOBAL GECKO-037
+
+Avant production, RED ajouté pour :
+- corpus exact 309, 100 IDs legacy stables, catégories et déduplication ;
+- diagnostic de proximité textuelle ;
+- cooldown individuel exact 48 h ;
+- persistance historique + lastPhraseId ;
+- interdiction répétition immédiate ;
+- fallback forcé oldest-first sans clear d'historique ;
+- mood IMPRESSED sur streak ;
+- impulsivité répétée → TAQUIN/PEDAGOGICAL ;
+- erreur réfléchie en difficulté élevée → ENCOURAGING, jamais TAQUIN immédiat ;
+- domination répétée facile → TAQUIN possible ;
+- décroissance vers NEUTRAL ;
+- RARE entre 3 et 5 % ;
+- bulle simple : +1 s après vraie fin ;
+- token obsolète incapable de fermer une nouvelle bulle ;
+- pédagogie : aucune auto-fermeture.

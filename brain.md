@@ -829,3 +829,8 @@ Contrat actuel :
 <!-- GECKO-037-RECORDED-ENCOURAGEMENTS-CI132-2026-09-27 -->
 ## Preuve technique — encouragements enregistrés
 CI #132 GREEN complet après retrait de la source RECORDED et de `Voix_encouragements.mp3`. Le contrat actif est désormais Pierre uniquement pour les encouragements vocaux, en attendant leur migration vers le selector contextuel 309.
+
+
+<!-- GECKO-037-FULL-RED-2026-09-27 -->
+## GECKO-037 — filet TDD global
+La mission « Prof vivant » est désormais protégée par un RED global couvrant catalogue, mémoire 48 h, persistance, sélection, contexte/mood et cycle de bulle. Aucun branchement runtime ne doit précéder le GREEN des briques pures.

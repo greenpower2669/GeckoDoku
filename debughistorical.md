@@ -988,3 +988,8 @@ L'ancien chemin alternait aléatoirement entre 13 segments du master `Voix_encou
 <!-- GECKO-037-RECORDED-ENCOURAGEMENTS-CI132-2026-09-27 -->
 ## 2026-09-27 — #132 GREEN
 Suppression complète du chemin enregistré d'encouragement validée par CI : tests, APK, AAB et artifact réussis.
+
+
+<!-- GECKO-037-FULL-RED-2026-09-27 -->
+## 2026-09-27 — RED global Prof vivant
+Audit confirmé : smalltalk actuel utilise encore PierreSmallTalkSelector/Random ; SharedPreferences est déjà le pattern local du projet ; ProfessorSpeech expose un callback onCompletion réel ; SpeechOrigin QUICK_TALK/AMBIENT/ENCOURAGEMENT sont non préemptifs. RED global posé avant migration.

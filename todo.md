@@ -463,3 +463,23 @@ Aucune mission active.
 - [x] APK/AAB produits.
 - [x] Ancien MP3 d'encouragement hors architecture.
 - [ ] Étape suivante GECKO-037 : moteur 309 phrases + contexte/mood/history.
+
+
+<!-- GECKO-037-FULL-RED-2026-09-27 -->
+## GECKO-037 — RED global
+- [x] Audit branche/points d'accroche.
+- [x] RED corpus 309/IDs/dédoublonnage.
+- [x] RED proximité textuelle.
+- [x] RED cooldown 48 h.
+- [x] RED persistence + lastPhraseId.
+- [x] RED répétition immédiate.
+- [x] RED oldest-first.
+- [x] RED mood/context/difficulté.
+- [x] RED rareté.
+- [x] RED auto-close + token obsolète + pédagogie.
+- [ ] Vérifier CI RED ciblée.
+- [ ] GREEN modèles/catalogue.
+- [ ] GREEN history/selector.
+- [ ] GREEN context/mood.
+- [ ] GREEN bubble policy.
+- [ ] Brancher runtime.

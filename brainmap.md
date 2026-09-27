@@ -318,3 +318,13 @@ RECORDED / Voix_encouragements.mp3 : SUPPRIMÉ.
 <!-- GECKO-037-RECORDED-ENCOURAGEMENTS-CI132-2026-09-27 -->
 Encouragements enregistrés → RETIRÉS → CI #132 GREEN.
 Chemin actif provisoire : succès joueur → PierreEncouragements → ENCOURAGEMENT → ProfParle/PNG.
+
+
+<!-- GECKO-037-FULL-RED-2026-09-27 -->
+GECKO-037 RED
+├── ProfessorPhraseCatalog = 309
+├── ProfessorPhraseHistory = 48h + persistence + lastPhraseId
+├── ProfessorPhraseSelector = weighted/fallback/oldest
+├── ProfessorPlayerContextTracker
+├── ProfessorMoodPolicy
+└── ProfessorQuickBubbleClosePolicy = real completion + 1s + generation guard
