@@ -2643,3 +2643,7 @@ Phase 3 Gomoku RED : moteur 5 alignés/turn lock, viewport par défaut 12 zoomab
 <!-- GECKO-039-GOMOKU-CORE-GREEN-2026-09-27 -->
 # Gomoku core — implémentation
 Ajout du troisième enum `GameMode.GOMOKU`, modèle/engine Gomoku indépendant, WinDetector 5+, viewport logique avec 12×12 par défaut + pan/zoom focal, profils de difficulté à profondeur croissante et IA déterministe. IA : victoire immédiate, blocage immédiat, scoring lignes ouvertes, bonus doubles menaces/pièges aux niveaux hauts, puis recherche alpha-beta bornée par beam. Aucun UI Gomoku encore dans ce commit.
+
+
+<!-- GECKO-039-GOMOKU-GEOMETRY-COMPILE-FIX-2026-09-27 -->
+Compile fix strict : GameModeBoardGeometryPolicy possède désormais un BoardGeometryPolicy indépendant pour GOMOKU, comme pour Classic et Sudoku.

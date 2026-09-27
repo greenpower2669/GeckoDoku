@@ -1041,3 +1041,7 @@ Phase 3 en exécution : RED moteur/viewport/difficulté posé après Phase 2 GRE
 <!-- GECKO-039-GOMOKU-CORE-GREEN-2026-09-27 -->
 ## EXÉCUTION PHASE 3 — CORE
 Cœur Gomoku implémenté après RED #189. Attendre CI GREEN avant d'intégrer la vue Android et MainActivity.
+
+
+<!-- GECKO-039-GOMOKU-GEOMETRY-COMPILE-FIX-2026-09-27 -->
+CI #190 : compile bloquée uniquement par le nouveau GameMode dans la policy de géométrie. Correctif local posé ; revalidation core requise.

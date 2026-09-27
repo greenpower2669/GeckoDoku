@@ -1517,3 +1517,8 @@ Contrats moteur/viewport/IA posés après Sudoku #188 GREEN.
 <!-- GECKO-039-GOMOKU-CORE-GREEN-2026-09-27 -->
 ## 2026-09-27 — Gomoku core GREEN implémenté
 Suite au RED #189 (symboles Gomoku absents), ajout du cœur pur. Pas encore de vue Android ni de branchement MainActivity dans ce commit.
+
+
+<!-- GECKO-039-GOMOKU-GEOMETRY-COMPILE-FIX-2026-09-27 -->
+## CI #190
+Échec compile attendu après ajout enum GOMOKU : when non exhaustif dans GameModeBoardGeometryPolicy. Correctif local uniquement, sans changement moteur/IA.

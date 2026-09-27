@@ -1125,3 +1125,7 @@ GOMOKU RED → Engine + ViewportPolicy + DifficultyProfile/AiDecision.
 
 <!-- GECKO-039-GOMOKU-CORE-GREEN-2026-09-27 -->
 GOMOKU core: Snapshot → Engine.play → WinDetector. ViewportPolicy → initial12 / pan / focal zoom. DifficultyProfile → depth/beam/trapAware. AI → immediate win → immediate block → ordered threats → bounded alpha-beta.
+
+
+<!-- GECKO-039-GOMOKU-GEOMETRY-COMPILE-FIX-2026-09-27 -->
+GameModeBoardGeometryPolicy: GECKODOKU→geckoPolicy | SUDOKU→sudokuPolicy | GOMOKU→gomokuPolicy.

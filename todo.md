@@ -513,3 +513,8 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Gecko jaune dynamique.
 - [ ] Gestes pan/pinch/tap.
 - [ ] Dialogues Prof Gomoku.
+
+
+<!-- GECKO-039-GOMOKU-GEOMETRY-COMPILE-FIX-2026-09-27 -->
+- [x] Ajouter branche géométrie GOMOKU après CI #190.
+- [ ] Revalider core Gomoku GREEN.

@@ -7,6 +7,9 @@ class GameModeBoardGeometryPolicy {
     private val sudokuPolicy =
         BoardGeometryPolicy()
 
+    private val gomokuPolicy =
+        BoardGeometryPolicy()
+
     fun resolve(
         mode: GameMode,
         windowWidth: Int,
@@ -37,6 +40,7 @@ class GameModeBoardGeometryPolicy {
     fun resetAll() {
         geckoPolicy.reset()
         sudokuPolicy.reset()
+        gomokuPolicy.reset()
     }
 
     private fun policyFor(
@@ -48,5 +52,8 @@ class GameModeBoardGeometryPolicy {
 
             GameMode.SUDOKU ->
                 sudokuPolicy
+
+            GameMode.GOMOKU ->
+                gomokuPolicy
         }
 }
