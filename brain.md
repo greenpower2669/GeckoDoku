@@ -834,3 +834,8 @@ CI #132 GREEN complet après retrait de la source RECORDED et de `Voix_encourage
 <!-- GECKO-037-FULL-RED-2026-09-27 -->
 ## GECKO-037 — filet TDD global
 La mission « Prof vivant » est désormais protégée par un RED global couvrant catalogue, mémoire 48 h, persistance, sélection, contexte/mood et cycle de bulle. Aucun branchement runtime ne doit précéder le GREEN des briques pures.
+
+
+<!-- GECKO-037-GREEN-MODEL-MOOD-BUBBLE-2026-09-27 -->
+## GECKO-037 GREEN 1
+Le contexte joueur est un état léger : mastery/impulsivity/momentum plus compteurs courts. Une erreur réfléchie ou en difficulté élevée est ENCOURAGING avant toute logique TAQUIN. Mood est une politique de ton et revient vers NEUTRAL. La fermeture auto des petites bulles est générationnelle et la pédagogie n'est jamais auto-fermée.

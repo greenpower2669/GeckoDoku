@@ -1164,3 +1164,8 @@ Avant production, RED ajouté pour :
 - bulle simple : +1 s après vraie fin ;
 - token obsolète incapable de fermer une nouvelle bulle ;
 - pédagogie : aucune auto-fermeture.
+
+
+<!-- GECKO-037-GREEN-MODEL-MOOD-BUBBLE-2026-09-27 -->
+## GREEN 1 — modèles, contexte, humeur, bulle
+Ajout des modèles ProfessorPhrase/catégories/rareté/mood, Clock/Random injectables, tracker mastery/impulsivity/momentum avec difficulté et décroissance, MoodPolicy anti-moquerie injuste, et policy de fermeture de petite bulle par token + 1000 ms après vraie fin.

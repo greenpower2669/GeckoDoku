@@ -993,3 +993,8 @@ Suppression complète du chemin enregistré d'encouragement validée par CI : te
 <!-- GECKO-037-FULL-RED-2026-09-27 -->
 ## 2026-09-27 — RED global Prof vivant
 Audit confirmé : smalltalk actuel utilise encore PierreSmallTalkSelector/Random ; SharedPreferences est déjà le pattern local du projet ; ProfessorSpeech expose un callback onCompletion réel ; SpeechOrigin QUICK_TALK/AMBIENT/ENCOURAGEMENT sont non préemptifs. RED global posé avant migration.
+
+
+<!-- GECKO-037-GREEN-MODEL-MOOD-BUBBLE-2026-09-27 -->
+## 2026-09-27 — GREEN 1 GECKO-037
+Après RED #134, première tranche pure : modèles, context tracker, mood policy et close policy. Aucun câblage MainActivity dans ce commit.

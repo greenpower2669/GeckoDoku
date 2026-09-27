@@ -328,3 +328,8 @@ GECKO-037 RED
 ├── ProfessorPlayerContextTracker
 ├── ProfessorMoodPolicy
 └── ProfessorQuickBubbleClosePolicy = real completion + 1s + generation guard
+
+
+<!-- GECKO-037-GREEN-MODEL-MOOD-BUBBLE-2026-09-27 -->
+PlayerEvent → ProfessorPlayerContextTracker → ProfessorMoodPolicy → weighted categories
+Speech completion → ProfessorQuickBubbleClosePolicy(token) → +1000ms close seulement si token courant/simple.

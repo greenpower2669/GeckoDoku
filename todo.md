@@ -483,3 +483,16 @@ Aucune mission active.
 - [ ] GREEN context/mood.
 - [ ] GREEN bubble policy.
 - [ ] Brancher runtime.
+
+
+<!-- GECKO-037-GREEN-MODEL-MOOD-BUBBLE-2026-09-27 -->
+## GECKO-037 GREEN 1
+- [x] Modèles Phrase/Category/Rarity/Mood.
+- [x] Clock/Random injectables.
+- [x] Context tracker + difficulté + décroissance.
+- [x] Mood policy / anti-moquerie réfléchie.
+- [x] RARE cible 4 %.
+- [x] Bubble close policy token +1s + pédagogie.
+- [ ] Catalogue 309.
+- [ ] History/selector.
+- [ ] Runtime.
