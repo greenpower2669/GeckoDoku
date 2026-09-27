@@ -78,6 +78,9 @@ class MainActivity : Activity() {
     private val sudokuProfessorCandidatePolicy =
         SudokuProfessorCandidatePolicy()
 
+    private val sudokuProfessorInteractionPolicy =
+        SudokuProfessorInteractionPolicy()
+
     private val sudokuFullWidthBoardPolicy =
         SudokuFullWidthBoardPolicy(
             horizontalMarginPx = 3
@@ -842,6 +845,18 @@ class MainActivity : Activity() {
 
                 setOnClickListener {
                     showProfessorHint()
+                }
+
+                setOnLongClickListener {
+                    if (
+                        selectedGameMode ==
+                            GameMode.SUDOKU
+                    ) {
+                        playSudokuProfessorDirect()
+                        true
+                    } else {
+                        false
+                    }
                 }
             }
 
@@ -3687,6 +3702,8 @@ class MainActivity : Activity() {
         }
 
         clearProfessorSession()
+        sudokuProfessorInteractionPolicy
+            .invalidate()
         dismissSudokuPalette()
 
         if (
@@ -3742,6 +3759,8 @@ class MainActivity : Activity() {
     private fun startSudokuPuzzle(
         next: SudokuPuzzle
     ) {
+        sudokuProfessorInteractionPolicy
+            .invalidate()
         dismissSudokuPalette()
 
         if (
@@ -4051,6 +4070,8 @@ class MainActivity : Activity() {
                 Long.MAX_VALUE
             }
 
+        sudokuProfessorInteractionPolicy
+            .invalidate()
         recordBoardAction()
         clearProfessorSession()
         sudokuValueOverlay
@@ -4180,7 +4201,71 @@ class MainActivity : Activity() {
         sudokuValueOverlay.invalidate()
     }
 
+    private fun toggleSudokuGeckoMarker():
+        Boolean {
+        val cell =
+            sudokuSelectedCell
+                ?: run {
+                    fx.blocked()
+                    return false
+                }
+
+        val engine =
+            sudokuEngine
+                ?: return false
+
+        sudokuProfessorInteractionPolicy
+            .invalidate()
+
+        sudokuValueOverlay
+            .clearProfessorCandidates()
+
+        return when (
+            engine.toggleGeckoMarker(
+                cell
+            )
+        ) {
+            SudokuActionFeedback
+                .MARKER_TOGGLED -> {
+                val active =
+                    engine.snapshot()
+                        .hasGeckoMarker(
+                            cell
+                        )
+
+                fx.marker()
+
+                status.text =
+                    if (active) {
+                        "Petit gecko repère posé 🦎"
+                    } else {
+                        "Gecko repère retiré."
+                    }
+
+                sudokuBoard.refresh()
+                sudokuValueOverlay.invalidate()
+
+                active
+            }
+
+            SudokuActionFeedback
+                .GIVEN_LOCKED -> {
+                fx.blocked()
+                status.text =
+                    "Ce chiffre est donné."
+                false
+            }
+
+            else -> {
+                fx.blocked()
+                false
+            }
+        }
+    }
+
     private fun eraseSudokuSelection() {
+        sudokuProfessorInteractionPolicy
+            .invalidate()
         sudokuValueOverlay
             .clearProfessorCandidates()
 
@@ -4222,6 +4307,8 @@ class MainActivity : Activity() {
     }
 
     private fun undoSudoku() {
+        sudokuProfessorInteractionPolicy
+            .invalidate()
         sudokuValueOverlay
             .clearProfessorCandidates()
 
@@ -4246,6 +4333,8 @@ class MainActivity : Activity() {
     }
 
     private fun redoSudoku() {
+        sudokuProfessorInteractionPolicy
+            .invalidate()
         sudokuValueOverlay
             .clearProfessorCandidates()
 
@@ -4305,23 +4394,82 @@ class MainActivity : Activity() {
         val snapshot =
             engine.snapshot()
 
-        val hint =
-            SudokuHintEngine
-                .nextHint(
-                    sudoku,
+        when (
+            val decision =
+                sudokuProfessorInteractionPolicy
+                    .onTap(
+                        sudoku,
+                        snapshot
+                    )
+        ) {
+            is SudokuProfessorDecision
+                .Explain ->
+                presentSudokuProfessorHint(
+                    decision.hint,
                     snapshot
                 )
 
-        if (hint == null) {
-            sudokuValueOverlay
-                .clearProfessorCandidates()
-            fx.blocked()
-            showProfessorBubble(
-                "Je ne vois pas encore de déduction simple sûre. Vérifie les candidats déjà posés."
-            )
-            return
-        }
+            is SudokuProfessorDecision
+                .Apply ->
+                applySudokuProfessorMove(
+                    decision.hint,
+                    announce =
+                        false
+                )
 
+            SudokuProfessorDecision
+                .NoHint ->
+                showSudokuNoHint()
+        }
+    }
+
+    private fun playSudokuProfessorDirect() {
+        professorUsed = true
+
+        val sudoku =
+            sudokuPuzzle
+                ?: return
+
+        val engine =
+            sudokuEngine
+                ?: return
+
+        professorLife.observe(
+            ProfessorPlayerEvent
+                .HINT_REQUESTED,
+            sudoku.difficulty
+        )
+
+        when (
+            val decision =
+                sudokuProfessorInteractionPolicy
+                    .onLongPress(
+                        sudoku,
+                        engine.snapshot()
+                    )
+        ) {
+            is SudokuProfessorDecision
+                .Apply ->
+                applySudokuProfessorMove(
+                    decision.hint,
+                    announce =
+                        true
+                )
+
+            is SudokuProfessorDecision
+                .Explain ->
+                Unit
+
+            SudokuProfessorDecision
+                .NoHint ->
+                showSudokuNoHint()
+        }
+    }
+
+    private fun presentSudokuProfessorHint(
+        hint: SudokuHint,
+        snapshot: SudokuSnapshot
+    ) {
         sudokuSelectedCell =
             hint.cell
 
@@ -4352,6 +4500,88 @@ class MainActivity : Activity() {
         status.text =
             "Prof Gecko • " +
                 hint.technique.label
+    }
+
+    private fun applySudokuProfessorMove(
+        hint: SudokuHint,
+        announce: Boolean
+    ) {
+        val engine =
+            sudokuEngine
+                ?: return
+
+        sudokuSelectedCell =
+            hint.cell
+
+        sudokuBoard
+            .setSelectedCell(
+                hint.cell
+            )
+
+        if (announce) {
+            showProfessorBubble(
+                hint.explanation +
+                    "\n\nJe le pose."
+            )
+        }
+
+        val result =
+            engine.enterDigit(
+                cell = hint.cell,
+                digit = hint.digit,
+                notesMode = false,
+                origin =
+                    SudokuMoveOrigin
+                        .PROFESSOR
+            )
+
+        sudokuProfessorInteractionPolicy
+            .invalidate()
+
+        sudokuValueOverlay
+            .clearProfessorCandidates()
+
+        when (result) {
+            SudokuActionFeedback
+                .VALUE_SET -> {
+                fx.hint()
+                status.text =
+                    "Prof Gecko • " +
+                        hint.digit +
+                        " posé"
+            }
+
+            SudokuActionFeedback
+                .COMPLETED -> {
+                fx.complete()
+                status.text =
+                    "Prof Gecko • grille terminée"
+                completeSudokuGame()
+            }
+
+            else -> {
+                fx.blocked()
+                status.text =
+                    "Prof Gecko • étape devenue obsolète"
+            }
+        }
+
+        sudokuBoard.refresh()
+        sudokuValueOverlay.invalidate()
+    }
+
+    private fun showSudokuNoHint() {
+        sudokuProfessorInteractionPolicy
+            .invalidate()
+
+        sudokuValueOverlay
+            .clearProfessorCandidates()
+
+        fx.blocked()
+
+        showProfessorBubble(
+            "Je ne vois pas encore de déduction simple sûre. Vérifie les candidats déjà posés."
+        )
     }
 
     private fun completeSudokuGame() {
@@ -4608,6 +4838,13 @@ class MainActivity : Activity() {
                         .notesAt(cell)
                 )
 
+                setGeckoMarkerActive(
+                    engine.snapshot()
+                        .hasGeckoMarker(
+                            cell
+                        )
+                )
+
                 onValueDigit = {
                         digit ->
 
@@ -4631,6 +4868,12 @@ class MainActivity : Activity() {
                     setActiveCandidates(
                         engine.snapshot()
                             .notesAt(cell)
+                    )
+                }
+
+                onGeckoMarker = {
+                    setGeckoMarkerActive(
+                        toggleSudokuGeckoMarker()
                     )
                 }
 
