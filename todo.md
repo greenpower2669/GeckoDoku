@@ -341,3 +341,24 @@ Aucun ordre de mission actif actuellement.
 - [ ] Fab : vérifier Prof_actions non figé.
 - [ ] Fab : vérifier ProfParle sans timeout répété.
 - [ ] Fab : vérifier aucune régression PNG/bulle/grille.
+
+
+<!-- GECKO-036-FINAL-VALIDATION-2026-09-27 -->
+# ÉTAT FINAL APRÈS GECKO-036
+
+## Validé téléphone par Fab
+- [x] Intro 1 non figée.
+- [x] Prof_actions non figé.
+- [x] ProfParle fonctionne sans la régression de timeout répétitif observée.
+- [x] Prof.png reste présent pendant les attentes/fallbacks.
+- [x] Pierre reste prioritaire et continue même si la vidéo échoue.
+- [x] Les 100 phrases du bouton ! apparaissent dans la bulle Prof.
+- [x] Une seule parole QUICK_TALK par appui.
+- [x] Grille flottante/immuable préservée.
+- [x] Menu ⚙️ et journal média conservés.
+- [x] CI #128 GREEN sur le HEAD final.
+- [x] v0.10.15-dev / versionCode 26 devient la base de référence.
+
+## Mission active
+Aucune mission active.
+`ordres-de-mission.md` doit rester vide jusqu'au prochain ordre explicite de Fab.

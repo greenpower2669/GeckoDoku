@@ -933,3 +933,18 @@ La première correction GECKO-036 avait introduit une purge booléenne `frameAva
 <!-- GECKO-036-CI127-GREEN-2026-09-27 -->
 ## 2026-09-27 — #127 GREEN
 Le remplacement de la purge booléenne par serial produit/consommé et l'exclusion des intros du gate passent la CI complète en v0.10.15-dev.
+
+
+<!-- GECKO-036-FINAL-VALIDATION-2026-09-27 -->
+## 2026-09-27 — clôture GECKO-036 validée téléphone
+
+Historique final :
+- v0.10.14-dev avait introduit une régression de gel possible sur Intro/Prof en purgeant `frameAvailable=false` au moment d'armer le gate.
+- Les logs téléphone montraient `VIDEO_RENDERING_START` sans `VIDEO_FIRST_FRAME`, puis des timeouts ProfParle répétés.
+- Le correctif v0.10.15-dev remplace cette purge par un serial monotone produit/consommé et laisse les intros hors gate.
+- Les transitions Prof conservent le PNG jusqu'à révélation réelle.
+- QUICK_TALK a été déplacé dans la bulle sans double parole.
+- CI #126, #127 et #128 : GREEN.
+- Fab confirme ensuite que, pour lui, tout est corrigé.
+
+Conclusion : GECKO-036 est clôturé. Les comportements ci-dessus deviennent des non-régressions permanentes.

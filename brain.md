@@ -732,3 +732,50 @@ v0.10.15-dev remplace la purge de frame dangereuse de v0.10.14-dev par un compte
 <!-- GECKO-036-CI127-GREEN-2026-09-27 -->
 ## Preuve technique v0.10.15-dev
 Run #127 GREEN complet. Le correctif serial SurfaceTexture compile et passe les tests. Le téléphone de Fab reste l'autorité pour confirmer la disparition du gel Intro/Prof.
+
+
+<!-- GECKO-036-FINAL-VALIDATION-2026-09-27 -->
+# GECKO-036 — VALIDATION TÉLÉPHONE FINALE / ÉTAT ACQUIS
+
+Fab confirme le 27/09/2026 que, pour lui, **tout est corrigé** sur la candidate v0.10.15-dev (versionCode 26).
+
+Cette validation téléphone clôt les régressions GECKO-036 et transforme les comportements suivants en acquis à préserver :
+
+## Vidéos / SurfaceTexture
+- Intro 1 ne doit plus rester figée après `VIDEO_RENDERING_START`.
+- Prof_actions et ProfParle doivent continuer à recevoir et consommer les frames normalement.
+- Il est interdit de jeter une frame disponible avec une simple remise à faux d'un drapeau de disponibilité.
+- Toutes les frames SurfaceTexture disponibles sont consommées via `updateTexImage()`.
+- La fraîcheur est déterminée par serial monotone produit/consommé.
+- Une frame antérieure à la baseline peut être consommée mais ne valide jamais le nouveau playback.
+- Une frame fraîche de la bonne génération valide le gate.
+- Les intros avec `revealOnFirstFrame=false` restent hors du mécanisme de gate première frame.
+
+## Prof / Pierre
+- `Prof.png` reste visible pendant toute préparation cachée de ProfParle.
+- Le PNG n'est masqué qu'après révélation réelle de la vidéo.
+- Timeout, erreur ou échec de reveal conservent/restaurent le PNG.
+- Une panne vidéo n'empêche jamais Pierre de parler.
+- Pierre reste prioritaire sur l'habillage vidéo.
+
+## QUICK_TALK / bulle
+- Les 100 phrases du bouton `!` s'affichent dans la vraie bulle Prof.
+- La phrase complète ne doit pas polluer la ligne de statut.
+- Une pression sur `!` produit une seule parole `QUICK_TALK`.
+- Affichage de bulle et transport vocal restent séparables pour éviter toute double parole.
+
+## Interface / géométrie
+- La grille reste flottante et géométriquement immuable.
+- Les overlays, bulles, vidéos et transitions Prof ne doivent provoquer aucun reflow.
+- Le menu ⚙️, le journal média, les contrôles Son/Animations et le bouton ! restent acquis.
+
+## Référence technique validée
+- version : `0.10.15-dev`
+- versionCode : `26`
+- CI #125 : RED attendu
+- CI #126 : GREEN correctif frame serial
+- CI #127 : GREEN candidate versionnée
+- CI #128 : GREEN HEAD final
+- validation téléphone Fab : **OK, tout corrigé**
+
+Cette version devient la nouvelle base comportementale de référence pour les missions suivantes.

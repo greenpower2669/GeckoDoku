@@ -234,3 +234,27 @@ v0.10.15-dev → frame serial safe → INTRO hors gate + ProfParle gate sans per
 
 <!-- GECKO-036-CI127-GREEN-2026-09-27 -->
 v0.10.15-dev → CI #127 GREEN → APK/AAB → test téléphone Intro + Prof.
+
+
+<!-- GECKO-036-FINAL-VALIDATION-2026-09-27 -->
+GECKO-036 FINAL
+v0.10.15-dev / code 26
+├── SurfaceTexture
+│   ├── onFrameAvailable → producedSerial++
+│   ├── updateTexImage sur toute frame disponible
+│   ├── stale serial consommé mais non validant
+│   └── fresh serial + bonne génération → validation
+├── INTRO
+│   └── revealOnFirstFrame=false → hors gate
+├── Prof
+│   ├── Prof.png visible pendant préparation
+│   ├── ProfParle reveal réel → PNG masqué
+│   └── erreur/timeout → PNG restauré
+├── Pierre
+│   └── prioritaire, jamais bloqué par la vidéo
+├── QUICK_TALK
+│   ├── phrase → bulle Prof
+│   └── une seule requête vocale
+├── Grille
+│   └── rectangle immuable sous overlays
+└── VALIDATION TÉLÉPHONE FAB : OK
