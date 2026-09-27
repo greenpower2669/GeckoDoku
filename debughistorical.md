@@ -1113,3 +1113,7 @@ Pré-CI surface : constantes AssetMediaCatalog ajoutées pour les deux PNG, corr
 <!-- GECKO-038-MAIN-WIRING-2026-09-27 -->
 ## 2026-09-27 — câblage MainActivity GECKO-038
 Choix anti-régression : GeckoBoardView n'est pas modifié. MainActivity garde le puzzle/engine historiques et un puzzle/engine Sudoku parallèle. La bascule est un routeur de visibilité, pas un unbind/rebind des gestes Gecko. Stats/Sauver/Journal Gecko sont masqués en Sudoku ; l'offre ambient Sauver est neutralisée en Sudoku. La complétion et la difficulté Prof sont routées selon GameMode.
+
+
+<!-- GECKO-038-CI150-CONTRACT-2026-09-27 -->
+CI #150 : compilation Kotlin réussie, 77 tests exécutés, 1 échec de contrat historique Gecko035ContractTest car il comparait exactement 3 entrées Réglages. Ce test est mis à jour pour le nouveau contrat à 4 entrées ; aucun correctif runtime requis.

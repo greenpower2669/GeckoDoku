@@ -236,3 +236,7 @@ Le renderer doit charger les PNG via AssetMediaCatalog ; les blobs sources reste
 
 <!-- GECKO-038-MAIN-WIRING-2026-09-27 -->
 Câblage minimal derrière GameMode effectué. Exiger CI GREEN avant toute extension des techniques Sudoku. Toute correction de rendu doit rester confinée aux vues Sudoku/selector ; ne pas corriger un problème Sudoku en modifiant GeckoBoardView.
+
+
+<!-- GECKO-038-CI150-CONTRACT-2026-09-27 -->
+Incident #150 classé contrat de test obsolète, pas régression runtime : les trois réglages historiques restent présents et GAME_MODE s'ajoute sans reflow de grille.

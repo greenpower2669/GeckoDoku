@@ -746,3 +746,10 @@ Aucune mission active.
 - [ ] CI câblage MainActivity.
 - [ ] Vérifier découpes PNG sur téléphone.
 - [ ] Validation tactile Fab.
+
+
+<!-- GECKO-038-CI150-CONTRACT-2026-09-27 -->
+- [x] CI #150 : compilation UI réussie.
+- [x] Diagnostiquer unique échec : contrat Réglages obsolète.
+- [x] Mettre à jour le contrat sans désactiver les assertions historiques.
+- [ ] CI suivante GREEN.

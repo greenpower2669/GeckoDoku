@@ -44,11 +44,27 @@ class Gecko035ContractTest {
 
         assertEquals(
             listOf(
+                SettingsEntry.GAME_MODE,
                 SettingsEntry.SOUND,
                 SettingsEntry.ANIMATIONS,
                 SettingsEntry.MEDIA_LOG
             ),
             policy.entries
+        )
+        assertTrue(
+            policy.entries.contains(
+                SettingsEntry.SOUND
+            )
+        )
+        assertTrue(
+            policy.entries.contains(
+                SettingsEntry.ANIMATIONS
+            )
+        )
+        assertTrue(
+            policy.entries.contains(
+                SettingsEntry.MEDIA_LOG
+            )
         )
         assertFalse(policy.affectsBoardLayout)
     }

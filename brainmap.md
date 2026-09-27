@@ -577,3 +577,7 @@ GECKODOKU → GeckoBoardView + GameEngine historique
 SUDOKU → SudokuBoardView(touch) + SudokuValueOverlay(click-through) + SudokuGameEngine
 Selector MOVE → preview style → overlay ; UP → persist style
 Prof button(SUDOKU) → SudokuHintEngine → pedagogical bubble + Pierre.
+
+
+<!-- GECKO-038-CI150-CONTRACT-2026-09-27 -->
+SettingsMenuPolicy = GAME_MODE + SOUND + ANIMATIONS + MEDIA_LOG ; affectsBoardLayout=false.

@@ -1270,3 +1270,7 @@ Les deux planches Sudoku Gecko sont référencées par AssetMediaCatalog avec le
 <!-- GECKO-038-MAIN-WIRING-2026-09-27 -->
 ## GECKO-038 — câblage fonctionnel Sudoku
 MainActivity route maintenant le GameMode sans remplacer GeckoBoardView. L'état GeckoDoku historique et l'état Sudoku coexistent ; basculer de mode change la visibilité et le routage, pas les listeners historiques. Contrôles Sudoku : case tactile, pavé 1..9, Notes, Effacer, Undo/Redo ; clavier 1..9, flèches, Suppr, N, P. Le style est prévisualisé pendant le glissement et persisté au relâchement. Prof Sudoku utilise les hints humains disponibles et le moteur vivant commun.
+
+
+<!-- GECKO-038-CI150-CONTRACT-2026-09-27 -->
+CI #150 confirme la compilation complète du câblage Sudoku. Seul l'ancien contrat Réglages (liste exacte de 3 entrées) échoue : GAME_MODE devient une quatrième entrée, tout en conservant Son/Animations/Journal et affectsBoardLayout=false.
