@@ -1753,3 +1753,29 @@ Invariant permanent confirmé :
 
 La validation perceptuelle finale reste le téléphone de Fab.
 
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-PHONE-VALIDATED-2026-09-27 -->
+# ISSUE INTEMPORELLE — DIALOGUE PROF : VALIDÉE SUR TÉLÉPHONE
+
+Validation finale Fab : **OK téléphone**.
+
+État durable confirmé :
+- toute phrase réellement prononcée par Pierre / Prof Gecko doit être visible dans `ProfessorBubbleView` pendant la parole ;
+- le texte bulle et le texte vocal sont identiques ;
+- `status` reste un libellé UI court et n'est jamais le conteneur du dialogue du Prof ;
+- les interventions AMBIENT fixes (aide + Sauver) passent par la bulle ;
+- la narration STATS passe par la bulle ;
+- les paroles du moteur 309 passent par le même chemin simple partagé ;
+- la fermeture des petites bulles est déclenchée par la vraie fin de Pierre puis ~1 s ;
+- les tokens/générations protègent contre les callbacks obsolètes ;
+- une parole refusée ne laisse pas de bulle orpheline ;
+- le Prof pédagogique `PROF_BUTTON` reste une bulle distincte et persistante.
+
+Références :
+- HEAD avant correction : `e854a6d8096a5b16227f38e0d3f998075e9e5fe6`
+- RED : `defaf7692d1b12a09001b3411fcb3e7d3ce5bbe6`
+- GREEN code : `2935bd8566d32650758937b1ece1693f2b5f5bd2`
+- CI : #156 GREEN complet
+- validation téléphone Fab : OK le 2026-09-27
+
+Cette issue devient un **invariant intemporel validé**. Toute évolution future de la parole de Pierre doit préserver ce contrat.
+

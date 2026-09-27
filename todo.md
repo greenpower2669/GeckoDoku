@@ -50,7 +50,7 @@ Le détail fonctionnel complet de GECKO-038 est désormais canonique dans `brain
 - [ ] Garantir callback réel + ~1 s + token générationnel.
 - [ ] Réauditer tous les chemins de parole après correction.
 - [ ] CI tests/APK/AAB GREEN.
-- [ ] Validation téléphone Fab.
+- [x] Validation téléphone Fab — issue Pierre ↔ bulle : OK.
 - [ ] **Permanent : toute nouvelle parole de Pierre doit passer par ProfessorBubbleView.**
 
 <!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-GREEN-CODE-2026-09-27 -->
@@ -85,4 +85,15 @@ Le détail fonctionnel complet de GECKO-038 est désormais canonique dans `brain
 - [x] APK/AAB produits.
 - [ ] Validation téléphone Fab.
 - [ ] **GARDE-FOU PERMANENT : toute nouvelle parole de Pierre doit afficher exactement son texte dans `ProfessorBubbleView`.**
+
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-PHONE-VALIDATED-2026-09-27 -->
+## Garde-fou permanent validé
+- [x] Test téléphone Pierre ↔ bulle validé par Fab.
+- [x] AMBIENT aide affiché dans la vraie bulle.
+- [x] AMBIENT Sauver affiché dans la vraie bulle.
+- [x] STATS affiché dans la vraie bulle.
+- [x] Fermeture naturelle après fin réelle de Pierre.
+- [ ] **Permanent : toute nouvelle parole de Pierre doit continuer à afficher exactement son texte dans `ProfessorBubbleView`.**
+
+Aucune mission active pour cette issue.
 

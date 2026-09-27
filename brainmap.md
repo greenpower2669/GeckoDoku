@@ -736,3 +736,26 @@ Toutes les autres paroles du Prof
 
 Aucun événement métier n'appelle directement `ProfessorSpeech.speak()`.
 
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-PHONE-VALIDATED-2026-09-27 -->
+# Invariant téléphone validé
+
+```text
+événement Prof
+   ↓
+texte unique
+   ↓
+ProfessorBubbleView = texte exact
+   ↓
+ProfessorSpeech / SpeechOrigin
+   ↓
+ProfParle / Pierre
+   ↓
+fin réelle de parole
+   ↓
++ ~1 s
+   ↓
+fermeture si token courant
+```
+
+Validation Fab téléphone : OK.
+
