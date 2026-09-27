@@ -1162,3 +1162,5 @@ Mode chooser → GOMOKU → startGomokuGame → GomokuBoardView. Player tap→en
 
 Next → candidate CI → APK/AAB → Fab phone validation.
 
+<!-- GECKO-039-CI197-GREEN-2026-09-27 -->
+CI #197 GREEN → artifact 0.12.0-dev → test téléphone Fab → corrections perceptuelles ciblées seulement.

@@ -1080,3 +1080,5 @@ Attendre maintenant :
 
 Ne pas fusionner main ni publier de release sans GO explicite.
 
+<!-- GECKO-039-CI197-GREEN-2026-09-27 -->
+STATUT : candidate 0.12.0-dev/code32 GREEN sur CI #197, prête pour test téléphone. Ne corriger ensuite que les défauts réellement observés. Aucun merge main / release sans GO explicite.

@@ -1557,3 +1557,6 @@ La phase 3 Gomoku est passée GREEN en intégration (#196) après :
 
 Candidate versionnée 0.12.0-dev/code32. L'IA est volontairement bornée et exécutée hors UI thread pour réduire le risque de freeze Android.
 
+<!-- GECKO-039-CI197-GREEN-2026-09-27 -->
+## 2026-09-27 — CI #197 GREEN
+Candidate 0.12.0-dev/code32 : tests + assembleDebug + bundleDebug + renommage + artifact upload réussis.

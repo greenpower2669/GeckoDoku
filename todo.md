@@ -589,3 +589,8 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Fab : vérifier fluidité IA niveau Infernal.
 - [ ] Fab : victoire 5 alignés + recentrage.
 
+<!-- GECKO-039-CI197-GREEN-2026-09-27 -->
+- [x] CI candidate #197 GREEN.
+- [x] APK 0.12.0-dev produit.
+- [x] AAB 0.12.0-dev produit.
+- [ ] Test téléphone Fab des trois modes.

@@ -2685,3 +2685,18 @@ Performance IA :
 
 Aucun merge main. Aucune release. Test téléphone Fab requis avant suite.
 
+<!-- GECKO-039-CI197-GREEN-2026-09-27 -->
+# Candidate 0.12.0-dev — VALIDATION TECHNIQUE FINALE
+
+Commit code candidate : `81bc12a1c31bd67e8820371af5aec4fceaf586c8`.
+CI #197 : GREEN complet.
+Artifact : `GeckoDoku-v0.12.0-dev-Android`.
+Digest : `sha256:d5a9ec47e0c4d6e461786317e7af29597703d9b45eccb895920b705883e93b3b`.
+
+Les trois modes sont maintenant présents dans la candidate :
+- GeckoDoku Classic ;
+- Sudoku ;
+- Gomoku contre Pierre.
+
+Aucun merge main. Aucune release. Téléphone Fab = validation perceptuelle finale.
+
