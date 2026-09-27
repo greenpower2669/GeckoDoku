@@ -34,7 +34,9 @@ data class LocalPlayerStats(
 data class DifficultyStats(
     val started: Int,
     val completed: Int,
-    val assistedCompleted: Int
+    val assistedCompleted: Int,
+    val bestStars: Int,
+    val averageStars: Int
 ) {
     val completionRate: Int
         get() =
@@ -80,7 +82,8 @@ class PlayerStatsStore(
         size: Int,
         difficulty: GameDifficulty,
         elapsedSeconds: Long,
-        usedProfessor: Boolean = false
+        usedProfessor: Boolean = false,
+        stars: Int = 5
     ) {
         increment("completed")
         increment(
@@ -99,6 +102,27 @@ class PlayerStatsStore(
             )
         }
 
+        val normalizedStars =
+            stars.coerceIn(
+                1,
+                5
+            )
+
+        increment(
+            "stars_" +
+                normalizedStars +
+                "_diff_" +
+                difficulty.name
+        )
+
+        val starTotalKey =
+            "stars_total_diff_" +
+                difficulty.name
+
+        val bestStarsKey =
+            "best_stars_diff_" +
+                difficulty.name
+
         prefs.edit()
             .putLong(
                 "total_seconds",
@@ -108,6 +132,24 @@ class PlayerStatsStore(
                 ) +
                     elapsedSeconds
                         .coerceAtLeast(0L)
+            )
+            .putInt(
+                starTotalKey,
+                prefs.getInt(
+                    starTotalKey,
+                    0
+                ) +
+                    normalizedStars
+            )
+            .putInt(
+                bestStarsKey,
+                kotlin.math.max(
+                    prefs.getInt(
+                        bestStarsKey,
+                        0
+                    ),
+                    normalizedStars
+                )
             )
             .apply()
     }
@@ -184,7 +226,30 @@ class PlayerStatsStore(
                     "completed_with_prof_diff_" +
                         difficulty.name,
                     0
-                )
+                ),
+            bestStars =
+                prefs.getInt(
+                    "best_stars_diff_" +
+                        difficulty.name,
+                    0
+                ),
+            averageStars =
+                completedForDifficulty(
+                    difficulty
+                ).let {
+                    completed ->
+
+                    if (completed <= 0) {
+                        0
+                    } else {
+                        prefs.getInt(
+                            "stars_total_diff_" +
+                                difficulty.name,
+                            0
+                        ) /
+                            completed
+                    }
+                }
         )
 
     private fun increment(

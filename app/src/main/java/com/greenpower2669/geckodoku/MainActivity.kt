@@ -18,6 +18,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.WindowInsets
 import android.widget.Button
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -41,6 +42,12 @@ class MainActivity : Activity() {
 
     private lateinit var journalStore:
         PuzzleJournalStore
+
+    private lateinit var playerProfileStore:
+        PlayerProfileStore
+
+    private lateinit var hallOfFameStore:
+        HallOfFameStore
 
     private lateinit var board:
         GeckoBoardView
@@ -345,6 +352,9 @@ class MainActivity : Activity() {
 
     private var professorUsed = false
 
+    private var assistancePoints =
+        0
+
     override fun onCreate(
         savedInstanceState: Bundle?
     ) {
@@ -390,6 +400,20 @@ class MainActivity : Activity() {
 
         journalStore =
             PuzzleJournalStore(this)
+
+        playerProfileStore =
+            PlayerProfileStore(this)
+
+        hallOfFameStore =
+            HallOfFameStore(this)
+
+        fx.enabled =
+            playerProfileStore
+                .soundEnabled
+        gameAudio.enabled =
+            fx.enabled
+        professorSpeech.enabled =
+            fx.enabled
 
         gameModePreferences =
             GameModePreferences(this)
@@ -1659,6 +1683,7 @@ class MainActivity : Activity() {
         eraseMarkerMode = false
         completionRecorded = false
         professorUsed = false
+        assistancePoints = 0
         rewardedGeckos.clear()
 
         if (::gameAudio.isInitialized) {
@@ -2399,6 +2424,8 @@ class MainActivity : Activity() {
         }
 
         professorUsed = true
+        assistancePoints +=
+            AssistanceKind.ADVICE.points
 
         if (::professorLife.isInitialized) {
             professorLife.observe(
@@ -3002,6 +3029,59 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun recordRatedCompletionIfNeeded(
+        mode: GameMode,
+        size: Int,
+        difficulty: GameDifficulty
+    ): Int {
+        val stars =
+            CompletionRatingPolicy
+                .starsFor(
+                    assistancePoints
+                )
+
+        if (!completionRecorded) {
+            val seconds =
+                (
+                    SystemClock
+                        .elapsedRealtime() -
+                        gameStartedAt
+                    ) / 1000L
+
+            statsStore.recordComplete(
+                size = size,
+                difficulty = difficulty,
+                elapsedSeconds = seconds,
+                usedProfessor =
+                    assistancePoints > 0,
+                stars = stars
+            )
+
+            hallOfFameStore.add(
+                HallOfFameEntry(
+                    playerName =
+                        playerProfileStore
+                            .playerName,
+                    mode = mode,
+                    size = size,
+                    difficulty =
+                        difficulty,
+                    stars = stars,
+                    elapsedSeconds =
+                        seconds.coerceAtLeast(
+                            0L
+                        ),
+                    completedAt =
+                        System.currentTimeMillis()
+                )
+            )
+
+            completionRecorded = true
+        }
+
+        return stars
+    }
+
     private fun completeGame(
         playCelebrationMusicImmediately: Boolean = true
     ) {
@@ -3023,27 +3103,20 @@ class MainActivity : Activity() {
 
         clearProfessorSession()
 
-        if (!completionRecorded) {
-            val seconds =
-                (
-                    SystemClock
-                        .elapsedRealtime() -
-                        gameStartedAt
-                    ) / 1000L
-
-            statsStore.recordComplete(
-                puzzle.size,
-                puzzle.difficulty,
-                seconds,
-                usedProfessor =
-                    professorUsed
+        val stars =
+            recordRatedCompletionIfNeeded(
+                mode =
+                    GameMode.GECKODOKU,
+                size =
+                    puzzle.size,
+                difficulty =
+                    puzzle.difficulty
             )
 
-            completionRecorded = true
-        }
-
         status.text =
-            "Bravo ! Grille terminée 🦎"
+            "Bravo ! Grille terminée 🦎  " +
+                CompletionRatingPolicy
+                    .symbols(stars)
 
         celebrationUsesMusic = true
 
@@ -3253,6 +3326,15 @@ class MainActivity : Activity() {
         val text =
             buildString {
                 append(
+                    "Joueur : "
+                )
+                append(
+                    playerProfileStore
+                        .playerName
+                )
+                append("\n\n")
+
+                append(
                     "Statistiques locales uniquement\n\n"
                 )
 
@@ -3307,7 +3389,7 @@ class MainActivity : Activity() {
                 append("\n\n")
 
                 append(
-                    "Réussite par difficulté :\n"
+                    "Réussite et étoiles par difficulté :\n"
                 )
 
                 for (
@@ -3350,6 +3432,26 @@ class MainActivity : Activity() {
                                 ds.assistedCompleted
                             )
                         }
+
+                        if (
+                            ds.completed > 0 &&
+                            ds.bestStars > 0
+                        ) {
+                            append("\n    meilleur ")
+                            append(
+                                CompletionRatingPolicy
+                                    .symbols(
+                                        ds.bestStars
+                                    )
+                            )
+                            append(
+                                " • moyenne "
+                            )
+                            append(
+                                ds.averageStars
+                            )
+                            append("★")
+                        }
                     }
 
                     append("\n")
@@ -3374,7 +3476,7 @@ class MainActivity : Activity() {
                 }
 
                 append(
-                    "\nTout reste sur ce téléphone."
+                    "\n5 étoiles = terminé sans aide demandée."
                 )
             }
 
@@ -3385,6 +3487,221 @@ class MainActivity : Activity() {
             .setMessage(text)
             .setPositiveButton(
                 "OK",
+                null
+            )
+            .setNeutralButton(
+                "🏆 Hall of Fame"
+            ) {
+                    _,
+                    _ ->
+                showHallOfFame()
+            }
+            .show()
+    }
+
+    private fun showHallOfFame() {
+        val entries =
+            hallOfFameStore.entries()
+
+        if (entries.isEmpty()) {
+            AlertDialog.Builder(this)
+                .setTitle(
+                    "🏆 Hall of Fame"
+                )
+                .setMessage(
+                    "Aucune partie terminée n'est encore classée."
+                )
+                .setPositiveButton(
+                    "OK",
+                    null
+                )
+                .show()
+            return
+        }
+
+        val dateFormat =
+            SimpleDateFormat(
+                "dd/MM/yy",
+                Locale.getDefault()
+            )
+
+        val text =
+            buildString {
+                for (
+                    difficulty in
+                    GameDifficulty.entries
+                ) {
+                    val levelEntries =
+                        entries
+                            .filter {
+                                it.difficulty ==
+                                    difficulty
+                            }
+
+                    if (
+                        levelEntries
+                            .isEmpty()
+                    ) {
+                        continue
+                    }
+
+                    if (isNotEmpty()) {
+                        append("\n")
+                    }
+
+                    append(
+                        difficulty.label
+                    )
+                    append("\n")
+
+                    levelEntries
+                        .take(10)
+                        .forEachIndexed {
+                                index,
+                                entry ->
+
+                            append(
+                                index + 1
+                            )
+                            append(". ")
+                            append(
+                                CompletionRatingPolicy
+                                    .symbols(
+                                        entry.stars
+                                    )
+                            )
+                            append(" • ")
+                            append(
+                                entry.playerName
+                            )
+                            append(" • ")
+                            append(
+                                if (
+                                    entry.mode ==
+                                        GameMode.SUDOKU
+                                ) {
+                                    "Sudoku"
+                                } else {
+                                    entry.size
+                                        .toString() +
+                                        "×" +
+                                        entry.size
+                                }
+                            )
+                            append(" • ")
+                            append(
+                                formatSeconds(
+                                    entry.elapsedSeconds
+                                )
+                            )
+                            append(" • ")
+                            append(
+                                dateFormat.format(
+                                    Date(
+                                        entry.completedAt
+                                    )
+                                )
+                            )
+                            append("\n")
+                        }
+                }
+            }
+
+        val view =
+            TextView(this).apply {
+                this.text = text
+                textSize = 17f
+                setTextIsSelectable(true)
+                setPadding(
+                    dp(18),
+                    dp(12),
+                    dp(18),
+                    dp(12)
+                )
+            }
+
+        val scroll =
+            ScrollView(this).apply {
+                addView(view)
+            }
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "🏆 Hall of Fame"
+            )
+            .setView(scroll)
+            .setPositiveButton(
+                "Fermer",
+                null
+            )
+            .show()
+    }
+
+    private fun editPlayerName() {
+        val input =
+            EditText(this).apply {
+                setSingleLine(true)
+                setText(
+                    playerProfileStore
+                        .playerName
+                )
+                selectAll()
+                contentDescription =
+                    "Nom du joueur"
+            }
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Nom du joueur"
+            )
+            .setMessage(
+                "Ce nom sera utilisé pour les nouveaux résultats du Hall of Fame."
+            )
+            .setView(input)
+            .setPositiveButton(
+                "Enregistrer"
+            ) {
+                    _,
+                    _ ->
+
+                playerProfileStore
+                    .playerName =
+                    input.text
+                        ?.toString()
+                        .orEmpty()
+
+                status.text =
+                    "Joueur : " +
+                        playerProfileStore
+                            .playerName
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
+    }
+
+    private fun confirmClearResultHistory() {
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Vider l'historique ?"
+            )
+            .setMessage(
+                "Les entrées du Hall of Fame seront supprimées. Les statistiques agrégées, réglages et grilles sauvegardées restent intactes."
+            )
+            .setPositiveButton(
+                "Vider"
+            ) {
+                    _,
+                    _ ->
+
+                hallOfFameStore.clear()
+                status.text =
+                    "Historique du Hall of Fame vidé."
+            }
+            .setNegativeButton(
+                "Annuler",
                 null
             )
             .show()
@@ -3922,6 +4239,11 @@ class MainActivity : Activity() {
     private fun toggleSoundSetting() {
         fx.enabled =
             !fx.enabled
+
+        playerProfileStore
+            .soundEnabled =
+            fx.enabled
+
         gameAudio.enabled =
             fx.enabled
         professorSpeech.enabled =
@@ -5185,6 +5507,15 @@ class MainActivity : Activity() {
             SudokuGameEngine(next)
         sudokuSelectedCell = null
         sudokuNotesMode = false
+        completionRecorded = false
+        professorUsed = false
+        assistancePoints = 0
+
+        statsStore.recordStart(
+            size = 9,
+            difficulty =
+                next.difficulty
+        )
 
         if (
             ::sudokuBoard
@@ -5873,6 +6204,8 @@ class MainActivity : Activity() {
 
     private fun showSudokuProfessorHint() {
         professorUsed = true
+        assistancePoints +=
+            AssistanceKind.ADVICE.points
 
         val sudoku =
             sudokuPuzzle
@@ -5922,6 +6255,8 @@ class MainActivity : Activity() {
 
     private fun playSudokuProfessorDirect() {
         professorUsed = true
+        assistancePoints +=
+            AssistanceKind.DIRECT_MOVE.points
 
         val sudoku =
             sudokuPuzzle
@@ -6228,8 +6563,19 @@ class MainActivity : Activity() {
             sudokuPuzzle
                 ?: return
 
+        val stars =
+            recordRatedCompletionIfNeeded(
+                mode =
+                    GameMode.SUDOKU,
+                size = 9,
+                difficulty =
+                    sudoku.difficulty
+            )
+
         status.text =
-            "Bravo ! Sudoku terminé 🦎"
+            "Bravo ! Sudoku terminé 🦎  " +
+                CompletionRatingPolicy
+                    .symbols(stars)
 
         if (
             ::celebrationView
@@ -6242,7 +6588,9 @@ class MainActivity : Activity() {
 
         sudokuBoard
             .announceForAccessibility(
-                "Bravo, Sudoku terminé."
+                "Bravo, Sudoku terminé. " +
+                    stars +
+                    " étoiles."
             )
 
         speakLivingProfessor(
@@ -6842,6 +7190,17 @@ class MainActivity : Activity() {
                     SettingsEntry.JOURNAL ->
                         "📚 Journal de grilles"
 
+                    SettingsEntry.PLAYER_NAME ->
+                        "👤 Joueur : " +
+                            playerProfileStore
+                                .playerName
+
+                    SettingsEntry.HALL_OF_FAME ->
+                        "🏆 Hall of Fame"
+
+                    SettingsEntry.CLEAR_HISTORY ->
+                        "🗑 Vider l'historique"
+
                     SettingsEntry.SOUND ->
                         if (fx.enabled) {
                             "🔊 Son : ON"
@@ -6886,6 +7245,21 @@ class MainActivity : Activity() {
                     SettingsEntry.JOURNAL -> {
                         dialog.dismiss()
                         showJournal()
+                    }
+
+                    SettingsEntry.PLAYER_NAME -> {
+                        dialog.dismiss()
+                        editPlayerName()
+                    }
+
+                    SettingsEntry.HALL_OF_FAME -> {
+                        dialog.dismiss()
+                        showHallOfFame()
+                    }
+
+                    SettingsEntry.CLEAR_HISTORY -> {
+                        dialog.dismiss()
+                        confirmClearResultHistory()
                     }
 
                     SettingsEntry.SOUND -> {

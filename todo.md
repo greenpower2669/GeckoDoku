@@ -58,3 +58,14 @@
 - [ ] CI GREEN phase 1.
 - [ ] Étoiles + Hall of Fame + GeckoTétu + historique.
 - [ ] Export/import complet.
+
+
+<!-- GECKO-040-PHASE2-TODO-2026-09-28 -->
+- [x] Nom défaut GeckoTétu + modification.
+- [x] 5 étoiles sans aide, baisse selon assistance.
+- [x] Stats étoiles par difficulté.
+- [x] Hall of Fame avec nom/niveau/étoiles/temps.
+- [x] Vider historique Hall of Fame avec confirmation.
+- [x] Persistance du son dans le profil.
+- [ ] CI GREEN phase 2.
+- [ ] Export/import complet phase 3.

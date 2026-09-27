@@ -2766,3 +2766,14 @@ Tous les paramètres et toutes les sauvegardes/données persistantes doivent êt
 
 <!-- GECKO-040-PHASE1-2026-09-28 -->
 Classic : carré centré par (viewWidth-side)/2, commandes ramenées à 2 lignes, Sauver/Journal dans ⚙️. Les demandes explicites de difficulté Classic utilisent désormais PuzzleGenerator.generateExact hors thread UI ; la recherche continue jusqu'au profil exact ou annulation.
+
+
+<!-- GECKO-040-PHASE2-STARS-HOF-2026-09-28 -->
+# GECKO-040 phase 2 — profil, étoiles, stats, Hall of Fame
+
+- Profil local persistant : nom par défaut GeckoTétu, modifiable, son persisté.
+- CompletionRatingPolicy : 5★ sans aide ; conseil et coup direct ajoutent des points d'assistance qui réduisent progressivement la note.
+- Classic et Sudoku enregistrent maintenant une note étoilée, temps, difficulté, mode et nom dans le Hall of Fame.
+- Stats par difficulté enrichies avec meilleure note et moyenne d'étoiles.
+- Historique Hall of Fame vidable avec confirmation sans supprimer stats agrégées, réglages ni journal de grilles.
+- Sudoku compte désormais ses départs/terminaisons dans PlayerStatsStore.

@@ -1630,3 +1630,7 @@ Aucun code applicatif modifié dans cette intervention documentaire.
 
 <!-- GECKO-040-PHASE1-2026-09-28 -->
 Cause du décentrage Classic confirmée : left restait fixé à 3px même lorsque la hauteur limitait le carré. Fix structurel : centrage du side calculé. Une ligne de commandes est supprimée en déplaçant Sauver/Journal vers ⚙️. Le fallback de difficulté venait du generate() borné ; un chemin strict generateExact boucle désormais jusqu'au niveau demandé, sans bloquer l'UI.
+
+
+<!-- GECKO-040-PHASE2-DEBUG-2026-09-28 -->
+Avant GECKO-040, PlayerStats ne conservait qu'un booléen d'assistance pour Classic et Sudoku n'enregistrait pas de fin. La note étoilée repose désormais sur des points de demandes d'aide, jamais sur les animations automatiques. Le Hall of Fame est séparé du journal des grilles : vider l'historique de résultats ne détruit aucune sauvegarde.

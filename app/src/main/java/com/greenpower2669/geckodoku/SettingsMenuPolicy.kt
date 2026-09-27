@@ -5,6 +5,9 @@ enum class SettingsEntry {
     DIFFICULTY,
     SAVE_GRID,
     JOURNAL,
+    PLAYER_NAME,
+    HALL_OF_FAME,
+    CLEAR_HISTORY,
     SOUND,
     ANIMATIONS,
     MEDIA_LOG
@@ -29,6 +32,9 @@ class SettingsMenuPolicy {
             listOf(
                 SettingsEntry.GAME_MODE,
                 SettingsEntry.DIFFICULTY,
+                SettingsEntry.PLAYER_NAME,
+                SettingsEntry.HALL_OF_FAME,
+                SettingsEntry.CLEAR_HISTORY,
                 SettingsEntry.SOUND,
                 SettingsEntry.ANIMATIONS,
                 SettingsEntry.MEDIA_LOG
@@ -38,6 +44,9 @@ class SettingsMenuPolicy {
                 SettingsEntry.GAME_MODE,
                 SettingsEntry.SAVE_GRID,
                 SettingsEntry.JOURNAL,
+                SettingsEntry.PLAYER_NAME,
+                SettingsEntry.HALL_OF_FAME,
+                SettingsEntry.CLEAR_HISTORY,
                 SettingsEntry.SOUND,
                 SettingsEntry.ANIMATIONS,
                 SettingsEntry.MEDIA_LOG

@@ -1281,3 +1281,10 @@ UserDataBackup
 <!-- GECKO-040-PHASE1-2026-09-28 -->
 Classic boardAnchor → GeckoBoardView → ClassicBoardReadabilityPolicy → side=min(width,height-gutter) → left=(width-side)/2.
 Difficulty UI → requestClassicPuzzle(token) → background generateExact → repeated bounded batches → exact DifficultyIndexer profile → apply only if token still current.
+
+
+<!-- GECKO-040-PHASE2-MAP-2026-09-28 -->
+Professor help request → AssistanceKind points → assistancePoints(session).
+Completion Classic/Sudoku → CompletionRatingPolicy → stars 1..5 → PlayerStatsStore + HallOfFameStore.
+PlayerProfileStore → GeckoTétu + soundEnabled.
+Settings → edit profile / Hall of Fame / clear result history.
