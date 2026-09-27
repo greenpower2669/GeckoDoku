@@ -1085,3 +1085,8 @@ Contrat : aucune conversion ni recompression de ces PNG lors de la future intég
 
 Aucun fichier source applicatif n'a été modifié par cette intervention documentaire.
 
+
+
+<!-- GECKO-038-RED-START-2026-09-27 -->
+## 2026-09-27 — GECKO-038 lancé
+GO explicite de Fab. Branche `gecko-038-sudoku-mode` créée depuis la spécification. RED ajouté avant toute classe Sudoku : moteur, génération unique, hint sans hasard, séparation GameMode/VisualStyle. Le workflow CI est étendu à la branche. Échec attendu avant GREEN.

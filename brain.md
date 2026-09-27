@@ -1242,3 +1242,8 @@ Même principe pour les styles visuels : ajouter un quatrième style ne doit pas
 
 Cette séparation GameMode / VisualStyle est un contrat architectural durable.
 
+
+
+<!-- GECKO-038-RED-START-2026-09-27 -->
+## GECKO-038 — lancement autorisé
+Fab donne le GO explicite. Branche isolée `gecko-038-sudoku-mode`. Première étape : RED de contrat pur avant implémentation. Aucun merge main ni release autorisé.

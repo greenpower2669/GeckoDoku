@@ -688,3 +688,18 @@ Aucune mission active.
 - [ ] Validation téléphone Fab : tactile Sudoku.
 - [ ] Validation téléphone Fab : styles et sélecteur.
 
+
+
+<!-- GECKO-038-RED-START-2026-09-27 -->
+## GECKO-038 — exécution
+- [x] GO explicite Fab.
+- [x] Branche isolée créée.
+- [x] RED moteur / génération / hint / styles posé.
+- [ ] Constater RED CI.
+- [ ] GREEN cœur Sudoku.
+- [ ] Intégrer assets canoniques sans conversion.
+- [ ] UI Sudoku + routeur de mode.
+- [ ] Sélecteur 3 états live.
+- [ ] Prof Sudoku.
+- [ ] CI finale APK/AAB.
+- [ ] Validation téléphone Fab.

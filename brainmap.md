@@ -546,3 +546,7 @@ si pédagogie demandée
    +--> Sudoku technique explanation
 ```
 
+
+
+<!-- GECKO-038-RED-START-2026-09-27 -->
+GECKO-038 GO → branch isolated → RED engine/generator/hints/styles → GREEN core → UI routing → phone validation.

@@ -211,3 +211,8 @@ Fab valide :
 
 **Ajouter le Sudoku autour de GeckoDoku ; ne jamais transformer le moteur historique pour le forcer à devenir un Sudoku.**
 
+
+
+## ÉTAT D'EXÉCUTION GECKO-038
+GO reçu le 2026-09-27. Branche active : `gecko-038-sudoku-mode`.
+Étape courante : RED de contrat, puis cœur Sudoku pur. Interdiction de merge main/release sans validation Fab.
