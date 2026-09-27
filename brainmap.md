@@ -285,3 +285,18 @@ GameEvent
 → +1s guarded close for QUICK/simple only
 
 Pedagogical Professor path remains separate and persistent on-screen.
+
+
+<!-- GECKO-037-REMOVE-RECORDED-ENCOURAGEMENTS-2026-09-27 -->
+Ancien :
+GECKO_CONFIRMED → random RECORDED | PIERRE
+RECORDED → Voix_encouragements.mp3 segment
+
+Cible :
+GECKO_CONFIRMED → PIERRE ENCOURAGEMENT uniquement
+→ speakWithProfessorVisual(ENCOURAGEMENT)
+→ onCompletion
+→ celebration music si fin
+
+GECKO-037 futur :
+ENCOURAGEMENT event → context/mood → ProfessorPhraseSelector → Pierre.

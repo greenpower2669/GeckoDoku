@@ -425,3 +425,18 @@ Aucune mission active.
 - [ ] CI GREEN.
 - [ ] APK/AAB.
 - [ ] Test téléphone Fab.
+
+
+<!-- GECKO-037-REMOVE-RECORDED-ENCOURAGEMENTS-2026-09-27 -->
+## GECKO-037 — retirer encouragements enregistrés
+- [x] Audit chemin RECORDED / PIERRE.
+- [x] RED : encouragement delivery = PIERRE uniquement.
+- [ ] Vérifier RED CI.
+- [ ] Supprimer EncourgementSource.RECORDED / policy alternée.
+- [ ] Supprimer EncouragementSelector des segments MP3.
+- [ ] Supprimer EncouragementSegment + catalogue des segments.
+- [ ] Supprimer lecture playVoiceSegment liée aux encouragements.
+- [ ] Supprimer asset Voix_encouragements.mp3.
+- [ ] Conserver PierreEncouragements provisoirement jusqu’au moteur 309.
+- [ ] Préserver onFinished / célébration.
+- [ ] CI GREEN.

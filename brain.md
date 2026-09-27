@@ -805,3 +805,10 @@ Principes à préserver :
 
 Philosophie durable :
 **taquiner le comportement, jamais rabaisser le joueur.**
+
+
+<!-- GECKO-037-REMOVE-RECORDED-ENCOURAGEMENTS-2026-09-27 -->
+## Cible GECKO-037 — encouragements enregistrés retirés
+Décision fonctionnelle : les encouragements vocaux enregistrés dans `Voix_encouragements.mp3` doivent disparaître. Le chemin cible est Pierre uniquement, puis intégration progressive au moteur contextuel des 309 phrases.
+
+Ne pas supprimer les autres sons/musiques. Préserver l’origine `ENCOURAGEMENT`, les priorités de parole, ProfParle et les callbacks de fin utilisés par la célébration.

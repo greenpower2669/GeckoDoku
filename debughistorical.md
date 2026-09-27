@@ -968,3 +968,12 @@ Le corpus fourni est cohérent :
 200 V2 + 4 FAB + 5 TAQUIN = 209 nouvelles ; avec 100 historiques = 309.
 
 Aucun code n'est modifié lors de cette ouverture de mission.
+
+
+<!-- GECKO-037-REMOVE-RECORDED-ENCOURAGEMENTS-2026-09-27 -->
+## 2026-09-27 — retrait demandé des encouragements MP3
+Audit : le runtime possède encore une alternance via `EncouragementSourcePolicy` entre RECORDED et PIERRE. La branche RECORDED choisit un des 13 segments de `Voix_encouragements.mp3` via `EncouragementSelector` puis `AssetAudioPlayer.playVoiceSegment()`.
+
+Fab demande la suppression complète de ce système enregistré afin de converger vers Pierre + le nouveau moteur contextuel GECKO-037.
+
+RED ajouté avant suppression.

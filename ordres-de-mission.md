@@ -1087,3 +1087,38 @@ Règle finale :
 Et surtout :
 
 > « Une bonne blague doit sembler avoir été déclenchée par ce qui vient réellement de se passer. »
+
+
+<!-- GECKO-037-REMOVE-RECORDED-ENCOURAGEMENTS-2026-09-27 -->
+# 46 — RETIRER LES ANCIENS ENCOURAGEMENTS ENREGISTRÉS
+
+Décision Fab : supprimer l’ancien système d’encouragements provenant du fichier enregistré :
+
+`assets/audio/encouragements/master/Voix_encouragements.mp3`
+
+Ce système ne doit plus coexister avec Pierre / GECKO-037.
+
+À retirer :
+- source `RECORDED` ;
+- alternance aléatoire RECORDED / PIERRE ;
+- `EncouragementSelector` dédié aux 13 segments enregistrés ;
+- `EncouragementSegment` ;
+- `AssetAudioCatalog.ENCOURAGEMENT_MASTER` ;
+- `AssetAudioCatalog.ENCOURAGEMENTS` ;
+- lecture segmentée via `playVoiceSegment()` pour ces encouragements ;
+- asset `Voix_encouragements.mp3` lui-même ;
+- tests qui imposent encore la coexistence RECORDED + PIERRE.
+
+Nouveau contrat immédiat :
+- encouragement vocal simple = **Pierre uniquement** ;
+- conserver `SpeechOrigin.ENCOURAGEMENT` et la priorité non préemptive existante ;
+- conserver ProfParle / PNG fallback actuel ;
+- conserver le callback `onFinished` nécessaire au déclenchement de la musique de célébration ;
+- FX OFF conserve le comportement silencieux actuel si c’est le contrat déjà en place ;
+- les autres MP3 (intro, célébration, musique) ne sont pas concernés.
+
+À terme dans GECKO-037, les encouragements Pierre doivent être absorbés par le nouveau catalogue/context selector afin d’éviter deux moteurs de phrases concurrents.
+
+TDD :
+- RED : une policy d’encouragement ne propose plus qu’une livraison PIERRE ;
+- GREEN : supprimer tout chemin enregistré et l’asset MP3 sans casser Pierre ni la célébration.
