@@ -1292,3 +1292,403 @@ Correctif syntaxique du helper de crop : suppression d'une accolade surnumérair
 <!-- GECKO-038-CI154-GREEN-2026-09-27 -->
 # GECKO-038 — CANDIDATE TECHNIQUE GREEN
 Référence : 0.11.0-dev / code 28. CI #154 GREEN complet après correction des rectangles source Gecko. APK et AAB produits. Le mode historique GeckoDoku reste dans GeckoBoardView inchangé ; Sudoku est une surface/moteur séparés. Validation téléphone de Fab reste obligatoire avant toute fusion/release.
+
+<!-- GECKO-038-CANONICAL-CLOSE-2026-09-27 -->
+# GECKO-038 — ÉTAT CANONIQUE COMPLET DU SECOND MODE SUDOKU
+
+STATUT : **DÉVELOPPEMENT TECHNIQUE TERMINÉ POUR LA CANDIDATE 0.11.0-dev ; VALIDATION TÉLÉPHONE FAB EN ATTENTE.**
+Aucune mission de code active. Aucun merge dans `main`. Aucune release publiée.
+
+Ce chapitre remplace l'ordre de mission GECKO-038 comme source canonique. `ordres-de-mission.md` est volontairement vidé après consolidation ici.
+
+## 1. Références
+
+- Dépôt : `greenpower2669/GeckoDoku`
+- Branche : `gecko-038-sudoku-mode`
+- Candidate fonctionnelle : `0.11.0-dev`
+- versionCode : `28`
+- SHA code de la candidate GREEN : `50436317dcc4be3dadbede22931a1bf3eb40f936`
+- SHA documentation après candidate : `51cdc134f41f9fafc8735afb502e15744b69f820`
+- CI de validation complète : **#154 GREEN**
+- APK et AAB produits par CI.
+- Aucun merge / release avant validation explicite de Fab.
+
+## 2. Vision produit
+
+GeckoDoku contient désormais deux jeux dans la même application :
+
+### GECKODOKU
+Mode historique.
+Il conserve son moteur, sa géométrie, ses gestes, ses animations, Pierre, ProfParle, les médias et les comportements existants.
+
+### SUDOKU
+Vrai Sudoku classique 9 × 9 :
+- chiffres 1 à 9 ;
+- unicité par ligne ;
+- unicité par colonne ;
+- unicité par bloc 3 × 3 ;
+- cases données immuables ;
+- cases joueur modifiables ;
+- notes / candidats ;
+- effacement ;
+- undo / redo ;
+- état de victoire ;
+- Prof Gecko pédagogique.
+
+Principe architectural permanent :
+
+**Ajouter le Sudoku autour de GeckoDoku ; ne jamais tordre le moteur GeckoDoku pour en faire un Sudoku.**
+
+## 3. GameMode et VisualStyle sont séparés
+
+`GameMode` :
+- `GECKODOKU`
+- `SUDOKU`
+
+`SudokuVisualStyle` :
+- `CLASSIC_NUMBERS`
+- `GECKO_NB`
+- `GECKO_COLORED`
+
+Changer le style visuel ne change jamais les données Sudoku.
+
+Changer le mode ne détruit pas le moteur historique et ne remplace pas ses listeners.
+
+## 4. Moteur Sudoku
+
+Classes principales :
+- `SudokuModel.kt`
+- `SudokuGameEngine.kt`
+- `SudokuSolver.kt`
+- `SudokuGenerator.kt`
+- `SudokuHintEngine.kt`
+
+Fonctions validées :
+- génération 9 × 9 ;
+- solution complète valide ;
+- unicité de solution vérifiée par `countSolutions(limit = 2)` ;
+- givens immuables ;
+- validation d'une saisie ;
+- erreur comptabilisée sans mutation illégale de la grille ;
+- notes par case ;
+- retrait automatique d'une note chez les pairs après placement correct ;
+- undo / redo ;
+- détection de complétion.
+
+Le moteur Sudoku est indépendant du `GameEngine` historique GeckoDoku.
+
+## 5. Difficulté
+
+Le générateur utilise actuellement le niveau `GameDifficulty` existant pour choisir une cible de nombre de givens.
+
+Intention durable :
+la difficulté Sudoku doit progressivement être définie par les techniques réellement nécessaires, et pas seulement par le nombre de cases données.
+
+Cette amélioration n'est **pas encore implémentée**.
+
+## 6. Pédagogie Sudoku actuelle
+
+`SudokuHintEngine` explique seulement des techniques humaines effectivement reconnues :
+
+- candidat unique / naked single ;
+- chiffre unique dans une ligne ;
+- chiffre unique dans une colonne ;
+- chiffre unique dans un bloc 3 × 3.
+
+Le Prof ne doit jamais prétendre expliquer une technique qu'un solveur opaque aurait trouvée sans preuve pédagogique.
+
+Techniques prévues mais **non implémentées dans cette candidate** :
+- candidats verrouillés ;
+- paires ;
+- triplets ;
+- X-Wing ;
+- techniques plus avancées seulement si nécessaires.
+
+## 7. Surface UI Sudoku isolée
+
+Le mode Sudoku utilise :
+- `SudokuBoardView` : grille, sélection tactile, notes ;
+- `SudokuValueOverlayView` : rendu des valeurs ;
+- `SudokuStyleSelectorView` : sélecteur 3 états.
+
+`GeckoBoardView` historique n'a pas été refondu pour le Sudoku.
+
+Architecture :
+
+```text
+MainActivity
+   |
+   +-- GameMode = GECKODOKU
+   |      |
+   |      +--> GeckoBoardView + GameEngine historique
+   |
+   +-- GameMode = SUDOKU
+          |
+          +--> SudokuBoardView          ← reçoit les touches
+          +--> SudokuValueOverlayView   ← visuel click-through
+          +--> SudokuGameEngine
+```
+
+## 8. Protection tactile / couche on-top
+
+L'overlay des valeurs Gecko :
+- ne reçoit pas les touches ;
+- n'est pas focusable ;
+- ne modifie pas les hitboxes ;
+- ne contient aucune donnée métier ;
+- se contente de représenter une valeur Sudoku.
+
+Donc :
+`valeur 7` reste toujours une donnée entière 7.
+
+Selon le style :
+- Classic → dessiner `7` ;
+- Gecko NB → dessiner la région du 7 dans la planche NB ;
+- Gecko Color → dessiner la région du 7 dans la planche colorée.
+
+## 9. Cases vides
+
+Une case vide Sudoku est réellement vide.
+
+Le comportement historique GeckoDoku où des geckos peuvent exister dans des cases vides ne doit jamais fuiter dans le renderer Sudoku.
+
+C'est un invariant de non-régression.
+
+## 10. Assets canoniques
+
+Fichiers :
+- `assets/gecko/PlancheGeckoDeNombreNB.png`
+- `assets/gecko/PlancheGeckoDeNombreColored.png`
+
+Blobs Git de référence :
+- NB : `d507a670299733ff0b6859774cd1d5c2e334ecd5`
+- Color : `188cb2cf8a7a4c43b5118337bcfad3d969a34040`
+
+Règle :
+- aucune conversion ;
+- aucune recompression ;
+- aucun réexport ;
+- aucun remplacement généré ;
+- ajustements uniquement par rectangles source au rendu.
+
+### Découpe couleur
+Planche structurée comme 5 × 2 cartes.
+Le renderer exclut la bande inférieure contenant les petits numéros / décoration.
+
+### Découpe NB
+Les glyphes ne sont pas parfaitement centrés dans cinq colonnes égales.
+Le renderer utilise donc des bornes normalisées par chiffre pour éviter de capturer un voisin, notamment autour de 3 / 4 / 7.
+
+Les PNG eux-mêmes restent inchangés.
+
+## 11. Sélecteur magique à trois états
+
+Positions :
+- gauche → Classic ;
+- milieu → Gecko N/B ;
+- droite → Gecko couleur.
+
+Comportement validé dans le code :
+
+```text
+POINTER DOWN
+    ↓
+previewStyle = zone touchée
+    ↓
+POINTER MOVE
+    ↓
+gauche / milieu / droite
+    ↓
+état ciblé affiché plus grand
+autres états affichés plus petits
+    ↓
+la vraie grille change immédiatement
+    ↓
+le doigt peut continuer à circuler
+    ↓
+POINTER UP
+    ↓
+selectedStyle = previewStyle
+    ↓
+persistance
+```
+
+Il n'y a pas de bouton OK.
+
+Un retour haptique discret est déclenché lors du franchissement d'un cran.
+
+En cas de `ACTION_CANCEL`, le preview revient au style mémorisé.
+
+## 12. Contrôles Sudoku
+
+Tactile :
+- toucher une case → sélection ;
+- boutons 1 à 9 → saisie ;
+- Notes ✏️ → mode candidat ;
+- Effacer ;
+- Undo ;
+- Redo ;
+- Prof Gecko.
+
+Clavier physique :
+- `1..9` → saisie ;
+- flèches → déplacer la sélection ;
+- `Suppr` → effacer ;
+- `N` → Notes ;
+- `P` → Prof Gecko.
+
+Les contrôles appellent les mêmes actions métier.
+
+## 13. Bascule de mode
+
+Réglages contient maintenant :
+- Mode de jeu ;
+- Son ;
+- Animations ;
+- Journal vidéo.
+
+`SettingsMenuPolicy.affectsBoardLayout = false` reste vrai.
+
+La sélection du mode est persistante via `GameModePreferences`.
+
+Bascule :
+- change la visibilité des couches ;
+- ne détruit pas les listeners historiques ;
+- ne fait pas un cycle global unbind / rebind ;
+- conserve en mémoire l'état GeckoDoku et l'état Sudoku ;
+- restaure la difficulté de la partie active du mode concerné.
+
+En Sudoku, les fonctions strictement GeckoDoku comme Sauver/Journal/Stats sont masquées pour éviter de présenter des données incompatibles.
+
+## 14. Prof Gecko / Pierre partagé
+
+Le système vivant GECKO-037 est partagé :
+- 309 phrases ;
+- mémoire 48 h ;
+- `lastPhraseId` ;
+- contexte joueur ;
+- mood ;
+- Pierre ;
+- bulle ;
+- ProfParle ;
+- priorités de parole.
+
+Le Sudoku envoie des événements au contexte :
+- bonne saisie ;
+- mauvaise saisie ;
+- erreur rapide ;
+- réflexion longue ;
+- demande d'indice ;
+- fin de niveau.
+
+Une erreur rapide peut donc alimenter l'impulsivité.
+Une erreur après réflexion alimente un comportement plus encourageant.
+
+Le bouton Prof en Sudoku passe par `SudokuHintEngine`, puis utilise la bulle et Pierre comme les autres explications pédagogiques.
+
+## 15. Complétion Sudoku
+
+À la fin :
+- feedback de succès ;
+- événement `LEVEL_COMPLETED` au Prof ;
+- célébration existante ;
+- annonce accessibilité ;
+- phrase de fin via le moteur vivant.
+
+## 16. Non-régression GeckoDoku
+
+Invariants à conserver :
+- `GeckoBoardView` historique ;
+- moteur GeckoDoku ;
+- hitboxes historiques ;
+- gestes historiques ;
+- géométrie historique ;
+- cases vides GeckoDoku ;
+- Intro ;
+- ProfParle ;
+- Pierre ;
+- système 309 ;
+- audio ;
+- célébration ;
+- journal média ;
+- accessibilité ;
+- pipeline vidéo.
+
+Une anomalie visuelle Sudoku doit être corrigée dans les vues Sudoku, pas en modifiant `GeckoBoardView`.
+
+## 17. Historique TDD / CI GECKO-038
+
+- #145 : RED attendu des nouveaux contrats Sudoku.
+- #146 : échec de typage local des notes.
+- #147 : cœur Sudoku GREEN.
+- #148 : surface UI ; oubli de constantes du catalogue asset.
+- #149 : catalogue assets GREEN.
+- #150 : compilation complète de l'UI ; unique échec = ancien test Réglages exigeant exactement trois entrées.
+- #151 : câblage complet GREEN.
+- #152 : candidate 0.11.0-dev GREEN.
+- #153 : échec syntaxique local du helper de crop, accolade surnuméraire.
+- #154 : **GREEN complet final** : tests + APK + AAB + artifact.
+
+Les échecs #146, #148, #150 et #153 sont documentés comme incidents locaux et ne correspondent pas à des régressions téléphone déclarées.
+
+## 18. État actuel de validation
+
+Techniquement validé :
+- moteur ;
+- génération ;
+- unicité ;
+- notes ;
+- undo / redo ;
+- UI compile ;
+- sélecteur ;
+- assets ;
+- Prof Sudoku de base ;
+- APK ;
+- AAB ;
+- CI #154 GREEN.
+
+À valider physiquement par Fab :
+- GeckoDoku historique inchangé ;
+- bascule Réglages → Sudoku ;
+- taille / lisibilité de la grille ;
+- saisie 1..9 ;
+- Notes ;
+- Effacer ;
+- Undo / Redo ;
+- sélecteur gauche ↔ milieu ↔ droite en gardant le doigt posé ;
+- preview live avant relâchement ;
+- cadrage Gecko N/B ;
+- cadrage Gecko couleur ;
+- Prof Sudoku ;
+- Pierre ;
+- confort général sur téléphone.
+
+## 19. Règle pour la prochaine intervention
+
+Aucune nouvelle fonctionnalité n'est à empiler avant le retour téléphone de Fab.
+
+Après son retour :
+1. corriger d'abord tout défaut réel observé ;
+2. isoler la correction dans la couche concernée ;
+3. ne jamais annoncer un bug corrigé avant preuve CI + retour approprié ;
+4. seulement ensuite envisager pédagogie avancée ou animations Gecko supplémentaires.
+
+## 20. Rôle documentaire du Brain
+
+Le `brain.md` est la mémoire fonctionnelle canonique de GeckoDoku.
+
+Il doit contenir assez d'information pour :
+- comprendre le jeu sans lire le code ;
+- retrouver les décisions produit ;
+- reconstruire les workflows ;
+- expliquer les règles ;
+- comprendre les invariants ;
+- documenter les assets ;
+- produire plus tard une documentation utilisateur ;
+- produire plus tard une documentation développeur.
+
+`brainmap.md` contient les organigrammes synthétiques.
+`debughistorical.md` conserve la chronologie et les incidents.
+`todo.md` ne contient que les actions encore réellement en attente.
+`ordres-de-mission.md` reste vide lorsqu'aucune mission active n'existe.
+

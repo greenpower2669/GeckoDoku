@@ -1135,3 +1135,20 @@ CI #153 : échec compilation ligne 515, accolade surnuméraire introduite dans l
 <!-- GECKO-038-CI154-GREEN-2026-09-27 -->
 ## 2026-09-27 — GECKO-038 CI #154 GREEN
 Après #153 (accolade locale du helper crop), #154 passe tests, assembleDebug, bundleDebug et artifact upload. Les blobs des deux planches restent exactement ceux de main : Colored 188cb2cf8a7a4c43b5118337bcfad3d969a34040 ; NB d507a670299733ff0b6859774cd1d5c2e334ecd5. Candidate 0.11.0-dev prête pour validation téléphone, sans merge ni release.
+
+<!-- GECKO-038-CANONICAL-CLOSE-2026-09-27 -->
+## 2026-09-27 — consolidation GECKO-038 et vidage ordre de mission
+
+À la demande de Fab, l'ordre de mission GECKO-038 est clôturé et vidé après transfert de son contenu utile dans `brain.md`.
+
+État conservé :
+- branche `gecko-038-sudoku-mode` ;
+- candidate 0.11.0-dev code 28 ;
+- SHA code GREEN `50436317dcc4be3dadbede22931a1bf3eb40f936` ;
+- CI #154 GREEN tests/APK/AAB/artifact ;
+- aucun merge main ;
+- aucune release ;
+- validation téléphone encore en attente.
+
+Cette intervention est strictement documentaire : aucun fichier source applicatif, asset, build ou test n'est modifié.
+

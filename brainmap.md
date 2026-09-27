@@ -598,3 +598,58 @@ SudokuNumberSheetLayout : structure Kotlin corrigée, logique sourceRect inchang
 <!-- GECKO-038-CI154-GREEN-2026-09-27 -->
 GECKO-038 0.11.0-dev code28 → CI #154 GREEN → APK/AAB → TEST FAB
 TEST FAB doit couvrir : GECKODOKU historique ; SUDOKU tactile ; 3-state selector live ; CLASSIC/NB/COLOR crops ; Prof/Pierre ; notes/undo/redo.
+
+<!-- GECKO-038-CANONICAL-CLOSE-2026-09-27 -->
+# GECKO-038 — CARTE CANONIQUE FINALE
+
+```text
+                    GeckoDoku App
+                         |
+                     GameMode
+              +----------+----------+
+              |                     |
+         GECKODOKU                SUDOKU
+              |                     |
+   GeckoBoardView intact     SudokuBoardView
+   GameEngine historique      + touch selection
+              |               + notes grid
+              |                     |
+              |              SudokuGameEngine
+              |                     |
+              |              SudokuValueOverlay
+              |               (click-through)
+              |                     |
+              |          +----------+----------+
+              |          |          |          |
+              |       CLASSIC      NB       COLOR
+              |                     |
+              +----------- services partagés -----------+
+                          Pierre / Prof 309
+                          mood / 48h / bubble
+                          audio / celebration
+```
+
+```text
+SudokuStyleSelector
+DOWN → preview
+MOVE → slot → live redraw → haptic
+UP   → persist selected style
+CANCEL → revert committed style
+```
+
+```text
+APK 0.11.0-dev / code 28
+        |
+     CI #154
+        |
+      GREEN
+        |
+ validation téléphone Fab
+        |
+   retour utilisateur
+        |
+correction ciblée OU prochaine mission
+```
+
+État : aucune mission active ; ordre de mission vidé.
+
