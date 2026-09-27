@@ -1477,3 +1477,8 @@ Contrat de géométrie lisible posé avant modification de GeckoBoardView.
 <!-- GECKO-039-PHASE1-GREEN-2026-09-27 -->
 ## 2026-09-27 — Phase 1 Classic GREEN code
 Réduction du gutter historique 76dp→38dp et utilisation de toute la largeur overlay. Refactor animation sans changer les assets ni leurs règles audio.
+
+
+<!-- GECKO-039-PHASE2-RED-2026-09-27 -->
+## 2026-09-27 — Phase 2 Sudoku RED
+Contrats posés après Phase 1 #182 GREEN.

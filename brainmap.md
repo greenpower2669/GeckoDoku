@@ -1093,3 +1093,7 @@ CLASSIC RED → ClassicBoardReadabilityPolicy(width,height,gutter) → max width
 
 <!-- GECKO-039-PHASE1-GREEN-2026-09-27 -->
 Classic board → full screenRoot width → ClassicBoardReadabilityPolicy(3px) → compact gutter. Classic animations → shared target-based pipeline → reusable by Sudoku/Gomoku.
+
+
+<!-- GECKO-039-PHASE2-RED-2026-09-27 -->
+SUDOKU RED → GesturePolicy + custom marker state + AppTitlePolicy + SudokuReasoningTrace.

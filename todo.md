@@ -445,3 +445,12 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [x] Pipeline animations Classic mutualisé.
 - [ ] CI GREEN Phase 1.
 - [ ] Candidate/test téléphone après jalon global si nécessaire.
+
+
+<!-- GECKO-039-PHASE2-RED-2026-09-27 -->
+- [x] RED repères personnels Sudoku.
+- [x] RED double-tap vs long press.
+- [x] RED titre multi-mode.
+- [x] RED trace raisonnement Prof.
+- [ ] Confirmer RED CI.
+- [ ] GREEN Phase 2.

@@ -2610,3 +2610,7 @@ Phase 1 Classic RED : la grille doit utiliser presque toute la largeur disponibl
 
 <!-- GECKO-039-PHASE1-GREEN-2026-09-27 -->
 Phase 1 Classic implémentée : GeckoBoardView utilise ClassicBoardReadabilityPolicy (3 px internes, gutter compact 38dp) et la vue Classic peut occuper toute la largeur de screenRoot. Le pipeline vidéo historique est factorisé en playSharedGeckoCellAnimation / maybePlaySharedGeckoLongAction, avec GeckoCellAnimationAssetPolicy, prêt à être réutilisé par Sudoku et Gomoku.
+
+
+<!-- GECKO-039-PHASE2-RED-2026-09-27 -->
+Phase 2 Sudoku RED : repères personnels persistants/Undo, double tap distinct du long press, titre application indépendant du mode, et ReasoningTrace réel associé à chaque hint.

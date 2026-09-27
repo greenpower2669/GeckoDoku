@@ -1008,3 +1008,7 @@ Phase 1 en exécution : RED géométrie Classic posé avant code runtime.
 
 <!-- GECKO-039-PHASE1-GREEN-2026-09-27 -->
 Phase 1 code posée : grille Classic plus large + pipeline animation partagé. Attente CI GREEN avant Phase 2.
+
+
+<!-- GECKO-039-PHASE2-RED-2026-09-27 -->
+Phase 2 en exécution : RED repères/double-tap/titre/ReasoningTrace posé après Phase 1 GREEN.
