@@ -359,3 +359,51 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Tester que texte et graphique décrivent exactement les mêmes étapes.
 - [ ] Tester que le Prof ne saute jamais directement à la conclusion quand une explication détaillée est disponible.
 
+<!-- GECKO-039-THREE-PHASE-PLAN-2026-09-27 -->
+# GECKO-039 — TODO restructuré
+
+## Phase 1 Classic
+- [ ] Auditer géométrie actuelle Classic.
+- [ ] RED grille Classic plus large sans chevauchement.
+- [ ] Agrandir la grille Classic.
+- [ ] Auditer animations Gecko historiques.
+- [ ] Extraire/mutualiser pipeline animation sans régression.
+- [ ] Auditer repères personnels Classic.
+- [ ] CI GREEN + candidate A.
+- [ ] Test téléphone Fab.
+
+## Phase 2 Sudoku
+- [x] Tap / retap Gecko-repère.
+- [x] Prof tap / retap / long press.
+- [x] Préfixes Prof redondants nettoyés.
+- [ ] Réutiliser pipeline animation Classic pour Gecko-repère.
+- [ ] Corriger titre en `GeckoDoku 🦎`.
+- [ ] Double tap → clavier/palette repères personnels.
+- [ ] Garder long press palette Sudoku.
+- [ ] Construire `SudokuReasoningTrace`.
+- [ ] Produire graphique et narration depuis la même trace.
+- [ ] Layout horizontal/vertical adaptatif.
+- [ ] Accessibilité projections.
+- [ ] CI GREEN + candidate B.
+- [ ] Test téléphone Fab.
+
+## Phase 3 Gomoku
+- [ ] Ajouter `GameMode.GOMOKU`.
+- [ ] Moteur Gomoku indépendant.
+- [ ] Plateau logique paramétrable et > 12×12.
+- [ ] Viewport visible exactement 12×12.
+- [ ] Drag/pan borné sur plateau.
+- [ ] Policy tap vs drag.
+- [ ] Gecko vert joueur.
+- [ ] Même asset filtré jaune pour Pierre.
+- [ ] Détection 5 alignés dans 4 directions.
+- [ ] IA priorités gagner/bloquer/4/3/proximité.
+- [ ] Tour joueur ↔ Prof.
+- [ ] Recentrage sur coup Prof si hors viewport utile.
+- [ ] Recentrage sur alignement gagnant hors viewport.
+- [ ] Pipeline animations partagé.
+- [ ] Personnalité / dialogue Prof.
+- [ ] Accessibilité vert/jaune + grandes cibles.
+- [ ] CI GREEN + candidate C.
+- [ ] Test téléphone Fab.
+

@@ -1046,3 +1046,26 @@ ReasoningTrace
 Same trace = no text/graphic contradiction.
 ```
 
+<!-- GECKO-039-THREE-PHASE-PLAN-2026-09-27 -->
+GECKO-039 execution order:
+CLASSIC
+  → wider board
+  → audit/extract shared Gecko animation pipeline
+  → candidate A
+SUDOKU
+  → shared Classic animations
+  → clean title
+  → double tap personal markers
+  → ReasoningTrace → graphic + text
+  → candidate B
+GOMOKU
+  → independent logical board
+  → viewport 12x12
+  → drag/pan
+  → tap plays / drag pans
+  → green player Gecko / dynamically yellow Prof Gecko
+  → AI uses whole logical board
+  → candidate C
+
+Each mode remains compartmentalized and independently testable.
+

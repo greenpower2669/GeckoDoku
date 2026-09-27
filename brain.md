@@ -2547,3 +2547,36 @@ Accessibilité :
 Principe permanent :
 **Prof Gecko ne dit pas seulement « voici la réponse » ; il montre pourquoi cette réponse est nécessaire.**
 
+<!-- GECKO-039-THREE-PHASE-PLAN-2026-09-27 -->
+# GECKO-039 — cycle de développement unifié
+
+Fab valide désormais un cycle unique en trois phases, dans cet ordre impératif :
+
+1. **Classic**
+   - grille plus large ;
+   - audit du pipeline d'animations Gecko historique ;
+   - ce pipeline devient la référence réutilisable.
+
+2. **Sudoku**
+   - conserver tap/retap Gecko et Prof existants ;
+   - réutiliser les animations Classic pour le Gecko-repère ;
+   - titre principal toujours `GeckoDoku 🦎` ;
+   - double tap = clavier/palette des repères personnels ;
+   - Prof détaillé via trace de raisonnement réelle et projection synchronisée.
+
+3. **Gomoku**
+   - désormais inclus dans ce même cycle après validation Sudoku ;
+   - moteur séparé ;
+   - plateau logique plus grand qu'une fenêtre mobile ;
+   - viewport visible **12×12** ;
+   - navigation par drag/pan ;
+   - tap distinct du drag ;
+   - calcul IA sur le plateau complet ;
+   - même sprite Gecko vert, filtre dynamique jaune pour Pierre ;
+   - pipeline animation commun.
+
+Raison du viewport Gomoku :
+ne pas réduire toutes les positions à des mini-cases illisibles. Le joueur voit 12×12 positions confortables et déplace la fenêtre pour explorer le reste du plateau.
+
+Chaque phase doit produire une candidate testable avant de passer à la suivante.
+

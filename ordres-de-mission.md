@@ -1,255 +1,313 @@
 # GECKODOKU — ORDRE DE MISSION ACTIF
-## GECKO-039 — CORRECTIONS SUDOKU + FUTUR MODE GOMOKU
+## GECKO-039 — CLASSIC → SUDOKU → GOMOKU
 
 Branche impérative :
 `gecko-039-sudoku-tap-gecko-gomoku`
 
-Base actuelle :
-`d9cfeac9344072e6fba24bfdbdb87486dfcbfcd8`
+HEAD documentaire de restructuration :
+`3b86582010d3693bd21deb05d9e2d676d981dc60`
 
-IMPORTANT :
-- intervenir uniquement sur cette branche ;
+## RÈGLES GÉNÉRALES
+
+- travailler uniquement sur cette branche ;
 - ne pas repartir de `main` ;
 - ne pas fusionner `main` ;
-- ne pas publier de release sans GO explicite de Fab ;
-- synchroniser `brain.md`, `brainmap.md`, `debughistorical.md` et `todo.md` avec chaque intervention ;
-- téléphone Fab = autorité finale.
+- aucune release sans GO explicite de Fab ;
+- TDD : RED avant correction structurante, puis GREEN ;
+- synchroniser `brain.md`, `brainmap.md`, `debughistorical.md`, `todo.md`, `ordres-de-mission.md` à chaque intervention ;
+- téléphone Fab = autorité finale ;
+- chaque mode doit rester compartimenté afin de pouvoir être testé séparément ;
+- ne pas casser un mode déjà validé en travaillant sur le suivant.
+
+# ORDRE IMPÉRATIF D'EXÉCUTION
+
+```text
+PHASE 1 — GECKODOKU CLASSIC
+        ↓ validation / candidate testable
+PHASE 2 — SUDOKU
+        ↓ validation / candidate testable
+PHASE 3 — GOMOKU
+        ↓ validation / candidate testable
+```
+
+Ne pas commencer la phase suivante tant que la précédente n'est pas techniquement GREEN et testable.
 
 ---
 
-# 1 — SUDOKU : GECKO-REPÈRE — CORRECTION DES ANIMATIONS
+# PHASE 1 — MODE GECKODOKU CLASSIC
 
-STATUT :
-Tap / retap déjà validés fonctionnellement.
-Prof Sudoku déjà validé fonctionnellement.
+## 1.1 — GRILLE CLASSIQUE PLUS LARGE
 
-## OBJECTIF
+### OBJECTIF
 
-Le petit Gecko-repère du mode Sudoku ne doit PAS se contenter d'une animation procédurale simplifiée propre au Sudoku.
+Agrandir la grille du mode GeckoDoku historique afin qu'elle utilise davantage la largeur utile du téléphone.
 
-Fab demande explicitement de **réutiliser les vraies animations du Gecko du mode classique**.
+La grille doit devenir visiblement plus grande et plus confortable sans :
+- chevaucher les contrôles ;
+- masquer Prof Gecko ;
+- casser les bulles ;
+- réduire les cibles tactiles ;
+- déformer la géométrie historique ;
+- casser les tailles de grille existantes.
 
-Le Gecko-repère doit donc retrouver le comportement vivant et mignon déjà connu dans le mode GeckoDoku historique.
+### PRINCIPE
 
-## CONTRAT
+Comme pour le Sudoku, la grille a priorité sur les commandes secondaires.
 
-Tap simple sur une case Sudoku vide jouable :
-- pose le petit Gecko-repère.
+Objectif :
+- largeur utile maximale raisonnable ;
+- marges horizontales minimales ;
+- aucune marge décorative inutile ;
+- conserver un plateau parfaitement lisible.
 
-Retap sur cette même case :
-- retire le Gecko-repère.
+La valeur exacte de la marge doit être déterminée après audit du layout historique et validée sur téléphone.
 
-Ce comportement est déjà correct et ne doit pas être modifié.
+### NON-RÉGRESSION
 
-## ANIMATIONS À RÉUTILISER
+Conserver :
+- régions ;
+- cellules ;
+- gestes ;
+- croix ;
+- hypothèses ;
+- repères personnels ;
+- Prof ;
+- animations ;
+- accessibilité.
 
-Réutiliser autant que possible l'infrastructure / les médias existants du mode classique, notamment les animations Gecko déjà présentes dans le projet.
+## 1.2 — AUDIT DU SYSTÈME D'ANIMATIONS CLASSIQUE
 
-Références existantes à auditer :
+Le mode Classic devient la **référence canonique d'animation Gecko**.
+
+Auditer réellement :
+- déclenchement des animations ;
+- sélection aléatoire ;
+- apparition ;
+- disparition ;
+- actions longues ;
+- règles de priorité ;
+- coexistence avec le plateau ;
+- respect de `Animations ON/OFF`.
+
+Assets/références connus à inspecter :
 - `assets/gecko/Gecko_apparition.mp4`
 - `assets/gecko/Gecko_disparition.mp4`
 - `assets/gecko/Gecko_actions_plusieurs.mp4`
-- autres mécanismes d'animation Gecko déjà réellement utilisés par le mode historique.
+- autres médias Gecko effectivement utilisés par le moteur historique.
 
-Objectif :
-- apparition mignonne quand le repère est posé ;
-- disparition mignonne quand il est retiré ;
-- petites actions / attitudes aléatoires comme dans le mode classique ;
-- comportement vivant et non mécanique ;
-- ne pas recréer une seconde architecture d'animation si l'existante peut être mutualisée.
+### BUT
 
-IMPORTANT :
-- conserver la coexistence avec les candidats noirs ;
-- ne pas gêner la lecture de la grille ;
-- ne pas bloquer le tactile ;
-- ne pas ralentir le jeu ;
-- respecter le réglage Animations ON/OFF ;
-- Animations OFF = repère visible sans animation ;
-- ne pas transformer l'animation en effet décoratif permanent envahissant.
+Éviter trois architectures séparées.
 
-La petite animation procédurale actuelle peut servir de fallback si nécessaire, mais **la cible est bien la réutilisation des animations classiques**.
+Créer ou dégager, si nécessaire, une couche commune réutilisable par :
+- Classic ;
+- Sudoku ;
+- Gomoku.
+
+Cette mutualisation doit préserver le comportement historique avant de l'étendre.
+
+## 1.3 — REPÈRES PERSONNELS CLASSIQUES
+
+Auditer le clavier / la palette des repères personnels déjà existants dans le mode Classic.
+
+Documenter :
+- données manipulées ;
+- gestes d'ouverture ;
+- modèle de stockage ;
+- rendu ;
+- Undo/Redo éventuel ;
+- distinction entre repère visuel et logique de jeu.
+
+Le Sudoku devra réutiliser ce système autant que possible au lieu d'en recréer un autre.
+
+## 1.4 — JALON PHASE 1
+
+Avant Sudoku :
+- tests Classic GREEN ;
+- grille Classic plus large ;
+- animations historiques toujours fonctionnelles ;
+- repères personnels non régressés ;
+- APK/AAB candidate ;
+- test téléphone Fab.
 
 ---
 
-# 2 — BUG MINEUR / NETTOYAGE DU TITRE
+# PHASE 2 — MODE SUDOKU
 
-Dépôt : GeckoDoku
-Intervenir sur la branche actuellement en cours.
+## 2.1 — ÉTAT DÉJÀ VALIDÉ / À CONSERVER
 
-## OBJECTIF
+Déjà en place :
+- grille Sudoku quasi pleine largeur ;
+- mini-candidats noirs ;
+- tap simple case vide → Gecko-repère ;
+- retap simple → retire le Gecko-repère ;
+- case donnée/remplie protégée ;
+- appui long → palette locale Sudoku ;
+- Undo/Redo du Gecko-repère ;
+- Prof : premier tap explique ;
+- second tap joue la même déduction encore valide ;
+- long press Prof joue directement une déduction sûre ;
+- provenance `PROFESSOR` ;
+- suppression des préfixes redondants `Prof Gecko :` / `Prof Gecko •`.
 
-Sur l'écran du mode Sudoku, le titre affiche actuellement :
+Ne pas refaire ces fonctions.
 
+## 2.2 — GECKO-REPÈRE : UTILISER LES ANIMATIONS CLASSIQUES
+
+### PROBLÈME
+
+Le Gecko-repère Sudoku possède actuellement une animation procédurale locale.
+
+Fab demande les **vraies animations du mode Classic**.
+
+### OBJECTIF
+
+Brancher le Gecko-repère Sudoku sur le pipeline d'animations mutualisé issu de la phase 1.
+
+Comportement souhaité :
+- pose → apparition mignonne ;
+- retrait → disparition mignonne ;
+- petites actions aléatoires ;
+- personnalité visuelle identique au Gecko historique ;
+- aucune animation mécanique uniforme.
+
+### CONTRAINTES
+
+- candidats noirs toujours lisibles ;
+- Gecko en arrière-plan / filigrane si nécessaire ;
+- tactile jamais bloqué ;
+- animation courte ou non intrusive ;
+- `Animations OFF` = Gecko visible mais statique ;
+- animation procédurale actuelle seulement comme fallback si nécessaire.
+
+## 2.3 — TITRE SUDOKU : NETTOYAGE MINEUR
+
+Actuellement :
 `GeckoDoku · Sudoku 🦎`
 
-Retirer uniquement la mention :
-
-`· Sudoku`
-
-afin que le titre devienne simplement :
-
+Cible :
 `GeckoDoku 🦎`
 
-## RAISON
+Ne modifier que le titre principal.
 
-Le mode de jeu est déjà parfaitement identifiable juste dessous grâce à :
-- `Sudoku 9×9 • Facile • 40 cases données`
-- `Mode Sudoku activé`
+Conserver :
+- `Sudoku 9×9 • Facile • ...` ;
+- indication de mode sous le titre ;
+- Gecko/icône ;
+- fonctionnement Sudoku.
 
-Répéter « Sudoku » dans le titre principal surcharge visuellement l'interface et affaiblit le nom de l'application.
-
-## IMPORTANT
-
-- conserver le nom `GeckoDoku` ;
-- conserver le petit Gecko / l'icône présente à droite du titre ;
-- ne pas modifier `Sudoku 9×9…` ;
-- ne pas modifier `Mode Sudoku activé` ;
-- ne pas modifier le fonctionnement du mode Sudoku ;
-- ne pas modifier Prof Gecko ;
-- ne pas modifier les autres modes ;
-- cette correction de titre est purement visuelle.
-
-## AUDIT RAPIDE
-
-Vérifier également que les autres modes ne rajoutent pas leur nom directement dans le titre principal `GeckoDoku`.
-
-Principe UI permanent :
+### INVARIANT MULTI-MODE
 
 ```text
-TITRE PRINCIPAL = identité de l'application : GeckoDoku
-INDICATION DE MODE = zone dédiée sous le titre
+TITRE PRINCIPAL = GeckoDoku 🦎
+MODE ACTIF = zone dédiée sous le titre
 ```
 
----
+Auditer Classic et futur Gomoku pour ne jamais ajouter leur nom au titre principal.
 
-# 3 — INVARIANT MESSAGE PROF MULTI-MODE
+## 2.4 — DOUBLE TAP = CLAVIER DES REPÈRES PERSONNELS
 
-STATUT :
-Correction déjà appliquée en Sudoku.
-À conserver comme invariant permanent.
-
-`ProfessorBubbleView` affiche déjà l'en-tête « Prof Gecko ».
-
-Donc :
-- le corps ne commence jamais par `Prof Gecko :` ;
-- le corps ne commence jamais par `Prof Gecko •` ;
-- le status décrit uniquement l'action / technique / état.
-
-Ce contrat devra être respecté dès le premier code du futur Gomoku.
-
----
-
-# 3A — SUDOKU : DOUBLE TAP = CLAVIER DES REPÈRES PERSONNELS
-
-## OBJECTIF
-
-En mode Sudoku, ajouter un geste distinct :
-
-**DOUBLE TAP SUR UNE CASE**
-→ ouvrir le clavier / la palette des repères personnels.
-
-Le but est de permettre au joueur d'ajouter rapidement ses propres repères visuels, en complément :
-- du Gecko-repère ;
-- des candidats 1–9 ;
-- des valeurs Sudoku.
-
-## CONTRAT DES GESTES
+En Sudoku :
 
 ```text
-TAP SIMPLE sur case vide
-→ pose / retire le Gecko-repère
+TAP SIMPLE case vide
+→ toggle Gecko-repère
 
-DOUBLE TAP sur case
-→ ouvre le clavier / la palette des repères personnels
+DOUBLE TAP case
+→ clavier / palette des repères personnels
 
-APPUI LONG sur case
-→ ouvre la palette Sudoku locale
-   - valeurs 1..9
+APPUI LONG case
+→ palette Sudoku
+   - valeur 1..9
    - candidats 1..9
    - effacer
 ```
 
-IMPORTANT :
-- ne pas confondre double tap et deux taps simples successifs ;
-- un double tap ne doit pas poser puis retirer instantanément le Gecko-repère ;
-- un double tap ne doit pas saisir automatiquement une valeur Sudoku ;
-- réutiliser autant que possible le système de repères personnels du mode classique ;
-- ne pas mélanger les repères personnels avec les notes/candidats Sudoku dans le moteur logique ;
-- les repères personnels restent purement visuels ;
-- ils ne doivent jamais influencer SudokuSolver ou SudokuHintEngine ;
-- conserver l'accessibilité et les grandes cibles tactiles.
+### IMPORTANT
 
----
+- double tap ≠ deux taps simples ;
+- ne pas poser puis retirer instantanément le Gecko ;
+- ne pas saisir de valeur automatiquement ;
+- réutiliser le système de repères personnels audité en phase 1 ;
+- repères personnels purement visuels ;
+- aucune influence sur `SudokuSolver` ;
+- aucune influence sur `SudokuHintEngine`.
 
-# 3B — CORRECTION PROF GECKO
-## EXPLICATION VISUELLE ET RAISONNEMENT DÉTAILLÉ
+## 2.5 — PROF GECKO : RAISONNEMENT VISUEL ET DÉTAILLÉ
 
-## PROBLÈME CONSTATÉ
+### PROBLÈME
 
-Actuellement Prof Gecko peut afficher par exemple :
+Une phrase du type :
 
 `Dans cette ligne, le 6 ne peut aller qu'à cet endroit.`
 
-C'est insuffisant.
+donne la conclusion mais pas le raisonnement.
 
-Le joueur voit la réponse, mais ne comprend pas pourquoi les autres positions sont impossibles.
+### PRINCIPE
 
-## OBJECTIF
+Prof Gecko est un professeur.
 
-Quand Prof Gecko donne une aide logique, l'écran doit présenter :
+Son rôle n'est pas :
+`Voici la réponse.`
 
-### À GAUCHE
-La projection graphique du raisonnement directement sur la grille / mini-grille.
+Son rôle est :
+`Je vais te montrer pourquoi cette réponse est forcément correcte.`
 
-### À DROITE
-L'explication détaillée de Pierre correspondant exactement à cette projection.
+## 2.6 — S'INSPIRER DU MODE CLASSIC
 
-Sur petit écran Android, autoriser une disposition adaptative :
+Auditer la façon dont le Prof Classic :
+- met en évidence des sources ;
+- projette une logique ;
+- montre des hypothèses ;
+- garde un état visuel ;
+- synchronise interaction et explication.
 
-```text
-[ projection ]
-[ explication ]
-```
+Réutiliser les composants/patterns pertinents au lieu de dupliquer inutilement la pédagogie.
 
-si deux colonnes deviennent illisibles.
+Ne pas forcer une réutilisation si la logique Sudoku exige un composant spécifique.
 
-## RÈGLE FONDAMENTALE
+## 2.7 — TRACE DE RAISONNEMENT UNIQUE
 
-Le Prof ne doit jamais se contenter de donner la conclusion.
+Créer un modèle pur, nom libre, équivalent à :
 
-Il doit expliquer les éliminations successives qui permettent d'y arriver.
+`SudokuReasoningTrace`
 
-Exemple de style attendu :
+contenant au minimum :
+- technique Sudoku ;
+- valeur recherchée ;
+- cellules/chiffres sources ;
+- projections utilisées ;
+- candidates initiales ;
+- cases/candidats éliminés ;
+- raison de chaque élimination ;
+- case finale ;
+- ordre des étapes.
 
-`Regarde le 6 déjà présent ici.`
+### RÈGLE ABSOLUE
 
-`Il se projette sur cette ligne : toutes ces cases deviennent impossibles pour un autre 6.`
+Cette même trace produit :
+1. le graphique ;
+2. le texte ;
+3. éventuellement le texte vocal.
 
-`Ensuite, ce deuxième 6 se projette dans cette direction.`
+Interdit :
+- calculer la solution ;
+- puis inventer après coup une phrase générique.
 
-`Zut ! Cette deuxième possibilité est elle aussi éliminée.`
+## 2.8 — PROJECTION GRAPHIQUE
 
-`Dans cette zone, il ne reste maintenant qu'une seule case possible pour le 6.`
-
-`Donc le 6 doit forcément être placé ici.`
-
-Le texte exact dépend obligatoirement de la grille réelle.
-
-## PROJECTION GRAPHIQUE
-
-Pendant chaque étape :
-
-1. mettre en évidence le chiffre source utilisé ;
-2. dessiner la projection réellement utilisée :
+Étape par étape :
+1. mettre en évidence le chiffre source ;
+2. dessiner sa projection réelle :
    - ligne ;
    - colonne ;
    - bloc 3×3 ;
-3. montrer graphiquement les cases rendues impossibles ;
-4. afficher une deuxième projection lorsqu'une seconde contrainte intervient ;
-5. marquer clairement les possibilités éliminées ;
-6. terminer par la seule case restante.
+3. montrer les cases rendues impossibles ;
+4. afficher la contrainte suivante ;
+5. barrer/atténuer les possibilités éliminées ;
+6. mettre en évidence la dernière case possible.
 
-Exemple conceptuel :
+Exemple :
 
 ```text
 6 source
@@ -262,348 +320,333 @@ projection │
            X
            X
 
-une seule case encore possible
-           ↓
-          [ 6 ]
+dernière case
+     ↓
+    [ 6 ]
 ```
 
-## SYNCHRONISATION TEXTE / GRAPHISME
+## 2.9 — SYNCHRONISATION TEXTE / GRAPHISME
 
-Les explications apparaissent étape par étape.
+Exemple de séquence :
 
-### ÉTAPE 1
+### Étape 1
 Graphique :
-projection du premier 6.
+premier 6 + projection.
 
-Texte :
+Pierre :
 `Ce 6 interdit toute cette ligne.`
 
-### ÉTAPE 2
+### Étape 2
 Graphique :
-projection du deuxième 6.
+deuxième contrainte.
 
-Texte :
+Pierre :
 `Celui-ci élimine aussi cette possibilité.`
 
-### ÉTAPE 3
+### Étape 3
 Graphique :
-cases impossibles barrées / atténuées.
+possibilités supprimées.
 
-Texte :
+Pierre :
 `Il ne reste donc plus qu'une case possible.`
 
-### ÉTAPE 4
+### Étape 4
 Graphique :
-case solution très clairement mise en évidence.
+case finale.
 
-Texte :
+Pierre :
 `Voilà ! Le 6 doit être ici.`
 
-## SOURCE UNIQUE DE VÉRITÉ : TRACE DE RAISONNEMENT
+Le contenu exact dépend de la grille réelle.
 
-Le moteur doit expliquer **le raisonnement réel qui a conduit à la suggestion**.
+## 2.10 — LAYOUT EXPLICATION PROF
 
-Interdit :
-- obtenir une case solution ;
-- puis fabriquer après coup une phrase générique qui semble expliquer cette solution.
-
-Le système d'aide doit conserver une structure de preuve, nom libre, équivalente à :
-
-`SudokuReasoningTrace`
-
-contenant au minimum :
-- technique utilisée ;
-- valeur recherchée ;
-- chiffres/cases sources de contraintes ;
-- type de chaque projection ;
-- cases candidates initiales ;
-- cases/candidats éliminés ;
-- raison de chaque élimination ;
-- dernière case restante ;
-- ordre logique des étapes.
-
-Cette même trace sert ensuite à générer :
-1. l'animation / projection graphique ;
-2. l'explication du Prof.
-
-**Le dessin et le texte ne doivent jamais provenir de deux calculs indépendants.**
-
-## TECHNIQUES CONCERNÉES
-
-Commencer par les techniques déjà réellement implémentées :
-- candidat unique / naked single ;
-- chiffre unique dans une ligne ;
-- chiffre unique dans une colonne ;
-- chiffre unique dans un bloc 3×3.
-
-Pour chacune :
-- produire une trace exacte ;
-- n'afficher que les contraintes réellement nécessaires ;
-- ne pas inventer une projection qui n'a pas servi au raisonnement.
-
-Les techniques futures devront adopter la même architecture.
-
-## ERGONOMIE
-
-Zone d'explication :
-
+Grand écran :
 ```text
-[ projection / mini-grille ] [ raisonnement détaillé ]
+[ projection / grille ] [ texte détaillé ]
 ```
 
-La projection doit rester suffisamment grande pour être comprise.
+Petit Android :
+```text
+[ projection ]
+[ explication ]
+```
 
-Le texte doit rester lisible et suivre exactement l'étape graphique courante.
+Ne jamais rendre la projection trop petite pour comprendre la logique.
 
-Prévoir :
-- étape suivante automatique lente ou pilotable ;
-- possibilité de revoir une étape si nécessaire ;
-- aucune animation trop rapide ;
-- aucune projection qui masque définitivement la grille.
+## 2.11 — ACCESSIBILITÉ PROF
 
-## ACCESSIBILITÉ
+Ne jamais encoder les projections par couleur uniquement.
 
-Les projections ne doivent jamais être indiquées uniquement par la couleur.
-
-Utiliser aussi :
+Utiliser :
 - traits ;
 - flèches ;
-- hachures ;
 - croix ;
+- hachures ;
 - contours ;
 - variation de luminosité ;
 - surbrillance ;
-- petite animation si utile.
+- animation discrète.
 
-La case finale doit être extrêmement facile à identifier.
+La case finale doit être immédiatement identifiable.
 
-## INVARIANT PIERRE ↔ BULLE
+## 2.12 — TECHNIQUES À TRAITER D'ABORD
 
-Le contrat existant reste obligatoire :
-tout texte réellement prononcé par Pierre apparaît dans ProfessorBubbleView.
+Commencer par les techniques déjà implémentées :
+- naked single ;
+- hidden single ligne ;
+- hidden single colonne ;
+- hidden single bloc.
 
-L'en-tête visuel contient déjà `Prof Gecko`, donc le corps ne répète pas ce préfixe.
+Chaque technique doit produire sa vraie trace.
 
-## CRITÈRES DE SUCCÈS
+## 2.13 — INVARIANT DIALOGUE
 
-Une aide Prof est validée seulement si le joueur peut répondre à la question :
+La bulle a déjà un en-tête `Prof Gecko`.
 
-**« Pourquoi cette case et pas les autres ? »**
+Le corps :
+- ne commence jamais par `Prof Gecko :` ;
+- ne commence jamais par `Prof Gecko •`.
 
-en regardant la projection et en lisant/écoutant Pierre.
+Le status :
+- technique/action uniquement ;
+- jamais une signature du locuteur.
 
-Le Prof est un professeur.
+## 2.14 — JALON PHASE 2
 
-Son rôle n'est pas :
-`Voici la réponse.`
-
-Son rôle est :
-`Je vais te montrer pourquoi cette réponse est forcément correcte.`
-
-Le joueur doit pouvoir reproduire ensuite le raisonnement seul.
+Avant Gomoku :
+- titre corrigé ;
+- animation Gecko-repère réutilise le Classic ;
+- double tap repères personnels ;
+- Prof détaillé et synchronisé ;
+- tests texte/graphique ;
+- accessibilité ;
+- CI GREEN ;
+- APK/AAB ;
+- test téléphone Fab.
 
 ---
 
-# 4 — FUTUR MODE GOMOKU AVEC PROF GECKO
+# PHASE 3 — TROISIÈME MODE : GOMOKU CONTRE PROF GECKO
 
-STATUT :
-**BRAINSTORM / ORDRE DE MISSION FUTUR.**
-**NE PAS CODER CE MODE TANT QUE FAB N'A PAS DONNÉ UN GO EXPLICITE.**
+## 3.1 — STATUT
 
-## 4.1 But général
+Le Gomoku fait désormais partie du **même cycle de développement GECKO-039**.
 
-Ajouter un troisième mode de jeu inspiré du Gomoku.
+Il doit commencer seulement après le jalon Sudoku GREEN/testable.
 
-Le joueur affronte directement Prof Gecko / Pierre.
+## 3.2 — PHILOSOPHIE
 
-Principe :
-- le joueur pose un Gecko sur une case libre ;
-- Prof Gecko joue ensuite son propre coup ;
-- le premier camp qui aligne au moins 5 Geckos gagne.
+Le joueur affronte directement Pierre.
 
-Conserver toute l'identité GeckoDoku :
-- humour ;
-- Prof vivant ;
-- petites interventions contextuelles ;
-- interface claire ;
-- animations ;
-- accessibilité ;
-- aucun aspect froid ou purement abstrait.
+Il ne doit pas avoir l'impression de jouer contre une IA abstraite.
 
-## 4.2 Plateau
+Il joue contre Prof Gecko :
+- il réfléchit ;
+- bloque ;
+- attaque ;
+- plaisante ;
+- explique parfois ses choix.
 
-Créer un plateau Gomoku indépendant du Sudoku.
+## 3.3 — PLATEAU LOGIQUE + VIEWPORT 12×12
 
-La taille exacte sera décidée au moment de l'implémentation.
+### EXIGENCE PRINCIPALE
 
-Le moteur ne doit pas dépendre obligatoirement d'un plateau de Go 19×19.
+Ne pas miniaturiser tout le plateau pour le faire tenir à l'écran.
 
-Prévoir une grille plus compacte si nécessaire pour :
-- téléphone ;
-- visibilité ;
-- cibles tactiles ;
-- identité GeckoDoku.
+Afficher une **fenêtre visible de 12 × 12 positions**.
 
-Toutes les cases libres sont jouables.
-Une case occupée est interdite.
+Le plateau logique peut être plus grand que 12×12.
 
-## 4.3 Pions = Geckos
+Architecture :
+```text
+PLATEAU LOGIQUE PLUS GRAND
+        ↓
+VIEWPORT MOBILE 12 × 12
+        ↓
+DRAG / PAN
+        ↓
+exploration des autres zones du plateau
+```
+
+### DRAG / PAN
+
+Le joueur doit pouvoir :
+- poser le doigt sur le plateau ;
+- faire glisser ;
+- déplacer la fenêtre visible ;
+- explorer naturellement le plateau.
+
+Le déplacement :
+- ne doit pas poser accidentellement un Gecko ;
+- doit avoir un seuil de drag clair ;
+- doit rester fluide ;
+- doit être borné aux limites du plateau ;
+- doit conserver la taille lisible des intersections/cases.
+
+### TAP VS DRAG
+
+```text
+TAP court sans déplacement significatif
+→ jouer sur la position
+
+DRAG dépassant le seuil
+→ déplacer le viewport
+→ aucun pion posé
+```
+
+### TAILLE DU PLATEAU LOGIQUE
+
+Ne pas lier le moteur obligatoirement à 19×19.
+
+Prévoir une taille paramétrable.
+
+Une taille plus grande que le viewport 12×12 est obligatoire pour que l'exploration par drag ait un sens.
+
+La taille initiale exacte sera choisie lors de l'implémentation après test de jouabilité, sans casser l'architecture.
+
+## 3.4 — APPARENCE TYPE PLATEAU DE GO
+
+Le rendu doit évoquer un plateau de Go/Gomoku :
+- grille régulière ;
+- intersections ou positions très lisibles ;
+- contraste fort ;
+- repérage spatial stable pendant le pan.
+
+Les Geckos remplacent les pierres.
+
+## 3.5 — PIONS
 
 JOUEUR :
 - Gecko vert original.
 
 PROF :
-- Gecko jaune.
+- même sprite Gecko ;
+- filtre jaune dynamique.
 
-IMPORTANT :
-AUCUN nouvel asset Gecko jaune.
+AUCUN asset Gecko jaune supplémentaire.
 
-Utiliser exactement le même sprite Gecko que pour le joueur.
+## 3.6 — FILTRE JAUNE
 
-## 4.4 Coloration dynamique du Gecko jaune
+À partir du Gecko vert :
+- R fortement augmenté ;
+- G conservé fort ;
+- B réduit ;
+- alpha intact ;
+- détails intactes ;
+- yeux, ombres, relief conservés ;
+- silhouette inchangée.
 
-Partir du Gecko vert existant.
+Ne pas faire un aplat jaune.
 
-Transformation colorimétrique :
-- conserver principalement le vert ;
-- augmenter fortement le rouge ;
-- réduire ou supprimer le bleu.
+## 3.7 — ANIMATIONS
 
-Principe :
-```text
-VERT :
-R faible
-G fort
-B faible
+Le Gomoku doit réutiliser le pipeline commun issu du Classic.
 
-→
+Placement joueur :
+- apparition courte / rebond Gecko.
 
-JAUNE :
-R fort
-G fort
-B faible / nul
-```
+Placement Prof :
+- apparition courte adaptée au Gecko jaune.
 
-Le filtre :
-- conserve l'alpha ;
-- conserve ombres, détails, yeux, nuances, transparence et relief ;
-- ne change ni taille ni silhouette ;
-- ne dégrade pas le sprite.
+Actions aléatoires éventuelles :
+- discrètes ;
+- jamais au détriment du rythme.
 
-Ne pas faire un simple aplat jaune.
+`Animations OFF` :
+- pions visibles ;
+- pas d'animation.
 
-## 4.5 Tour du joueur
+## 3.8 — TOUR JOUEUR
 
-Le joueur touche une case libre.
+Tap valide sur position libre :
+- poser Gecko vert ;
+- vérifier immédiatement victoire.
 
-Un Gecko vert est placé.
-
-Case occupée :
+Position occupée :
 - aucun pion ajouté ;
-- remarque humoristique contextuelle possible.
+- remarque contextuelle possible.
 
 Exemples :
-- « Petit problème… je suis déjà là. »
-- « Tu veux mettre deux Geckos dans la même case ? Ambitieux. »
-- « Cette place est prise, jeune lézard. »
+- `Petit problème… je suis déjà là.`
+- `Tu veux mettre deux Geckos dans la même case ? Ambitieux.`
+- `Cette place est prise, jeune lézard.`
 
-Après un coup valide :
-- vérifier immédiatement l'alignement gagnant.
+Une position libre reste toujours légalement jouable.
 
-## 4.6 Tour du Prof
+## 3.9 — TOUR PROF
 
-Fonctionnement envisagé :
+Séquence :
 1. joueur joue ;
-2. interaction Prof devient disponible ;
-3. joueur demande au Prof de jouer ;
-4. moteur analyse la position ;
-5. Prof choisit une case ;
-6. Gecko jaune placé ;
-7. remarque éventuelle ;
-8. retour joueur.
+2. interaction Prof disponible ;
+3. joueur demande à Pierre de jouer ;
+4. IA analyse le plateau logique complet, pas seulement le viewport ;
+5. Prof choisit une position ;
+6. si nécessaire, le viewport peut se recentrer / guider vers son coup ;
+7. Gecko jaune posé ;
+8. commentaire éventuel ;
+9. retour joueur.
 
-Le coup du Prof est calculé dynamiquement depuis le plateau courant.
+Le moteur ne doit jamais dépendre de ce qui est actuellement visible à l'écran pour calculer.
 
-Interdit :
-- préenregistrer toutes les parties ;
-- créer un arbre géant exhaustif ;
-- prévoir toutes les combinaisons à l'avance.
-
-## 4.7 IA du Prof
-
-Commencer par une IA déterministe et lisible.
+## 3.10 — IA INITIALE
 
 Priorités :
 1. gagner immédiatement ;
-2. bloquer une victoire immédiate du joueur ;
-3. créer une ligne de 4 menaçante ;
-4. empêcher une ligne de 4 ;
-5. créer / bloquer des lignes de 3 ;
-6. privilégier une case tactique proche des pions ;
-7. petit aléatoire seulement entre plusieurs coups de valeur comparable.
+2. bloquer victoire immédiate joueur ;
+3. créer ligne de 4 menaçante ;
+4. bloquer ligne de 4 ;
+5. créer / bloquer lignes de 3 ;
+6. privilégier zones proches des pions existants ;
+7. aléatoire léger entre coups de score similaire.
 
-Le Prof ne doit pas être immédiatement imbattable.
-Des difficultés pourront être ajoutées plus tard.
+Commencer déterministe et explicable.
 
-## 4.8 Personnalité du Prof
+## 3.11 — PERSONNALITÉ DU PROF
 
-Commentaires contextuels seulement quand cela apporte quelque chose.
-
-Exemples :
-- blocage de victoire ;
-- menace créée ;
-- danger ;
-- victoire ;
-- case occupée ;
-- explication pédagogique.
+Réutiliser :
+- mémoire anti-répétition ;
+- humeur ;
+- phrases contextuelles ;
+- bulle ;
+- voix Pierre ;
+- invariant sans préfixe redondant.
 
 Pas de phrase après chaque coup.
 
-Réutiliser :
-- personnalité existante ;
-- mémoire anti-répétition ;
-- humeur ;
-- pipeline Pierre ↔ bulle.
+Événements intéressants :
+- blocage critique ;
+- menace ;
+- victoire ;
+- danger ;
+- case occupée ;
+- explication pédagogique.
 
-Exemples sans préfixe de locuteur :
-- « Ah ah ! Celle-là, je l'avais vue. »
-- « Pas si vite. »
-- « Très jolie attaque… ce serait dommage si quelqu'un mettait un Gecko ici. »
-- « Tu devrais peut-être regarder cette ligne. »
-- « Je dis ça, je dis rien… mais ça commence à sentir le Gecko. »
-- « Et de cinq ! »
-- « Une magnifique ligne de Geckos. J'en suis presque ému. »
+## 3.12 — PROF = ADVERSAIRE + PROFESSEUR
 
-## 4.9 Prof adversaire, mais toujours professeur
-
-Pierre reste Prof Gecko.
-
-Il peut expliquer :
-- pourquoi une position était dangereuse ;
+Pierre peut expliquer :
 - pourquoi il a bloqué ;
-- comment reconnaître un alignement ;
-- pourquoi une intersection est forte.
+- pourquoi une ligne est dangereuse ;
+- pourquoi une intersection est forte ;
+- comment repérer une double menace.
 
-Le mode reste à la fois :
-- jeu ;
-- défi ;
-- apprentissage.
+Le système pédagogique peut réutiliser les principes de trace/visualisation du Sudoku lorsque pertinent, sans mélanger les moteurs.
 
-## 4.10 Validation des coups
+## 3.13 — VALIDATION DES COUPS
 
-Toutes les cases libres sont légalement jouables.
+Toutes les positions libres sont légales.
 
-Ne jamais dire qu'une case libre est « incorrecte ».
+Ne jamais dire qu'un coup libre est `incorrect`.
 
-Un coup libre peut être :
+Il peut être :
 - excellent ;
 - moyen ;
+- faible ;
 - dangereux ;
-- mauvais stratégiquement ;
 
-mais reste légal.
+mais légal.
 
-## 4.11 Victoire
+## 3.14 — VICTOIRE
 
 Après chaque coup, rechercher au moins 5 Geckos identiques :
 - horizontal ;
@@ -612,123 +655,145 @@ Après chaque coup, rechercher au moins 5 Geckos identiques :
 - diagonale montante.
 
 Victoire :
-- bloquer nouveaux coups ;
-- mettre en valeur l'alignement gagnant ;
-- réaction adaptée du Prof ;
+- verrouiller nouveaux coups ;
+- mettre en évidence les Geckos gagnants ;
+- réaction du Prof ;
 - proposer Rejouer.
 
-Prévoir égalité éventuelle si plateau plein sans gagnant.
+Égalité possible si plateau plein.
 
-## 4.12 Animation
+## 3.15 — VIEWPORT ET VICTOIRE
 
-Placement d'un Gecko :
-- petite apparition / rebond ;
-- bref ;
-- fluide ;
-- aucune animation ne doit ralentir artificiellement le tour.
+Un alignement gagnant peut traverser une zone actuellement hors écran.
 
-Réflexion Prof :
-- éventuel regard ;
-- mouvement ;
-- petite bulle ;
-- réaction courte.
+Le moteur vérifie donc toujours le plateau logique complet.
 
-## 4.13 Accessibilité
+En cas de victoire hors viewport courant :
+- recentrer intelligemment sur l'alignement gagnant ;
+- afficher les 5 Geckos concernés ;
+- ne jamais forcer le joueur à les chercher manuellement.
 
-Vert joueur et jaune Prof doivent être très faciles à distinguer.
+## 3.16 — ACCESSIBILITÉ
 
-Ne pas dépendre uniquement d'une nuance de teinte.
+Le viewport 12×12 sert précisément à préserver de grandes cibles.
 
-Prévoir si nécessaire :
-- contour ;
-- luminosité différente ;
-- petit marqueur secondaire.
+Vert vs jaune :
+- contraste fort ;
+- ne pas dépendre uniquement de la couleur ;
+- prévoir contour / luminosité / marqueur secondaire si nécessaire.
 
-Les cases restent suffisamment grandes pour être touchées facilement.
+Le pan doit être compatible avec :
+- grossissement ;
+- gestes tactiles ;
+- lecture visuelle ;
+- annonces d'accessibilité.
 
-## 4.14 Architecture
+## 3.17 — ARCHITECTURE
 
-Le moteur Gomoku reste séparé du moteur Sudoku.
+Créer un moteur Gomoku totalement séparé du Sudoku.
 
-Créer une logique claire contenant :
-- état plateau ;
-- joueur courant ;
-- validation case ;
-- détection alignement ;
-- choix IA ;
-- victoire ;
-- égalité éventuelle.
+Composants conceptuels :
+- `GomokuBoardState`
+- `GomokuMove`
+- `GomokuPlayer`
+- `GomokuWinDetector`
+- `GomokuAi`
+- `GomokuViewport`
+- `GomokuGesturePolicy`
+- rendu Gecko partagé ;
+- pipeline animation partagé.
 
-La personnalité du Prof peut être mutualisée.
+Ne jamais mettre les règles Gomoku dans `SudokuGameEngine`.
 
-Ne jamais introduire les règles Gomoku directement dans `SudokuGameEngine`.
+## 3.18 — ÉVOLUTIONS PRÉPARÉES
 
-## 4.15 Évolutions futures
-
-Préparer sans forcément coder :
-- plusieurs tailles ;
-- plusieurs difficultés ;
+Sans forcément tout coder maintenant :
+- tailles logiques différentes ;
+- difficultés Prof ;
 - humain vs humain ;
-- Prof facile / normal / expert ;
-- partie pédagogique ;
+- pédagogique ;
 - analyse après partie ;
-- suggestions ;
 - défis tactiques ;
-- positions préconstruites ;
 - statistiques ;
 - séries de victoires ;
-- variations de personnalité.
+- personnalités Prof.
+
+## 3.19 — JALON PHASE 3
+
+Tests obligatoires :
+- viewport montre exactement 12×12 positions ;
+- pan explore tout le plateau ;
+- tap ne devient pas drag ;
+- drag ne joue aucun coup ;
+- IA analyse le plateau complet ;
+- Gecko vert/jaune partagent le même asset ;
+- filtre jaune préserve alpha/détails ;
+- victoire 5 directions requises ;
+- victoire hors écran recentrée ;
+- animations partagées ;
+- dialogues sans préfixe redondant ;
+- accessibilité ;
+- CI GREEN ;
+- APK/AAB ;
+- test téléphone Fab.
 
 ---
 
-# RÉSUMÉ VISUEL GOMOKU
+# STRATÉGIE DE TEST FAB
+
+Chaque phase produit une candidate testable séparément.
+
+## Candidate A — Classic
+Fab vérifie :
+- grille plus large ;
+- aucune régression ;
+- animations Gecko historiques.
+
+## Candidate B — Sudoku
+Fab vérifie :
+- titre ;
+- animation Gecko classique dans Sudoku ;
+- tap / retap ;
+- double tap repères ;
+- long press ;
+- Prof détaillé visuel + texte.
+
+## Candidate C — Gomoku
+Fab vérifie :
+- apparition du 3e mode ;
+- viewport 12×12 ;
+- drag/pan ;
+- pose Gecko vert ;
+- coup Pierre Gecko jaune ;
+- alignements ;
+- accessibilité ;
+- humour / pédagogie.
+
+---
+
+# RÉSUMÉ FINAL
 
 ```text
-JOUEUR
-= Gecko vert original
+1. CLASSIC
+   → grille plus large
+   → pipeline animation canonique
+   → candidate testable
 
-PROF
-= même sprite Gecko
-+ filtre colorimétrique dynamique
-+ rouge augmenté
-+ vert conservé
-+ bleu réduit / supprimé
-= Gecko jaune
+2. SUDOKU
+   → animation Classic mutualisée
+   → titre nettoyé
+   → double tap repères
+   → Prof raisonnement détaillé
+   → candidate testable
+
+3. GOMOKU
+   → moteur séparé
+   → plateau logique plus grand
+   → viewport 12×12
+   → drag/pan
+   → Gecko vert vs Gecko jaune dynamique
+   → IA Pierre
+   → candidate testable
 ```
 
-AUCUN ASSET GECKO JAUNE SUPPLÉMENTAIRE.
-
----
-
-# PHILOSOPHIE
-
-Un Gomoku simple à comprendre mais totalement intégré à l'univers GeckoDoku.
-
-Le joueur ne doit pas avoir l'impression de jouer contre une IA abstraite.
-
-Il doit avoir l'impression de jouer contre Pierre, qui réfléchit, bloque, attaque, plaisante et explique parfois pourquoi il vient de se faire avoir.
-
----
-
-# ÉTAT ACTUEL DE LA MISSION
-
-DÉJÀ FAIT / À NE PAS REFAIRE :
-- tap simple Sudoku pose le Gecko-repère ;
-- retap enlève le Gecko-repère ;
-- appui long case ouvre la palette ;
-- comportement Prof Sudoku tap / retap / long press ;
-- nettoyage du préfixe redondant Prof dans les messages Sudoku.
-
-À FAIRE :
-1. remplacer / mutualiser l'animation du Gecko-repère Sudoku avec les animations du mode classique ;
-2. corriger le titre Sudoku en `GeckoDoku 🦎` ;
-3. audit rapide du principe de titre sur les autres modes ;
-4. double tap Sudoku → clavier / palette des repères personnels ;
-5. construire la trace de raisonnement réelle du Prof ;
-6. projection graphique + narration détaillée synchronisées ;
-7. tests accessibilité / cohérence texte-graphisme ;
-8. tests + CI + APK/AAB ;
-9. test téléphone Fab.
-
-FUTUR :
-- Gomoku complet uniquement après un GO distinct de Fab.
+Le travail est compartimenté pour permettre à Fab de tester chaque mode simplement avant de poursuivre.

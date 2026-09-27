@@ -1426,3 +1426,26 @@ la visualisation et le texte doivent être dérivés d'une trace de raisonnement
 
 Aucun code applicatif modifié dans cette intervention.
 
+<!-- GECKO-039-THREE-PHASE-PLAN-2026-09-27 -->
+## 2026-09-27 — restructuration GECKO-039 en 3 phases
+
+Fab précise que les corrections animation/titre/Prof sont suffisamment localisées pour être traitées dans le même cycle que le nouveau mode Gomoku.
+
+Ordre décidé :
+1. Classic ;
+2. Sudoku ;
+3. Gomoku.
+
+Nouvelle exigence Classic :
+- grille plus large.
+
+Nouvelle exigence Gomoku :
+- ne pas afficher tout un grand plateau miniaturisé ;
+- présenter une fenêtre 12×12 lisible ;
+- permettre l'exploration du plateau logique par drag/pan ;
+- distinguer strictement tap de jeu et drag de navigation.
+
+Le Gomoku n'est plus un simple brainstorming séparé : il devient la phase 3 du cycle, à commencer après les jalons Classic et Sudoku.
+
+Aucun code applicatif modifié dans cette intervention documentaire.
+
