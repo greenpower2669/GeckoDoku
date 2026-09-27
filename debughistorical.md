@@ -1023,3 +1023,18 @@ Après #138 GREEN, suppression des champs morts issus du système quicktalk hist
 <!-- GECKO-037-V01016-CANDIDATE-2026-09-27 -->
 ## 2026-09-27 — candidate GECKO-037
 #134 RED global attendu, #137 GREEN cœur, #138 GREEN runtime. Candidate v0.10.16-dev / code 27 préparée après nettoyage des anciens selectors runtime.
+
+
+<!-- GECKO-037-CI140-GREEN-2026-09-27 -->
+## 2026-09-27 — GECKO-037 candidate CI #140 GREEN
+
+La candidate v0.10.16-dev / code 27 passe la CI complète après :
+- RED global #134 ;
+- cœur 309/history/selector/context/bubble GREEN #137 ;
+- runtime vivant GREEN #138 ;
+- retrait des anciens selectors runtime ;
+- versionnage candidate.
+
+Tests, APK, AAB et artifact sont produits. Aucun changement du pipeline vidéo GECKO-036 n'a été requis pour GECKO-037.
+
+Correction documentaire : après le câblage GREEN 4, les encouragements ne passent plus par `PierreEncouragements` mais par le selector contextuel 309.

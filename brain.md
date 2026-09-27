@@ -864,3 +864,30 @@ MainActivity ne possède plus d'ancien selector par index pour le smalltalk. Le 
 <!-- GECKO-037-V01016-CANDIDATE-2026-09-27 -->
 ## Référence candidate Prof vivant
 v0.10.16-dev / code 27 est la première candidate intégrant GECKO-037. La base v0.10.15 vidéo reste inchangée ; GECKO-037 se superpose au catalogue/sélection/contexte/bulle.
+
+
+<!-- GECKO-037-CI140-GREEN-2026-09-27 -->
+# GECKO-037 — ÉTAT TECHNIQUE CANDIDATE GREEN
+
+Référence candidate :
+- version : `0.10.16-dev`
+- versionCode : `27`
+- RED global : CI #134 attendu
+- cœur pur : CI #137 GREEN
+- runtime : CI #138 GREEN
+- candidate versionnée : CI #140 GREEN complet
+
+État runtime définitif de la candidate :
+- les encouragements enregistrés MP3 sont supprimés ;
+- `PierreEncouragements` n'est plus la source runtime des encouragements ;
+- `!`, smalltalk ambiant, encouragements et réactions contextuelles passent tous par :
+  `ProfessorLifeController → ProfessorPhraseSelector → ProfessorPhraseCatalog`;
+- le catalogue canonique comporte 309 phrases ;
+- historique individuel 48 h et `lastPhraseId` sont persistés ;
+- contexte/mood reste court et décroissant ;
+- la difficulté protège notamment contre la moquerie injuste sur erreur réfléchie/difficile ;
+- les petites bulles utilisent exactement le texte prononcé et ferment 1000 ms après la vraie completion, avec token anti-callback obsolète ;
+- les bulles pédagogiques restent hors auto-close ;
+- les priorités de `ProfessorSpeech` empêchent le smalltalk de préempter une parole prioritaire.
+
+La validation téléphone de Fab reste l'autorité finale avant clôture de GECKO-037.

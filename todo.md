@@ -557,3 +557,61 @@ Aucune mission active.
 - [ ] CI finale versionnée GREEN.
 - [ ] APK/AAB candidate.
 - [ ] Fab : valider comportement vivant sur téléphone.
+
+
+<!-- GECKO-037-CI140-GREEN-2026-09-27 -->
+# GECKO-037 — ÉTAT APRÈS CI #140
+
+## Critères techniques implémentés
+- [x] 100 phrases historiques conservées.
+- [x] 200 V2.
+- [x] 4 FAB.
+- [x] 5 TAQUIN.
+- [x] Total 309.
+- [x] IDs stables.
+- [x] Aucun doublon exact après normalisation.
+- [x] Diagnostic de proximité textuelle.
+- [x] Cooldown individuel 48 h.
+- [x] Cooldown persistant SharedPreferences.
+- [x] lastPhraseId persistant.
+- [x] Aucune répétition immédiate.
+- [x] Fallback voisin / GENERAL.
+- [x] Fallback forcé oldest-first sans clear.
+- [x] RARE limitée à 4 %.
+- [x] FAB semi-rare.
+- [x] Contexte joueur fonctionnel.
+- [x] mastery.
+- [x] impulsivity.
+- [x] momentum.
+- [x] mood adaptatif.
+- [x] décroissance vers NEUTRAL.
+- [x] difficulté prise en compte.
+- [x] erreur réfléchie/difficile protégée contre TAQUIN immédiat.
+- [x] erreurs rapides répétées peuvent mener à TAQUIN/PEDAGOGICAL.
+- [x] réussite/streak difficile peut mener à IMPRESSED.
+- [x] domination répétée de niveaux faciles peut permettre TAQUIN.
+- [x] ! via moteur 309.
+- [x] smalltalk ambiant via moteur 309.
+- [x] encouragements via moteur 309.
+- [x] réactions d'erreur via moteur 309.
+- [x] bulle simple = texte exact prononcé.
+- [x] fermeture 1 s après vraie completion Pierre.
+- [x] timer obsolète protégé par token.
+- [x] pédagogie non auto-fermée.
+- [x] smalltalk non préemptif.
+- [x] ProfParle/pipeline vidéo non refondu.
+- [x] tests unitaires GREEN.
+- [x] CI #140 GREEN complet.
+- [x] APK/AAB produits.
+- [x] cinq fichiers FAB Copilot synchronisés.
+
+## Validation téléphone restante
+- [ ] Fab : naturel des réactions/contextes.
+- [ ] Fab : humeur perçue comme variée et bienveillante.
+- [ ] Fab : aucune moquerie injuste après erreur réfléchie/difficile.
+- [ ] Fab : bulle simple ferme naturellement ~1 s après fin réelle.
+- [ ] Fab : pédagogie reste lisible/ouverte.
+- [ ] Fab : aucune régression Intro / ProfParle / grille.
+- [ ] Fab : confirmer GECKO-037 comme validé.
+
+Mission active jusqu'à cette validation.

@@ -1194,3 +1194,25 @@ Les champs MainActivity pierreSmallTalkSelector, ProfessorQuickTalkPolicy, Quick
 <!-- GECKO-037-V01016-CANDIDATE-2026-09-27 -->
 ## Candidate GECKO-037 — v0.10.16-dev
 versionCode 27 / versionName 0.10.16-dev. Contient le moteur 309, mémoire 48 h persistante, lastPhraseId, contexte/mood, fallback oldest-first, smalltalk/encouragement/réactions runtime et bulle auto-close sécurisée. CI finale versionnée requise avant livraison téléphone.
+
+
+<!-- GECKO-037-CI140-GREEN-2026-09-27 -->
+# 49 — PREUVE TECHNIQUE CANDIDATE
+
+Run CI #140 : **SUCCESS complet** sur `v0.10.16-dev` / versionCode 27.
+
+Validé automatiquement :
+- tests unitaires GECKO-037 ;
+- compilation Android ;
+- APK ;
+- AAB ;
+- artifact de workflow.
+
+Les critères techniques de la mission sont implémentés. Restent à valider sur téléphone par Fab :
+- naturel du contexte/humeur en jeu réel ;
+- absence de moquerie injuste ressentie ;
+- fermeture visuelle de la petite bulle ~1 s après la vraie fin de Pierre ;
+- absence de régression ProfParle / intro / grille ;
+- impression générale que Prof Gecko « a vu ce qui vient de se passer ».
+
+La mission reste active jusqu'à validation téléphone.

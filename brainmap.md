@@ -358,3 +358,31 @@ MainActivity small speech → ProfessorLifeController ONLY. Ancien PierreSmallTa
 
 <!-- GECKO-037-V01016-CANDIDATE-2026-09-27 -->
 v0.10.16-dev → GECKO-037 complete runtime → CI versionnée → validation téléphone Fab.
+
+
+<!-- GECKO-037-CI140-GREEN-2026-09-27 -->
+GECKO-037 v0.10.16-dev / CI #140 GREEN
+
+player event
+→ context tracker
+→ mood
+→ weighted category
+→ catalog 309
+→ 48h + lastPhraseId
+→ fallback/oldest-first
+→ selected phrase
+→ bubble EXACT text
+→ Pierre EXACT text
+→ real completion
+→ guarded 1000ms close
+
+Runtime sources:
+! / ambient smalltalk / encouragement / contextual reaction
+→ same ProfessorLifeController path.
+
+Pedagogy:
+Prof button / solver explanation
+→ persistent pedagogical bubble
+→ no auto-close.
+
+Phone validation Fab → pending.
