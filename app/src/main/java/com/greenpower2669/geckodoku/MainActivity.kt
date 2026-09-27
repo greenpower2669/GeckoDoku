@@ -3594,6 +3594,15 @@ class MainActivity : Activity() {
             scheduleProfessorIdleAnimation()
         }
 
+        if (
+            ::sudokuValueOverlay
+                .isInitialized
+        ) {
+            sudokuValueOverlay
+                .animateGeckoMarkers =
+                richMediaSettings.enabled
+        }
+
         status.text =
             if (richMediaSettings.enabled) {
                 "Habillage animé activé 🎬"
@@ -3834,6 +3843,10 @@ class MainActivity : Activity() {
             .visualStyle =
             gameModePreferences
                 .sudokuVisualStyle
+
+        sudokuValueOverlay
+            .animateGeckoMarkers =
+            richMediaSettings.enabled
 
         sudokuValueOverlay.invalidate()
 

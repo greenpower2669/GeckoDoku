@@ -21,6 +21,13 @@ class SudokuValueOverlayView @JvmOverloads constructor(
     lateinit var snapshotProvider:
         () -> SudokuSnapshot
 
+    var animateGeckoMarkers:
+        Boolean = true
+        set(value) {
+            field = value
+            invalidate()
+        }
+
     var visualStyle:
         SudokuVisualStyle =
         SudokuVisualStyle
@@ -224,7 +231,10 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             }
         }
 
-        if (animateMarker) {
+        if (
+            animateMarker &&
+            animateGeckoMarkers
+        ) {
             postInvalidateDelayed(
                 180L
             )
@@ -255,13 +265,17 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                 0.73
 
         val wave =
-            sin(
-                now.toDouble() /
-                    period.toDouble() *
-                    Math.PI *
-                    2.0 +
-                    phase
-            ).toFloat()
+            if (animateGeckoMarkers) {
+                sin(
+                    now.toDouble() /
+                        period.toDouble() *
+                        Math.PI *
+                        2.0 +
+                        phase
+                ).toFloat()
+            } else {
+                0f
+            }
 
         val scale =
             .66f +
