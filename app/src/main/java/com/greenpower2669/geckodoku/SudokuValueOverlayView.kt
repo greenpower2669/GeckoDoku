@@ -1,12 +1,9 @@
 package com.greenpower2669.geckodoku
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Rect
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
@@ -28,6 +25,11 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             invalidate()
         }
 
+    private val renderer =
+        SudokuDigitRenderer(
+            context
+        )
+
     private val paint =
         Paint(Paint.ANTI_ALIAS_FLAG)
 
@@ -36,17 +38,14 @@ class SudokuValueOverlayView @JvmOverloads constructor(
 
     private var cellSize = 1f
 
-    private val nbSheet: Bitmap? =
-        loadBitmap(
-            AssetMediaCatalog
-                .GECKO_NUMBER_NB
-        )
+    private var professorCell:
+        Cell? = null
 
-    private val coloredSheet: Bitmap? =
-        loadBitmap(
-            AssetMediaCatalog
-                .GECKO_NUMBER_COLORED
-        )
+    private var professorCandidates:
+        Set<Int> = emptySet()
+
+    private var professorFocusDigit:
+        Int? = null
 
     init {
         isClickable = false
@@ -54,6 +53,34 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         importantForAccessibility =
             IMPORTANT_FOR_ACCESSIBILITY_NO
         contentDescription = null
+    }
+
+    fun showProfessorCandidates(
+        cell: Cell,
+        candidates: Set<Int>,
+        focusDigit: Int?
+    ) {
+        professorCell = cell
+        professorCandidates =
+            candidates.filter {
+                it in 1..9
+            }.toSet()
+
+        professorFocusDigit =
+            focusDigit
+                ?.takeIf {
+                    it in 1..9
+                }
+
+        invalidate()
+    }
+
+    fun clearProfessorCandidates() {
+        professorCell = null
+        professorCandidates =
+            emptySet()
+        professorFocusDigit = null
+        invalidate()
     }
 
     override fun onTouchEvent(
@@ -85,7 +112,10 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             return
         }
 
-        if (boardRect.width() <= 0f) {
+        if (
+            boardRect.width() <=
+                0f
+        ) {
             updateBoardRect(
                 width,
                 height
@@ -98,192 +128,150 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         for (row in 0..8) {
             for (col in 0..8) {
                 val cell =
-                    Cell(row, col)
-
-                val digit =
-                    state.valueAt(cell)
-
-                if (digit == 0) {
-                    continue
-                }
+                    Cell(
+                        row,
+                        col
+                    )
 
                 val rect =
                     cellRect(cell)
 
-                when (visualStyle) {
-                    SudokuVisualStyle
-                        .CLASSIC_NUMBERS ->
-                        drawClassicDigit(
-                            canvas,
-                            rect,
-                            digit,
+                val digit =
+                    state.valueAt(cell)
+
+                if (digit != 0) {
+                    renderer.draw(
+                        canvas = canvas,
+                        target = rect,
+                        digit = digit,
+                        style = visualStyle,
+                        given =
                             state.isGiven(
                                 cell
                             )
-                        )
+                    )
+                    continue
+                }
 
-                    SudokuVisualStyle
-                        .GECKO_NB ->
-                        drawGeckoDigit(
-                            canvas,
-                            rect,
-                            digit,
-                            nbSheet,
-                            colored = false,
-                            given =
-                                state.isGiven(
-                                    cell
-                                )
-                        )
+                val candidates =
+                    linkedSetOf<Int>()
 
-                    SudokuVisualStyle
-                        .GECKO_COLORED ->
-                        drawGeckoDigit(
-                            canvas,
-                            rect,
-                            digit,
-                            coloredSheet,
-                            colored = true,
-                            given =
-                                state.isGiven(
-                                    cell
-                                )
-                        )
+                candidates.addAll(
+                    state.notesAt(
+                        cell
+                    )
+                )
+
+                if (
+                    professorCell ==
+                        cell
+                ) {
+                    candidates.addAll(
+                        professorCandidates
+                    )
+                }
+
+                if (
+                    candidates.isNotEmpty()
+                ) {
+                    drawCandidates(
+                        canvas,
+                        rect,
+                        cell,
+                        candidates
+                    )
                 }
             }
         }
     }
 
-    private fun drawClassicDigit(
+    private fun drawCandidates(
         canvas: Canvas,
-        rect: RectF,
-        digit: Int,
-        given: Boolean
+        cellRect: RectF,
+        cell: Cell,
+        candidates: Set<Int>
     ) {
-        paint.style =
-            Paint.Style.FILL
-        paint.textAlign =
-            Paint.Align.CENTER
-        paint.textSize =
-            cellSize * .58f
-        paint.isFakeBoldText =
-            given
-        paint.color =
-            if (given) {
-                Color.rgb(
-                    30,
-                    42,
-                    34
-                )
-            } else {
-                Color.rgb(
-                    25,
-                    95,
-                    52
-                )
-            }
+        for (
+            digit in
+                candidates.sorted()
+        ) {
+            val slot =
+                SudokuCandidateLayout
+                    .slot(digit)
 
-        val y =
-            rect.centerY() -
-                (
-                    paint.ascent() +
-                        paint.descent()
-                    ) / 2f
-
-        canvas.drawText(
-            digit.toString(),
-            rect.centerX(),
-            y,
-            paint
-        )
-
-        paint.isFakeBoldText =
-            false
-    }
-
-    private fun drawGeckoDigit(
-        canvas: Canvas,
-        rect: RectF,
-        digit: Int,
-        sheet: Bitmap?,
-        colored: Boolean,
-        given: Boolean
-    ) {
-        if (sheet == null) {
-            drawClassicDigit(
-                canvas,
-                rect,
-                digit,
-                given
-            )
-            return
-        }
-
-        val source =
-            SudokuNumberSheetLayout
-                .sourceRect(
-                    width =
-                        sheet.width,
-                    height =
-                        sheet.height,
-                    digit = digit,
-                    colored =
-                        colored
-                )
-
-        val inset =
-            cellSize * .07f
-
-        val target =
-            RectF(
-                rect.left + inset,
-                rect.top + inset,
-                rect.right - inset,
-                rect.bottom - inset
-            )
-
-        paint.alpha =
-            if (given) {
-                255
-            } else {
-                235
-            }
-
-        canvas.drawBitmap(
-            sheet,
-            source,
-            target,
-            paint
-        )
-
-        paint.alpha = 255
-
-        if (given) {
-            paint.style =
-                Paint.Style.STROKE
-            paint.strokeWidth =
-                cellSize * .025f
-            paint.color =
-                Color.rgb(
-                    55,
-                    85,
-                    62
-                )
-
-            canvas.drawRoundRect(
+            val slotRect =
                 RectF(
-                    rect.left +
-                        cellSize * .035f,
-                    rect.top +
-                        cellSize * .035f,
-                    rect.right -
-                        cellSize * .035f,
-                    rect.bottom -
-                        cellSize * .035f
-                ),
-                cellSize * .08f,
-                cellSize * .08f,
-                paint
+                    cellRect.left +
+                        slot.left *
+                        cellRect.width(),
+                    cellRect.top +
+                        slot.top *
+                        cellRect.height(),
+                    cellRect.left +
+                        slot.right *
+                        cellRect.width(),
+                    cellRect.top +
+                        slot.bottom *
+                        cellRect.height()
+                )
+
+            val inset =
+                slotRect.width() *
+                    .08f
+
+            val target =
+                RectF(
+                    slotRect.left +
+                        inset,
+                    slotRect.top +
+                        inset,
+                    slotRect.right -
+                        inset,
+                    slotRect.bottom -
+                        inset
+                )
+
+            val professorFocus =
+                professorCell ==
+                    cell &&
+                    professorFocusDigit ==
+                    digit
+
+            if (professorFocus) {
+                paint.style =
+                    Paint.Style.FILL
+                paint.color =
+                    Color.argb(
+                        52,
+                        60,
+                        150,
+                        82
+                    )
+
+                canvas.drawRoundRect(
+                    slotRect,
+                    slotRect.width() *
+                        .15f,
+                    slotRect.height() *
+                        .15f,
+                    paint
+                )
+            }
+
+            renderer.draw(
+                canvas = canvas,
+                target = target,
+                digit = digit,
+                style = visualStyle,
+                mini = true,
+                alpha =
+                    if (
+                        professorFocus
+                    ) {
+                        255
+                    } else {
+                        225
+                    }
             )
         }
     }
@@ -292,11 +280,16 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         w: Int,
         h: Int
     ) {
-        if (w <= 0 || h <= 0) {
+        if (
+            w <= 0 ||
+            h <= 0
+        ) {
             return
         }
 
-        val margin = dp(4f)
+        val margin =
+            dp(4f)
+
         val side =
             min(
                 w - margin * 2f,
@@ -307,6 +300,7 @@ class SudokuValueOverlayView @JvmOverloads constructor(
 
         val left =
             (w - side) / 2f
+
         val top =
             (h - side) / 2f
 
@@ -340,20 +334,6 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             top + cellSize
         )
     }
-
-    private fun loadBitmap(
-        path: String
-    ): Bitmap? =
-        try {
-            context.assets
-                .open(path)
-                .use {
-                    BitmapFactory
-                        .decodeStream(it)
-                }
-        } catch (_: Exception) {
-            null
-        }
 
     private fun dp(
         value: Float

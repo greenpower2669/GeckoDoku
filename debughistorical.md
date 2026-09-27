@@ -1252,3 +1252,7 @@ Bloc GREEN core ajouté avant câblage Activity : aucune modification GeckoBoard
 
 <!-- GECKO-038-TACTILE-INPUT-SETTINGS-2026-09-27 -->
 Premier sous-bloc runtime : long press détectable et difficulté déclarée dans les réglages Sudoku. Aucun câblage Activity/popup encore dans ce commit.
+
+
+<!-- GECKO-038-TACTILE-STYLED-CANDIDATES-2026-09-27 -->
+Suppression du rendu de notes Classic dans SudokuBoardView : une seule chaîne de rendu gère maintenant valeurs + candidats stylés. PNG canoniques inchangés.

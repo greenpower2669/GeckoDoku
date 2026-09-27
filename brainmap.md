@@ -831,3 +831,7 @@ Renderer commun → SudokuDigitRenderer → grille + palette + futurs candidats 
 
 <!-- GECKO-038-TACTILE-INPUT-SETTINGS-2026-09-27 -->
 SudokuBoardView → tap / long-press callbacks. Settings entriesFor(SUDOKU) → GAME_MODE + DIFFICULTY + réglages historiques.
+
+
+<!-- GECKO-038-TACTILE-STYLED-CANDIDATES-2026-09-27 -->
+snapshot.notes + transient Prof candidates → SudokuCandidateLayout(3×3) → SudokuDigitRenderer(style courant).

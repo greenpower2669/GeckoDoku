@@ -444,3 +444,7 @@ Bloc core posé. Étape suivante : câblage runtime, puis CI. Ne pas toucher Gec
 
 <!-- GECKO-038-TACTILE-INPUT-SETTINGS-2026-09-27 -->
 Sous-bloc input/settings posé ; prochaine étape renderer candidats puis Activity.
+
+
+<!-- GECKO-038-TACTILE-STYLED-CANDIDATES-2026-09-27 -->
+Rendu candidats terminé ; reste câblage Activity et validation CI.

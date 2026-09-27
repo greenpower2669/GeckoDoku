@@ -82,3 +82,9 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [x] Difficulté disponible via policy Settings Sudoku.
 - [ ] Overlay candidats stylés.
 - [ ] MainActivity/popup/géométrie.
+
+
+<!-- GECKO-038-TACTILE-STYLED-CANDIDATES-2026-09-27 -->
+- [x] Candidats Classic/NB/Color dans la grille.
+- [x] Prof candidates via même renderer.
+- [ ] MainActivity : fournir les candidats Prof et popup long press.

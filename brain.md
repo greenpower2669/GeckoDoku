@@ -2098,3 +2098,7 @@ Ajout des policies pures : géométrie indépendante par GameMode, layout candid
 
 <!-- GECKO-038-TACTILE-INPUT-SETTINGS-2026-09-27 -->
 SudokuBoardView devient input/grid uniquement : tap + long press ; les notes quittent cette vue pour le renderer overlay. SettingsMenuPolicy ajoute DIFFICULTY uniquement en mode Sudoku, sans modifier la liste historique GeckoDoku.
+
+
+<!-- GECKO-038-TACTILE-STYLED-CANDIDATES-2026-09-27 -->
+Les candidats joueur sont désormais rendus par SudokuValueOverlayView via SudokuDigitRenderer. Une case vide peut afficher 1..9 dans positions fixes 3×3, en Classic/NB/Color. Les candidats Prof transitoires utilisent exactement le même renderer et peuvent mettre en évidence le candidat expliqué.
