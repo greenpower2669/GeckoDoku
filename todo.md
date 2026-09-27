@@ -79,3 +79,21 @@
 - [ ] CI GREEN final.
 - [ ] APK/AAB candidate.
 - [ ] Test téléphone Fab.
+
+
+<!-- GECKO-040-CI206-GREEN-2026-09-28 -->
+## Validation finale avant nettoyage
+- [x] Phase 1 CI #204 GREEN.
+- [x] Phase 2 CI #205 GREEN.
+- [x] Phase 3 CI #206 GREEN.
+- [x] APK/AAB 0.12.0-dev produits.
+- [ ] Fab : vérifier grille Classic centrée et agrandie.
+- [ ] Fab : vérifier Sauver + Journal dans ⚙️.
+- [ ] Fab : tester recherche de difficulté stricte et Annuler.
+- [ ] Fab : terminer sans aide → ★★★★★.
+- [ ] Fab : utiliser le Prof → vérifier baisse d'étoiles.
+- [ ] Fab : vérifier stats par difficulté + Hall of Fame.
+- [ ] Fab : modifier GeckoTétu.
+- [ ] Fab : exporter puis réimporter les données.
+- [ ] Fab : vérifier non-régression Gomoku.
+- [ ] Après validation téléphone : nettoyer ordre/todo.

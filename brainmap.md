@@ -1292,3 +1292,12 @@ Settings → edit profile / Hall of Fame / clear result history.
 
 <!-- GECKO-040-PHASE3-MAP-2026-09-28 -->
 Settings → ACTION_CREATE_DOCUMENT/ACTION_OPEN_DOCUMENT → UserDataBackup(schema v1) → validate all → snapshot prefs → commits → rollback on failure → recreate on success.
+
+
+<!-- GECKO-040-CI206-GREEN-2026-09-28 -->
+GECKO-040 pipeline validé CI :
+4912ff7 (layout/exact difficulty) → #204 GREEN
+b72f149 (stars/Hall/profile) → #205 GREEN
+7283802 (backup import/export) → #206 GREEN
+→ artifact 0.12.0-dev
+→ prochaine porte : validation téléphone Fab.

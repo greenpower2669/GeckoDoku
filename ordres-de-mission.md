@@ -302,3 +302,18 @@ alors mettre à jour :
 Ne conserver dans todo.md que les vrais restes.
 
 Le Gomoku étant validé, ne pas rouvrir ses anciens bugs sans nouvelle observation réelle.
+
+
+<!-- GECKO-040-CODE-CI-GREEN-2026-09-28 -->
+## STATUT D'EXÉCUTION
+
+La mission est codée sur la branche de travail et passe la CI.
+
+Jalons :
+- Phase 1 Classic + difficulté stricte : commit `4912ff7f20b44275180a4fb8dd7ebf6e4c67eab3`, CI #204 GREEN.
+- Phase 2 étoiles + Hall of Fame + GeckoTétu : commit `b72f149022faddf0d90599fea6a93557df619b53`, CI #205 GREEN.
+- Phase 3 export/import : commit `72838027541b188c64e24e6983e3aae55fe70b3a`, CI #206 GREEN.
+- Artifact Android : `GeckoDoku-v0.12.0-dev-Android`, id `10943373231`, digest `sha256:d0e7c17cdf6e886cb6a8b4d2c9184533d6892b5af0247cd429da45f388a13d13`.
+
+RESTE OUVERT :
+validation téléphone Fab. Ne pas vider cet ordre avant validation perceptuelle.

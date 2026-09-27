@@ -1638,3 +1638,16 @@ Avant GECKO-040, PlayerStats ne conservait qu'un booléen d'assistance pour Clas
 
 <!-- GECKO-040-PHASE3-DEBUG-2026-09-28 -->
 Les données GeckoDoku étaient dispersées entre plusieurs SharedPreferences. UserDataBackup crée une sauvegarde unique portable et versionnée. Taille Classic et difficulté deviennent également persistantes dans GameModePreferences, donc exportables.
+
+
+<!-- GECKO-040-CI206-GREEN-2026-09-28 -->
+# Validation CI GECKO-040
+
+Aucun correctif de compilation supplémentaire n'a été nécessaire après les trois phases fonctionnelles.
+CI #204, #205 et #206 sont GREEN.
+Artifact final de cette passe :
+- id 10943373231
+- nom GeckoDoku-v0.12.0-dev-Android
+- digest sha256:d0e7c17cdf6e886cb6a8b4d2c9184533d6892b5af0247cd429da45f388a13d13
+
+Les vérifications restantes sont perceptuelles/fonctionnelles sur téléphone réel.

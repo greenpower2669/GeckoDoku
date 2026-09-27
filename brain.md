@@ -2781,3 +2781,19 @@ Classic : carré centré par (viewWidth-side)/2, commandes ramenées à 2 lignes
 
 <!-- GECKO-040-PHASE3-BACKUP-2026-09-28 -->
 Réglages : export/import JSON via Storage Access Framework. Schéma v1 typé. Sont couverts : stats, journal des grilles, modes/style/taille/difficulté, animations, historique Prof, profil/son, Hall of Fame. L'import valide tout avant écriture, snapshotte l'état courant, rollback en cas d'échec et recharge l'Activity après succès.
+
+
+<!-- GECKO-040-CI206-GREEN-2026-09-28 -->
+# GECKO-040 — validation technique
+
+Les trois phases compilent et testent GREEN jusqu'à CI #206.
+Candidate Android 0.12.0-dev générée.
+
+Invariants à tester sur téléphone :
+- Classic centré et plus grand ;
+- Sauver/Journal uniquement via ⚙️ ;
+- difficulté choisie = difficulté réellement livrée, recherche annulable ;
+- GeckoTétu modifiable ;
+- étoiles et Hall of Fame persistants ;
+- export/import JSON restaure les données locales ;
+- Gomoku ne régresse pas.
