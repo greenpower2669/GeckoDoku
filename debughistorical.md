@@ -1326,3 +1326,7 @@ Premier bloc GREEN : uniquement policies pures, aucun câblage Activity. RED #16
 
 <!-- GECKO-038-GREEN-MOVE-ORIGIN-2026-09-27 -->
 Deuxième bloc GREEN : modèle + moteur seulement. Aucun comportement joueur existant changé car origin par défaut = PLAYER.
+
+
+<!-- GECKO-038-GREEN-BLACK-CANDIDATES-2026-09-27 -->
+Troisième bloc GREEN : renderer/overlay seulement. La valeur principale conserve VisualStyle ; seuls les mini-candidats basculent en noir.

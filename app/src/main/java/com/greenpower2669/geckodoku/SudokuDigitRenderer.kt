@@ -39,6 +39,18 @@ class SudokuDigitRenderer(
     ) {
         require(digit in 1..9)
 
+        if (mini) {
+            drawClassic(
+                canvas,
+                target,
+                digit,
+                given = false,
+                mini = true,
+                alpha = alpha
+            )
+            return
+        }
+
         when (style) {
             SudokuVisualStyle
                 .CLASSIC_NUMBERS ->
@@ -101,7 +113,9 @@ class SudokuDigitRenderer(
         paint.isFakeBoldText =
             given && !mini
         paint.color =
-            if (given) {
+            if (mini) {
+                Color.BLACK
+            } else if (given) {
                 Color.rgb(
                     30,
                     42,

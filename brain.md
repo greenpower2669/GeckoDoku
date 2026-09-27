@@ -2307,3 +2307,7 @@ Policies pures ajoutées après RED #165 : grille Sudoku pleine largeur à 3 px 
 
 <!-- GECKO-038-GREEN-MOVE-ORIGIN-2026-09-27 -->
 SudokuGameEngine accepte désormais une provenance de mouvement PLAYER/PROFESSOR. Le dernier origin fait partie de l'état historique, donc Undo restaure l'état précédent et Redo restaure correctement PROFESSOR. Les appels existants restent PLAYER par défaut.
+
+
+<!-- GECKO-038-GREEN-BLACK-CANDIDATES-2026-09-27 -->
+SudokuDigitRenderer traite désormais tout rendu mini comme un chiffre Classic noir, même si la valeur principale est Gecko N/B ou Gecko couleur. SudokuValueOverlayView applique explicitement CandidateVisualPolicy et supprime ses 4dp internes : marge réelle du quadrillage = celle du conteneur plein écran.

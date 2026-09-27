@@ -31,6 +31,9 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             context
         )
 
+    private val candidateVisualPolicy =
+        SudokuCandidateVisualPolicy()
+
     private val paint =
         Paint(Paint.ANTI_ALIAS_FLAG)
 
@@ -263,7 +266,11 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                 canvas = canvas,
                 target = target,
                 digit = digit,
-                style = visualStyle,
+                style =
+                    candidateVisualPolicy
+                        .styleForCandidate(
+                            visualStyle
+                        ),
                 mini = true,
                 alpha =
                     if (
@@ -289,7 +296,9 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         }
 
         val margin =
-            dp(4f)
+            SudokuFullWidthBoardPolicy
+                .INNER_GRID_MARGIN_PX
+                .toFloat()
 
         val side =
             min(

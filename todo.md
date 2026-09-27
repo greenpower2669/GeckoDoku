@@ -203,3 +203,11 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [x] Provenance conservée par Undo/Redo.
 - [ ] Renderer/vues candidats noirs et marge 0.
 - [ ] Activity Prof.
+
+
+<!-- GECKO-038-GREEN-BLACK-CANDIDATES-2026-09-27 -->
+- [x] Mini-candidats joueur/Prof noirs.
+- [x] Overlay marge interne 0 px.
+- [ ] SudokuBoardView marge interne 0.
+- [ ] Palette candidats noirs.
+- [ ] Activity/layout.

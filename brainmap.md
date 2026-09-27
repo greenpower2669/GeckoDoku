@@ -937,3 +937,7 @@ FullWidthBoardPolicy(3px) | CandidateVisualPolicy(BLACK) | ProfessorInteractionP
 
 <!-- GECKO-038-GREEN-MOVE-ORIGIN-2026-09-27 -->
 enterDigit(origin=PLAYER default | PROFESSOR) → EngineState.lastMoveOrigin → undo/redo round-trip.
+
+
+<!-- GECKO-038-GREEN-BLACK-CANDIDATES-2026-09-27 -->
+candidate mini → CandidateVisualPolicy → CLASSIC + mini=true → BLACK. Overlay inner margin=0px.

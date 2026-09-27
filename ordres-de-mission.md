@@ -656,3 +656,7 @@ Bloc policies GREEN posé. Suite : moteur provenance, renderer, puis Activity.
 
 <!-- GECKO-038-GREEN-MOVE-ORIGIN-2026-09-27 -->
 Moteur provenance GREEN posé ; appels historiques restent PLAYER par défaut.
+
+
+<!-- GECKO-038-GREEN-BLACK-CANDIDATES-2026-09-27 -->
+Rendu candidat noir GREEN posé ; valeurs principales Gecko inchangées.
