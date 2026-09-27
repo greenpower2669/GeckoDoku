@@ -236,6 +236,21 @@ L'import doit restaurer les données cohérentes sans casser les parties sauvega
 
 ---
 
+## 8 bis. GOMOKU — PROF GECKO RESTE TEIGNEUX À TOUS LES NIVEAUX
+
+Nouvelle règle produit validée par Fab pour la 0.13 :
+
+- dans le Gomoku, Prof Gecko garde toujours son caractère compétitif, taquin et un peu méchant ;
+- cette personnalité ne doit jamais être adoucie automatiquement par la difficulté ;
+- **le mode Découverte n'est pas une exception** ;
+- ses conseils restent utiles et exacts, mais leur formulation conserve son mordant ;
+- ses réactions de début de partie, conseil, coup joué, victoire, défaite, match nul et petites interventions doivent rester cohérentes avec ce personnage ;
+- la difficulté ne doit modifier que la force de jeu / profondeur stratégique, jamais transformer Prof Gecko en professeur gentil.
+
+Le ton reste drôle et familial : piquant, jamais insultant ni humiliant.
+
+---
+
 ## 9. TESTS OBLIGATOIRES
 
 ### Classic layout
@@ -303,17 +318,18 @@ Ne conserver dans todo.md que les vrais restes.
 
 Le Gomoku étant validé, ne pas rouvrir ses anciens bugs sans nouvelle observation réelle.
 
+<!-- GECKO-041-V013-ACTIVE-2026-09-28 -->
+## STATUT D'EXÉCUTION 0.13
 
-<!-- GECKO-040-CODE-CI-GREEN-2026-09-28 -->
-## STATUT D'EXÉCUTION
+Version cible : **0.13.0-dev** / versionCode **33**.
 
-La mission est codée sur la branche de travail et passe la CI.
+Fab invalide le statut documentaire précédent qui présentait GECKO-040 comme déjà livré.
+La 0.13 devient la candidate réelle de cette mission.
 
-Jalons :
-- Phase 1 Classic + difficulté stricte : commit `4912ff7f20b44275180a4fb8dd7ebf6e4c67eab3`, CI #204 GREEN.
-- Phase 2 étoiles + Hall of Fame + GeckoTétu : commit `b72f149022faddf0d90599fea6a93557df619b53`, CI #205 GREEN.
-- Phase 3 export/import : commit `72838027541b188c64e24e6983e3aae55fe70b3a`, CI #206 GREEN.
-- Artifact Android : `GeckoDoku-v0.12.0-dev-Android`, id `10943373231`, digest `sha256:d0e7c17cdf6e886cb6a8b4d2c9184533d6892b5af0247cd429da45f388a13d13`.
-
-RESTE OUVERT :
-validation téléphone Fab. Ne pas vider cet ordre avant validation perceptuelle.
+Implémentation de cette passe :
+- stats séparées par mode + difficulté tout en conservant les compteurs globaux ;
+- Gomoku branché aux stats et au Hall of Fame lors d'une victoire contre Prof Gecko ;
+- aides Gomoku comptabilisées dans les étoiles ;
+- Hall of Fame présenté par mode puis difficulté ;
+- Prof Gecko teigneux en Gomoku à toutes les difficultés, **Découverte comprise** ;
+- tests et CI 0.13 avant validation téléphone.

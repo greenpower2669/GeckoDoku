@@ -1301,3 +1301,14 @@ b72f149 (stars/Hall/profile) → #205 GREEN
 7283802 (backup import/export) → #206 GREEN
 → artifact 0.12.0-dev
 → prochaine porte : validation téléphone Fab.
+
+<!-- GECKO-041-V013-MAP-2026-09-28 -->
+0.13
+├─ PlayerStatsStore → global historique + mode/difficulté
+├─ CompletionRating → Classic | Sudoku | victoire Gomoku VS Prof
+├─ HallOfFame → mode → difficulté → étoiles/nom/temps/date
+├─ Gomoku help → advice/direct move → assistancePoints
+└─ GomokuProfessorPersona
+   ├─ Découverte n'adoucit pas le ton
+   ├─ conseils exacts
+   └─ habillage taquin familial

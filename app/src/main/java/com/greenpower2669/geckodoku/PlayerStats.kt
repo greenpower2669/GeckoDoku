@@ -62,7 +62,9 @@ class PlayerStatsStore(
 
     fun recordStart(
         size: Int,
-        difficulty: GameDifficulty
+        difficulty: GameDifficulty,
+        mode: GameMode =
+            GameMode.GECKODOKU
     ) {
         increment("started")
         increment(
@@ -71,6 +73,17 @@ class PlayerStatsStore(
         increment(
             "started_diff_" +
                 difficulty.name
+        )
+        increment(
+            "started_mode_" +
+                mode.name
+        )
+        increment(
+            modeDifficultyKey(
+                prefix = "started",
+                mode = mode,
+                difficulty = difficulty
+            )
         )
     }
 
@@ -83,7 +96,9 @@ class PlayerStatsStore(
         difficulty: GameDifficulty,
         elapsedSeconds: Long,
         usedProfessor: Boolean = false,
-        stars: Int = 5
+        stars: Int = 5,
+        mode: GameMode =
+            GameMode.GECKODOKU
     ) {
         increment("completed")
         increment(
@@ -93,12 +108,30 @@ class PlayerStatsStore(
             "completed_diff_" +
                 difficulty.name
         )
+        increment(
+            "completed_mode_" +
+                mode.name
+        )
+        increment(
+            modeDifficultyKey(
+                prefix = "completed",
+                mode = mode,
+                difficulty = difficulty
+            )
+        )
 
         if (usedProfessor) {
             increment("completed_with_prof")
             increment(
                 "completed_with_prof_diff_" +
                     difficulty.name
+            )
+            increment(
+                modeDifficultyKey(
+                    prefix = "completed_with_prof",
+                    mode = mode,
+                    difficulty = difficulty
+                )
             )
         }
 
@@ -123,6 +156,20 @@ class PlayerStatsStore(
             "best_stars_diff_" +
                 difficulty.name
 
+        val modeStarTotalKey =
+            modeDifficultyKey(
+                prefix = "stars_total",
+                mode = mode,
+                difficulty = difficulty
+            )
+
+        val modeBestStarsKey =
+            modeDifficultyKey(
+                prefix = "best_stars",
+                mode = mode,
+                difficulty = difficulty
+            )
+
         prefs.edit()
             .putLong(
                 "total_seconds",
@@ -146,6 +193,24 @@ class PlayerStatsStore(
                 kotlin.math.max(
                     prefs.getInt(
                         bestStarsKey,
+                        0
+                    ),
+                    normalizedStars
+                )
+            )
+            .putInt(
+                modeStarTotalKey,
+                prefs.getInt(
+                    modeStarTotalKey,
+                    0
+                ) +
+                    normalizedStars
+            )
+            .putInt(
+                modeBestStarsKey,
+                kotlin.math.max(
+                    prefs.getInt(
+                        modeBestStarsKey,
                         0
                     ),
                     normalizedStars
@@ -251,6 +316,77 @@ class PlayerStatsStore(
                     }
                 }
         )
+
+    fun statsForModeAndDifficulty(
+        mode: GameMode,
+        difficulty: GameDifficulty
+    ): DifficultyStats {
+        val completed =
+            prefs.getInt(
+                modeDifficultyKey(
+                    prefix = "completed",
+                    mode = mode,
+                    difficulty = difficulty
+                ),
+                0
+            )
+
+        return DifficultyStats(
+            started =
+                prefs.getInt(
+                    modeDifficultyKey(
+                        prefix = "started",
+                        mode = mode,
+                        difficulty = difficulty
+                    ),
+                    0
+                ),
+            completed = completed,
+            assistedCompleted =
+                prefs.getInt(
+                    modeDifficultyKey(
+                        prefix = "completed_with_prof",
+                        mode = mode,
+                        difficulty = difficulty
+                    ),
+                    0
+                ),
+            bestStars =
+                prefs.getInt(
+                    modeDifficultyKey(
+                        prefix = "best_stars",
+                        mode = mode,
+                        difficulty = difficulty
+                    ),
+                    0
+                ),
+            averageStars =
+                if (completed <= 0) {
+                    0
+                } else {
+                    prefs.getInt(
+                        modeDifficultyKey(
+                            prefix = "stars_total",
+                            mode = mode,
+                            difficulty = difficulty
+                        ),
+                        0
+                    ) /
+                        completed
+                }
+        )
+    }
+
+    private fun modeDifficultyKey(
+        prefix: String,
+        mode: GameMode,
+        difficulty: GameDifficulty
+    ): String =
+        prefix +
+            "_mode_" +
+            mode.name +
+            "_diff_" +
+            difficulty.name
 
     private fun increment(
         key: String

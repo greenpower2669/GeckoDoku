@@ -1651,3 +1651,21 @@ Artifact final de cette passe :
 - digest sha256:d0e7c17cdf6e886cb6a8b4d2c9184533d6892b5af0247cd429da45f388a13d13
 
 Les vérifications restantes sont perceptuelles/fonctionnelles sur téléphone réel.
+
+<!-- GECKO-041-V013-DEBUG-2026-09-28 -->
+## Reprise réelle 0.13
+
+Audit avant correction :
+- version applicative encore 0.12.0-dev ;
+- stats par difficulté mélangeaient les modes ;
+- startGomokuGame ne faisait aucun recordStart ;
+- completeGomokuGame n'appelait pas recordRatedCompletionIfNeeded ;
+- showGomokuProfessorAdvice mettait professorUsed=true mais n'ajoutait aucun assistancePoint ;
+- les phrases vivantes du Prof pouvaient être adoucies par la politique d'humeur générale.
+
+Correctif :
+- stats mode+difficulté ajoutées sans supprimer le global ;
+- victoire joueur VS Prof enregistrée ;
+- aide Gomoku prise en compte pour les étoiles ;
+- persona Gomoku dédiée, indépendante de la difficulté ;
+- test explicite Découverte == Infernal pour la personnalité.

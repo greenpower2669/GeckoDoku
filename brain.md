@@ -2797,3 +2797,17 @@ Invariants à tester sur téléphone :
 - étoiles et Hall of Fame persistants ;
 - export/import JSON restaure les données locales ;
 - Gomoku ne régresse pas.
+
+<!-- GECKO-041-V013-CODE-2026-09-28 -->
+# GeckoDoku 0.13 — mission active
+
+Fab invalide l'ancien statut documentaire "GECKO-040 déjà livré" et demande une vraie candidate 0.13.
+
+Décisions :
+- 0.13.0-dev / code 33 ;
+- compteurs globaux historiques conservés + détail GameMode/GameDifficulty ;
+- victoire joueur VS Prof en Gomoku → étoiles + stats + Hall of Fame ;
+- conseil/coup direct demandé en Gomoku → assistancePoints ;
+- Hall of Fame par mode puis difficulté ;
+- personnalité Gomoku indépendante de la difficulté : Prof Gecko reste teigneux même en Découverte ;
+- le mordant reste une couche de présentation, l'analyse IA reste exacte.

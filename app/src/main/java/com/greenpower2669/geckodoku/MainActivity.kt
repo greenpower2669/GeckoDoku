@@ -1747,8 +1747,11 @@ class MainActivity : Activity() {
 
         if (recordStart) {
             statsStore.recordStart(
-                puzzle.size,
-                puzzle.difficulty
+                size = puzzle.size,
+                difficulty =
+                    puzzle.difficulty,
+                mode =
+                    GameMode.GECKODOKU
             )
         }
     }
@@ -3085,7 +3088,8 @@ class MainActivity : Activity() {
                 elapsedSeconds = seconds,
                 usedProfessor =
                     assistancePoints > 0,
-                stars = stars
+                stars = stars,
+                mode = mode
             )
 
             hallOfFameStore.add(
@@ -3497,6 +3501,61 @@ class MainActivity : Activity() {
                 }
 
                 append(
+                    "\nDétail par mode et difficulté :\n"
+                )
+
+                for (
+                    mode in
+                    GameMode.entries
+                ) {
+                    append("\n")
+                    append(
+                        gameModeLabel(mode)
+                    )
+                    append("\n")
+
+                    for (
+                        d in
+                        GameDifficulty.entries
+                    ) {
+                        val ds =
+                            statsStore
+                                .statsForModeAndDifficulty(
+                                    mode,
+                                    d
+                                )
+
+                        if (
+                            ds.started == 0 &&
+                            ds.completed == 0
+                        ) {
+                            continue
+                        }
+
+                        append("  ")
+                        append(d.label)
+                        append(" : ")
+                        append(ds.completed)
+                        append("/")
+                        append(ds.started)
+
+                        if (
+                            ds.completed > 0
+                        ) {
+                            append(" • meilleur ")
+                            append(
+                                CompletionRatingPolicy
+                                    .symbols(
+                                        ds.bestStars
+                                    )
+                            )
+                        }
+
+                        append("\n")
+                    }
+                }
+
+                append(
                     "\nTerminées par taille :\n"
                 )
 
@@ -3567,20 +3626,15 @@ class MainActivity : Activity() {
         val text =
             buildString {
                 for (
-                    difficulty in
-                    GameDifficulty.entries
+                    mode in
+                    GameMode.entries
                 ) {
-                    val levelEntries =
-                        entries
-                            .filter {
-                                it.difficulty ==
-                                    difficulty
-                            }
+                    val modeEntries =
+                        entries.filter {
+                            it.mode == mode
+                        }
 
-                    if (
-                        levelEntries
-                            .isEmpty()
-                    ) {
+                    if (modeEntries.isEmpty()) {
                         continue
                     }
 
@@ -3589,60 +3643,80 @@ class MainActivity : Activity() {
                     }
 
                     append(
-                        difficulty.label
+                        gameModeLabel(mode)
                     )
                     append("\n")
 
-                    levelEntries
-                        .take(10)
-                        .forEachIndexed {
-                                index,
-                                entry ->
+                    for (
+                        difficulty in
+                        GameDifficulty.entries
+                    ) {
+                        val levelEntries =
+                            modeEntries.filter {
+                                it.difficulty ==
+                                    difficulty
+                            }
 
-                            append(
-                                index + 1
-                            )
-                            append(". ")
-                            append(
-                                CompletionRatingPolicy
-                                    .symbols(
-                                        entry.stars
-                                    )
-                            )
-                            append(" • ")
-                            append(
-                                entry.playerName
-                            )
-                            append(" • ")
-                            append(
-                                if (
-                                    entry.mode ==
-                                        GameMode.SUDOKU
-                                ) {
-                                    "Sudoku"
-                                } else {
-                                    entry.size
-                                        .toString() +
-                                        "×" +
-                                        entry.size
-                                }
-                            )
-                            append(" • ")
-                            append(
-                                formatSeconds(
-                                    entry.elapsedSeconds
-                                )
-                            )
-                            append(" • ")
-                            append(
-                                dateFormat.format(
-                                    Date(
-                                        entry.completedAt
-                                    )
-                                )
-                            )
-                            append("\n")
+                        if (levelEntries.isEmpty()) {
+                            continue
                         }
+
+                        append(
+                            "  " +
+                                difficulty.label +
+                                "\n"
+                        )
+
+                        levelEntries
+                            .take(10)
+                            .forEachIndexed {
+                                    index,
+                                    entry ->
+
+                                append(
+                                    "  " +
+                                        (index + 1) +
+                                        ". "
+                                )
+                                append(
+                                    CompletionRatingPolicy
+                                        .symbols(
+                                            entry.stars
+                                        )
+                                )
+                                append(" • ")
+                                append(entry.playerName)
+
+                                if (
+                                    entry.mode !=
+                                        GameMode.GOMOKU
+                                ) {
+                                    append(" • ")
+                                    append(
+                                        entry.size
+                                            .toString() +
+                                            "×" +
+                                            entry.size
+                                    )
+                                }
+
+                                append(" • ")
+                                append(
+                                    formatSeconds(
+                                        entry.elapsedSeconds
+                                    )
+                                )
+                                append(" • ")
+                                append(
+                                    dateFormat.format(
+                                        Date(
+                                            entry.completedAt
+                                        )
+                                    )
+                                )
+                                append("\n")
+                            }
+                    }
                 }
             }
 
@@ -4870,6 +4944,18 @@ class MainActivity : Activity() {
             )
         }
 
+        completionRecorded = false
+        professorUsed = false
+        assistancePoints = 0
+
+        statsStore.recordStart(
+            size = boardSize,
+            difficulty =
+                selectedDifficulty,
+            mode =
+                GameMode.GOMOKU
+        )
+
         gameStartedAt =
             SystemClock.elapsedRealtime()
 
@@ -4992,6 +5078,20 @@ class MainActivity : Activity() {
                 span +
                 " • glisser / pincer"
     }
+
+    private fun gameModeLabel(
+        mode: GameMode
+    ): String =
+        when (mode) {
+            GameMode.GECKODOKU ->
+                "GeckoDoku Classic"
+
+            GameMode.SUDOKU ->
+                "Sudoku"
+
+            GameMode.GOMOKU ->
+                "Gomoku"
+        }
 
     private fun gomokuCampLabel(
         player: GomokuPlayer
@@ -5180,6 +5280,16 @@ class MainActivity : Activity() {
 
         gomokuProfessorThinking = true
         professorUsed = true
+        assistancePoints +=
+            if (shouldApply) {
+                AssistanceKind
+                    .DIRECT_MOVE
+                    .points
+            } else {
+                AssistanceKind
+                    .ADVICE
+                    .points
+            }
 
         val generation =
             gomokuGeneration
@@ -5281,7 +5391,10 @@ class MainActivity : Activity() {
                         )
 
                         status.text =
-                            "Prof Gecko a joué. À toi."
+                            GomokuProfessorPersona
+                                .moveStatus(
+                                    selectedDifficulty
+                                )
 
                         if (
                             shouldCommentGomokuDecision(
@@ -5289,7 +5402,11 @@ class MainActivity : Activity() {
                             )
                         ) {
                             showProfessorBubble(
-                                decision.reason
+                                GomokuProfessorPersona
+                                    .decorateDecision(
+                                        decision.reason,
+                                        selectedDifficulty
+                                    )
                             )
                         }
                     }
@@ -5480,7 +5597,11 @@ class MainActivity : Activity() {
                     }
 
                 showProfessorBubble(
-                    explanation
+                    GomokuProfessorPersona
+                        .decorateAdvice(
+                            explanation,
+                            selectedDifficulty
+                        )
                 )
 
                 if (!shouldApply) {
@@ -5612,6 +5733,24 @@ class MainActivity : Activity() {
                 GomokuMatchMode
                     .HUMAN_VS_HUMAN
 
+        val stars =
+            if (
+                !humanVsHuman &&
+                winner ==
+                    GomokuPlayer.PLAYER
+            ) {
+                recordRatedCompletionIfNeeded(
+                    mode =
+                        GameMode.GOMOKU,
+                    size =
+                        snapshot.size,
+                    difficulty =
+                        selectedDifficulty
+                )
+            } else {
+                null
+            }
+
         if (
             ::celebrationView
                 .isInitialized &&
@@ -5632,7 +5771,7 @@ class MainActivity : Activity() {
             )
         }
 
-        val message =
+        val baseMessage =
             if (humanVsHuman) {
                 when (winner) {
                     GomokuPlayer.PLAYER ->
@@ -5664,6 +5803,19 @@ class MainActivity : Activity() {
                 }
             }
 
+        val message =
+            if (humanVsHuman) {
+                baseMessage
+            } else {
+                GomokuProfessorPersona
+                    .decorateResult(
+                        winner = winner,
+                        base = baseMessage,
+                        difficulty =
+                            selectedDifficulty
+                    )
+            }
+
         status.text =
             if (humanVsHuman) {
                 when (winner) {
@@ -5679,7 +5831,15 @@ class MainActivity : Activity() {
             } else {
                 when (winner) {
                     GomokuPlayer.PLAYER ->
-                        "Victoire ! Cinq Geckos alignés 🦎"
+                        "Victoire ! Cinq Geckos alignés 🦎" +
+                            (
+                                stars?.let {
+                                    "  " +
+                                        CompletionRatingPolicy
+                                            .symbols(it)
+                                }
+                                    ?: ""
+                                )
 
                     GomokuPlayer.PROFESSOR ->
                         "Prof Gecko aligne cinq Geckos."
@@ -5733,7 +5893,9 @@ class MainActivity : Activity() {
         statsStore.recordStart(
             size = 9,
             difficulty =
-                next.difficulty
+                next.difficulty,
+            mode =
+                GameMode.SUDOKU
         )
 
         if (
@@ -8340,9 +8502,24 @@ class MainActivity : Activity() {
             )
                 ?: return false
 
+        val spokenText =
+            if (
+                selectedGameMode ==
+                    GameMode.GOMOKU
+            ) {
+                GomokuProfessorPersona
+                    .livingLine(
+                        event = event,
+                        difficulty =
+                            currentDifficulty()
+                    )
+            } else {
+                selection.phrase.text
+            }
+
         return speakSimpleProfessorBubble(
             text =
-                selection.phrase.text,
+                spokenText,
             origin = origin,
             onCompletion =
                 onCompletion
