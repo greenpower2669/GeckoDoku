@@ -1319,3 +1319,6 @@ Gomoku advice/long press demandé → assistancePoints selon ADVICE/DIRECT_MOVE.
 
 <!-- GECKO-041-V013-WORKFLOW-MAP-2026-09-28 -->
 app/build.gradle.kts versionName → Resolve app version → GITHUB_ENV APP_VERSION → nom APK + nom AAB + nom artifact.
+
+<!-- GECKO-041-V013-GREEN-MAP-2026-09-28 -->
+commit cae4ed4 → CI #210 GREEN → APK 0.13 + AAB 0.13 → artifact 10944486757 → test téléphone Fab.

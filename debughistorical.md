@@ -1679,3 +1679,6 @@ Correction : retirer l'incrément du tour adversaire automatique et l'insérer a
 CI #209 : tests/build/APK/AAB/upload GREEN.
 Anomalie post-build : l'artifact s'appelait encore GeckoDoku-v0.12.0-dev-Android car build.yml codait 0.12 en dur.
 Correctif workflow : lecture automatique de versionName puis nommage dynamique des trois sorties.
+
+<!-- GECKO-041-V013-CI210-GREEN-2026-09-28 -->
+CI #210 GREEN après correction du nommage dynamique. Les étapes Test and build Android, Resolve app version, Name APK, Name AAB et upload-artifact sont toutes GREEN. Artifact final : GeckoDoku-v0.13.0-dev-Android, id 10944486757, digest sha256:7b91aec1489ccb13556efae3d7b94466c0ec24dd967af3266d6b768499137371.

@@ -16,9 +16,9 @@ Version cible : 0.13.0-dev / code 33.
 
 ## Validation technique
 - [x] Tests unitaires 0.13 GREEN (CI #209).
-- [x] CI code 0.13 GREEN (CI #209).
-- [ ] APK 0.13.0-dev produit avec nom correct (workflow corrigé, revalidation en cours).
-- [ ] AAB 0.13.0-dev produit avec nom correct (workflow corrigé, revalidation en cours).
+- [x] CI code 0.13 GREEN (CI #209) + packaging final GREEN (CI #210).
+- [x] APK 0.13.0-dev produit avec nom correct.
+- [x] AAB 0.13.0-dev produit avec nom correct.
 
 ## Validation téléphone Fab
 - [ ] Classic centré/agrandi.

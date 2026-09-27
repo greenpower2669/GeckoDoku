@@ -2817,3 +2817,6 @@ Décisions :
 
 <!-- GECKO-041-V013-WORKFLOW-NAMING-2026-09-28 -->
 CI #209 GREEN sur le code 0.13. Défaut de packaging détecté après build : build.yml conservait des noms 0.12 codés en dur. Correction : APP_VERSION est dérivé de app/build.gradle.kts puis réutilisé pour APK, AAB et artifact.
+
+<!-- GECKO-041-V013-CI210-GREEN-2026-09-28 -->
+0.13 candidate technique validée : CI #210 GREEN, tests + APK + AAB + artifact correct `GeckoDoku-v0.13.0-dev-Android`. Prochaine porte : validation téléphone Fab.

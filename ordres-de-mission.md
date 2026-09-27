@@ -338,3 +338,17 @@ Implémentation de cette passe :
 ### Correctif packaging 0.13
 La CI #209 a validé tests + build, mais l'artefact était encore nommé 0.12 à cause d'un nom figé dans build.yml.
 Le workflow doit désormais dériver automatiquement le nom APK/AAB/artefact depuis versionName afin que la candidate 0.13 soit identifiable sans ambiguïté.
+
+<!-- GECKO-041-V013-CI210-GREEN-2026-09-28 -->
+## JALON TECHNIQUE 0.13 VALIDÉ
+
+- Commit packaging : `cae4ed410314a3aa0e1b76a78ebd2b0dbf36eed8`
+- CI : **#210 GREEN**
+- Tests unitaires : GREEN
+- Build APK : GREEN
+- Build AAB : GREEN
+- Artifact : **GeckoDoku-v0.13.0-dev-Android**
+- Artifact id : `10944486757`
+- Digest : `sha256:7b91aec1489ccb13556efae3d7b94466c0ec24dd967af3266d6b768499137371`
+
+Reste uniquement la validation téléphone Fab avant nettoyage/clôture.
