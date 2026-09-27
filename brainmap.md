@@ -1288,3 +1288,7 @@ Professor help request → AssistanceKind points → assistancePoints(session).
 Completion Classic/Sudoku → CompletionRatingPolicy → stars 1..5 → PlayerStatsStore + HallOfFameStore.
 PlayerProfileStore → GeckoTétu + soundEnabled.
 Settings → edit profile / Hall of Fame / clear result history.
+
+
+<!-- GECKO-040-PHASE3-MAP-2026-09-28 -->
+Settings → ACTION_CREATE_DOCUMENT/ACTION_OPEN_DOCUMENT → UserDataBackup(schema v1) → validate all → snapshot prefs → commits → rollback on failure → recreate on success.

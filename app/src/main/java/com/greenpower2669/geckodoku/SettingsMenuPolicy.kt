@@ -8,6 +8,8 @@ enum class SettingsEntry {
     PLAYER_NAME,
     HALL_OF_FAME,
     CLEAR_HISTORY,
+    EXPORT_DATA,
+    IMPORT_DATA,
     SOUND,
     ANIMATIONS,
     MEDIA_LOG
@@ -35,6 +37,8 @@ class SettingsMenuPolicy {
                 SettingsEntry.PLAYER_NAME,
                 SettingsEntry.HALL_OF_FAME,
                 SettingsEntry.CLEAR_HISTORY,
+                SettingsEntry.EXPORT_DATA,
+                SettingsEntry.IMPORT_DATA,
                 SettingsEntry.SOUND,
                 SettingsEntry.ANIMATIONS,
                 SettingsEntry.MEDIA_LOG
@@ -47,6 +51,8 @@ class SettingsMenuPolicy {
                 SettingsEntry.PLAYER_NAME,
                 SettingsEntry.HALL_OF_FAME,
                 SettingsEntry.CLEAR_HISTORY,
+                SettingsEntry.EXPORT_DATA,
+                SettingsEntry.IMPORT_DATA,
                 SettingsEntry.SOUND,
                 SettingsEntry.ANIMATIONS,
                 SettingsEntry.MEDIA_LOG

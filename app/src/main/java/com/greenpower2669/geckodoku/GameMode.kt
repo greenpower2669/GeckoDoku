@@ -65,6 +65,47 @@ class GameModePreferences(
                 .apply()
         }
 
+    var classicSize: Int
+        get() =
+            prefs.getInt(
+                KEY_CLASSIC_SIZE,
+                5
+            )
+                .coerceIn(
+                    5,
+                    12
+                )
+        set(value) {
+            prefs.edit()
+                .putInt(
+                    KEY_CLASSIC_SIZE,
+                    value.coerceIn(
+                        5,
+                        12
+                    )
+                )
+                .apply()
+        }
+
+    var selectedDifficulty:
+        GameDifficulty
+        get() =
+            enumValueOrDefault(
+                prefs.getString(
+                    KEY_SELECTED_DIFFICULTY,
+                    null
+                ),
+                GameDifficulty.EASY
+            )
+        set(value) {
+            prefs.edit()
+                .putString(
+                    KEY_SELECTED_DIFFICULTY,
+                    value.name
+                )
+                .apply()
+        }
+
     var gomokuMatchMode:
         GomokuMatchMode
         get() =
@@ -127,5 +168,9 @@ class GameModePreferences(
             "sudoku_visual_style"
         private const val KEY_GOMOKU_MATCH_MODE =
             "gomoku_match_mode"
+        private const val KEY_CLASSIC_SIZE =
+            "classic_size"
+        private const val KEY_SELECTED_DIFFICULTY =
+            "selected_difficulty"
     }
 }

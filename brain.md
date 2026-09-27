@@ -2777,3 +2777,7 @@ Classic : carré centré par (viewWidth-side)/2, commandes ramenées à 2 lignes
 - Stats par difficulté enrichies avec meilleure note et moyenne d'étoiles.
 - Historique Hall of Fame vidable avec confirmation sans supprimer stats agrégées, réglages ni journal de grilles.
 - Sudoku compte désormais ses départs/terminaisons dans PlayerStatsStore.
+
+
+<!-- GECKO-040-PHASE3-BACKUP-2026-09-28 -->
+Réglages : export/import JSON via Storage Access Framework. Schéma v1 typé. Sont couverts : stats, journal des grilles, modes/style/taille/difficulté, animations, historique Prof, profil/son, Hall of Fame. L'import valide tout avant écriture, snapshotte l'état courant, rollback en cas d'échec et recharge l'Activity après succès.

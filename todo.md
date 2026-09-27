@@ -69,3 +69,13 @@
 - [x] Persistance du son dans le profil.
 - [ ] CI GREEN phase 2.
 - [ ] Export/import complet phase 3.
+
+
+<!-- GECKO-040-PHASE3-TODO-2026-09-28 -->
+- [x] Export complet JSON.
+- [x] Import validé + rollback.
+- [x] Stats, journal, paramètres, profil, Hall of Fame inclus.
+- [x] Taille/difficulté rendues persistantes.
+- [ ] CI GREEN final.
+- [ ] APK/AAB candidate.
+- [ ] Test téléphone Fab.

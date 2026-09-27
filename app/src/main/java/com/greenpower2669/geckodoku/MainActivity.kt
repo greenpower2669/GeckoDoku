@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.RectF
@@ -48,6 +49,15 @@ class MainActivity : Activity() {
 
     private lateinit var hallOfFameStore:
         HallOfFameStore
+
+    private lateinit var userDataBackup:
+        UserDataBackup
+
+    private val exportDataRequestCode =
+        7401
+
+    private val importDataRequestCode =
+        7402
 
     private lateinit var board:
         GeckoBoardView
@@ -407,6 +417,9 @@ class MainActivity : Activity() {
         hallOfFameStore =
             HallOfFameStore(this)
 
+        userDataBackup =
+            UserDataBackup(this)
+
         fx.enabled =
             playerProfileStore
                 .soundEnabled
@@ -425,6 +438,14 @@ class MainActivity : Activity() {
         gomokuMatchMode =
             gameModePreferences
                 .gomokuMatchMode
+
+        selectedSize =
+            gameModePreferences
+                .classicSize
+
+        selectedDifficulty =
+            gameModePreferences
+                .selectedDifficulty
 
         createPuzzle(
             recordStart =
@@ -1675,6 +1696,16 @@ class MainActivity : Activity() {
 
         selectedSize =
             puzzle.size
+
+        selectedDifficulty =
+            puzzle.difficulty
+
+        gameModePreferences
+            .classicSize =
+            selectedSize
+        gameModePreferences
+            .selectedDifficulty =
+            selectedDifficulty
 
         engine =
             GameEngine(puzzle)
@@ -3210,6 +3241,10 @@ class MainActivity : Activity() {
                 selectedSize =
                     values[which]
 
+                gameModePreferences
+                    .classicSize =
+                    selectedSize
+
                 dialog.dismiss()
 
                 requestClassicPuzzle(
@@ -3249,6 +3284,10 @@ class MainActivity : Activity() {
             ) { dialog, which ->
                 selectedDifficulty =
                     values[which]
+
+                gameModePreferences
+                    .selectedDifficulty =
+                    selectedDifficulty
 
                 dialog.dismiss()
 
@@ -3702,6 +3741,180 @@ class MainActivity : Activity() {
             }
             .setNegativeButton(
                 "Annuler",
+                null
+            )
+            .show()
+    }
+
+    private fun exportUserData() {
+        val stamp =
+            SimpleDateFormat(
+                "yyyyMMdd-HHmm",
+                Locale.getDefault()
+            ).format(
+                Date()
+            )
+
+        val intent =
+            Intent(
+                Intent.ACTION_CREATE_DOCUMENT
+            ).apply {
+                addCategory(
+                    Intent.CATEGORY_OPENABLE
+                )
+                type =
+                    "application/json"
+                putExtra(
+                    Intent.EXTRA_TITLE,
+                    "GeckoDoku-backup-" +
+                        stamp +
+                        ".json"
+                )
+            }
+
+        startActivityForResult(
+            intent,
+            exportDataRequestCode
+        )
+    }
+
+    private fun importUserData() {
+        val intent =
+            Intent(
+                Intent.ACTION_OPEN_DOCUMENT
+            ).apply {
+                addCategory(
+                    Intent.CATEGORY_OPENABLE
+                )
+                type =
+                    "application/json"
+            }
+
+        startActivityForResult(
+            intent,
+            importDataRequestCode
+        )
+    }
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    ) {
+        super.onActivityResult(
+            requestCode,
+            resultCode,
+            data
+        )
+
+        if (
+            resultCode !=
+                RESULT_OK
+        ) {
+            return
+        }
+
+        val uri =
+            data?.data
+                ?: return
+
+        when (requestCode) {
+            exportDataRequestCode -> {
+                try {
+                    val json =
+                        userDataBackup
+                            .exportJson()
+
+                    val output =
+                        contentResolver
+                            .openOutputStream(
+                                uri
+                            )
+                            ?: throw IllegalStateException(
+                                "Impossible d'ouvrir le fichier de destination."
+                            )
+
+                    output.bufferedWriter(
+                        Charsets.UTF_8
+                    ).use {
+                        writer ->
+                        writer.write(json)
+                    }
+
+                    status.text =
+                        "Export GeckoDoku terminé 📤"
+                } catch (
+                    error: Exception
+                ) {
+                    showDataTransferError(
+                        title =
+                            "Export impossible",
+                        message =
+                            error.message
+                                ?: "Erreur d'écriture."
+                    )
+                }
+            }
+
+            importDataRequestCode -> {
+                try {
+                    val input =
+                        contentResolver
+                            .openInputStream(
+                                uri
+                            )
+                            ?: throw IllegalStateException(
+                                "Impossible d'ouvrir le fichier."
+                            )
+
+                    val json =
+                        input.bufferedReader(
+                            Charsets.UTF_8
+                        ).use {
+                            reader ->
+                            reader.readText()
+                        }
+
+                    val result =
+                        userDataBackup
+                            .importJson(json)
+
+                    if (result.success) {
+                        status.text =
+                            "Import terminé. GeckoDoku recharge les données…"
+                        recreate()
+                    } else {
+                        showDataTransferError(
+                            title =
+                                "Import refusé",
+                            message =
+                                result.message
+                        )
+                    }
+                } catch (
+                    error: Exception
+                ) {
+                    showDataTransferError(
+                        title =
+                            "Import impossible",
+                        message =
+                            error.message
+                                ?: "Fichier invalide."
+                    )
+                }
+            }
+        }
+    }
+
+    private fun showDataTransferError(
+        title: String,
+        message: String
+    ) {
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton(
+                "OK",
                 null
             )
             .show()
@@ -5503,6 +5716,12 @@ class MainActivity : Activity() {
         }
 
         sudokuPuzzle = next
+        selectedDifficulty =
+            next.difficulty
+        gameModePreferences
+            .selectedDifficulty =
+            selectedDifficulty
+
         sudokuEngine =
             SudokuGameEngine(next)
         sudokuSelectedCell = null
@@ -7201,6 +7420,12 @@ class MainActivity : Activity() {
                     SettingsEntry.CLEAR_HISTORY ->
                         "🗑 Vider l'historique"
 
+                    SettingsEntry.EXPORT_DATA ->
+                        "📤 Exporter mes données"
+
+                    SettingsEntry.IMPORT_DATA ->
+                        "📥 Importer mes données"
+
                     SettingsEntry.SOUND ->
                         if (fx.enabled) {
                             "🔊 Son : ON"
@@ -7260,6 +7485,16 @@ class MainActivity : Activity() {
                     SettingsEntry.CLEAR_HISTORY -> {
                         dialog.dismiss()
                         confirmClearResultHistory()
+                    }
+
+                    SettingsEntry.EXPORT_DATA -> {
+                        dialog.dismiss()
+                        exportUserData()
+                    }
+
+                    SettingsEntry.IMPORT_DATA -> {
+                        dialog.dismiss()
+                        importUserData()
                     }
 
                     SettingsEntry.SOUND -> {

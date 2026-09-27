@@ -1634,3 +1634,7 @@ Cause du décentrage Classic confirmée : left restait fixé à 3px même lorsqu
 
 <!-- GECKO-040-PHASE2-DEBUG-2026-09-28 -->
 Avant GECKO-040, PlayerStats ne conservait qu'un booléen d'assistance pour Classic et Sudoku n'enregistrait pas de fin. La note étoilée repose désormais sur des points de demandes d'aide, jamais sur les animations automatiques. Le Hall of Fame est séparé du journal des grilles : vider l'historique de résultats ne détruit aucune sauvegarde.
+
+
+<!-- GECKO-040-PHASE3-DEBUG-2026-09-28 -->
+Les données GeckoDoku étaient dispersées entre plusieurs SharedPreferences. UserDataBackup crée une sauvegarde unique portable et versionnée. Taille Classic et difficulté deviennent également persistantes dans GameModePreferences, donc exportables.
