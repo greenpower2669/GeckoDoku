@@ -28,11 +28,17 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
     var onCandidateDigit:
         ((Int) -> Unit)? = null
 
+    var onGeckoMarker:
+        (() -> Unit)? = null
+
     var onErase:
         (() -> Unit)? = null
 
     private var activeCandidates:
         Set<Int> = emptySet()
+
+    private var geckoMarkerActive =
+        false
 
     private val layoutPolicy =
         SudokuPaletteLayoutPolicy()
@@ -51,6 +57,13 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
         isFocusable = true
         contentDescription =
             "Palette Sudoku. Valeurs à gauche, candidats à droite, effacer en bas."
+    }
+
+    fun setGeckoMarkerActive(
+        active: Boolean
+    ) {
+        geckoMarkerActive = active
+        invalidate()
     }
 
     fun setActiveCandidates(
@@ -108,6 +121,10 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                     )
 
             SudokuPaletteAction
+                .GeckoMarker ->
+                onGeckoMarker?.invoke()
+
+            SudokuPaletteAction
                 .Erase ->
                 onErase?.invoke()
 
@@ -147,7 +164,7 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
             )
         }
 
-        drawErase(canvas)
+        drawFooter(canvas)
     }
 
     private fun drawHeaders(
@@ -274,7 +291,7 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
         )
     }
 
-    private fun drawErase(
+    private fun drawFooter(
         canvas: Canvas
     ) {
         val top =
@@ -282,8 +299,35 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                 .footerTop(height)
                 .toFloat()
 
+        val half =
+            width / 2f
+
         paint.style =
             Paint.Style.FILL
+
+        paint.color =
+            if (geckoMarkerActive) {
+                Color.rgb(
+                    215,
+                    239,
+                    220
+                )
+            } else {
+                Color.rgb(
+                    232,
+                    235,
+                    232
+                )
+            }
+
+        canvas.drawRect(
+            0f,
+            top,
+            half,
+            height.toFloat(),
+            paint
+        )
+
         paint.color =
             Color.rgb(
                 232,
@@ -292,7 +336,7 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
             )
 
         canvas.drawRect(
-            0f,
+            half,
             top,
             width.toFloat(),
             height.toFloat(),
@@ -303,7 +347,7 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
             Paint.Align.CENTER
         paint.textSize =
             (height - top) *
-                .40f
+                .36f
         paint.color =
             Color.rgb(
                 42,
@@ -325,8 +369,16 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                     ) / 2f
 
         canvas.drawText(
+            "🦎 Repère",
+            half / 2f,
+            y,
+            paint
+        )
+
+        canvas.drawText(
             "⌫ Effacer",
-            width / 2f,
+            half +
+                half / 2f,
             y,
             paint
         )

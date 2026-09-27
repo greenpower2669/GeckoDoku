@@ -9,6 +9,9 @@ sealed class SudokuPaletteAction {
         val digit: Int
     ) : SudokuPaletteAction()
 
+    data object GeckoMarker :
+        SudokuPaletteAction()
+
     data object Erase :
         SudokuPaletteAction()
 }
@@ -51,8 +54,15 @@ class SudokuPaletteLayoutPolicy {
                 (1f - FOOTER_FRACTION)
 
         if (y >= footerTop) {
-            return SudokuPaletteAction
-                .Erase
+            return if (
+                x < width / 2f
+            ) {
+                SudokuPaletteAction
+                    .GeckoMarker
+            } else {
+                SudokuPaletteAction
+                    .Erase
+            }
         }
 
         if (y < header) {

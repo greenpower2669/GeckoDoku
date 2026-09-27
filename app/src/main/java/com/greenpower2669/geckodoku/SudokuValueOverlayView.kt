@@ -1,14 +1,18 @@
 package com.greenpower2669.geckodoku
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
+import android.os.SystemClock
 import android.util.AttributeSet
 import android.view.View
 import kotlin.math.min
+import kotlin.math.sin
 
 class SudokuValueOverlayView @JvmOverloads constructor(
     context: Context,
@@ -36,6 +40,22 @@ class SudokuValueOverlayView @JvmOverloads constructor(
 
     private val paint =
         Paint(Paint.ANTI_ALIAS_FLAG)
+
+    private val geckoMarkerBitmap:
+        Bitmap? =
+        try {
+            context.assets
+                .open(
+                    AssetMediaCatalog
+                        .GECKO_PORTRAIT
+                )
+                .use {
+                    BitmapFactory
+                        .decodeStream(it)
+                }
+        } catch (_: Exception) {
+            null
+        }
 
     private val boardRect =
         RectF()
@@ -129,6 +149,9 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         val state =
             snapshotProvider()
 
+        var animateMarker =
+            false
+
         for (row in 0..8) {
             for (col in 0..8) {
                 val cell =
@@ -155,6 +178,19 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                             )
                     )
                     continue
+                }
+
+                if (
+                    state.hasGeckoMarker(
+                        cell
+                    )
+                ) {
+                    drawGeckoMarker(
+                        canvas,
+                        rect,
+                        cell
+                    )
+                    animateMarker = true
                 }
 
                 val candidates =
@@ -187,6 +223,121 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                 }
             }
         }
+
+        if (animateMarker) {
+            postInvalidateDelayed(
+                180L
+            )
+        }
+    }
+
+    private fun drawGeckoMarker(
+        canvas: Canvas,
+        rect: RectF,
+        cell: Cell
+    ) {
+        val now =
+            SystemClock
+                .uptimeMillis()
+
+        val seed =
+            cell.row * 37 +
+                cell.col * 19 +
+                11
+
+        val period =
+            780L +
+                (seed % 7) *
+                95L
+
+        val phase =
+            seed *
+                0.73
+
+        val wave =
+            sin(
+                now.toDouble() /
+                    period.toDouble() *
+                    Math.PI *
+                    2.0 +
+                    phase
+            ).toFloat()
+
+        val scale =
+            .66f +
+                .035f * wave
+
+        val bob =
+            rect.height() *
+                .035f *
+                wave
+
+        val targetWidth =
+            rect.width() *
+                scale
+
+        val targetHeight =
+            rect.height() *
+                scale
+
+        val target =
+            RectF(
+                rect.centerX() -
+                    targetWidth / 2f,
+                rect.centerY() -
+                    targetHeight / 2f +
+                    bob,
+                rect.centerX() +
+                    targetWidth / 2f,
+                rect.centerY() +
+                    targetHeight / 2f +
+                    bob
+            )
+
+        val sprite =
+            geckoMarkerBitmap
+
+        if (sprite != null) {
+            canvas.save()
+
+            canvas.rotate(
+                wave * 3.5f,
+                rect.centerX(),
+                rect.centerY()
+            )
+
+            paint.alpha =
+                155
+
+            canvas.drawBitmap(
+                sprite,
+                null,
+                target,
+                paint
+            )
+
+            paint.alpha =
+                255
+
+            canvas.restore()
+            return
+        }
+
+        paint.style =
+            Paint.Style.FILL
+
+        paint.color =
+            Color.argb(
+                150,
+                38,
+                128,
+                72
+            )
+
+        canvas.drawOval(
+            target,
+            paint
+        )
     }
 
     private fun drawCandidates(
