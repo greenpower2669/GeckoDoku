@@ -469,3 +469,10 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] UI double tap/rendu repères.
 - [ ] UI projection/speech sequence.
 - [ ] Animation Classic sur Gecko-repère.
+
+
+<!-- GECKO-039-PHASE2-VIEWS-2026-09-27 -->
+- [x] Gestes view single/double/long distincts.
+- [x] Rendu repères personnels.
+- [x] Overlay raisonnement accessible par traits/croix.
+- [ ] Câblage MainActivity + animation Classic + séquence voix/bulle.

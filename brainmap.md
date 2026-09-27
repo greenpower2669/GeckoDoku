@@ -1105,3 +1105,7 @@ Sudoku gestures → intent policy. ReasoningTrace → steps/eliminations. App ti
 
 <!-- GECKO-039-PHASE2-ENGINE-TRACE-2026-09-27 -->
 Engine customMarkers ↔ Undo/Redo. HintEngine → conflictFor(row/col/box) → grouped eliminations → ordered ReasoningTrace.
+
+
+<!-- GECKO-039-PHASE2-VIEWS-2026-09-27 -->
+SudokuBoardView → single confirmed / double / long. Overlay → custom marker + cumulative reasoning projection.

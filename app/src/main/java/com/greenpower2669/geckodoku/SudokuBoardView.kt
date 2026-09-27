@@ -22,6 +22,9 @@ class SudokuBoardView @JvmOverloads constructor(
     var onCellSelected:
         ((Cell) -> Unit)? = null
 
+    var onDoubleTapCell:
+        ((Cell) -> Unit)? = null
+
     var onLongPressCell:
         ((Cell) -> Unit)? = null
 
@@ -46,7 +49,7 @@ class SudokuBoardView @JvmOverloads constructor(
                     e: MotionEvent
                 ): Boolean = true
 
-                override fun onSingleTapUp(
+                override fun onSingleTapConfirmed(
                     e: MotionEvent
                 ): Boolean {
                     val cell =
@@ -58,6 +61,24 @@ class SudokuBoardView @JvmOverloads constructor(
 
                     selectedCell = cell
                     onCellSelected
+                        ?.invoke(cell)
+                    performClick()
+                    invalidate()
+                    return true
+                }
+
+                override fun onDoubleTap(
+                    e: MotionEvent
+                ): Boolean {
+                    val cell =
+                        cellAt(
+                            e.x,
+                            e.y
+                        )
+                            ?: return false
+
+                    selectedCell = cell
+                    onDoubleTapCell
                         ?.invoke(cell)
                     performClick()
                     invalidate()
@@ -92,7 +113,7 @@ class SudokuBoardView @JvmOverloads constructor(
         importantForAccessibility =
             IMPORTANT_FOR_ACCESSIBILITY_YES
         contentDescription =
-            "Grille Sudoku 9 par 9. Touchez une case puis choisissez un chiffre. Appui long pour la palette locale."
+            "Grille Sudoku 9 par 9. Tap simple pour le Gecko repère, double tap pour les repères personnels, appui long pour la palette locale."
     }
 
     fun setSelectedCell(
@@ -323,6 +344,73 @@ class SudokuBoardView @JvmOverloads constructor(
         cell: Cell
     ): RectF =
         cellRect(cell)
+
+    fun cellRectOnScreen(
+        cell: Cell
+    ): RectF {
+        val rect =
+            RectF(
+                cellRect(cell)
+            )
+        val location =
+            IntArray(2)
+        getLocationOnScreen(
+            location
+        )
+        rect.offset(
+            location[0].toFloat(),
+            location[1].toFloat()
+        )
+        return rect
+    }
+
+    fun cellBackgroundColor(
+        cell: Cell
+    ): Int {
+        val state =
+            if (
+                ::snapshotProvider
+                    .isInitialized
+            ) {
+                snapshotProvider()
+            } else {
+                null
+            }
+
+        return when {
+            selectedCell == cell ->
+                Color.rgb(
+                    219,
+                    238,
+                    224
+                )
+
+            state?.isGiven(cell) ==
+                true ->
+                Color.rgb(
+                    238,
+                    241,
+                    238
+                )
+
+            (
+                cell.row / 3 +
+                    cell.col / 3
+                ) % 2 == 0 ->
+                Color.rgb(
+                    252,
+                    252,
+                    248
+                )
+
+            else ->
+                Color.rgb(
+                    246,
+                    249,
+                    246
+                )
+        }
+    }
 
     private fun cellAt(
         x: Float,

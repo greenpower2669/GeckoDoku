@@ -1020,3 +1020,7 @@ Phase 2 : modèles/policies posés, moteur et UI à suivre.
 
 <!-- GECKO-039-PHASE2-ENGINE-TRACE-2026-09-27 -->
 Phase 2 moteur : repères personnels historiques + trace réelle des contraintes posés. Câblage UI à suivre.
+
+
+<!-- GECKO-039-PHASE2-VIEWS-2026-09-27 -->
+Phase 2 vues prêtes : geste double distinct et projection graphique structurée. MainActivity à câbler.

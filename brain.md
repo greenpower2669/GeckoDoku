@@ -2622,3 +2622,7 @@ Phase 2 modèles : GesturePolicy explicite, AppTitlePolicy invariant, structures
 
 <!-- GECKO-039-PHASE2-ENGINE-TRACE-2026-09-27 -->
 SudokuGameEngine stocke désormais les CustomMarker visuels dans l'historique Undo/Redo et les efface lorsqu'une vraie valeur est posée. SudokuHintEngine construit une ReasoningTrace à partir des conflits réels ligne/colonne/bloc pour les techniques déjà implémentées.
+
+
+<!-- GECKO-039-PHASE2-VIEWS-2026-09-27 -->
+SudokuBoardView distingue désormais single-confirmed, double tap et long press. SudokuValueOverlayView sait rendre repères personnels discrets et ReasoningTrace : source encadrée, projection trait/bloc, croix d'élimination et case finale encadrée. Pas de dépendance couleur seule.

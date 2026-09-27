@@ -78,6 +78,12 @@ class SudokuValueOverlayView @JvmOverloads constructor(
     private var professorFocusDigit:
         Int? = null
 
+    private var reasoningTrace:
+        SudokuReasoningTrace? = null
+
+    private var reasoningStepIndex =
+        -1
+
     init {
         isClickable = false
         isFocusable = false
@@ -111,6 +117,25 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         professorCandidates =
             emptySet()
         professorFocusDigit = null
+        invalidate()
+    }
+
+    fun showReasoningStep(
+        trace: SudokuReasoningTrace,
+        stepIndex: Int
+    ) {
+        reasoningTrace = trace
+        reasoningStepIndex =
+            stepIndex.coerceIn(
+                0,
+                trace.steps.lastIndex
+            )
+        invalidate()
+    }
+
+    fun clearReasoning() {
+        reasoningTrace = null
+        reasoningStepIndex = -1
         invalidate()
     }
 
@@ -200,6 +225,16 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                     animateMarker = true
                 }
 
+                state.customMarkerAt(
+                    cell
+                )?.let {
+                    drawCustomMarker(
+                        canvas,
+                        rect,
+                        it
+                    )
+                }
+
                 val candidates =
                     linkedSetOf<Int>()
 
@@ -230,6 +265,10 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                 }
             }
         }
+
+        drawReasoningOverlay(
+            canvas
+        )
 
         if (
             animateMarker &&
@@ -352,6 +391,257 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             target,
             paint
         )
+    }
+
+    private fun drawReasoningOverlay(
+        canvas: Canvas
+    ) {
+        val trace =
+            reasoningTrace
+                ?: return
+
+        if (
+            reasoningStepIndex !in
+                trace.steps.indices
+        ) {
+            return
+        }
+
+        val current =
+            trace.steps[
+                reasoningStepIndex
+            ]
+
+        val source =
+            current.sourceCell
+
+        if (
+            source != null
+        ) {
+            val sourceRect =
+                cellRect(source)
+
+            paint.style =
+                Paint.Style.STROKE
+            paint.strokeWidth =
+                cellSize * .075f
+            paint.color =
+                Color.rgb(
+                    172,
+                    106,
+                    0
+                )
+
+            canvas.drawRoundRect(
+                RectF(
+                    sourceRect.left +
+                        cellSize * .06f,
+                    sourceRect.top +
+                        cellSize * .06f,
+                    sourceRect.right -
+                        cellSize * .06f,
+                    sourceRect.bottom -
+                        cellSize * .06f
+                ),
+                cellSize * .08f,
+                cellSize * .08f,
+                paint
+            )
+
+            when (
+                current.projection
+            ) {
+                SudokuProjectionType
+                    .ROW -> {
+                    val y =
+                        sourceRect.centerY()
+                    canvas.drawLine(
+                        boardRect.left,
+                        y,
+                        boardRect.right,
+                        y,
+                        paint
+                    )
+                }
+
+                SudokuProjectionType
+                    .COLUMN -> {
+                    val x =
+                        sourceRect.centerX()
+                    canvas.drawLine(
+                        x,
+                        boardRect.top,
+                        x,
+                        boardRect.bottom,
+                        paint
+                    )
+                }
+
+                SudokuProjectionType
+                    .BOX -> {
+                    val boxRow =
+                        source.row /
+                            3 * 3
+                    val boxCol =
+                        source.col /
+                            3 * 3
+                    val first =
+                        cellRect(
+                            Cell(
+                                boxRow,
+                                boxCol
+                            )
+                        )
+                    val last =
+                        cellRect(
+                            Cell(
+                                boxRow + 2,
+                                boxCol + 2
+                            )
+                        )
+
+                    canvas.drawRect(
+                        RectF(
+                            first.left,
+                            first.top,
+                            last.right,
+                            last.bottom
+                        ),
+                        paint
+                    )
+                }
+
+                null -> Unit
+            }
+        }
+
+        val cumulative =
+            trace.steps
+                .take(
+                    reasoningStepIndex +
+                        1
+                )
+                .flatMap {
+                    it.eliminations
+                }
+                .distinctBy {
+                    it.cell to
+                        it.digit
+                }
+
+        paint.color =
+            Color.rgb(
+                170,
+                32,
+                32
+            )
+        paint.strokeWidth =
+            cellSize * .065f
+        paint.strokeCap =
+            Paint.Cap.ROUND
+
+        for (
+            elimination in
+                cumulative
+        ) {
+            val rect =
+                cellRect(
+                    elimination.cell
+                )
+            val inset =
+                cellSize * .25f
+
+            canvas.drawLine(
+                rect.left + inset,
+                rect.top + inset,
+                rect.right - inset,
+                rect.bottom - inset,
+                paint
+            )
+            canvas.drawLine(
+                rect.right - inset,
+                rect.top + inset,
+                rect.left + inset,
+                rect.bottom - inset,
+                paint
+            )
+        }
+
+        val finalCell =
+            current.finalCell
+
+        if (
+            finalCell != null
+        ) {
+            val rect =
+                cellRect(
+                    finalCell
+                )
+            paint.color =
+                Color.rgb(
+                    20,
+                    118,
+                    54
+                )
+            paint.strokeWidth =
+                cellSize * .10f
+
+            canvas.drawRoundRect(
+                RectF(
+                    rect.left +
+                        cellSize * .04f,
+                    rect.top +
+                        cellSize * .04f,
+                    rect.right -
+                        cellSize * .04f,
+                    rect.bottom -
+                        cellSize * .04f
+                ),
+                cellSize * .10f,
+                cellSize * .10f,
+                paint
+            )
+        }
+    }
+
+    private fun drawCustomMarker(
+        canvas: Canvas,
+        rect: RectF,
+        marker: CustomMarker
+    ) {
+        paint.style =
+            Paint.Style.FILL
+        paint.textAlign =
+            Paint.Align.CENTER
+        paint.isFakeBoldText = true
+        paint.color =
+            Color.rgb(
+                20,
+                45,
+                90
+            )
+        paint.textSize =
+            cellSize * .25f
+
+        val x =
+            rect.right -
+                cellSize * .16f
+        val y =
+            rect.top +
+                cellSize * .25f -
+                (
+                    paint.ascent() +
+                        paint.descent()
+                    ) / 2f
+
+        canvas.drawText(
+            marker.symbol,
+            x,
+            y,
+            paint
+        )
+
+        paint.isFakeBoldText = false
     }
 
     private fun drawCandidates(
