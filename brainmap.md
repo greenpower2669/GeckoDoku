@@ -682,3 +682,33 @@ fermeture si token/generation toujours valide
 
 PROF_BUTTON pédagogique reste hors de ce flux auto-close.
 
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-GREEN-CODE-2026-09-27 -->
+# Chemin canonique runtime
+
+```text
+AMBIENT fixe / STATS / moteur 309
+            ↓
+speakSimpleProfessorBubble(text, origin)
+            ↓
+ProfessorSimpleSpeechCoordinator.begin
+            ↓
+canAccept ? ── non → rien à afficher
+            ↓ oui
+token simple + bubbleText == speechText
+            ↓
+showProfessorBubbleVisualOnly
+status = "Prof Gecko"
+            ↓
+speakWithProfessorVisual(origin)
+            ↓
+ProfessorSpeech.speak (une requête)
+     ↓ accepté       ↓ refus tardif
+ fin réelle          token courant ?
+     ↓                    ↓ oui
++1s policy           fermer bulle
+     ↓
+fermer si token encore courant
+```
+
+`showProfessorBubble()/PROF_BUTTON` reste le chemin pédagogique distinct.
+

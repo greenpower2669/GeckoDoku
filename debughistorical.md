@@ -1163,3 +1163,21 @@ Les chemins via `speakLivingProfessor()` et `showProfessorBubble()` sont déjà 
 
 RED ajouté avant correction via `ProfessorSimpleSpeechCoordinatorTest`.
 
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-GREEN-CODE-2026-09-27 -->
+## 2026-09-27 — GREEN code de l'issue intemporelle
+
+RED #155 confirmé : compilation des tests stoppée uniquement sur l'absence attendue de `ProfessorSimpleSpeechCoordinator`.
+
+Correction :
+- ajout du coordinator pur ;
+- factorisation du chemin simple dans MainActivity ;
+- `speakProfessorAmbient()` route désormais vers la vraie bulle ;
+- `announcePlayerStats()` route désormais vers la vraie bulle ;
+- `speakLivingProfessor()` réutilise le même chemin au lieu de dupliquer token/bulle/timer ;
+- ajout de `onRejected` à `speakWithProfessorVisual()` pour couvrir le refus tardif après préparation ProfParle ;
+- aucun changement des priorités `ProfessorSpeechRequestPolicy` ;
+- aucun changement de `ProfessorAmbientPolicy` ;
+- aucun changement de `GeckoBoardView`, SudokuEngine, géométrie ou médias.
+
+Audit avant correction : 5 occurrences de `speakWithProfessorVisual(` dans MainActivity (appel pédagogique, ambient défectueux, living conforme, définition helper, stats défectueux). Après factorisation, les appels runtime se réduisent au pédagogique + chemin simple commun ; la définition helper reste unique.
+

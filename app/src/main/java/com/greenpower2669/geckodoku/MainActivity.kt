@@ -196,6 +196,11 @@ class MainActivity : Activity() {
     private val professorQuickBubbleClosePolicy =
         ProfessorQuickBubbleClosePolicy()
 
+    private val professorSimpleSpeechCoordinator =
+        ProfessorSimpleSpeechCoordinator(
+            professorQuickBubbleClosePolicy
+        )
+
     private var professorQuickBubbleCloseRunnable:
         Runnable? = null
 
@@ -3264,7 +3269,7 @@ class MainActivity : Activity() {
         message: String
     ) {
         val accepted =
-            speakWithProfessorVisual(
+            speakSimpleProfessorBubble(
                 text = message,
                 origin =
                     SpeechOrigin.AMBIENT
@@ -3289,10 +3294,6 @@ class MainActivity : Activity() {
                     .smallTalkDelayMs(
                         Random.nextInt()
                     )
-
-        status.text =
-            "Prof Gecko • " +
-                message
     }
 
     private fun encouragement(
@@ -5180,91 +5181,137 @@ class MainActivity : Activity() {
             )
                 ?: return false
 
+        return speakSimpleProfessorBubble(
+            text =
+                selection.phrase.text,
+            origin = origin,
+            onCompletion =
+                onCompletion
+        )
+    }
+
+    private fun speakSimpleProfessorBubble(
+        text: String,
+        origin: SpeechOrigin,
+        onCompletion:
+            (() -> Unit)? = null
+    ): Boolean {
+        val plan =
+            professorSimpleSpeechCoordinator
+                .begin(
+                    text = text,
+                    origin = origin,
+                    canAccept =
+                        professorSpeech
+                            .canAccept(
+                                origin
+                            )
+                )
+                ?: return false
+
         cancelProfessorQuickBubbleClose()
 
-        val token =
-            professorQuickBubbleClosePolicy
-                .onSimpleBubbleShown()
-
-        val text =
-            selection.phrase.text
-
         showProfessorBubbleVisualOnly(
-            text
+            plan.bubbleText
         )
 
         status.text =
-            "Prof Gecko"
+            plan.statusText
 
-        val accepted =
-            speakWithProfessorVisual(
-                text = text,
-                origin = origin,
-                onCompletion = {
-                    onCompletion?.invoke()
+        return speakWithProfessorVisual(
+            text =
+                plan.speechText,
+            origin =
+                plan.origin,
+            onCompletion = {
+                onCompletion?.invoke()
 
-                    val schedule =
-                        professorQuickBubbleClosePolicy
-                            .onSpeechCompleted(
-                                token
-                            )
-
-                    if (
-                        schedule != null &&
-                        ::screenRoot.isInitialized
-                    ) {
-                        val runnable =
-                            Runnable {
-                                if (
-                                    professorQuickBubbleClosePolicy
-                                        .canClose(
-                                            schedule.token
-                                        )
-                                ) {
-                                    MediaTrace.event(
-                                        source =
-                                            "MainActivity",
-                                        event =
-                                            "PROF_QUICK_BUBBLE_CLOSE",
-                                        detail =
-                                            "token=" +
-                                                schedule.token
-                                    )
-                                    closeProfessorBubble()
-                                }
-                            }
-
-                        professorQuickBubbleCloseRunnable =
-                            runnable
-
-                        MediaTrace.event(
-                            source =
-                                "MainActivity",
-                            event =
-                                "PROF_QUICK_BUBBLE_CLOSE_SCHEDULED",
-                            detail =
-                                "delayMs=" +
-                                    schedule.delayMs +
-                                    " token=" +
-                                    schedule.token
+                scheduleProfessorSimpleBubbleClose(
+                    plan.token
+                )
+            },
+            onRejected = {
+                if (
+                    professorSimpleSpeechCoordinator
+                        .shouldCloseAfterRejection(
+                            plan.token
                         )
+                ) {
+                    MediaTrace.event(
+                        source =
+                            "MainActivity",
+                        event =
+                            "PROF_SIMPLE_BUBBLE_REJECTED",
+                        detail =
+                            "origin=" +
+                                plan.origin +
+                                " token=" +
+                                plan.token
+                    )
 
-                        screenRoot.postDelayed(
-                            runnable,
-                            schedule.delayMs
-                        )
-                    }
+                    closeProfessorBubble()
                 }
-            )
+            }
+        )
+    }
 
-        if (!accepted) {
-            professorQuickBubbleClosePolicy
-                .invalidate()
-            closeProfessorBubble()
-            return false
+    private fun scheduleProfessorSimpleBubbleClose(
+        token: Long
+    ) {
+        val schedule =
+            professorSimpleSpeechCoordinator
+                .onSpeechCompleted(
+                    token
+                )
+                ?: return
+
+        if (
+            !::screenRoot.isInitialized
+        ) {
+            return
         }
 
-        return true
+        val runnable =
+            Runnable {
+                if (
+                    professorSimpleSpeechCoordinator
+                        .canClose(
+                            schedule.token
+                        )
+                ) {
+                    MediaTrace.event(
+                        source =
+                            "MainActivity",
+                        event =
+                            "PROF_QUICK_BUBBLE_CLOSE",
+                        detail =
+                            "token=" +
+                                schedule.token
+                    )
+
+                    closeProfessorBubble()
+                }
+            }
+
+        professorQuickBubbleCloseRunnable =
+            runnable
+
+        MediaTrace.event(
+            source =
+                "MainActivity",
+            event =
+                "PROF_QUICK_BUBBLE_CLOSE_SCHEDULED",
+            detail =
+                "delayMs=" +
+                    schedule.delayMs +
+                    " token=" +
+                    schedule.token
+        )
+
+        screenRoot.postDelayed(
+            runnable,
+            schedule.delayMs
+        )
     }
 
     private fun cancelProfessorQuickBubbleClose() {
@@ -5288,6 +5335,8 @@ class MainActivity : Activity() {
         text: String,
         origin: SpeechOrigin,
         onCompletion:
+            (() -> Unit)? = null,
+        onRejected:
             (() -> Unit)? = null
     ): Boolean {
         if (
@@ -5295,6 +5344,7 @@ class MainActivity : Activity() {
                 origin
             )
         ) {
+            onRejected?.invoke()
             return false
         }
 
@@ -5302,12 +5352,19 @@ class MainActivity : Activity() {
             !professorSpeechVisualPolicy
                 .shouldAnimate(origin)
         ) {
-            return professorSpeech.speak(
-                text = text,
-                origin = origin,
-                onCompletion =
-                    onCompletion
-            )
+            val accepted =
+                professorSpeech.speak(
+                    text = text,
+                    origin = origin,
+                    onCompletion =
+                        onCompletion
+                )
+
+            if (!accepted) {
+                onRejected?.invoke()
+            }
+
+            return accepted
         }
 
         prepareProfessorSpeakingVisual {
@@ -5328,6 +5385,7 @@ class MainActivity : Activity() {
                 suppressVisualForCurrentSpeech =
                     false
                 stopProfessorSpeechVideo()
+                onRejected?.invoke()
             }
         }
 
@@ -6176,11 +6234,13 @@ class MainActivity : Activity() {
             return
         }
 
-        speakWithProfessorVisual(
-            text =
-                PlayerStatsNarration.build(
-                    statsStore.read()
-                ),
+        val narration =
+            PlayerStatsNarration.build(
+                statsStore.read()
+            )
+
+        speakSimpleProfessorBubble(
+            text = narration,
             origin =
                 SpeechOrigin.STATS
         )

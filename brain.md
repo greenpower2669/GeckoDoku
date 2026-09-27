@@ -1712,3 +1712,25 @@ Audit HEAD `e854a6d8096a5b16227f38e0d3f998075e9e5fe6` :
 
 Correction cible : un chemin commun de parole simple avec bulle, origine conservée, callback réel de fin, délai 1 s, protection générationnelle et nettoyage si refus.
 
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-GREEN-CODE-2026-09-27 -->
+## Correction retenue
+
+Création de `ProfessorSimpleSpeechCoordinator` : il définit le contrat pur d'une parole simple du Prof :
+- `bubbleText == speechText` ;
+- `statusText = "Prof Gecko"` ;
+- `SpeechOrigin` inchangée ;
+- une seule requête vocale logique ;
+- auto-close simple ;
+- token générationnel fourni par `ProfessorQuickBubbleClosePolicy` ;
+- aucune présentation créée si la parole n'est pas acceptable ;
+- PROF_BUTTON pédagogique exclu volontairement de ce contrat.
+
+`MainActivity.speakSimpleProfessorBubble()` est le chemin runtime commun :
+- `speakLivingProfessor()` (309 / encouragements / réactions / retours / END_GAME) ;
+- `speakProfessorAmbient()` (aide fixe + suggestion Sauver) ;
+- `announcePlayerStats()` (STATS).
+
+`speakWithProfessorVisual()` possède désormais un callback `onRejected` afin qu'un refus tardif après préparation vidéo ne laisse pas une bulle simple orpheline.
+
+Le Prof pédagogique `showProfessorBubble()` reste séparé, persistant et en `PROF_BUTTON`.
+

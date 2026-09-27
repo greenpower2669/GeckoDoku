@@ -53,3 +53,17 @@ Le détail fonctionnel complet de GECKO-038 est désormais canonique dans `brain
 - [ ] Validation téléphone Fab.
 - [ ] **Permanent : toute nouvelle parole de Pierre doit passer par ProfessorBubbleView.**
 
+<!-- ISSUE-INTEMPORELLE-PROF-BUBBLE-GREEN-CODE-2026-09-27 -->
+- [x] RED #155 confirmé.
+- [x] Coordinator pur parole simple.
+- [x] AMBIENT fixe → bulle.
+- [x] STATS → bulle.
+- [x] moteur 309 → même helper commun.
+- [x] Refus tardif → fermeture sûre de la bulle courante seulement.
+- [x] Prof pédagogique laissé hors auto-close.
+- [ ] CI GREEN du correctif.
+- [ ] Audit final exhaustif après CI.
+- [ ] APK/AAB GREEN.
+- [ ] Validation téléphone Fab.
+- [ ] **Permanent : surveiller toute nouvelle parole de Pierre qui contournerait `speakSimpleProfessorBubble()` ou `showProfessorBubble()`.**
+
