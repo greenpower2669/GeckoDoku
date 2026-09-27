@@ -2455,13 +2455,11 @@ class MainActivity : Activity() {
                     )
             } else {
                 BoardGeometry(
-                    left =
-                        anchorLocation[0] -
-                            rootLocation[0],
+                    left = 0,
                     top =
                         anchorTop,
                     width =
-                        boardAnchor.width,
+                        screenRoot.width,
                     height =
                         boardAnchor.height
                 )
@@ -5434,46 +5432,48 @@ class MainActivity : Activity() {
         cell: Cell,
         onFinished: (() -> Unit)? = null
     ) {
+        playSharedGeckoCellAnimation(
+            kind = kind,
+            screenRect =
+                board.cellRectOnScreen(
+                    cell
+                ),
+            maskColor =
+                board.cellBackgroundColor(
+                    cell
+                ),
+            onFinished =
+                onFinished
+        )
+    }
+
+    private fun playSharedGeckoCellAnimation(
+        kind: RichMediaKind,
+        screenRect: RectF,
+        maskColor: Int,
+        onFinished: (() -> Unit)? = null
+    ) {
         val celebrationVisible =
             ::celebrationView.isInitialized &&
                 celebrationView.visibility ==
                     View.VISIBLE
 
-        if (!richMediaSettings.enabled ||
+        if (
+            !richMediaSettings.enabled ||
             !::richMediaOverlay.isInitialized ||
             celebrationVisible
         ) {
-            MediaTrace.event(
-                source = "MainActivity",
-                event = "GECKO_CELL_VIDEO_SKIPPED",
-                detail =
-                    "kind=" +
-                        kind +
-                        " animEnabled=" +
-                        richMediaSettings.enabled +
-                        " overlayInit=" +
-                        ::richMediaOverlay
-                            .isInitialized +
-                        " activeMedia=" +
-                        (
-                            if (
-                                ::richMediaOverlay
-                                    .isInitialized
-                            ) {
-                                richMediaOverlay
-                                    .activeCount
-                            } else {
-                                0
-                            }
-                            ) +
-                        " celebration=" +
-                        celebrationVisible
-            )
+            onFinished?.invoke()
             return
         }
 
-        val screenRect =
-            board.cellRectOnScreen(cell)
+        val asset =
+            GeckoCellAnimationAssetPolicy
+                .assetFor(kind)
+                ?: run {
+                    onFinished?.invoke()
+                    return
+                }
 
         val rootLocation =
             IntArray(2)
@@ -5488,17 +5488,6 @@ class MainActivity : Activity() {
                     -rootLocation[0].toFloat(),
                     -rootLocation[1].toFloat()
                 )
-            }
-
-        val asset =
-            when (kind) {
-                RichMediaKind.GECKO_APPEARANCE ->
-                    AssetMediaCatalog.GECKO_APPEARANCE
-
-                RichMediaKind.GECKO_DISAPPEARANCE ->
-                    AssetMediaCatalog.GECKO_DISAPPEARANCE
-
-                else -> return
             }
 
         val maskTarget =
@@ -5522,40 +5511,55 @@ class MainActivity : Activity() {
                         .mustMute(kind),
                 target = target,
                 titleText = null,
-                skippable = false,
-                maskTarget = maskTarget,
+                skippable =
+                    kind ==
+                        RichMediaKind
+                            .GECKO_LONG_ACTION,
+                maskTarget =
+                    maskTarget,
                 maskColor =
-                    board.cellBackgroundColor(
-                        cell
-                    ),
-                onFinished = onFinished
+                    maskColor,
+                onFinished =
+                    onFinished
             )
 
-        MediaTrace.event(
-            source = "MainActivity",
-            event =
-                if (accepted) {
-                    "GECKO_CELL_VIDEO_ACCEPTED"
-                } else {
-                    "GECKO_CELL_VIDEO_REJECTED"
-                },
-            assetPath = asset,
-            detail =
-                "kind=" +
-                    kind +
-                    " cell=" +
-                    cell
-        )
+        if (!accepted) {
+            onFinished?.invoke()
+        }
     }
 
     private fun maybePlayGeckoLongAction(
         cell: Cell
     ) {
-        if (!richMediaSettings.enabled ||
+        maybePlaySharedGeckoLongAction(
+            screenRect =
+                board.cellRectOnScreen(
+                    cell
+                ),
+            maskColor =
+                board.cellBackgroundColor(
+                    cell
+                ),
+            eligible =
+                !engine.snapshot()
+                    .complete
+        )
+    }
+
+    private fun maybePlaySharedGeckoLongAction(
+        screenRect: RectF,
+        maskColor: Int,
+        eligible: Boolean
+    ) {
+        if (
+            !richMediaSettings.enabled ||
             !::richMediaOverlay.isInitialized ||
-            (::celebrationView.isInitialized &&
-                celebrationView.visibility == View.VISIBLE) ||
-            engine.snapshot().complete
+            (
+                ::celebrationView.isInitialized &&
+                    celebrationView.visibility ==
+                        View.VISIBLE
+                ) ||
+            !eligible
         ) {
             return
         }
@@ -5564,60 +5568,28 @@ class MainActivity : Activity() {
             richMediaScheduler
                 .shouldPlayLongAction(
                     nowMs =
-                        SystemClock.elapsedRealtime(),
+                        SystemClock
+                            .elapsedRealtime(),
                     randomValue =
                         Random.nextInt(100),
                     eligible = true,
-                    busy = false
+                    busy =
+                        richMediaOverlay
+                            .isBusy
                 )
 
         if (!shouldPlay) {
             return
         }
 
-        val screenRect =
-            board.cellRectOnScreen(cell)
-        val rootLocation = IntArray(2)
-        screenRoot.getLocationOnScreen(
-            rootLocation
-        )
-        val target =
-            RectF(screenRect).apply {
-                offset(
-                    -rootLocation[0].toFloat(),
-                    -rootLocation[1].toFloat()
-                )
-            }
-
-        val maskTarget =
-            RectF(target).apply {
-                val insetAmount =
-                    width() *
-                        cellAnimationStyle
-                            .maskInsetFraction
-                inset(
-                    insetAmount,
-                    insetAmount
-                )
-            }
-
-        richMediaOverlay.play(
-            kind = RichMediaKind.GECKO_LONG_ACTION,
-            assetPath = AssetMediaCatalog.GECKO_LONG_ACTIONS,
-            muted =
-                GeckoMediaAudioPolicy
-                    .mustMute(
-                        RichMediaKind
-                            .GECKO_LONG_ACTION
-                    ),
-            target = target,
-            titleText = null,
-            skippable = true,
-            maskTarget = maskTarget,
+        playSharedGeckoCellAnimation(
+            kind =
+                RichMediaKind
+                    .GECKO_LONG_ACTION,
+            screenRect =
+                screenRect,
             maskColor =
-                board.cellBackgroundColor(
-                    cell
-                )
+                maskColor
         )
     }
 

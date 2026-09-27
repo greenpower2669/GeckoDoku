@@ -437,3 +437,11 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Implémenter policy et GeckoBoardView.
 - [ ] Mutualiser pipeline animation sans régression.
 - [ ] CI GREEN Phase 1.
+
+
+<!-- GECKO-039-PHASE1-GREEN-2026-09-27 -->
+- [x] Policy grille Classic plus large.
+- [x] GeckoBoardView marges compactes.
+- [x] Pipeline animations Classic mutualisé.
+- [ ] CI GREEN Phase 1.
+- [ ] Candidate/test téléphone après jalon global si nécessaire.

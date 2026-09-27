@@ -2606,3 +2606,7 @@ Les niveaux élevés doivent autant que possible conserver une analyse explicabl
 
 <!-- GECKO-039-PHASE1-RED-2026-09-27 -->
 Phase 1 Classic RED : la grille doit utiliser presque toute la largeur disponible lorsque la hauteur le permet, avec 3 px internes par côté, tout en restant bornée par la hauteur et le gutter historique.
+
+
+<!-- GECKO-039-PHASE1-GREEN-2026-09-27 -->
+Phase 1 Classic implémentée : GeckoBoardView utilise ClassicBoardReadabilityPolicy (3 px internes, gutter compact 38dp) et la vue Classic peut occuper toute la largeur de screenRoot. Le pipeline vidéo historique est factorisé en playSharedGeckoCellAnimation / maybePlaySharedGeckoLongAction, avec GeckoCellAnimationAssetPolicy, prêt à être réutilisé par Sudoku et Gomoku.

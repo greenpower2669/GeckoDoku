@@ -1089,3 +1089,7 @@ Higher difficulty = deeper future projection, not cheating.
 
 <!-- GECKO-039-PHASE1-RED-2026-09-27 -->
 CLASSIC RED → ClassicBoardReadabilityPolicy(width,height,gutter) → max width / no overflow.
+
+
+<!-- GECKO-039-PHASE1-GREEN-2026-09-27 -->
+Classic board → full screenRoot width → ClassicBoardReadabilityPolicy(3px) → compact gutter. Classic animations → shared target-based pipeline → reusable by Sudoku/Gomoku.

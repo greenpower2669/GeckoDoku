@@ -1004,3 +1004,7 @@ Le travail est compartimenté pour permettre à Fab de tester chaque mode simple
 
 <!-- GECKO-039-PHASE1-RED-2026-09-27 -->
 Phase 1 en exécution : RED géométrie Classic posé avant code runtime.
+
+
+<!-- GECKO-039-PHASE1-GREEN-2026-09-27 -->
+Phase 1 code posée : grille Classic plus large + pipeline animation partagé. Attente CI GREEN avant Phase 2.

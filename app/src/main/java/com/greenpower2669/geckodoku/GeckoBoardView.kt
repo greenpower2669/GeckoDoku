@@ -42,7 +42,11 @@ class GeckoBoardView @JvmOverloads constructor(
 
     private val boardRect = RectF()
     private var cellSize = 1f
-    private val gutter = dp(76f)
+
+    private val readabilityPolicy =
+        ClassicBoardReadabilityPolicy()
+
+    private val gutter = dp(38f)
 
     private var professorSources: Set<Cell> = emptySet()
     private var professorTargets: Set<Cell> = emptySet()
@@ -202,22 +206,27 @@ class GeckoBoardView @JvmOverloads constructor(
     ) {
         if (w <= 0 || h <= 0) return
 
-        val horizontal = dp(6f)
+        val geometry =
+            readabilityPolicy
+                .geometry(
+                    viewWidthPx = w,
+                    viewHeightPx = h,
+                    gutterPx =
+                        gutter.toInt()
+                )
 
         val side =
-            min(
-                w - horizontal * 2,
-                h - gutter - dp(4f)
-            ).coerceAtLeast(dp(80f))
-
-        val left =
-            (w - side) / 2f
+            geometry.side
+                .toFloat()
+                .coerceAtLeast(
+                    dp(80f)
+                )
 
         boardRect.set(
-            left,
-            dp(4f),
-            left + side,
-            dp(4f) + side
+            geometry.left.toFloat(),
+            geometry.top.toFloat(),
+            geometry.left + side,
+            geometry.top + side
         )
 
         if (::puzzle.isInitialized) {
@@ -957,7 +966,7 @@ class GeckoBoardView @JvmOverloads constructor(
             "Simple = ✕   •   Double = 🦎   •   Long = hypothèse",
             width/2f,
             boardRect.bottom +
-                dp(32f),
+                dp(24f),
             paint
         )
     }
