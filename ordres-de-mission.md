@@ -1179,3 +1179,20 @@ Quand cette passe est codée + CI GREEN + test téléphone validé :
 - cause/correctifs dans debughistorical.md ;
 - ne garder dans todo.md que les restes réels ;
 - seulement ensuite nettoyer l'ancien ordre de mission terminé.
+
+
+<!-- GECKO-039-POST-TEST-CI201-GREEN-2026-09-27 -->
+## STATUT D'EXÉCUTION — PASSE DEBUG TÉLÉPHONE
+
+Code HEAD validé par CI sur commit `f6aafece850adf1d7e094463655847764b3d91fd`.
+GitHub Actions #201 : GREEN complet (tests + build APK + AAB).
+Artifact : `GeckoDoku-v0.12.0-dev-Android` (id 10942616330).
+Digest : `sha256:36cd6fec570c9ea0364982fb07c9bb4427c8a43588c59c0d483c947c92e815c0`.
+
+La porte technique est franchie. Reste la validation perceptuelle téléphone Fab :
+- vidéos collées au Goban pendant pan/zoom ;
+- keycolor sans rectangle en Gomoku ;
+- teinte jaune ;
+- tour Prof automatique ;
+- clic/long press ;
+- humain vs humain sans IA.

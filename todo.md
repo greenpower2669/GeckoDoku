@@ -646,3 +646,17 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Produire/récupérer APK/AAB candidate.
 - [ ] Test téléphone Fab.
 - [ ] Après validation téléphone, nettoyer ordre/todo terminés.
+
+
+<!-- GECKO-039-POST-TEST-CI201-GREEN-2026-09-27 -->
+## Statut après CI #201
+- [x] CI GREEN.
+- [x] APK `GeckoDoku-v0.12.0-dev.apk` produit.
+- [x] AAB `GeckoDoku-v0.12.0-dev.aab` produit.
+- [ ] Test téléphone Fab : vidéo suit pan/zoom sans décrochage.
+- [ ] Test téléphone Fab : fond/keycolor transparent sans rectangle en Gomoku.
+- [ ] Test téléphone Fab : vidéo jaune cohérente.
+- [ ] Test téléphone Fab : Prof joue automatiquement son jaune en VS Prof.
+- [ ] Test téléphone Fab : clic = conseil ; long = joue vert pour moi.
+- [ ] Test téléphone Fab : H2H alterne Vert/Jaune sans IA et Prof conseille seulement.
+- [ ] Après validation téléphone : nettoyer l'ancien ordre et réduire todo.md aux seuls restes.

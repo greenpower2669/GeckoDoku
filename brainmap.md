@@ -1233,3 +1233,12 @@ Prof button
   → long VS: advice + engine.play(GREEN) → auto YELLOW
   → long H2H: deep advice only.
 Viewport change → RichMediaOverlayView.refreshDynamicTargets.
+
+
+<!-- GECKO-039-POST-TEST-CI201-GREEN-2026-09-27 -->
+HEAD code `f6aafece850adf1d7e094463655847764b3d91fd`
+  → CI #201 GREEN
+  → tests
+  → APK `GeckoDoku-v0.12.0-dev.apk`
+  → AAB `GeckoDoku-v0.12.0-dev.aab`
+  → prochaine porte : test téléphone Fab.

@@ -2729,3 +2729,7 @@ Pipeline média Gomoku : RichMediaOverlayView accepte un targetProvider dynamiqu
 
 <!-- GECKO-039-MAIN-INTEGRATION-2026-09-27 -->
 MainActivity câble désormais les deux variantes sur le même engine. VS_PROFESSOR : vert humain, jaune Prof automatique ; clic Prof conseille ; long joue le vert pour l'humain puis relance le jaune automatique. HUMAN_VS_HUMAN : alternance verte/jaune humaine, conseil Prof sur le camp courant et aucun coup Prof. La difficulté IA est masquée en H2H. Sudoku réactive explicitement le bouton Prof.
+
+
+<!-- GECKO-039-POST-TEST-CI201-GREEN-2026-09-27 -->
+Validation technique : commit `f6aafece850adf1d7e094463655847764b3d91fd`, CI #201 GREEN complet. APK et AAB 0.12.0-dev générés. Les invariants post-test sont désormais compilés et couverts par les tests unitaires ; la validation restante est perceptuelle sur téléphone.

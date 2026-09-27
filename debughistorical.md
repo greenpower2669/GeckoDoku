@@ -1592,3 +1592,7 @@ Correctif structurel préparé pour le bug téléphone vidéo : l'overlay sait d
 
 <!-- GECKO-039-MAIN-INTEGRATION-2026-09-27 -->
 Ancien défaut : le bouton Prof était uniquement actif au tour jaune et déclenchait manuellement l'IA ; les chaînes UI demandaient « Appuie » et affichaient Pierre. Correction : tour jaune automatique en VS Prof, bouton réaffecté au conseil pendant le tour humain, variante H2H sans IA joueuse. Le pipeline vidéo Gomoku utilise maintenant geckoRectOnScreen dynamique, aucun maskView coloré, suppression/restauration ciblée du PNG et teinte jaune du camp jaune.
+
+
+<!-- GECKO-039-POST-TEST-CI201-GREEN-2026-09-27 -->
+La passe corrective compile et teste GREEN sur GitHub Actions #201. Aucun correctif de compilation supplémentaire n'a été nécessaire après l'intégration MainActivity. Artifact digest : `sha256:36cd6fec570c9ea0364982fb07c9bb4427c8a43588c59c0d483c947c92e815c0`. Les points vidéo/gestes restant à valider sont de nature perceptuelle et doivent être confirmés sur appareil réel.
