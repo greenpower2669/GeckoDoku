@@ -1393,3 +1393,8 @@ CI #178 : échec compileDebugKotlin unique sur concaténation Int + String dans 
 La première CI de la nouvelle branche a nécessité l'ajout de cette branche au filtre du workflow. #178 a ensuite identifié une unique erreur Kotlin issue du nettoyage du status (`Int + String`). Correction locale dans `ca4f7b...`. #179 est GREEN complet avec tests + APK + AAB + artifact.
 
 Candidate versionnée ensuite 0.11.3-dev/code31.
+
+
+<!-- GECKO-039-CI180-GREEN-2026-09-27 -->
+## 2026-09-27 — CI #180 GREEN
+Candidate GECKO-039 versionnée : tests, APK, AAB et artifact success. Le commit #178 avait échoué uniquement sur une concaténation Kotlin après nettoyage du préfixe ; #179 puis #180 sont GREEN.

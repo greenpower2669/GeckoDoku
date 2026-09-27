@@ -382,3 +382,10 @@ Tap Gecko Sudoku et invariant dialogue central sont implémentés. Attente CI. P
 PARTIE A + invariant PARTIE B sont GREEN sur #179 et figés en `0.11.3-dev / code31`.
 Attente : CI candidate puis test téléphone Fab.
 PARTIE C Gomoku reste BRAINSTORM UNIQUEMENT / NE PAS CODER SANS GO DISTINCT.
+
+
+<!-- GECKO-039-CI180-GREEN-2026-09-27 -->
+## STATUT APRÈS CI #180
+PARTIE A (tap Gecko Sudoku) : CODE GREEN, attente validation téléphone Fab.
+PARTIE B (invariant message Prof) : CODE GREEN, attente validation téléphone Fab.
+PARTIE C (Gomoku) : BRAINSTORM UNIQUEMENT — NE PAS CODER SANS GO EXPLICITE DISTINCT.

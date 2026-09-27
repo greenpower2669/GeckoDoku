@@ -999,3 +999,8 @@ Tap given/filled → select only.
 Long press → palette.
 Professor raw text → normalize leading speaker → identical Bubble/Pierre text.
 Gomoku → future only / no runtime code.
+
+
+<!-- GECKO-039-CI180-GREEN-2026-09-27 -->
+0.11.3-dev/code31 → CI #180 GREEN → APK/AAB → validation téléphone Fab.
+PARTIE C Gomoku remains future-only.

@@ -2448,3 +2448,25 @@ Fonctionnalités candidate :
 - workflow CI activé sur la branche GECKO-039.
 
 Le futur mode Gomoku est toujours strictement non codé.
+
+
+<!-- GECKO-039-CI180-GREEN-2026-09-27 -->
+# GECKO-039 — candidate téléphone GREEN
+
+Version : `0.11.3-dev`
+VersionCode : `31`
+Commit code candidate : `340b08625fa4ce4bf86107a7f0f30cd9fb7ed084`
+CI : #180 GREEN complet.
+Artifact : `GeckoDoku-v0.11.3-dev-Android`
+Digest : `sha256:909f03abbbeabb2a78fa4c64540ae62a606162bf3d7ae1334e169275803129f5`.
+
+Contrat téléphone à valider :
+- tap case Sudoku vide → petit Gecko-repère apparaît ;
+- retap → il disparaît ;
+- tap given/remplie → aucun repère ajouté ;
+- appui long case → palette locale intacte ;
+- animation du Gecko selon réglage Animations ;
+- aucune répétition « Prof Gecko : » dans le corps des bulles ;
+- status Sudoku sans signature « Prof Gecko • ».
+
+Le mode Gomoku reste non codé.

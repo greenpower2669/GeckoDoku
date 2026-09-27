@@ -314,3 +314,16 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Bulbe Prof : aucun préfixe « Prof Gecko : » redondant.
 - [ ] Status Sudoku : aucun préfixe « Prof Gecko • » redondant.
 - [ ] Aucun code Gomoku avant GO distinct.
+
+
+<!-- GECKO-039-CI180-GREEN-2026-09-27 -->
+- [x] CI candidate #180 GREEN.
+- [x] APK 0.11.3-dev produit.
+- [x] AAB 0.11.3-dev produit.
+- [ ] Test téléphone : tap vide pose Gecko.
+- [ ] Test téléphone : retap retire Gecko.
+- [ ] Test téléphone : given/remplie protégées.
+- [ ] Test téléphone : long press palette inchangé.
+- [ ] Test téléphone : bulle Prof sans préfixe redondant.
+- [ ] Après validation Fab : clôturer PARTIE A/B.
+- [ ] Gomoku : attendre GO distinct avant tout code.
