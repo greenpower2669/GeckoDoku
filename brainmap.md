@@ -1113,3 +1113,7 @@ SudokuBoardView → single confirmed / double / long. Overlay → custom marker 
 
 <!-- GECKO-039-PHASE2-MAIN-WIRING-2026-09-27 -->
 doubleTap→marker dialog. Gecko toggle→shared Classic video. Reasoning step→overlay + bubble + Pierre→next on speech completion.
+
+
+<!-- GECKO-039-PHASE2-COMPILE-FIX-2026-09-27 -->
+SudokuSnapshot.customMarkerAt(cell) → customMarkers map.

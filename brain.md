@@ -2630,3 +2630,7 @@ SudokuBoardView distingue désormais single-confirmed, double tap et long press.
 
 <!-- GECKO-039-PHASE2-MAIN-WIRING-2026-09-27 -->
 Phase 2 UI câblée : double tap ouvre les CustomMarker Sudoku, simple tap reste Gecko, long press reste palette. Gecko-repère utilise le pipeline Classic d'apparition/disparition et scheduler d'action longue. AppTitlePolicy appliquée. ReasoningTrace déroulée étape par étape avec même narration dans overlay/bulle/voix.
+
+
+<!-- GECKO-039-PHASE2-COMPILE-FIX-2026-09-27 -->
+Correctif compilation local : customMarkerAt appartient à SudokuSnapshot, pas SudokuPuzzle.

@@ -1502,3 +1502,8 @@ Double tap ne peut plus être interprété comme deux single taps grâce à onSi
 <!-- GECKO-039-PHASE2-MAIN-WIRING-2026-09-27 -->
 ## Phase 2 MainActivity
 Les séquences pédagogiques sont annulées sur mutation pour éviter les callbacks visuels obsolètes.
+
+
+<!-- GECKO-039-PHASE2-COMPILE-FIX-2026-09-27 -->
+## Phase 2 compile fix
+Ancre textuelle trop large lors du patch modèle ; méthode déplacée vers le bon data class.

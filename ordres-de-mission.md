@@ -1028,3 +1028,7 @@ Phase 2 vues prêtes : geste double distinct et projection graphique structurée
 
 <!-- GECKO-039-PHASE2-MAIN-WIRING-2026-09-27 -->
 Phase 2 câblage terminé. Attente CI GREEN avant Phase 3.
+
+
+<!-- GECKO-039-PHASE2-COMPILE-FIX-2026-09-27 -->
+Correctif compilation Phase 2 appliqué, aucun changement fonctionnel.

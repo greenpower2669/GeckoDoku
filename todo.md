@@ -484,3 +484,8 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [x] Titre invariant.
 - [x] Séquence raisonnement overlay+bulle+voix.
 - [ ] CI GREEN Phase 2.
+
+
+<!-- GECKO-039-PHASE2-COMPILE-FIX-2026-09-27 -->
+- [x] Corriger customMarkerAt dans SudokuSnapshot.
+- [ ] CI Phase 2 GREEN.

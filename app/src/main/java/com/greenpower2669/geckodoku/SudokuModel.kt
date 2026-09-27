@@ -37,11 +37,6 @@ data class SudokuPuzzle(
             cell.col
     }
 
-    fun customMarkerAt(
-        cell: Cell
-    ): CustomMarker? =
-        customMarkers[cell]
-
     fun isGiven(
         cell: Cell
     ): Boolean =
@@ -117,6 +112,11 @@ data class SudokuSnapshot(
                 SudokuPuzzle.SIZE +
                 cell.col
         ]
+
+    fun customMarkerAt(
+        cell: Cell
+    ): CustomMarker? =
+        customMarkers[cell]
 
     fun isGiven(
         cell: Cell
