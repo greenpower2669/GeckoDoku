@@ -812,3 +812,15 @@ Philosophie durable :
 Décision fonctionnelle : les encouragements vocaux enregistrés dans `Voix_encouragements.mp3` doivent disparaître. Le chemin cible est Pierre uniquement, puis intégration progressive au moteur contextuel des 309 phrases.
 
 Ne pas supprimer les autres sons/musiques. Préserver l’origine `ENCOURAGEMENT`, les priorités de parole, ProfParle et les callbacks de fin utilisés par la célébration.
+
+
+<!-- GECKO-037-RECORDED-ENCOURAGEMENTS-GREEN-2026-09-27 -->
+## Acquis GECKO-037 — encouragements Pierre uniquement
+Le système enregistré `Voix_encouragements.mp3` n'est plus une source d'encouragement. Il ne doit pas être réintroduit comme source concurrente.
+
+Contrat actuel :
+`player success → playEncouragement → PierreEncouragements → speakWithProfessorVisual(ENCOURAGEMENT)`.
+
+`onFinished` reste propagé afin de préserver la musique de célébration en fin de grille.
+
+`PierreEncouragements` est provisoire : GECKO-037 doit ensuite faire converger ces réactions vers le catalogue contextuel des 309 phrases.

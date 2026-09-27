@@ -1122,3 +1122,19 @@ Nouveau contrat immédiat :
 TDD :
 - RED : une policy d’encouragement ne propose plus qu’une livraison PIERRE ;
 - GREEN : supprimer tout chemin enregistré et l’asset MP3 sans casser Pierre ni la célébration.
+
+
+<!-- GECKO-037-RECORDED-ENCOURAGEMENTS-GREEN-2026-09-27 -->
+## 46 — GREEN : encouragements enregistrés retirés
+
+RED #131 : échec attendu sur `EncouragementDeliveryPolicy` / `EncouragementDelivery` absents.
+
+Correction appliquée :
+- encouragement delivery = PIERRE uniquement ;
+- suppression du choix aléatoire RECORDED/PIERRE ;
+- suppression du selector des 13 segments ;
+- suppression de `EncouragementSegment`, `ENCOURAGEMENT_MASTER`, `ENCOURAGEMENTS` ;
+- suppression du chemin `playVoiceSegment()` pour les encouragements ;
+- suppression de `Voix_encouragements.mp3` du dépôt ;
+- suppression des anciens tests imposant RECORDED ;
+- conservation de `SpeechOrigin.ENCOURAGEMENT`, `onFinished`, ProfParle et priorité voix.

@@ -300,3 +300,16 @@ GECKO_CONFIRMED → PIERRE ENCOURAGEMENT uniquement
 
 GECKO-037 futur :
 ENCOURAGEMENT event → context/mood → ProfessorPhraseSelector → Pierre.
+
+
+<!-- GECKO-037-RECORDED-ENCOURAGEMENTS-GREEN-2026-09-27 -->
+GECKO_CONFIRMED
+→ playEncouragement
+→ EncouragementDeliveryPolicy = PIERRE
+→ PierreEncouragements (provisoire)
+→ SpeechOrigin.ENCOURAGEMENT
+→ ProfParle/PNG pipeline
+→ onCompletion
+→ celebration flow
+
+RECORDED / Voix_encouragements.mp3 : SUPPRIMÉ.

@@ -977,3 +977,9 @@ Audit : le runtime possède encore une alternance via `EncouragementSourcePolicy
 Fab demande la suppression complète de ce système enregistré afin de converger vers Pierre + le nouveau moteur contextuel GECKO-037.
 
 RED ajouté avant suppression.
+
+
+<!-- GECKO-037-RECORDED-ENCOURAGEMENTS-GREEN-2026-09-27 -->
+## 2026-09-27 — encouragements enregistrés supprimés
+RED #131 a confirmé le contrat absent.
+L'ancien chemin alternait aléatoirement entre 13 segments du master `Voix_encouragements.mp3` et Pierre. Ce doublon est retiré : plus de source RECORDED ni de selector de segments. Le runtime utilise Pierre uniquement, sans modifier les autres musiques.

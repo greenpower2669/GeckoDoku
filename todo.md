@@ -440,3 +440,18 @@ Aucune mission active.
 - [ ] Conserver PierreEncouragements provisoirement jusqu’au moteur 309.
 - [ ] Préserver onFinished / célébration.
 - [ ] CI GREEN.
+
+
+<!-- GECKO-037-RECORDED-ENCOURAGEMENTS-GREEN-2026-09-27 -->
+## GECKO-037 — encouragements enregistrés : état
+- [x] #131 RED attendu.
+- [x] Delivery PIERRE uniquement.
+- [x] Source RECORDED supprimée.
+- [x] EncouragementSelector enregistré supprimé.
+- [x] Catalogue/segments MP3 supprimés.
+- [x] playVoiceSegment enregistré retiré du chemin encouragement.
+- [x] Voix_encouragements.mp3 supprimé.
+- [x] Anciens tests RECORDED supprimés/actualisés.
+- [x] onFinished / célébration préservés.
+- [ ] CI GREEN du retrait.
+- [ ] Plus tard : remplacer PierreEncouragements provisoire par selector 309 contextuel.

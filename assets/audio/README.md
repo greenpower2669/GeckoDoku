@@ -1,10 +1,9 @@
 # Audio GeckoDoku
 
-Organisation préparatoire uniquement — aucun comportement runtime n'est activé par ce dossier.
+Assets audio encore actifs dans ce dossier :
 
-- `intro/` : musique d'introduction future.
-- `celebration/` : musique de célébration future.
-- `encouragements/master/` : master vocal original intact.
-- `encouragements/clips/` : futurs clips courts issus du master GECKO-023.
+- `intro/` : musique d'introduction ;
+- `celebration/` : musique de célébration.
 
-Les fichiers ont été déplacés sans réencodage ni modification binaire.
+Les anciens encouragements vocaux enregistrés ont été retirés à la demande de Fab dans GECKO-037.
+Les encouragements vocaux passent désormais par Pierre, puis doivent converger vers le moteur contextuel des 309 phrases.

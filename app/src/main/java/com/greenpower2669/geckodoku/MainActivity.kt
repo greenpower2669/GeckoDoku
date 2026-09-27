@@ -135,11 +135,8 @@ class MainActivity : Activity() {
     private lateinit var professorSpeech:
         ProfessorSpeech
 
-    private val encouragementSelector =
-        EncouragementSelector()
-
-    private val encouragementSourcePolicy =
-        EncouragementSourcePolicy()
+    private val encouragementDeliveryPolicy =
+        EncouragementDeliveryPolicy()
 
     private val rewardedGeckos =
         linkedSetOf<Cell>()
@@ -1101,7 +1098,6 @@ class MainActivity : Activity() {
         completionRecorded = false
         professorUsed = false
         rewardedGeckos.clear()
-        encouragementSelector.reset()
 
         if (::gameAudio.isInitialized) {
             gameAudio.stopAll()
@@ -4611,83 +4607,10 @@ class MainActivity : Activity() {
         }
 
         return when (
-            encouragementSourcePolicy
-                .choose(
-                    Random.nextInt(
-                        Int.MAX_VALUE
-                    )
-                )
+            encouragementDeliveryPolicy
+                .delivery()
         ) {
-            EncouragementSource.RECORDED -> {
-                val index =
-                    encouragementSelector.choose(
-                        remaining = remaining,
-                        randomValue =
-                            Random.nextInt(
-                                Int.MAX_VALUE
-                            )
-                    )
-
-                val segment =
-                    AssetAudioCatalog
-                        .ENCOURAGEMENTS[index]
-
-                if (
-                    professorSpeechVisualPolicy
-                        .shouldAnimateRecordedEncouragement
-                ) {
-                    prepareProfessorSpeakingVisual {
-                            visualReady ->
-
-                        val started =
-                            gameAudio
-                                .playVoiceSegment(
-                                    assetPath =
-                                        AssetAudioCatalog
-                                            .ENCOURAGEMENT_MASTER,
-                                    startMs =
-                                        segment.startMs,
-                                    endMs =
-                                        segment.endMs,
-                                    onStarted = {
-                                        if (visualReady) {
-                                            revealPreparedProfessorSpeakingVisual()
-                                        }
-                                    },
-                                    onError = {
-                                        stopProfessorSpeechVideo()
-                                        onFinished?.invoke()
-                                    },
-                                    onCompletion = {
-                                        stopProfessorSpeechVideo()
-                                        onFinished?.invoke()
-                                    }
-                                )
-
-                        if (!started) {
-                            stopProfessorSpeechVideo()
-                            onFinished?.invoke()
-                        }
-                    }
-
-                    true
-                } else {
-                    gameAudio
-                        .playVoiceSegment(
-                            assetPath =
-                                AssetAudioCatalog
-                                    .ENCOURAGEMENT_MASTER,
-                            startMs =
-                                segment.startMs,
-                            endMs =
-                                segment.endMs,
-                            onCompletion =
-                                onFinished
-                        )
-                }
-            }
-
-            EncouragementSource.PIERRE -> {
+            EncouragementDelivery.PIERRE -> {
                 speakWithProfessorVisual(
                     origin =
                         SpeechOrigin

@@ -1,26 +1,15 @@
 package com.greenpower2669.geckodoku
 
-enum class EncouragementSource {
-    RECORDED,
+enum class EncouragementDelivery {
     PIERRE
 }
 
-class EncouragementSourcePolicy {
-    fun choose(
-        randomValue: Int
-    ): EncouragementSource =
-        if (
-            Math.floorMod(
-                randomValue,
-                2
-            ) == 0
-        ) {
-            EncouragementSource
-                .RECORDED
-        } else {
-            EncouragementSource
-                .PIERRE
-        }
+class EncouragementDeliveryPolicy {
+    val usesRecordedAudio: Boolean =
+        false
+
+    fun delivery(): EncouragementDelivery =
+        EncouragementDelivery.PIERRE
 }
 
 object PierreEncouragements {

@@ -36,10 +36,6 @@ class Gecko035ContractTest {
                 policy.shouldAnimate(origin)
             )
         }
-
-        assertTrue(
-            policy.shouldAnimateRecordedEncouragement
-        )
     }
 
     @Test
