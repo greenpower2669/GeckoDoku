@@ -32,6 +32,34 @@ class SudokuPaletteLayoutPolicyTest {
     }
 
     @Test
+    fun footerOffersGeckoMarkerOnLeftAndEraseOnRight() {
+        val policy =
+            SudokuPaletteLayoutPolicy()
+
+        assertEquals(
+            SudokuPaletteAction
+                .GeckoMarker,
+            policy.actionAt(
+                x = 40f,
+                y = 210f,
+                width = 300,
+                height = 220
+            )
+        )
+
+        assertEquals(
+            SudokuPaletteAction
+                .Erase,
+            policy.actionAt(
+                x = 260f,
+                y = 210f,
+                width = 300,
+                height = 220
+            )
+        )
+    }
+
+    @Test
     fun popupPlacementAlwaysStaysInsideScreenAndCanFlipAroundAnchor() {
         val policy =
             SudokuPopupPlacementPolicy()
