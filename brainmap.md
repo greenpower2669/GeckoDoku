@@ -217,3 +217,12 @@ GL draw → updateTexImage() de toute frame disponible → consumedSerial
 gate arm → baselineSerial = producedSerial
 validation → consumedSerial > baselineSerial ET bonne génération
 INTRO revealOnFirstFrame=false → aucun armement gate.
+
+
+<!-- GECKO-036-FRAME-SERIAL-GREEN-2026-09-27 -->
+onFrameAvailable → producedSerial++
+onDrawFrame si producedSerial > consumedSerial → updateTexImage → consumedSerial=producedSerial
+gate arm(gen) → baseline=producedSerial
+stale consumedSerial<=baseline → consommée, non validante
+fresh consumedSerial>baseline + bonne gen → VIDEO_FIRST_FRAME
+INTRO gate=false → aucun arm.

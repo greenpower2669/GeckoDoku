@@ -917,3 +917,9 @@ Candidate v0.10.14-dev : tests + APK + AAB + artifact réussis après correction
 <!-- GECKO-036-FRAME-SERIAL-RED-2026-09-27 -->
 ## 2026-09-27 — régression figée Intro/Prof
 v0.10.14-dev téléphone : INTRO et ProfParle peuvent recevoir VIDEO_RENDERING_START sans VIDEO_FIRST_FRAME. Pour ProfParle, plusieurs générations finissent en timeout 900 ms. Cause probable localisée : `armFirstFrameNotification()` force `frameAvailable=false`, créant une course où une vraie frame déjà signalée est perdue avant `updateTexImage()`.
+
+
+<!-- GECKO-036-FRAME-SERIAL-GREEN-2026-09-27 -->
+## 2026-09-27 — cause affinée et correction du gel
+RED #125 confirme le nouveau contrat absent.
+La première correction GECKO-036 avait introduit une purge booléenne `frameAvailable=false` à l'armement. Les logs téléphone ont montré INTRO et ProfParle bloqués après VIDEO_RENDERING_START, avec timeouts répétés. La purge est supprimée : toutes les frames sont consommées, la fraîcheur utilise désormais un serial monotone. INTRO n'est plus armée par ce gate.

@@ -170,3 +170,14 @@ Correction cible :
 - INTRO avec `revealOnFirstFrame=false` ne doit jamais armer le gate de première frame.
 
 RED ajouté avant production.
+
+
+<!-- GECKO-036-FRAME-SERIAL-GREEN-2026-09-27 -->
+## GREEN correctif frame serial
+- suppression de toute écriture `frameAvailable=false` servant à jeter une frame ;
+- compteur atomique `producedFrameSerial` alimenté par chaque callback SurfaceTexture ;
+- `onDrawFrame` consomme toute frame dont le serial produit dépasse le dernier serial consommé ;
+- l'armement mémorise le serial produit courant comme baseline sans jeter la frame en attente ;
+- une frame stale <= baseline est consommée mais ne valide pas le gate ;
+- la première frame > baseline de la bonne génération valide le gate ;
+- les intros `revealOnFirstFrame=false` n'arment plus le mécanisme de première frame.

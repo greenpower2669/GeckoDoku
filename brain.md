@@ -717,3 +717,8 @@ Run #123 GREEN complet pour v0.10.14-dev. Le contrat logiciel/build est validé 
 <!-- GECKO-036-FRAME-SERIAL-RED-2026-09-27 -->
 ## Garde-fou SurfaceTexture
 Une frame SurfaceTexture disponible ne doit jamais être supprimée en remettant un booléen de disponibilité à faux. La fraîcheur d'une frame doit être déterminée par identité/serial, tout en consommant toutes les frames reçues. Les intros hors gate ne doivent pas être soumises au mécanisme de première frame.
+
+
+<!-- GECKO-036-FRAME-SERIAL-GREEN-2026-09-27 -->
+## Invariant SurfaceTexture corrigé
+Ne jamais jeter une notification de frame pour déterminer sa fraîcheur. Les frames sont toujours consommées via `updateTexImage()`; leur fraîcheur est déterminée par un serial monotone. Un gate de première frame n'est armé que pour un playback qui demande réellement `revealOnFirstFrame`. Les intros restent hors gate.

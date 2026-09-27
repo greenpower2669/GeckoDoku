@@ -303,3 +303,18 @@ Aucun ordre de mission actif actuellement.
 - [ ] CI GREEN.
 - [ ] v0.10.15-dev.
 - [ ] Test téléphone Intro + Prof répété.
+
+
+<!-- GECKO-036-FRAME-SERIAL-GREEN-2026-09-27 -->
+## GECKO-036 — GREEN frame serial
+- [x] #125 RED attendu.
+- [x] FreshFrameSerialGate.
+- [x] FirstFrameGateActivationPolicy.
+- [x] Compteur produced/consumed serial.
+- [x] Aucune purge booléenne de frame.
+- [x] Stale frame consommée mais non validante.
+- [x] Intro hors gate.
+- [ ] CI GREEN.
+- [ ] v0.10.15-dev.
+- [ ] Fab : Intro 1 fluide.
+- [ ] Fab : ProfParle sans timeouts répétés.

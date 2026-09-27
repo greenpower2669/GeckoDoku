@@ -13,6 +13,7 @@ import android.view.Surface
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
+import java.util.concurrent.atomic.AtomicLong
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -89,6 +90,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
     private val freshPlaybackFrameGate =
         FreshPlaybackFrameGate()
+
+    private val firstFrameGateActivationPolicy =
+        FirstFrameGateActivationPolicy()
 
     private var activePlaybackGeneration =
         0L
@@ -225,7 +229,12 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 onError = onError,
                 onStarted = onStarted,
                 generation =
-                    activePlaybackGeneration
+                    activePlaybackGeneration,
+                gateFirstFrame =
+                    firstFrameGateActivationPolicy
+                        .shouldArm(
+                            revealOnFirstFrame
+                        )
             )
 
         startPendingPlayback()
@@ -432,16 +441,18 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                     MediaPlayer
                         .MEDIA_INFO_VIDEO_RENDERING_START
                 ) {
-                    freshPlaybackFrameGate
-                        .onRenderingStart(
-                            request.generation
-                        )
-
-                    queueEvent {
-                        chromaRenderer
-                            .armFirstFrameNotification(
+                    if (request.gateFirstFrame) {
+                        freshPlaybackFrameGate
+                            .onRenderingStart(
                                 request.generation
                             )
+
+                        queueEvent {
+                            chromaRenderer
+                                .armFirstFrameNotification(
+                                    request.generation
+                                )
+                        }
                     }
 
                     MediaTrace.event(
@@ -455,7 +466,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                             "extra=" +
                                 extra +
                                 " generation=" +
-                                request.generation
+                                request.generation +
+                                " gate=" +
+                                request.gateFirstFrame
                     )
                 }
 
@@ -698,7 +711,8 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         val onCompletion: () -> Unit,
         val onError: (String) -> Unit,
         val onStarted: () -> Unit,
-        val generation: Long
+        val generation: Long,
+        val gateFirstFrame: Boolean
     )
 
     private class ChromaRenderer(
@@ -715,8 +729,14 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         private var surfaceTexture:
             SurfaceTexture? = null
 
-        @Volatile
-        private var frameAvailable = false
+        private val producedFrameSerial =
+            AtomicLong(0L)
+
+        private var consumedFrameSerial =
+            0L
+
+        private val freshFrameSerialGate =
+            FreshFrameSerialGate()
 
         private var firstFrameNotificationArmed =
             false
@@ -789,11 +809,14 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 )
 
             texture.setOnFrameAvailableListener {
-                frameAvailable = true
+                producedFrameSerial
+                    .incrementAndGet()
                 requestFrame()
             }
 
             surfaceTexture = texture
+            consumedFrameSerial =
+                producedFrameSerial.get()
 
             GLES20.glClearColor(
                 0f,
@@ -855,13 +878,20 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             var consumedFreshFrame =
                 false
 
-            if (frameAvailable) {
+            val availableSerial =
+                producedFrameSerial.get()
+
+            if (
+                availableSerial >
+                consumedFrameSerial
+            ) {
                 try {
                     texture.updateTexImage()
                     texture.getTransformMatrix(
                         textureMatrix
                     )
-                    frameAvailable = false
+                    consumedFrameSerial =
+                        availableSerial
                     consumedFreshFrame = true
                 } catch (_: Exception) {
                     return
@@ -981,7 +1011,13 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
             if (
                 consumedFreshFrame &&
-                firstFrameNotificationArmed
+                firstFrameNotificationArmed &&
+                freshFrameSerialGate.accept(
+                    generation =
+                        firstFrameGeneration,
+                    consumedSerial =
+                        consumedFrameSerial
+                )
             ) {
                 firstFrameNotificationArmed =
                     false
@@ -994,16 +1030,27 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         fun armFirstFrameNotification(
             generation: Long
         ) {
-            frameAvailable = false
             firstFrameGeneration =
                 generation
+            freshFrameSerialGate.arm(
+                generation =
+                    generation,
+                currentProducedSerial =
+                    producedFrameSerial.get()
+            )
             firstFrameNotificationArmed =
                 true
+
+            // Consume any frame already pending. It may be
+            // older than the gate baseline, but must never
+            // be discarded without updateTexImage().
+            requestFrame()
         }
 
         fun cancelFirstFrameNotification() {
             firstFrameNotificationArmed =
                 false
+            freshFrameSerialGate.cancel()
         }
 
         fun setVideoSize(
