@@ -933,3 +933,7 @@ RED contracts → FullWidthBoard(3px) + CandidateVisual(black) + ProfessorIntera
 
 <!-- GECKO-038-GREEN-POLICIES-2026-09-27 -->
 FullWidthBoardPolicy(3px) | CandidateVisualPolicy(BLACK) | ProfessorInteractionPolicy(pending fingerprint).
+
+
+<!-- GECKO-038-GREEN-MOVE-ORIGIN-2026-09-27 -->
+enterDigit(origin=PLAYER default | PROFESSOR) → EngineState.lastMoveOrigin → undo/redo round-trip.

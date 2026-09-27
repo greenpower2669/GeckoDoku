@@ -1322,3 +1322,7 @@ Tests ajoutés avant correctif. Le test de marge vérifie aussi INNER_GRID_MARGI
 
 <!-- GECKO-038-GREEN-POLICIES-2026-09-27 -->
 Premier bloc GREEN : uniquement policies pures, aucun câblage Activity. RED #165 reste la preuve de contrat initial.
+
+
+<!-- GECKO-038-GREEN-MOVE-ORIGIN-2026-09-27 -->
+Deuxième bloc GREEN : modèle + moteur seulement. Aucun comportement joueur existant changé car origin par défaut = PLAYER.

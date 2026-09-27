@@ -2303,3 +2303,7 @@ HEAD de départ code : `7b02a7379f09b39b858106408553d9e486df9de4`. RED posé pou
 
 <!-- GECKO-038-GREEN-POLICIES-2026-09-27 -->
 Policies pures ajoutées après RED #165 : grille Sudoku pleine largeur à 3 px brut par côté avec marge interne contractuelle 0 ; mini-candidats fonctionnels noirs ; interaction Prof pending fingerprinté avec décisions Explain / Apply / NoHint.
+
+
+<!-- GECKO-038-GREEN-MOVE-ORIGIN-2026-09-27 -->
+SudokuGameEngine accepte désormais une provenance de mouvement PLAYER/PROFESSOR. Le dernier origin fait partie de l'état historique, donc Undo restaure l'état précédent et Redo restaure correctement PROFESSOR. Les appels existants restent PLAYER par défaut.

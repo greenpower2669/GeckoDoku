@@ -32,6 +32,9 @@ class SudokuGameEngine(
     var mistakes: Int = 0
         private set
 
+    private var lastMoveOrigin:
+        SudokuMoveOrigin? = null
+
     fun snapshot(): SudokuSnapshot =
         SudokuSnapshot(
             values = values.copyOf(),
@@ -45,13 +48,18 @@ class SudokuGameEngine(
             complete =
                 values.contentEquals(
                     puzzle.solution
-                )
+                ),
+            lastMoveOrigin =
+                lastMoveOrigin
         )
 
     fun enterDigit(
         cell: Cell,
         digit: Int,
-        notesMode: Boolean = false
+        notesMode: Boolean = false,
+        origin:
+            SudokuMoveOrigin =
+            SudokuMoveOrigin.PLAYER
     ): SudokuActionFeedback {
         require(digit in 1..9)
 
@@ -75,6 +83,9 @@ class SudokuGameEngine(
                 notes[index].remove(digit)
             }
 
+            lastMoveOrigin =
+                origin
+
             return SudokuActionFeedback
                 .NOTE_TOGGLED
         }
@@ -97,6 +108,8 @@ class SudokuGameEngine(
 
         values[index] = digit
         notes[index].clear()
+        lastMoveOrigin =
+            origin
         removePeerNote(
             cell,
             digit
@@ -137,6 +150,8 @@ class SudokuGameEngine(
         pushUndo()
         values[index] = 0
         notes[index].clear()
+        lastMoveOrigin =
+            SudokuMoveOrigin.PLAYER
 
         return SudokuActionFeedback
             .ERASED
@@ -199,7 +214,9 @@ class SudokuGameEngine(
             notes =
                 notes.map {
                     it.toSet()
-                }
+                },
+            lastMoveOrigin =
+                lastMoveOrigin
         )
 
     private fun restore(
@@ -212,6 +229,9 @@ class SudokuGameEngine(
             state.notes.map {
                 it.toMutableSet()
             }.toMutableList()
+
+        lastMoveOrigin =
+            state.lastMoveOrigin
     }
 
     private fun removePeerNote(
@@ -259,7 +279,9 @@ class SudokuGameEngine(
 
     private data class EngineState(
         val values: IntArray,
-        val notes: List<Set<Int>>
+        val notes: List<Set<Int>>,
+        val lastMoveOrigin:
+            SudokuMoveOrigin?
     )
 
     companion object {

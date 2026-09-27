@@ -652,3 +652,7 @@ GO code reçu. Phase RED lancée sur HEAD `7b02a7379f09b39b858106408553d9e486df9
 
 <!-- GECKO-038-GREEN-POLICIES-2026-09-27 -->
 Bloc policies GREEN posé. Suite : moteur provenance, renderer, puis Activity.
+
+
+<!-- GECKO-038-GREEN-MOVE-ORIGIN-2026-09-27 -->
+Moteur provenance GREEN posé ; appels historiques restent PLAYER par défaut.

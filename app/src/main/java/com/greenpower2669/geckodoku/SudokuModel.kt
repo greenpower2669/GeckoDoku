@@ -53,6 +53,11 @@ data class SudokuPuzzle(
     }
 }
 
+enum class SudokuMoveOrigin {
+    PLAYER,
+    PROFESSOR
+}
+
 enum class SudokuActionFeedback {
     VALUE_SET,
     NOTE_TOGGLED,
@@ -70,7 +75,9 @@ data class SudokuSnapshot(
     val notes: List<Set<Int>>,
     val givens: BooleanArray,
     val mistakes: Int,
-    val complete: Boolean
+    val complete: Boolean,
+    val lastMoveOrigin:
+        SudokuMoveOrigin? = null
 ) {
     fun valueAt(
         cell: Cell

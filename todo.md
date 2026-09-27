@@ -196,3 +196,10 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Provenance moteur PLAYER/PROFESSOR.
 - [ ] Renderer/vues.
 - [ ] Activity.
+
+
+<!-- GECKO-038-GREEN-MOVE-ORIGIN-2026-09-27 -->
+- [x] Provenance PLAYER/PROFESSOR dans moteur.
+- [x] Provenance conservée par Undo/Redo.
+- [ ] Renderer/vues candidats noirs et marge 0.
+- [ ] Activity Prof.
