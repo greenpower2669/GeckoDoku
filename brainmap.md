@@ -421,3 +421,128 @@ Recorded encouragement path
 
 Media / grid / ProfParle pipeline
 → unchanged and protected.
+
+<!-- GECKO-038-DESIGN-SUDOKU-2026-09-27 -->
+# GECKO-038 — ORGANIGRAMMES SECOND MODE SUDOKU
+
+STATUT : conception seulement, aucun code autorisé.
+
+## Architecture produit
+
+```text
+                    GECKODOKU APP
+                         |
+                     GameMode
+              +----------+----------+
+              |                     |
+         GECKODOKU                SUDOKU
+              |                     |
+   moteur historique          SudokuEngine dédié
+              |                     |
+              +----------+----------+
+                         |
+                 services partagés
+      Pierre / 309 / mood / audio / settings / UI shell
+```
+
+## Entrées stables, routage par mode
+
+```text
+TOUCH / KEYBOARD
+      |
+ stable input binding
+      |
+   GameMode
+   /      \
+GECKODOKU  SUDOKU
+   |         |
+historical   sudoku
+action       action
+```
+
+Règle : ne pas faire un cycle unbind/rebind complet à chaque bascule de mode.
+
+## État Sudoku vs représentation
+
+```text
+SudokuCellState
+(empty / given / player value / notes)
+          |
+      VisualStyle
+   +------+------+ 
+   |      |      |
+CLASSIC  NB   COLORED
+   |      |      |
+ text   source region from canonical PNG
+          |
+  click-through visual layer
+          |
+ historical/stable hitbox below
+```
+
+Le visuel ne devient jamais la donnée.
+
+## Sélecteur magique 3 états
+
+```text
+POINTER DOWN
+    |
+previewStyle = zone courante
+    |
+POINTER MOVE -------------------------------+
+    |                                      |
+gauche / milieu / droite                    |
+    |                                      |
+style ciblé TRÈS GRAND                      |
+autres styles petits                        |
+    |                                      |
+GRID LIVE PREVIEW                           |
+    +-------------- boucle tant que doigt --+
+    |
+POINTER UP
+    |
+selectedStyle = previewStyle
+    |
+persist selection
+```
+
+## Assets visuels
+
+```text
+PlancheGeckoDeNombreNB.png ------> GECKO_NB
+PlancheGeckoDeNombreColored.png -> GECKO_COLORED
+chiffres natifs -----------------> CLASSIC_NUMBERS
+```
+
+Aucune conversion / recompression / génération de sprites dérivés requise.
+
+## Protection case vide
+
+```text
+cell empty
+   |
+GameMode?
+ /      \
+GECKO   SUDOKU
+ |        |
+historique  véritable état vide
+inchangé    (pas de fuite du renderer Gecko)
+```
+
+## Prof partagé
+
+```text
+Game event
+   |
+GameMode adapter
+   |
+ProfessorPlayerContext
+   |
+309 / mood / 48h / Pierre / bubble
+   |
+si pédagogie demandée
+   +--> GeckoDoku solver explanation
+   |
+   +--> Sudoku technique explanation
+```
+

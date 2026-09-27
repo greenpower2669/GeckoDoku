@@ -653,3 +653,38 @@ Mission active jusqu'à cette validation.
 ## Mission active
 Aucune mission active.
 `ordres-de-mission.md` reste vide jusqu’au prochain ordre explicite de Fab.
+
+<!-- GECKO-038-DESIGN-SUDOKU-2026-09-27 -->
+# GECKO-038 — SECOND MODE SUDOKU
+
+## Statut
+- [x] Intention fonctionnelle documentée.
+- [x] Architecture GameMode / VisualStyle documentée.
+- [x] Sélecteur 3 états documenté.
+- [x] Stratégie on-top anti-régression documentée.
+- [x] Assets NB / couleur vérifiés sur main.
+- [x] Workflow futur consigné dans ordres-de-mission.md.
+- [ ] **AUCUN CODE avant GO explicite de Fab.**
+
+## À faire seulement après GO
+- [ ] Geler SHA de base + comportement téléphone de référence.
+- [ ] Intégrer les deux PNG canoniques depuis main sans conversion.
+- [ ] Audit des zones de MainActivity / GeckoBoardView sensibles au mode.
+- [ ] RED tests de non-régression GeckoDoku avant abstraction.
+- [ ] Introduire GameMode sans changer le comportement historique.
+- [ ] Router les événements stables par mode, sans rebinding global.
+- [ ] Construire SudokuEngine pur 9×9.
+- [ ] Ajouter modèle case Sudoku / notes / givens / undo-redo.
+- [ ] Ajouter contrôles tactile + clavier partageant les mêmes actions métier.
+- [ ] Ajouter renderer Sudoku indépendant.
+- [ ] Ajouter couche visuelle click-through.
+- [ ] Ajouter VisualStyle Classic / Gecko NB / Gecko Coloré.
+- [ ] Ajouter sélecteur magique 3 états avec preview live et commit au relâchement.
+- [ ] Vérifier qu'une case vide Sudoku n'hérite pas du gecko historique.
+- [ ] Adapter les événements du moteur Prof vivant au Sudoku.
+- [ ] Concevoir ensuite seulement la pédagogie Sudoku humaine.
+- [ ] CI complète + APK/AAB.
+- [ ] Validation téléphone Fab : GeckoDoku historique inchangé.
+- [ ] Validation téléphone Fab : tactile Sudoku.
+- [ ] Validation téléphone Fab : styles et sélecteur.
+

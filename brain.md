@@ -979,3 +979,266 @@ Préserver :
 
 Cette consolidation est techniquement validée par CI.
 La validation perceptuelle téléphone GECKO-037 reste une vigilance utilisateur, pas une mission de code active.
+
+<!-- GECKO-038-DESIGN-SUDOKU-2026-09-27 -->
+# GECKO-038 — SECOND MODE SUDOKU — SPÉCIFICATION FONCTIONNELLE
+
+STATUT : **DOCUMENTATION / CONCEPTION UNIQUEMENT. AUCUN CODE AUTORISÉ PAR CETTE SECTION.**
+Le développement ne commence que sur ordre explicite ultérieur de Fab.
+
+## Contrat documentaire du projet
+
+Le `brain.md` est la mémoire fonctionnelle canonique de GeckoDoku. Il doit permettre de retrouver l'intention du produit même sans relire le code :
+- modes de jeu et règles ;
+- interactions tactiles / clavier ;
+- identité visuelle ;
+- comportement de Pierre / Prof Gecko ;
+- invariants d'accessibilité ;
+- actifs canoniques ;
+- décisions produit validées ;
+- comportements à préserver ;
+- liens avec les organigrammes de `brainmap.md`.
+
+Le `brainmap.md` porte les organigrammes et flux.
+Le `debughistorical.md` conserve les causes, régressions et décisions historiques.
+Le `todo.md` conserve ce qui reste à faire.
+Le `ordres-de-mission.md` décrit le workflow de la prochaine intervention autorisée.
+
+Ces documents doivent pouvoir servir plus tard de base à une documentation utilisateur et développeur.
+
+## Vision produit : une application, deux modes
+
+GeckoDoku doit pouvoir accueillir un deuxième jeu sans dénaturer le jeu historique.
+
+### Mode 1 — GECKODOKU
+Mode historique actuel.
+Ses règles, géométrie, gestes, rendu et comportements validés restent la référence de non-régression.
+
+### Mode 2 — SUDOKU
+Vrai Sudoku classique 9 × 9 :
+- chiffres 1 à 9 ;
+- chaque chiffre une fois par ligne ;
+- chaque chiffre une fois par colonne ;
+- chaque chiffre une fois par bloc 3 × 3 ;
+- cases données verrouillées ;
+- cases joueur modifiables ;
+- mode notes / crayon ;
+- effacement ;
+- annuler / refaire ;
+- Prof Gecko pédagogique adapté au Sudoku ;
+- même personnalité vivante de Pierre que dans GeckoDoku.
+
+Le moteur de règles Sudoku doit être distinct du moteur GeckoDoku. On partage l'application et les services communs, pas les règles internes.
+
+## Séparation fondamentale : GameMode ≠ VisualStyle
+
+Ne jamais confondre le jeu actif avec son habillage.
+
+### GameMode
+Conceptuellement :
+- `GECKODOKU`
+- `SUDOKU`
+
+Le point d'entrée de mode peut être pensé comme `mode(GECKODOKU)` / `mode(SUDOKU)`, sans imposer ce nom exact au futur code.
+
+### VisualStyle du Sudoku
+Trois états indépendants :
+- `CLASSIC_NUMBERS` : chiffres classiques ;
+- `GECKO_NB` : chiffres-geckos stylisés noir/blanc ;
+- `GECKO_COLORED` : chiffres-geckos colorés.
+
+Ainsi le mode Sudoku reste le même jeu quelles que soient ses représentations visuelles.
+
+## Assets canoniques des styles Gecko
+
+Fab a ajouté sur `main` :
+- `assets/gecko/PlancheGeckoDeNombreNB.png`
+- `assets/gecko/PlancheGeckoDeNombreColored.png`
+
+Ces deux fichiers ont été vérifiés présents sur `main` le 2026-09-27.
+
+Règle permanente :
+- utiliser ces PNG comme sources canoniques ;
+- aucune conversion ;
+- aucune recompression ;
+- aucun réexport automatique ;
+- aucun remplacement par une approximation générée ;
+- privilégier l'utilisation de régions source / découpe logique au rendu plutôt que fabriquer dix nouveaux fichiers dérivés.
+
+La branche `gecko-033-identity-prof-life` ne contient pas encore ces deux assets au moment de cette documentation. Une future mission d'implémentation devra d'abord les intégrer depuis la bonne base Git sans les modifier.
+
+## Sélecteur magique à trois états
+
+Le choix visuel du Sudoku se fait avec un unique sélecteur horizontal tactile à trois positions.
+
+Positions :
+- gauche : Classic ;
+- milieu : Gecko NB ;
+- droite : Gecko Coloré.
+
+Comportement :
+1. Le style actuellement ciblé est affiché **très grand**.
+2. Les deux autres styles sont affichés plus petits.
+3. Le joueur pose le doigt sur le sélecteur.
+4. Sans relever le doigt, il peut glisser gauche ↔ milieu ↔ droite.
+5. Dès que le doigt franchit une zone, le style de prévisualisation change immédiatement.
+6. **La vraie grille change visuellement en direct pendant le glissement**, avant tout relâchement.
+7. Le joueur peut comparer les trois styles en gardant le doigt posé.
+8. Au relâchement, l'état courant est validé et mémorisé.
+9. Un petit retour haptique par cran est souhaitable s'il reste discret et désactivable/cohérent avec les réglages FX.
+10. Un tap direct sur un petit état peut également sélectionner cet état si cela ne complique pas le geste principal.
+
+Il ne doit pas y avoir de bouton « OK » supplémentaire.
+
+Concept :
+`selectedStyle` = style mémorisé.
+`previewStyle` = style suivi pendant le doigt posé.
+Pendant MOVE : rendu sur `previewStyle`.
+Au UP valide : `selectedStyle = previewStyle`.
+
+## Stratégie anti-régression : couche visuelle on-top
+
+Pour les zones qui risquent de mal réagir à une refonte du rendu historique, ne pas les réécrire.
+
+Principe :
+- conserver les hitboxes et événements tactiles historiques en dessous ;
+- conserver le contenu métier en dessous ;
+- ajouter une couche visuelle dédiée au-dessus quand c'est suffisant ;
+- cette couche décorative doit être transparente aux touches / clics ;
+- elle ne doit jamais modifier les coordonnées tactiles ;
+- elle ne doit jamais devenir la donnée du jeu.
+
+Le gecko affiché est une **représentation**, jamais l'état métier de la case.
+
+Exemple :
+- état métier Sudoku = valeur 7 ;
+- style Classic → dessiner « 7 » ;
+- style Gecko NB → dessiner la région 7 de la planche NB ;
+- style Gecko Coloré → dessiner la région 7 de la planche colorée.
+
+Changer de style ne change donc aucune valeur Sudoku.
+
+## Cases vides et comportement historique
+
+Le comportement historique GeckoDoku lié aux cases vides / geckos initiaux est spécifique au mode historique et doit être protégé.
+
+Le mode Sudoku ne doit pas hériter accidentellement d'un gecko de case vide provenant du renderer GeckoDoku.
+
+Le futur routeur de mode doit décider explicitement :
+- GECKODOKU → comportement historique inchangé ;
+- SUDOKU → rendu Sudoku propre.
+
+Une case vide Sudoku reste fonctionnellement vide. Toute décoration éventuelle future devra être explicitement décidée et ne jamais masquer l'état vide.
+
+## Routage des événements
+
+Pour limiter les régressions, éviter une stratégie qui détruit puis recrée les listeners à chaque changement de mode.
+
+Préférence architecturale :
+- bindings tactiles / clavier installés de manière stable ;
+- événement reçu ;
+- lecture du `GameMode` ;
+- routage vers l'action autorisée par ce mode seulement.
+
+Objectif :
+- pas de double bind ;
+- pas de listener fantôme ;
+- pas d'événement oublié après bascule ;
+- surface tactile stable.
+
+Seules les actions réellement différentes sont redirigées.
+
+## Contrôles Sudoku envisagés
+
+Tactile principal :
+- toucher une case → sélectionner ;
+- gros pavé 1–9 → saisir la valeur ;
+- bouton Notes / crayon → bascule des candidats ;
+- Effacer ;
+- Annuler / Refaire ;
+- Prof Gecko.
+
+Clavier physique complémentaire :
+- 1…9 → mêmes actions que les boutons tactiles ;
+- flèches → déplacement de sélection ;
+- Suppr / Retour arrière → effacer ;
+- raccourci Notes et Prof possible si confirmé ultérieurement.
+
+Règle : tactile et clavier appellent les **mêmes actions métier**, pas deux implémentations.
+
+## Lisibilité et geckos vivants
+
+Le Sudoku doit rester lisible avant d'être décoratif.
+
+Dans les styles Gecko :
+- le visuel peut être mignon et vivant ;
+- animations courtes, locales et non envahissantes ;
+- ne pas animer toute la grille en permanence ;
+- les notes restent des petits chiffres classiques ;
+- une bonne saisie peut déclencher une courte réaction Gecko ;
+- une erreur peut déclencher une réaction visuelle légère ;
+- sélection d'un même chiffre peut animer / souligner brièvement les représentations correspondantes ;
+- Pierre peut être regardé par un gecko lors d'une intervention, à condition de ne pas gêner la lecture ;
+- la célébration de fin peut être plus riche.
+
+Ces animations sont de l'habillage et ne doivent pas toucher au moteur Sudoku.
+
+## Prof Gecko / Pierre partagé entre les deux modes
+
+Le système vivant GECKO-037 reste un service commun :
+- catalogue 309 ;
+- mémoire 48 h ;
+- mood / contexte ;
+- voix Pierre ;
+- bulle synchronisée ;
+- animations Prof ;
+- règles de priorité de parole.
+
+Le **contexte joueur** peut être alimenté par le Sudoku, mais la pédagogie Sudoku devra être spécifique à ses techniques.
+
+À terme, le Prof Sudoku pourra expliquer des techniques humaines :
+- single nu ;
+- single caché ;
+- candidats verrouillés ;
+- paires / triplets ;
+- X-Wing ;
+- autres techniques seulement si réellement implémentées et explicables.
+
+Ne pas utiliser un solveur opaque pour prétendre expliquer une déduction humaine.
+
+## Difficulté Sudoku
+
+La difficulté doit idéalement refléter les techniques nécessaires à la résolution, pas uniquement le nombre de cases données.
+
+Cette règle est une intention fonctionnelle à respecter lors de la future conception du générateur / solveur Sudoku.
+
+## Invariants de non-régression
+
+L'ajout du Sudoku ne doit pas modifier le comportement validé de GeckoDoku.
+
+À protéger explicitement :
+- géométrie de la grille historique ;
+- gestes historiques ;
+- logique GeckoDoku ;
+- animations GeckoDoku ;
+- Pierre / ProfParle ;
+- moteur 309 phrases ;
+- priorités audio ;
+- intros ;
+- célébration ;
+- accessibilité ;
+- réglages existants ;
+- journal média ;
+- pipeline vidéo validé.
+
+Principe directeur :
+**on ajoute le Sudoku autour de l'architecture existante ; on ne tord pas le moteur GeckoDoku pour en faire un Sudoku.**
+
+## Évolutivité
+
+Le routeur de mode doit permettre plus tard un troisième mode sans devoir réécrire toute l'UI.
+
+Même principe pour les styles visuels : ajouter un quatrième style ne doit pas modifier les règles Sudoku.
+
+Cette séparation GameMode / VisualStyle est un contrat architectural durable.
+

@@ -1056,3 +1056,32 @@ Le système 309 phrases, mémoire 48 h, lastPhraseId, contexte joueur, mood adap
 L’ancien chemin d’encouragement enregistré MP3 a été supprimé auparavant avec #131 RED puis #132/#133 GREEN.
 
 Aucun bug téléphone GECKO-037 n’est déclaré corrigé sans retour explicite de Fab. La mission de code est néanmoins techniquement close ; les observations téléphone futures deviennent des retours de validation ou de nouvelles missions.
+
+<!-- GECKO-038-DESIGN-SUDOKU-2026-09-27 -->
+## 2026-09-27 — conception documentée du second mode Sudoku
+
+Décision produit de Fab :
+- GeckoDoku doit pouvoir accueillir un vrai Sudoku 9×9 comme second mode ;
+- aucun code n'est autorisé dans cette intervention ;
+- la priorité est de préparer une architecture anti-régression avant toute implémentation.
+
+Décisions documentées :
+- séparation GameMode (GECKODOKU / SUDOKU) et VisualStyle ;
+- trois styles Sudoku : Classic, Gecko NB, Gecko Coloré ;
+- sélecteur tactile unique à 3 crans avec preview live pendant le glissement et validation au relâchement ;
+- couche visuelle on-top click-through pour protéger les hitboxes / comportements historiques ;
+- événements bindés de manière stable puis routés par GameMode plutôt qu'unbind/rebind global ;
+- le renderer de case vide historique reste spécifique à GeckoDoku et ne fuit pas vers Sudoku ;
+- moteur Sudoku séparé du moteur GeckoDoku ;
+- Pierre / moteur 309 / mood restent des services communs ;
+- le brain devient explicitement la mémoire fonctionnelle canonique du produit et doit pouvoir alimenter une future documentation.
+
+Assets vérifiés présents sur `main` :
+- `assets/gecko/PlancheGeckoDeNombreNB.png`
+- `assets/gecko/PlancheGeckoDeNombreColored.png`
+
+Ils ne sont pas encore présents sur la branche `gecko-033-identity-prof-life` au moment de cette décision.
+Contrat : aucune conversion ni recompression de ces PNG lors de la future intégration.
+
+Aucun fichier source applicatif n'a été modifié par cette intervention documentaire.
+
