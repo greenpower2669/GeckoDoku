@@ -589,3 +589,7 @@ GECKO-038 candidate: 0.11.0-dev code 28 → CI candidate → APK/AAB → validat
 
 <!-- GECKO-038-SPRITE-CROP-2026-09-27 -->
 canonical PNG → sourceRect only at draw time → cell target. NB uses per-digit normalized bounds; Colored uses 5×2 card geometry with label exclusion.
+
+
+<!-- GECKO-038-CROP-SYNTAX-FIX-2026-09-27 -->
+SudokuNumberSheetLayout : structure Kotlin corrigée, logique sourceRect inchangée.

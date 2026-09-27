@@ -512,4 +512,3 @@ object SudokuNumberSheetLayout {
             floatArrayOf(.8125f, .5264f, .9622f, .9141f)
         )
     }
-}

@@ -768,3 +768,9 @@ Aucune mission active.
 - [x] Vérification visuelle interne des découpes source NB/couleur.
 - [x] Corriger les rectangles source sans modifier les PNG.
 - [ ] Confirmer rendu sur écran téléphone réel.
+
+
+<!-- GECKO-038-CROP-SYNTAX-FIX-2026-09-27 -->
+- [x] Diagnostiquer CI #153 : syntaxe helper crop uniquement.
+- [x] Corriger l'accolade sans modifier la logique.
+- [ ] CI suivante GREEN.

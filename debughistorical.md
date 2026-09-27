@@ -1126,3 +1126,7 @@ Le câblage MainActivity, le sélecteur 3 états, les assets canoniques, les con
 
 <!-- GECKO-038-SPRITE-CROP-2026-09-27 -->
 Inspection visuelle des sources : découpe 5 colonnes égales sur NB coupait/contaminait notamment 3/4/7. Correction uniquement dans SudokuNumberSheetLayout. Planche couleur : bottom inset augmenté pour exclure les chiffres imprimés sous les geckos. Aucun octet asset modifié.
+
+
+<!-- GECKO-038-CROP-SYNTAX-FIX-2026-09-27 -->
+CI #153 : échec compilation ligne 515, accolade surnuméraire introduite dans le patch de crop. Diagnostic immédiat ; suppression de cette seule accolade.

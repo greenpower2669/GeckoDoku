@@ -248,3 +248,7 @@ Candidate 0.11.0-dev préparée après GREEN #151. Ne pas ajouter de techniques 
 
 <!-- GECKO-038-SPRITE-CROP-2026-09-27 -->
 Les ajustements futurs de cadrage doivent modifier uniquement SudokuNumberSheetLayout ; ne jamais recadrer/réexporter les PNG canoniques.
+
+
+<!-- GECKO-038-CROP-SYNTAX-FIX-2026-09-27 -->
+#153 est un incident syntaxique local au helper de crop, sans impact sur l'architecture ni GeckoBoardView.
