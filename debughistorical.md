@@ -1117,3 +1117,8 @@ Choix anti-régression : GeckoBoardView n'est pas modifié. MainActivity garde l
 
 <!-- GECKO-038-CI150-CONTRACT-2026-09-27 -->
 CI #150 : compilation Kotlin réussie, 77 tests exécutés, 1 échec de contrat historique Gecko035ContractTest car il comparait exactement 3 entrées Réglages. Ce test est mis à jour pour le nouveau contrat à 4 entrées ; aucun correctif runtime requis.
+
+
+<!-- GECKO-038-CANDIDATE-0110-2026-09-27 -->
+## 2026-09-27 — CI #151 GREEN et candidate 0.11.0-dev
+Le câblage MainActivity, le sélecteur 3 états, les assets canoniques, les contrôles Sudoku et le Prof passent tests/build APK/AAB. Version candidate portée à 0.11.0-dev code 28. Ajustement mineur : chaque mode restaure sa difficulté active lors de la bascule.

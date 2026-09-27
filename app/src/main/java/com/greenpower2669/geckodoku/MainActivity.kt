@@ -3661,6 +3661,18 @@ class MainActivity : Activity() {
         gameModePreferences.gameMode =
             mode
 
+        selectedDifficulty =
+            if (
+                mode ==
+                    GameMode.SUDOKU
+            ) {
+                sudokuPuzzle
+                    ?.difficulty
+                    ?: selectedDifficulty
+            } else {
+                puzzle.difficulty
+            }
+
         if (
             mode ==
                 GameMode.SUDOKU &&

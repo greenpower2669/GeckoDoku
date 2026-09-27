@@ -240,3 +240,7 @@ Câblage minimal derrière GameMode effectué. Exiger CI GREEN avant toute exten
 
 <!-- GECKO-038-CI150-CONTRACT-2026-09-27 -->
 Incident #150 classé contrat de test obsolète, pas régression runtime : les trois réglages historiques restent présents et GAME_MODE s'ajoute sans reflow de grille.
+
+
+<!-- GECKO-038-CANDIDATE-0110-2026-09-27 -->
+Candidate 0.11.0-dev préparée après GREEN #151. Ne pas ajouter de techniques Sudoku avant validation téléphone du rendu, des touches, du sélecteur et du mode historique.

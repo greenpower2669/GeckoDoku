@@ -581,3 +581,7 @@ Prof button(SUDOKU) → SudokuHintEngine → pedagogical bubble + Pierre.
 
 <!-- GECKO-038-CI150-CONTRACT-2026-09-27 -->
 SettingsMenuPolicy = GAME_MODE + SOUND + ANIMATIONS + MEDIA_LOG ; affectsBoardLayout=false.
+
+
+<!-- GECKO-038-CANDIDATE-0110-2026-09-27 -->
+GECKO-038 candidate: 0.11.0-dev code 28 → CI candidate → APK/AAB → validation téléphone Fab → seulement ensuite décision suite/merge/release.

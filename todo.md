@@ -753,3 +753,12 @@ Aucune mission active.
 - [x] Diagnostiquer unique échec : contrat Réglages obsolète.
 - [x] Mettre à jour le contrat sans désactiver les assertions historiques.
 - [ ] CI suivante GREEN.
+
+
+<!-- GECKO-038-CANDIDATE-0110-2026-09-27 -->
+- [x] CI #151 GREEN complet.
+- [x] Candidate 0.11.0-dev / code 28.
+- [ ] CI candidate versionnée.
+- [ ] Télécharger/tester APK téléphone.
+- [ ] Vérifier visuellement les trois rendus et les découpes des planches.
+- [ ] Vérifier aucune régression GeckoDoku.

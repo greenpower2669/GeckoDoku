@@ -1274,3 +1274,8 @@ MainActivity route maintenant le GameMode sans remplacer GeckoBoardView. L'état
 
 <!-- GECKO-038-CI150-CONTRACT-2026-09-27 -->
 CI #150 confirme la compilation complète du câblage Sudoku. Seul l'ancien contrat Réglages (liste exacte de 3 entrées) échoue : GAME_MODE devient une quatrième entrée, tout en conservant Son/Animations/Journal et affectsBoardLayout=false.
+
+
+<!-- GECKO-038-CANDIDATE-0110-2026-09-27 -->
+## GECKO-038 — candidate Sudoku 0.11.0-dev
+CI #151 GREEN sur le câblage complet. Candidate identifiée versionName 0.11.0-dev / versionCode 28. Le changement de mode restaure aussi la difficulté correspondant à la partie active. Aucune fusion main ni release.
