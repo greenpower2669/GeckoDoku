@@ -841,3 +841,7 @@ snapshot.notes + transient Prof candidates → SudokuCandidateLayout(3×3) → S
 GameMode → geometry freeze distinct → board overlay ends at boardAnchor actuel.
 Long press cell → popup placement policy → QuickPalette → value(false notes) / candidate(true notes) / erase → SudokuGameEngine.
 Prof hint → logical candidate mask → transient overlay → same renderer.
+
+
+<!-- GECKO-038-TACTILE-RECT-IMPORT-2026-09-27 -->
+Renderer contract inchangé ; Rect import only.

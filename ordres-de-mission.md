@@ -452,3 +452,7 @@ Rendu candidats terminé ; reste câblage Activity et validation CI.
 
 <!-- GECKO-038-TACTILE-MAIN-WIRING-2026-09-27 -->
 Câblage runtime terminé. Étape courante : CI puis corrections ciblées uniquement si nécessaire. Pas de nouvelles fonctions avant GREEN.
+
+
+<!-- GECKO-038-TACTILE-RECT-IMPORT-2026-09-27 -->
+Correction syntaxique/import uniquement ; attente CI suivante.

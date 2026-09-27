@@ -100,3 +100,7 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] CI GREEN.
 - [ ] APK/AAB.
 - [ ] Validation téléphone : pavé/selector visibles et popup confortable.
+
+
+<!-- GECKO-038-TACTILE-RECT-IMPORT-2026-09-27 -->
+- [x] Import Rect du sheet layout restauré.

@@ -1260,3 +1260,7 @@ Suppression du rendu de notes Classic dans SudokuBoardView : une seule chaîne d
 
 <!-- GECKO-038-TACTILE-MAIN-WIRING-2026-09-27 -->
 Correction de la cause téléphone appliquée : le freeze géométrique n'est plus partagé entre GECKODOKU et SUDOKU. DifficultyButton GONE en Sudoku ; Settings ajoute Difficulty. Popup long press est un PopupWindow overlay et n'affecte pas le root layout. Given = blocage sûr. Les candidats Prof sont nettoyés dès qu'une action joueur modifie la grille.
+
+
+<!-- GECKO-038-TACTILE-RECT-IMPORT-2026-09-27 -->
+Pré-CI : import Rect manquant détecté après déplacement du renderer de candidats ; correction locale uniquement.
