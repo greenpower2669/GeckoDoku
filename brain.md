@@ -2470,3 +2470,29 @@ Contrat téléphone à valider :
 - status Sudoku sans signature « Prof Gecko • ».
 
 Le mode Gomoku reste non codé.
+
+<!-- GECKO-039-MISSION-CLEANUP-ANIM-TITLE-2026-09-27 -->
+# GECKO-039 — clarification après test
+
+Fab confirme que :
+- tap simple Sudoku = Gecko-repère : comportement souhaité ;
+- retap = retrait du Gecko-repère : comportement souhaité ;
+- Prof Sudoku : comportement souhaité.
+
+Correction importante :
+le Gecko-repère doit réutiliser **les animations du mode classique**, et non seulement l'animation procédurale locale actuelle.
+
+Cible :
+- réutiliser les animations historiques Gecko et leur logique aléatoire autant que possible ;
+- apparition / disparition / actions mignonnes issues de l'infrastructure classique ;
+- fallback procédural seulement si la mutualisation média n'est pas possible ;
+- respect Animations ON/OFF ;
+- candidats noirs toujours lisibles.
+
+Nouvel invariant titre :
+- titre principal = `GeckoDoku 🦎` quel que soit le mode ;
+- le nom du mode est affiché uniquement dans la zone d'information dédiée ;
+- en Sudoku, remplacer `GeckoDoku · Sudoku 🦎` par `GeckoDoku 🦎`.
+
+Le futur Gomoku reste dans l'ordre de mission mais demeure strictement non codé sans GO distinct.
+

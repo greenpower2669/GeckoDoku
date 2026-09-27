@@ -1398,3 +1398,19 @@ Candidate versionnée ensuite 0.11.3-dev/code31.
 <!-- GECKO-039-CI180-GREEN-2026-09-27 -->
 ## 2026-09-27 — CI #180 GREEN
 Candidate GECKO-039 versionnée : tests, APK, AAB et artifact success. Le commit #178 avait échoué uniquement sur une concaténation Kotlin après nettoyage du préfixe ; #179 puis #180 sont GREEN.
+
+<!-- GECKO-039-MISSION-CLEANUP-ANIM-TITLE-2026-09-27 -->
+## 2026-09-27 — clarification animation / titre
+
+Retour Fab :
+- tap Gecko Sudoku OK ;
+- retap enlève Gecko OK ;
+- Prof Sudoku OK ;
+- erreur d'interprétation précédente : Fab demandait les **animations du mode classique** pour le Gecko-repère, pas une animation procédurale spécifique Sudoku.
+
+Action documentaire :
+- mission recentrée sur mutualisation animations classiques ;
+- ajout bug visuel mineur du titre Sudoku ;
+- Gomoku conservé comme futur uniquement.
+Aucun code applicatif modifié dans cette intervention.
+

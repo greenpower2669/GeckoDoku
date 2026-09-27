@@ -1004,3 +1004,10 @@ Gomoku → future only / no runtime code.
 <!-- GECKO-039-CI180-GREEN-2026-09-27 -->
 0.11.3-dev/code31 → CI #180 GREEN → APK/AAB → validation téléphone Fab.
 PARTIE C Gomoku remains future-only.
+
+<!-- GECKO-039-MISSION-CLEANUP-ANIM-TITLE-2026-09-27 -->
+GECKO-039 remaining:
+Sudoku Gecko marker → reuse CLASSIC Gecko animation pipeline/media → keep tap/retap semantics unchanged.
+Title → always "GeckoDoku 🦎" → mode identity below title.
+Gomoku → mission only / no code without explicit GO.
+

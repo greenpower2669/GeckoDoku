@@ -327,3 +327,19 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Test téléphone : bulle Prof sans préfixe redondant.
 - [ ] Après validation Fab : clôturer PARTIE A/B.
 - [ ] Gomoku : attendre GO distinct avant tout code.
+
+<!-- GECKO-039-MISSION-CLEANUP-ANIM-TITLE-2026-09-27 -->
+## GECKO-039 — reste à faire
+- [x] Tap case vide → Gecko-repère.
+- [x] Retap → retrait Gecko-repère.
+- [x] Prof Sudoku tap/retap/long press.
+- [x] Préfixes Prof redondants corrigés.
+- [ ] Auditer le pipeline d'animations Gecko du mode classique.
+- [ ] Réutiliser les animations classiques pour le Gecko-repère Sudoku.
+- [ ] Préserver candidats noirs / tactile / Animations OFF.
+- [ ] Corriger titre Sudoku : `GeckoDoku 🦎`.
+- [ ] Auditer que les autres modes n'ajoutent pas leur nom dans le titre principal.
+- [ ] Tests / CI / APK / AAB.
+- [ ] Test téléphone Fab.
+- [ ] Gomoku : NE PAS CODER avant GO distinct.
+
