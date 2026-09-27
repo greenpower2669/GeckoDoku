@@ -8,6 +8,11 @@ enum class GameMode {
     GOMOKU
 }
 
+enum class GomokuMatchMode {
+    VS_PROFESSOR,
+    HUMAN_VS_HUMAN
+}
+
 enum class SudokuVisualStyle {
     CLASSIC_NUMBERS,
     GECKO_NB,
@@ -60,6 +65,26 @@ class GameModePreferences(
                 .apply()
         }
 
+    var gomokuMatchMode:
+        GomokuMatchMode
+        get() =
+            enumValueOrDefault(
+                prefs.getString(
+                    KEY_GOMOKU_MATCH_MODE,
+                    null
+                ),
+                GomokuMatchMode
+                    .VS_PROFESSOR
+            )
+        set(value) {
+            prefs.edit()
+                .putString(
+                    KEY_GOMOKU_MATCH_MODE,
+                    value.name
+                )
+                .apply()
+        }
+
     var sudokuVisualStyle:
         SudokuVisualStyle
         get() =
@@ -100,5 +125,7 @@ class GameModePreferences(
             "game_mode"
         private const val KEY_SUDOKU_STYLE =
             "sudoku_visual_style"
+        private const val KEY_GOMOKU_MATCH_MODE =
+            "gomoku_match_mode"
     }
 }

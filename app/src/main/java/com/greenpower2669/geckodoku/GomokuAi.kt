@@ -15,6 +15,49 @@ object GomokuAi {
             intArrayOf(1, -1)
         )
 
+    fun chooseMoveFor(
+        snapshot: GomokuSnapshot,
+        difficulty: GameDifficulty,
+        player: GomokuPlayer
+    ): GomokuAiDecision? {
+        if (
+            snapshot.gameOver ||
+            snapshot.currentPlayer != player
+        ) {
+            return null
+        }
+
+        if (
+            player ==
+                GomokuPlayer.PROFESSOR
+        ) {
+            return chooseMove(
+                snapshot,
+                difficulty
+            )
+        }
+
+        val swapped =
+            snapshot.copy(
+                stones =
+                    snapshot.stones
+                        .mapValues {
+                            (_, value) ->
+                            value.other()
+                        },
+                currentPlayer =
+                    GomokuPlayer.PROFESSOR,
+                winner =
+                    snapshot.winner
+                        ?.other()
+            )
+
+        return chooseMove(
+            swapped,
+            difficulty
+        )
+    }
+
     fun chooseMove(
         snapshot: GomokuSnapshot,
         difficulty: GameDifficulty
@@ -60,7 +103,7 @@ object GomokuAi {
                 return GomokuAiDecision(
                     cell = it,
                     reason =
-                        "Je peux gagner tout de suite en complétant cette ligne.",
+                        "Ce coup permet de gagner tout de suite en complétant cette ligne.",
                     score =
                         WIN_SCORE
                 )
@@ -96,7 +139,7 @@ object GomokuAi {
                 return GomokuAiDecision(
                     cell = it,
                     reason =
-                        "Je bloque ici : sinon tu peux gagner au prochain coup.",
+                        "Ce coup bloque une victoire adverse au prochain tour.",
                     score =
                         WIN_SCORE / 2
                 )
@@ -201,20 +244,20 @@ object GomokuAi {
             when {
                 profile.trapAware &&
                     threats >= 2 ->
-                    "Je prépare un piège : ce coup crée plusieurs menaces à surveiller."
+                    "Ce coup prépare un piège en créant plusieurs menaces à surveiller."
 
                 profile.searchDepth >= 3 ->
-                    "Je prépare la suite sur plusieurs coups plutôt que de répondre seulement au dernier."
+                    "Ce coup prépare la suite sur plusieurs coups plutôt que de répondre seulement au dernier."
 
                 linePotential(
                     snapshot,
                     chosen,
                     GomokuPlayer.PROFESSOR
                 ) >= 4 ->
-                    "Je construis une ligne de quatre qui va te forcer à réagir."
+                    "Ce coup construit une ligne de quatre qui force une réaction."
 
                 else ->
-                    "Je renforce une zone active tout en gardant plusieurs suites possibles."
+                    "Ce coup renforce une zone active tout en gardant plusieurs suites possibles."
             }
 
         return GomokuAiDecision(

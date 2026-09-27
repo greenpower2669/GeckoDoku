@@ -1580,3 +1580,7 @@ Correction attendue :
 - tour Prof automatique VS_PROFESSOR ;
 - Prof bouton disponible comme conseiller au tour humain ;
 - variante HUMAN_VS_HUMAN sans IA joueuse.
+
+
+<!-- GECKO-039-CORE-MATCH-MODES-2026-09-27 -->
+Première tranche code post-test : séparation configuration de match / moteur. Aucun second moteur Gomoku n'est créé. Tests de politique ajoutés pour empêcher l'IA de prendre le tour jaune en humain-vs-humain et vérifier l'analyse du point de vue vert.

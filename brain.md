@@ -2717,3 +2717,7 @@ Aucun merge main. Aucune release. Téléphone Fab = validation perceptuelle fina
 - En Gomoku uniquement, la vidéo détourée laisse le Goban visible ; ne pas appliquer ce changement de composition à Classic/Sudoku.
 - Les vidéos du camp jaune doivent conserver une identité jaune cohérente avec les PNG.
 - Un bouton Prof utilisable ne doit pas être présenté comme désactivé.
+
+
+<!-- GECKO-039-CORE-MATCH-MODES-2026-09-27 -->
+Core ajouté : GomokuMatchMode persiste la configuration VS_PROFESSOR / HUMAN_VS_HUMAN sans dupliquer GameMode.GOMOKU. GomokuAi.chooseMoveFor permet d'analyser explicitement le camp courant ; l'analyse du camp vert normalise la perspective vers le moteur IA historique sans muter le snapshot.

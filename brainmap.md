@@ -1202,3 +1202,12 @@ GomokuBoardView PNG rect (source de vérité)
   → refresh bounds à chaque onViewportChanged
   → suppress static stone while overlay active
   → restore PNG on completion.
+
+
+<!-- GECKO-039-CORE-MATCH-MODES-2026-09-27 -->
+GameMode.GOMOKU + GameModePreferences.gomokuMatchMode
+  → GomokuMatchMode.VS_PROFESSOR | HUMAN_VS_HUMAN
+  → même GomokuGameEngine.
+GomokuAi.chooseMoveFor(snapshot, difficulty, player)
+  → PROFESSOR : moteur historique
+  → PLAYER : snapshot à rôles inversés → moteur historique.

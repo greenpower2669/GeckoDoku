@@ -614,3 +614,12 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] CI GREEN.
 - [ ] APK/AAB candidate puis test téléphone Fab.
 - [ ] Après validation téléphone : nettoyer l'ordre de mission et réduire ce TODO aux restes réels.
+
+
+<!-- GECKO-039-CORE-MATCH-MODES-TODO-2026-09-27 -->
+- [x] Modèle persistant VS_PROFESSOR / HUMAN_VS_HUMAN sans dupliquer le moteur.
+- [x] IA capable d'analyser explicitement le camp vert ou jaune.
+- [x] Tests de politique des deux variantes.
+- [ ] Câbler les variantes et interactions Prof dans MainActivity.
+- [ ] Corriger le suivi dynamique des vidéos Gomoku + teinte jaune.
+- [ ] CI GREEN + APK/AAB + test téléphone.
