@@ -1179,3 +1179,8 @@ ProfessorPhraseCatalog contient désormais exactement 309 phrases : 100 legacy I
 <!-- GECKO-037-GREEN-HISTORY-SELECTOR-2026-09-27 -->
 ## GREEN 3 — mémoire et sélection
 Ajout ProfessorPhraseHistory avec cooldown exact 48 h, lastPhraseId et storage SharedPreferences. ProfessorPhraseSelector applique rareté, poids mood/event, cooldown, anti-répétition, fallback voisin/GENERAL puis oldest-first sans effacer l'historique. TAQUIN est sous-pondéré immédiatement après TAQUIN.
+
+
+<!-- GECKO-037-RUNTIME-GREEN-2026-09-27 -->
+## GREEN 4 — runtime vivant branché
+MainActivity utilise désormais ProfessorLifeController pour observer GAME_STARTED, CORRECT_MOVE, WRONG_MOVE/RAPID_WRONG_MOVE, LONG_THINKING, HINT_REQUESTED, LEVEL_COMPLETED, AMBIENT et RETURN_AFTER_PAUSE. Le bouton !, smalltalk ambiant, réactions d'erreur et encouragements utilisent le selector 309. Les petites bulles partagent exactement le texte prononcé et ferment 1 s après onCompletion réel avec token protégé. Les bulles Prof pédagogiques invalident l'auto-close.

@@ -135,8 +135,16 @@ class MainActivity : Activity() {
     private lateinit var professorSpeech:
         ProfessorSpeech
 
-    private val encouragementDeliveryPolicy =
-        EncouragementDeliveryPolicy()
+    private lateinit var professorLife:
+        ProfessorLifeController
+
+    private val professorQuickBubbleClosePolicy =
+        ProfessorQuickBubbleClosePolicy()
+
+    private var professorQuickBubbleCloseRunnable:
+        Runnable? = null
+
+    private var professorPausedAtMs: Long = 0L
 
     private val rewardedGeckos =
         linkedSetOf<Cell>()
@@ -268,6 +276,10 @@ class MainActivity : Activity() {
                     )
                 }
             }
+
+        professorLife =
+            ProfessorLifeController
+                .create(this)
 
         statsStore =
             PlayerStatsStore(this)
@@ -1116,6 +1128,14 @@ class MainActivity : Activity() {
         gameStartedAt =
             SystemClock.elapsedRealtime()
 
+        if (::professorLife.isInitialized) {
+            professorLife.observe(
+                ProfessorPlayerEvent
+                    .GAME_STARTED,
+                puzzle.difficulty
+            )
+        }
+
         resetProfessorAmbientState()
         clearProfessorSession()
 
@@ -1545,6 +1565,19 @@ class MainActivity : Activity() {
     private fun handleDoubleTap(
         cell: Cell
     ) {
+        val actionNow =
+            SystemClock.elapsedRealtime()
+
+        val thinkingMs =
+            if (lastBoardActionAtMs > 0L) {
+                (
+                    actionNow -
+                        lastBoardActionAtMs
+                    ).coerceAtLeast(0L)
+            } else {
+                Long.MAX_VALUE
+            }
+
         recordBoardAction()
 
         if (
@@ -1561,6 +1594,20 @@ class MainActivity : Activity() {
             engine.toggleGecko(cell)
         ) {
             ActionFeedback.GECKO_CONFIRMED -> {
+                if (thinkingMs >= 15_000L) {
+                    professorLife.observe(
+                        ProfessorPlayerEvent
+                            .LONG_THINKING,
+                        puzzle.difficulty
+                    )
+                }
+
+                professorLife.observe(
+                    ProfessorPlayerEvent
+                        .CORRECT_MOVE,
+                    puzzle.difficulty
+                )
+
                 handlePlayerGeckoConfirmed(
                     cell = cell,
                     completed = false
@@ -1582,6 +1629,32 @@ class MainActivity : Activity() {
                 fx.error()
                 statsStore.recordMistake()
 
+                val reactionEvent =
+                    when {
+                        thinkingMs >= 15_000L -> {
+                            professorLife.observe(
+                                ProfessorPlayerEvent
+                                    .LONG_THINKING,
+                                puzzle.difficulty
+                            )
+                            ProfessorPlayerEvent
+                                .WRONG_MOVE
+                        }
+
+                        thinkingMs <= 2_500L ->
+                            ProfessorPlayerEvent
+                                .RAPID_WRONG_MOVE
+
+                        else ->
+                            ProfessorPlayerEvent
+                                .WRONG_MOVE
+                    }
+
+                professorLife.observe(
+                    reactionEvent,
+                    puzzle.difficulty
+                )
+
                 status.text =
                     "Pas ici. Une croix reste en place."
 
@@ -1589,6 +1662,12 @@ class MainActivity : Activity() {
                     .announceForAccessibility(
                         "Gecko incorrect."
                     )
+
+                speakLivingProfessor(
+                    event = reactionEvent,
+                    origin =
+                        SpeechOrigin.QUICK_TALK
+                )
             }
 
             ActionFeedback.CROSS_BLOCKED -> {
@@ -1603,11 +1682,32 @@ class MainActivity : Activity() {
                     "Ce gecko est donné et ne peut pas être retiré."
             }
 
-            ActionFeedback.COMPLETED ->
+            ActionFeedback.COMPLETED -> {
+                if (thinkingMs >= 15_000L) {
+                    professorLife.observe(
+                        ProfessorPlayerEvent
+                            .LONG_THINKING,
+                        puzzle.difficulty
+                    )
+                }
+
+                professorLife.observe(
+                    ProfessorPlayerEvent
+                        .CORRECT_MOVE,
+                    puzzle.difficulty
+                )
+
+                professorLife.observe(
+                    ProfessorPlayerEvent
+                        .LEVEL_COMPLETED,
+                    puzzle.difficulty
+                )
+
                 handlePlayerGeckoConfirmed(
                     cell = cell,
                     completed = true
                 )
+            }
 
             else -> Unit
         }
@@ -1664,6 +1764,14 @@ class MainActivity : Activity() {
 
     private fun showProfessorHint() {
         professorUsed = true
+
+        if (::professorLife.isInitialized) {
+            professorLife.observe(
+                ProfessorPlayerEvent
+                    .HINT_REQUESTED,
+                puzzle.difficulty
+            )
+        }
 
         val videoHandled =
             playProfessorButtonVideo()
@@ -1883,6 +1991,10 @@ class MainActivity : Activity() {
     private fun showProfessorBubble(
         message: String
     ) {
+        cancelProfessorQuickBubbleClose()
+        professorQuickBubbleClosePolicy
+            .onPedagogicalBubbleShown()
+
         showProfessorBubbleVisualOnly(
             message
         )
@@ -1927,6 +2039,10 @@ class MainActivity : Activity() {
     }
 
     private fun closeProfessorBubble() {
+        cancelProfessorQuickBubbleClose()
+        professorQuickBubbleClosePolicy
+            .invalidate()
+
         if (
             ::professorBubble.isInitialized
         ) {
@@ -2843,21 +2959,32 @@ class MainActivity : Activity() {
                     blocked = blocked
                 )
         ) {
-            val index =
-                pierreSmallTalkSelector
-                    .chooseIndex(
-                        randomValue =
-                            Random.nextInt(),
-                        previousIndex =
-                            lastSmallTalkIndex
-                    )
-
-            lastSmallTalkIndex = index
-
-            speakProfessorAmbient(
-                PierreSmallTalk
-                    .lines[index]
+            professorLife.observe(
+                ProfessorPlayerEvent.AMBIENT,
+                puzzle.difficulty
             )
+
+            if (
+                speakLivingProfessor(
+                    event =
+                        ProfessorPlayerEvent
+                            .AMBIENT,
+                    origin =
+                        SpeechOrigin.AMBIENT
+                )
+            ) {
+                nextAmbientAllowedAtMs =
+                    now +
+                        professorAmbientPolicy
+                            .minimumAmbientGapMs
+
+                nextSmallTalkAtMs =
+                    now +
+                        professorAmbientPolicy
+                            .smallTalkDelayMs(
+                                Random.nextInt()
+                            )
+            }
         }
 
         scheduleProfessorAmbientTick()
@@ -3733,39 +3860,143 @@ class MainActivity : Activity() {
     }
 
     private fun speakQuickProfessorLine() {
-        val index =
-            professorQuickTalkPolicy
-                .chooseIndex(
-                    randomValue =
-                        Random.nextInt(),
-                    previousIndex =
-                        lastSmallTalkIndex
-                )
+        professorLife.observe(
+            ProfessorPlayerEvent.AMBIENT,
+            puzzle.difficulty
+        )
 
-        lastSmallTalkIndex = index
+        speakLivingProfessor(
+            event =
+                ProfessorPlayerEvent.AMBIENT,
+            origin =
+                SpeechOrigin.QUICK_TALK
+        )
+    }
 
-        val line =
-            PierreSmallTalk.lines[index]
+    private fun speakLivingProfessor(
+        event: ProfessorPlayerEvent,
+        origin: SpeechOrigin,
+        onCompletion:
+            (() -> Unit)? = null
+    ): Boolean {
+        if (
+            !professorSpeech.canAccept(
+                origin
+            )
+        ) {
+            return false
+        }
 
-        val presentation =
-            quickTalkPresentationPolicy
-                .present(line)
+        val selection =
+            professorLife.choose(
+                event = event,
+                difficulty =
+                    puzzle.difficulty
+            )
+                ?: return false
+
+        cancelProfessorQuickBubbleClose()
+
+        val token =
+            professorQuickBubbleClosePolicy
+                .onSimpleBubbleShown()
+
+        val text =
+            selection.phrase.text
+
+        showProfessorBubbleVisualOnly(
+            text
+        )
+
+        status.text =
+            "Prof Gecko"
 
         val accepted =
             speakWithProfessorVisual(
-                text =
-                    presentation.bubbleText,
-                origin =
-                    presentation.origin
+                text = text,
+                origin = origin,
+                onCompletion = {
+                    onCompletion?.invoke()
+
+                    val schedule =
+                        professorQuickBubbleClosePolicy
+                            .onSpeechCompleted(
+                                token
+                            )
+
+                    if (
+                        schedule != null &&
+                        ::screenRoot.isInitialized
+                    ) {
+                        val runnable =
+                            Runnable {
+                                if (
+                                    professorQuickBubbleClosePolicy
+                                        .canClose(
+                                            schedule.token
+                                        )
+                                ) {
+                                    MediaTrace.event(
+                                        source =
+                                            "MainActivity",
+                                        event =
+                                            "PROF_QUICK_BUBBLE_CLOSE",
+                                        detail =
+                                            "token=" +
+                                                schedule.token
+                                    )
+                                    closeProfessorBubble()
+                                }
+                            }
+
+                        professorQuickBubbleCloseRunnable =
+                            runnable
+
+                        MediaTrace.event(
+                            source =
+                                "MainActivity",
+                            event =
+                                "PROF_QUICK_BUBBLE_CLOSE_SCHEDULED",
+                            detail =
+                                "delayMs=" +
+                                    schedule.delayMs +
+                                    " token=" +
+                                    schedule.token
+                        )
+
+                        screenRoot.postDelayed(
+                            runnable,
+                            schedule.delayMs
+                        )
+                    }
+                }
             )
 
-        if (accepted) {
-            showProfessorBubbleVisualOnly(
-                presentation.bubbleText
-            )
-            status.text =
-                presentation.statusText
+        if (!accepted) {
+            professorQuickBubbleClosePolicy
+                .invalidate()
+            closeProfessorBubble()
+            return false
         }
+
+        return true
+    }
+
+    private fun cancelProfessorQuickBubbleClose() {
+        val runnable =
+            professorQuickBubbleCloseRunnable
+
+        if (
+            runnable != null &&
+            ::screenRoot.isInitialized
+        ) {
+            screenRoot.removeCallbacks(
+                runnable
+            )
+        }
+
+        professorQuickBubbleCloseRunnable =
+            null
     }
 
     private fun speakWithProfessorVisual(
@@ -4606,30 +4837,30 @@ class MainActivity : Activity() {
             return false
         }
 
-        return when (
-            encouragementDeliveryPolicy
-                .delivery()
-        ) {
-            EncouragementDelivery.PIERRE -> {
-                speakWithProfessorVisual(
-                    origin =
-                        SpeechOrigin
-                            .ENCOURAGEMENT,
-                    text =
-                        PierreEncouragements
-                            .choose(
-                                remaining =
-                                    remaining,
-                                randomValue =
-                                    Random.nextInt(
-                                        Int.MAX_VALUE
-                                    )
-                            ),
-                    onCompletion =
-                        onFinished
-                )
+        val event =
+            when {
+                remaining <= 0 ->
+                    ProfessorPlayerEvent
+                        .LEVEL_COMPLETED
+
+                professorLife
+                    .context
+                    .successStreak >= 3 ->
+                    ProfessorPlayerEvent
+                        .STREAK_CONTINUED
+
+                else ->
+                    ProfessorPlayerEvent
+                        .CORRECT_MOVE
             }
-        }
+
+        return speakLivingProfessor(
+            event = event,
+            origin =
+                SpeechOrigin.ENCOURAGEMENT,
+            onCompletion =
+                onFinished
+        )
     }
 
     private fun playLevelStartMusic() {
@@ -4680,6 +4911,44 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+
+        val now =
+            SystemClock.elapsedRealtime()
+
+        val awayMs =
+            if (professorPausedAtMs > 0L) {
+                now - professorPausedAtMs
+            } else {
+                0L
+            }
+
+        professorPausedAtMs = 0L
+
+        if (
+            awayMs >= 60_000L &&
+            ::professorLife.isInitialized &&
+            ::screenRoot.isInitialized
+        ) {
+            professorLife.observe(
+                ProfessorPlayerEvent
+                    .RETURN_AFTER_PAUSE,
+                puzzle.difficulty
+            )
+
+            screenRoot.postDelayed(
+                {
+                    speakLivingProfessor(
+                        event =
+                            ProfessorPlayerEvent
+                                .RETURN_AFTER_PAUSE,
+                        origin =
+                            SpeechOrigin.QUICK_TALK
+                    )
+                },
+                350L
+            )
+        }
+
         scheduleProfessorIdleAnimation()
         scheduleProfessorAmbientTick()
         startTitleIdentityAnimation()
@@ -4694,6 +4963,13 @@ class MainActivity : Activity() {
     }
 
     override fun onPause() {
+        professorPausedAtMs =
+            SystemClock.elapsedRealtime()
+
+        cancelProfessorQuickBubbleClose()
+        professorQuickBubbleClosePolicy
+            .invalidate()
+
         cancelProfessorIdleAnimation()
         cancelProfessorAmbientTick()
         stopTitleIdentityAnimation()
@@ -4725,6 +5001,10 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        cancelProfessorQuickBubbleClose()
+        professorQuickBubbleClosePolicy
+            .invalidate()
+
         cancelProfessorIdleAnimation()
         cancelProfessorAmbientTick()
         stopTitleIdentityAnimation()

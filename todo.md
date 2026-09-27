@@ -521,3 +521,20 @@ Aucune mission active.
 - [x] Anti-répétition immédiate.
 - [ ] Vérifier RED global devenu GREEN côté cœur.
 - [ ] Brancher runtime MainActivity.
+
+
+<!-- GECKO-037-RUNTIME-GREEN-2026-09-27 -->
+## GECKO-037 GREEN 4
+- [x] Controller runtime + logs.
+- [x] GAME_STARTED / CORRECT / WRONG / RAPID_WRONG / LONG_THINKING / HINT / LEVEL_COMPLETED / RETURN / AMBIENT.
+- [x] ! via 309.
+- [x] Smalltalk ambiant via 309.
+- [x] Encouragements via 309.
+- [x] Réactions erreur contextuelles via 309.
+- [x] Bulle = texte Pierre.
+- [x] +1s après vraie completion.
+- [x] Timer obsolète protégé.
+- [x] Pédagogie non auto-close.
+- [ ] CI GREEN runtime.
+- [ ] Nettoyage anciens sélecteurs devenus inutilisés.
+- [ ] Version candidate + APK/AAB.

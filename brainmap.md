@@ -344,3 +344,9 @@ normalizeText + textSimilarity + nearDuplicatePairs.
 
 <!-- GECKO-037-GREEN-HISTORY-SELECTOR-2026-09-27 -->
 Selector → RARE(4% max) / FAB(3%) → weighted category → cooldown 48h → !lastPhraseId → fallback categories → GENERAL → forced oldest-first → history.markUsed(id).
+
+
+<!-- GECKO-037-RUNTIME-GREEN-2026-09-27 -->
+MainActivity events → ProfessorLifeController.observe → context/mood
+canAccept(origin) → controller.choose → phrase ID/history → bubble(text) + Pierre(same text) → real completion → guarded +1000ms close
+Prof button pedagogy → pedagogical bubble token → no auto-close.

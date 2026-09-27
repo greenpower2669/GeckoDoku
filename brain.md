@@ -849,3 +849,8 @@ ProfessorPhraseCatalog est la source d'identité persistante : 309 entrées, IDs
 <!-- GECKO-037-GREEN-HISTORY-SELECTOR-2026-09-27 -->
 ## Mémoire/sélection GECKO-037
 Une phrase est identifiée par ID, marquée utilisée à la sélection et reste normalement exclue 48 h. lastPhraseId est persisté et toujours exclu. Si le pool est épuisé, l'historique n'est jamais vidé : le selector choisit la plus ancienne phrase compatible hors lastPhraseId. SharedPreferences suffit pour cette mémoire légère.
+
+
+<!-- GECKO-037-RUNTIME-GREEN-2026-09-27 -->
+## GECKO-037 runtime
+Le moteur 309 est maintenant la source unique des petites paroles runtime : !, ambient, encouragements et réactions contextuelles. Les erreurs sont classées approximativement par délai depuis l'action précédente : >=15 s = réflexion longue, <=2,5 s = rapide ; une seule erreur rapide ne suffit pas à rendre le Prof taquin. Retour après pause >=60 s alimente RETURN. Les explications Prof restent sur leur chemin pédagogique séparé.

@@ -1008,3 +1008,8 @@ Le corpus a été généré depuis les 100 chaînes historiques du dépôt et le
 <!-- GECKO-037-GREEN-HISTORY-SELECTOR-2026-09-27 -->
 ## 2026-09-27 — GREEN 3 history/selector
 Le vieux anti-repeat par index est remplacé fonctionnellement par lastPhraseId persistant + cooldown par ID. Le fallback n'efface jamais la mémoire globale et force la phrase compatible la plus ancienne.
+
+
+<!-- GECKO-037-RUNTIME-GREEN-2026-09-27 -->
+## 2026-09-27 — GREEN 4 runtime GECKO-037
+Remplacement runtime des anciens Random.nextInt smalltalk/PierreEncouragements par le selector 309. Ajout classification légère de l'erreur par délai de réflexion, logs PROF_CONTEXT/POOL/SELECTED/FALLBACK/FORCED_OLDEST et fermeture de bulle basée sur vraie completion Pierre.
