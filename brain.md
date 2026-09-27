@@ -2733,3 +2733,32 @@ MainActivity câble désormais les deux variantes sur le même engine. VS_PROFES
 
 <!-- GECKO-039-POST-TEST-CI201-GREEN-2026-09-27 -->
 Validation technique : commit `f6aafece850adf1d7e094463655847764b3d91fd`, CI #201 GREEN complet. APK et AAB 0.12.0-dev générés. Les invariants post-test sont désormais compilés et couverts par les tests unitaires ; la validation restante est perceptuelle sur téléphone.
+
+
+<!-- GECKO-040-NEW-MISSION-2026-09-27 -->
+# Validation téléphone et nouveaux invariants
+
+## Gomoku figé comme référence stable
+
+Fab valide le Gomoku sur téléphone :
+- titre corrigé ;
+- animations correctes ;
+- vidéo suit zoom et drag ;
+- rendu global jugé parfait.
+
+Invariant : ne plus retoucher Gomoku dans la prochaine mission sauf régression transversale.
+
+## Classic layout
+La prochaine correction Classic est uniquement de layout : centrer et agrandir la grille sans changer son moteur. Sauver et Journal quittent l'écran principal et vont dans ⚙️ afin de libérer de la place.
+
+## Difficulté stricte
+Quand le joueur choisit une difficulté, le générateur doit continuer à générer/évaluer jusqu'à obtenir réellement cette difficulté. Pas de fallback silencieux. Recherche en arrière-plan, annulable, UI réactive.
+
+## Étoiles
+Une résolution autonome vaut 5 étoiles. Les aides demandées réduisent la note ; les aides directes doivent coûter davantage que les conseils légers. Les animations et messages automatiques ne comptent pas comme aide.
+
+## Stats / Hall of Fame
+Les statistiques doivent exister globalement et par difficulté. Le Hall of Fame affiche les étoiles. Nom joueur persistant par défaut : GeckoTétu, modifiable.
+
+## Données utilisateur
+Tous les paramètres et toutes les sauvegardes/données persistantes doivent être exportables/importables via un format portable versionné et validé.

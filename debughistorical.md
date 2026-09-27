@@ -1596,3 +1596,33 @@ Ancien défaut : le bouton Prof était uniquement actif au tour jaune et déclen
 
 <!-- GECKO-039-POST-TEST-CI201-GREEN-2026-09-27 -->
 La passe corrective compile et teste GREEN sur GitHub Actions #201. Aucun correctif de compilation supplémentaire n'a été nécessaire après l'intégration MainActivity. Artifact digest : `sha256:36cd6fec570c9ea0364982fb07c9bb4427c8a43588c59c0d483c947c92e815c0`. Les points vidéo/gestes restant à valider sont de nature perceptuelle et doivent être confirmés sur appareil réel.
+
+
+<!-- GECKO-040-VALIDATION-AND-NEXT-2026-09-27 -->
+# 2026-09-27 — validation téléphone et clôture Gomoku
+
+Retour Fab :
+- Gomoku parfait ;
+- titre corrigé ;
+- animations vidéo correctement attachées au Goban ;
+- zoom validé ;
+- drag validé.
+
+Les anciens défauts Gomoku de cette passe sont considérés fermés. Ne pas les conserver comme TODO actif.
+
+Nouvelle observation Classic :
+- grille visuellement non centrée ;
+- espace sous la grille trop consommé par les commandes ;
+- Sauver et Journal peuvent être déplacés dans l'engrenage ;
+- la grille pourra alors être plus grande sans changer son moteur.
+
+Nouvelles exigences produit :
+- génération stricte par difficulté jusqu'à trouver le niveau demandé ;
+- historique vidable ;
+- statistiques par niveau ;
+- score en étoiles selon assistance, 5 étoiles sans aide ;
+- Hall of Fame avec étoiles ;
+- nom joueur modifiable, défaut GeckoTétu ;
+- export/import complet des paramètres et sauvegardes.
+
+Aucun code applicatif modifié dans cette intervention documentaire.

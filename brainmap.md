@@ -1242,3 +1242,37 @@ HEAD code `f6aafece850adf1d7e094463655847764b3d91fd`
   → APK `GeckoDoku-v0.12.0-dev.apk`
   → AAB `GeckoDoku-v0.12.0-dev.aab`
   → prochaine porte : test téléphone Fab.
+
+
+<!-- GECKO-040-ARCH-MAP-2026-09-27 -->
+# Architecture cible de la nouvelle mission
+
+Classic screen
+  → compact controls
+  → Save + Journal déplacés dans Settings
+  → available bounds
+  → largest square board
+  → horizontal centering.
+
+Difficulty request
+  → background generator loop
+  → solve/rate candidate
+  → accept only requested difficulty
+  → continue until match or user cancel.
+
+Completion event
+  → AssistanceTracker
+  → star rating 1..5
+  → Stats by difficulty
+  → HallOfFameEntry(playerName, mode, difficulty, stars, metadata).
+
+PlayerProfile
+  → default name "GeckoTétu"
+  → editable
+  → persistent.
+
+UserDataBackup
+  → versioned export package
+  → settings + saves + progress + stats + history + hall of fame + profile
+  → validation/migration
+  → transactional import.
