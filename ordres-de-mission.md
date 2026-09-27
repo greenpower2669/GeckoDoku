@@ -469,3 +469,126 @@ Candidate 0.11.1-dev/code29 préparée. Ne plus ajouter de fonctionnalité avant
 <!-- GECKO-038-TACTILE-CI164-GREEN-2026-09-27 -->
 STATUT : CODE GREEN / ATTENTE TEST TÉLÉPHONE FAB.
 Ne plus ajouter de fonctionnalité avant retour téléphone sur 0.11.1-dev. Corriger seulement les défauts réellement observés, dans la couche Sudoku concernée. Aucun merge main, aucune release sans GO explicite.
+
+<!-- GECKO-038-GRID-READABILITY-REVISION-2026-09-27 -->
+# RÉVISION PRIORITAIRE DE LA MISSION — LISIBILITÉ GRILLE
+
+Cette section **prime sur les sections antérieures incompatibles** de cet ordre de mission.
+
+## 20 — CONSTAT TÉLÉPHONE 0.11.1-dev
+
+La candidate 0.11.1-dev affiche désormais le pavé et le sélecteur, mais la grille est devenue trop petite.
+
+Le correctif précédent a donc résolu le recouvrement au prix d'une perte de lisibilité.
+
+Cette régression ergonomique doit être corrigée avant toute nouvelle fonction.
+
+## 21 — CONTRAT DE LARGEUR DE GRILLE
+
+La grille Sudoku est la priorité numéro 1 de l'écran.
+
+Règle impérative :
+
+**GRILLE = LARGEUR UTILE MAXIMALE DE L'ÉCRAN.**
+
+Marge horizontale volontaire :
+- gauche : **3 px maximum** ;
+- droite : **3 px maximum**.
+
+Donc, hors inset Android obligatoire :
+
+```text
+boardWidth = usefulScreenWidth - 6px maximum
+boardHeight = boardWidth
+```
+
+Interdit :
+- padding esthétique supplémentaire ;
+- marge latérale importante ;
+- réduction de grille pour faire tenir un gros pavé ;
+- réduction de grille pour faire tenir les trois gros boutons du selector.
+
+Si l'espace vertical manque, **compacter les commandes**, pas la grille.
+
+## 22 — PRIORITÉ DES COMMANDES
+
+Les commandes doivent s'adapter à la grille.
+
+Le pavé 1–9 permanent n'est plus une obligation de mise en page si l'appui long fournit la même saisie de façon confortable.
+
+Le selector 3 états peut être rendu plus compact tout en conservant :
+- les 3 états ;
+- le glissement ;
+- preview live ;
+- validation au relâchement.
+
+Les fonctions doivent rester accessibles, mais leur encombrement permanent n'est pas prioritaire sur la grille.
+
+## 23 — MINI-CANDIDATS : NOIR IMPÉRATIF
+
+Les mini-candidats affichés dans les cases doivent être :
+
+- chiffres 1–9 ;
+- positions fixes 3×3 ;
+- **couleur noire** ;
+- contraste maximal ;
+- indépendants du VisualStyle principal.
+
+Cette décision remplace l'ancienne exigence :
+> mini-candidats Classic / Gecko N/B / Gecko couleur.
+
+Nouvel invariant :
+> **valeur principale stylée ; candidats fonctionnels en noir.**
+
+Même règle pour :
+- candidats joueur ;
+- candidats montrés par Prof Gecko.
+
+Une mise en évidence pédagogique peut utiliser un fond, contour ou halo discret, mais le chiffre candidat reste noir.
+
+## 24 — TDD À AJOUTER / MODIFIER
+
+Avant ou avec le correctif :
+
+### Géométrie
+1. en mode Sudoku, largeur du plateau = largeur utile moins au plus 6 px ;
+2. marge gauche <= 3 px hors inset ;
+3. marge droite <= 3 px hors inset ;
+4. grille reste carrée ;
+5. GeckoDoku historique conserve sa géométrie indépendante ;
+6. popup / bulle / Prof n'altèrent pas cette largeur.
+
+### Candidats
+7. chaque candidat 1..9 garde sa position 3×3 ;
+8. candidat joueur utilise un glyphe noir ;
+9. candidat Prof utilise le même glyphe noir ;
+10. changement Classic → Gecko NB → Gecko Color ne change pas la couleur noire du candidat ;
+11. valeur principale continue de suivre VisualStyle ;
+12. valeur posée masque les candidats comme actuellement.
+
+### UX
+13. si tous les contrôles ne tiennent pas verticalement, la policy réduit/compacte les contrôles avant de réduire la grille ;
+14. l'appui long reste accessible ;
+15. aucune zone tactile critique n'est masquée.
+
+## 25 — CRITÈRE DE SUCCÈS RÉVISÉ
+
+La prochaine candidate est acceptable seulement si, sur le téléphone de Fab :
+
+- [ ] grille quasiment pleine largeur ;
+- [ ] <= 3 px de marge volontaire à gauche ;
+- [ ] <= 3 px de marge volontaire à droite ;
+- [ ] grille clairement plus grande que sur 0.11.1-dev ;
+- [ ] mini-candidats noirs lisibles ;
+- [ ] long press toujours fonctionnel ;
+- [ ] accès aux styles toujours fonctionnel ;
+- [ ] accès aux chiffres toujours fonctionnel, permanent ou contextuel ;
+- [ ] Prof candidats fonctionnel ;
+- [ ] aucune régression GeckoDoku ;
+- [ ] invariant Pierre ↔ bulle intact ;
+- [ ] CI APK/AAB GREEN.
+
+## 26 — PRINCIPE DIRECTEUR
+
+**La grille ne s'adapte plus aux boutons. Les boutons s'adaptent à la grille.**
+

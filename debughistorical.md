@@ -1278,3 +1278,24 @@ Après CI #163 GREEN complet, version bump 28→29 et 0.11.0-dev→0.11.1-dev po
 <!-- GECKO-038-TACTILE-CI164-GREEN-2026-09-27 -->
 ## 2026-09-27 — CI #164 GREEN
 La candidate tactile 0.11.1-dev passe le workflow complet : tests unitaires, assembleDebug, bundleDebug, renommage APK/AAB, upload artifact. Aucun merge main, aucune release. Les failures #157-#162 correspondent au cycle RED et aux petites corrections de compilation (policies absentes attendues, import Rect, reset multi-mode) avant le GREEN #163 puis la candidate #164.
+
+<!-- GECKO-038-GRID-READABILITY-REVISION-2026-09-27 -->
+## 2026-09-27 — retour téléphone 0.11.1-dev : grille trop petite
+
+Capture téléphone Fab après candidate 0.11.1-dev :
+- pavé 1–9 désormais visible ;
+- selector 3 états désormais visible ;
+- difficulté principale supprimée comme prévu ;
+- mais la grille 9×9 est devenue nettement trop petite.
+
+Conclusion : la stratégie « réserver de la hauteur à tous les contrôles permanents » corrigeait le chevauchement mais créait une régression de lisibilité.
+
+Décision corrective documentaire :
+- grille = largeur utile maximale ;
+- marge volontaire horizontale <= 3 px par côté ;
+- commandes secondaires doivent se compacter plutôt que réduire la grille ;
+- mini-candidats : chiffres noirs, car le vert utilisé dans le renderer actuel est moins lisible à petite taille ;
+- la règle précédente « candidat suit obligatoirement le VisualStyle » est annulée pour les mini-candidats.
+
+Aucun code modifié dans cette intervention.
+

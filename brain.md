@@ -2143,3 +2143,91 @@ Fonctions prêtes pour validation téléphone :
 - invariant Pierre ↔ bulle préservé.
 
 Autorité finale : test téléphone Fab.
+
+<!-- GECKO-038-GRID-READABILITY-REVISION-2026-09-27 -->
+# GECKO-038 — RÉVISION PRIORITÉ LISIBILITÉ APRÈS TEST TÉLÉPHONE 0.11.1-dev
+
+Fab valide que la candidate 0.11.1-dev corrige la présence des contrôles, mais le résultat téléphone montre une nouvelle régression ergonomique : **la grille Sudoku est devenue trop petite pour une lecture confortable**.
+
+## Invariant de taille de grille
+
+Nouvelle règle canonique :
+
+**La grille Sudoku doit utiliser la largeur utile maximale de l'écran.**
+
+Marge horizontale cible :
+- **3 pixels maximum à gauche** ;
+- **3 pixels maximum à droite**.
+
+Autrement dit, hors insets système réellement imposés par Android, la largeur du plateau doit tendre vers :
+
+`screenUsefulWidth - 6 px`
+
+Ne pas ajouter de padding décoratif, marge esthétique ou centrage supplémentaire qui réduirait la grille.
+
+La grille reste carrée.
+
+La lisibilité de la grille est prioritaire sur l'affichage permanent des contrôles secondaires.
+
+## Nouvelle hiérarchie d'interface
+
+Ancienne logique devenue obsolète :
+> faire tenir grille + gros selector + pavé 1–9 + outils en permanence.
+
+Cette logique a produit une grille trop petite sur téléphone.
+
+Nouvelle logique :
+1. réserver en premier la **grille la plus grande possible** ;
+2. compacter les commandes secondaires ;
+3. utiliser l'appui long / overlays pour les commandes occasionnelles ;
+4. ne jamais réduire fortement la grille uniquement pour conserver un gros pavé ou un gros selector permanent.
+
+Le pavé permanent et le selector permanent ne sont donc plus des invariants de taille. Leur présentation peut être compactée, regroupée ou rendue contextuelle, à condition que leurs fonctions restent accessibles.
+
+## Mini-candidats : couleur de lisibilité
+
+Nouvelle règle canonique :
+
+**Les mini-candidats 1–9 affichés dans les cases sont dessinés en noir, quelle que soit la couleur du style principal.**
+
+But :
+- contraste maximal ;
+- lecture à très petite taille ;
+- éviter le vert actuel, trop peu contrasté ;
+- permettre jusqu'à 9 candidats serrés dans une case.
+
+Le style de la valeur principale reste :
+- Classic ;
+- Gecko N/B ;
+- Gecko couleur.
+
+Mais les **mini-écritures candidates** deviennent un langage fonctionnel distinct :
+- petits chiffres noirs ;
+- positions 3×3 fixes ;
+- lisibilité prioritaire.
+
+Ainsi, en mode Gecko N/B ou Gecko couleur, la valeur principale peut rester Gecko tandis que les candidats restent des chiffres noirs miniatures.
+
+Cette règle annule la décision précédente selon laquelle tous les candidats devaient nécessairement reprendre le VisualStyle.
+
+## Prof Gecko et mini-candidats
+
+Les candidats placés/montrés par Prof Gecko suivent la même règle :
+- positions 3×3 identiques ;
+- chiffres noirs ;
+- pas de vert ;
+- même système logique que le joueur ;
+- une mise en évidence temporaire peut entourer/surligner un candidat, mais le glyphe du candidat reste noir.
+
+## Critère d'acceptation visuel
+
+Sur le téléphone de Fab :
+- la grille doit retrouver une taille proche de la première version confortable ;
+- elle doit quasiment toucher les bords utiles de l'écran ;
+- aucune marge horizontale volontaire supérieure à 3 px par côté ;
+- les traits de grille restent visibles ;
+- les chiffres donnés et joueur restent lisibles ;
+- les mini-candidats noirs restent reconnaissables malgré leur taille.
+
+Le test téléphone de Fab reste l'autorité finale.
+

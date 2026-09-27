@@ -141,3 +141,22 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Vérifier appui long sur given = blocage propre.
 - [ ] Vérifier Prof Gecko : candidats affichés dans la case sans modifier Undo joueur.
 - [ ] Vérifier GeckoDoku historique sans régression.
+
+<!-- GECKO-038-GRID-READABILITY-REVISION-2026-09-27 -->
+## Révision après test téléphone 0.11.1-dev
+- [x] Constater : grille trop petite malgré contrôles visibles.
+- [x] Décider : grille = priorité absolue de surface.
+- [x] Décider : marge horizontale volontaire <= 3 px par côté.
+- [x] Décider : mini-candidats en noir.
+- [x] Annuler l'obligation de rendre les mini-candidats en Gecko/couleur.
+- [ ] RED : géométrie Sudoku largeur utile - 6 px maximum.
+- [ ] Corriger layout pour agrandir la grille avant les contrôles.
+- [ ] Compacter les commandes qui consomment trop de hauteur.
+- [ ] Rendre les candidats joueur en petits chiffres noirs.
+- [ ] Rendre les candidats Prof en petits chiffres noirs.
+- [ ] Préserver positions 3×3 et logique candidats.
+- [ ] Vérifier long press/palette sans réduction de grille.
+- [ ] CI GREEN.
+- [ ] APK/AAB.
+- [ ] Validation téléphone Fab : grille quasi plein écran en largeur.
+

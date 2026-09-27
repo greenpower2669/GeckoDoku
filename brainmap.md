@@ -858,3 +858,36 @@ system insets change → geometryPolicy.reset() → reset GECKODOKU + SUDOKU fre
 <!-- GECKO-038-TACTILE-CI164-GREEN-2026-09-27 -->
 0.11.1-dev/code29 → CI #164 GREEN → APK/AAB → TEST FAB
 TEST FAB : selector visible + pad visible + long press + palette + candidats 3 styles + Prof candidats + GeckoDoku historique.
+
+<!-- GECKO-038-GRID-READABILITY-REVISION-2026-09-27 -->
+# Priorité écran révisée
+
+```text
+largeur utile écran
+      ↓
+- 3 px gauche
+- 3 px droite
+      ↓
+GRILLE SUDOKU CARRÉE = priorité #1
+      ↓
+espace vertical restant
+      ↓
+commandes compactes / overlays / long press
+```
+
+```text
+Cellule vide
+   ↓
+candidates 1..9
+   ↓
+positions fixes 3×3
+   ↓
+PETITS CHIFFRES NOIRS
+(indépendants du VisualStyle principal)
+```
+
+```text
+Valeur principale → CLASSIC / GECKO_NB / GECKO_COLORED
+Mini-candidats    → NOIR, lisibilité prioritaire
+```
+
