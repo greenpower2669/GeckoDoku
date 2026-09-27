@@ -1032,3 +1032,7 @@ Phase 2 câblage terminé. Attente CI GREEN avant Phase 3.
 
 <!-- GECKO-039-PHASE2-COMPILE-FIX-2026-09-27 -->
 Correctif compilation Phase 2 appliqué, aucun changement fonctionnel.
+
+
+<!-- GECKO-039-PHASE3-RED-2026-09-27 -->
+Phase 3 en exécution : RED moteur/viewport/difficulté posé après Phase 2 GREEN.

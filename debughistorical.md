@@ -1507,3 +1507,8 @@ Les séquences pédagogiques sont annulées sur mutation pour éviter les callba
 <!-- GECKO-039-PHASE2-COMPILE-FIX-2026-09-27 -->
 ## Phase 2 compile fix
 Ancre textuelle trop large lors du patch modèle ; méthode déplacée vers le bon data class.
+
+
+<!-- GECKO-039-PHASE3-RED-2026-09-27 -->
+## 2026-09-27 — Phase 3 Gomoku RED
+Contrats moteur/viewport/IA posés après Sudoku #188 GREEN.

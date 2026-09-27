@@ -489,3 +489,12 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 <!-- GECKO-039-PHASE2-COMPILE-FIX-2026-09-27 -->
 - [x] Corriger customMarkerAt dans SudokuSnapshot.
 - [ ] CI Phase 2 GREEN.
+
+
+<!-- GECKO-039-PHASE3-RED-2026-09-27 -->
+- [x] RED moteur Gomoku.
+- [x] RED viewport 12/pan/zoom.
+- [x] RED difficulté stratégique/IA.
+- [ ] Confirmer RED CI.
+- [ ] GREEN core Gomoku.
+- [ ] Ajouter mode/UI/rendu jaune.

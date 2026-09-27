@@ -2634,3 +2634,7 @@ Phase 2 UI câblée : double tap ouvre les CustomMarker Sudoku, simple tap reste
 
 <!-- GECKO-039-PHASE2-COMPILE-FIX-2026-09-27 -->
 Correctif compilation local : customMarkerAt appartient à SudokuSnapshot, pas SudokuPuzzle.
+
+
+<!-- GECKO-039-PHASE3-RED-2026-09-27 -->
+Phase 3 Gomoku RED : moteur 5 alignés/turn lock, viewport par défaut 12 zoomable/pannable, difficulté = profondeur + beam + pièges, IA gagne immédiatement avant tout plan long.

@@ -1117,3 +1117,7 @@ doubleTap→marker dialog. Gecko toggle→shared Classic video. Reasoning step�
 
 <!-- GECKO-039-PHASE2-COMPILE-FIX-2026-09-27 -->
 SudokuSnapshot.customMarkerAt(cell) → customMarkers map.
+
+
+<!-- GECKO-039-PHASE3-RED-2026-09-27 -->
+GOMOKU RED → Engine + ViewportPolicy + DifficultyProfile/AiDecision.
