@@ -1137,3 +1137,7 @@ GameMode = GECKODOKU | SUDOKU | GOMOKU ; SudokuVisualStyle reste 3 styles indép
 
 <!-- GECKO-039-GOMOKU-UI-RED-2026-09-27 -->
 Gomoku UI RED → GesturePolicy(PLAY|PAN|ZOOM) + YellowFilterPolicy + Settings difficulty + geometry isolation.
+
+
+<!-- GECKO-039-GOMOKU-UI-POLICIES-GREEN-2026-09-27 -->
+GesturePolicy: >=2 pointers|scale→ZOOM ; 1 pointer distance>=threshold→PAN ; sinon PLAY. Yellow filter: R<-R+G, G conservé, B réduit, A identité. Settings difficulty for non-Classic modes.

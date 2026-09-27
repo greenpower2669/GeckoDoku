@@ -1532,3 +1532,8 @@ Compilation core Gomoku réussie. Unique échec test : SudokuVisualStylePolicyTe
 <!-- GECKO-039-GOMOKU-UI-RED-2026-09-27 -->
 ## 2026-09-27 — core Gomoku GREEN #192, UI RED lancé
 Le moteur pur est validé. Les prochains tests verrouillent les gestes tactiles et le filtre jaune avant création de GomokuBoardView.
+
+
+<!-- GECKO-039-GOMOKU-UI-POLICIES-GREEN-2026-09-27 -->
+## Après RED #193
+Implémentation pure des policies UI Gomoku, sans vue Android dans ce commit. Filtre jaune agit uniquement sur RGB ; ligne alpha identité.

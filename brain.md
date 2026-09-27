@@ -2655,3 +2655,7 @@ Le contrat historique `GameMode.entries.size == 2` est devenu obsolète avec le 
 
 <!-- GECKO-039-GOMOKU-UI-RED-2026-09-27 -->
 CI #192 GREEN valide le core Gomoku. RED UI suivant : gesture policy tap/pan/pinch, filtre colorimétrique jaune conservant alpha, difficulté visible en mode Gomoku et géométrie indépendante.
+
+
+<!-- GECKO-039-GOMOKU-UI-POLICIES-GREEN-2026-09-27 -->
+Gomoku UI policies implémentées : geste pur PLAY/PAN/ZOOM avec seuil, matrice jaune dynamique augmentant le rouge depuis le vert et préservant alpha, layout carré plein-largeur, difficulté disponible dans Settings pour Sudoku et Gomoku.

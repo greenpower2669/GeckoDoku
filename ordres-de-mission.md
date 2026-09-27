@@ -1053,3 +1053,7 @@ CI #191 : core compile ; seul le vieux contrat `2 modes` échoue. Test corrigé 
 
 <!-- GECKO-039-GOMOKU-UI-RED-2026-09-27 -->
 Core phase 3 validé CI #192. RED UI posé avant GomokuBoardView : gestes séparés, filtre jaune, difficulté et géométrie.
+
+
+<!-- GECKO-039-GOMOKU-UI-POLICIES-GREEN-2026-09-27 -->
+Policies tactiles/couleur/layout Gomoku posées après RED #193. Prochaine étape après GREEN : vue Android et câblage complet.

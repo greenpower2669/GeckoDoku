@@ -533,3 +533,12 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Implémenter policies UI.
 - [ ] Créer GomokuBoardView.
 - [ ] Câbler MainActivity.
+
+
+<!-- GECKO-039-GOMOKU-UI-POLICIES-GREEN-2026-09-27 -->
+- [x] GomokuGesturePolicy.
+- [x] GomokuYellowFilterPolicy.
+- [x] GomokuBoardLayoutPolicy.
+- [x] Difficulté settings Gomoku.
+- [ ] CI policies GREEN.
+- [ ] GomokuBoardView + MainActivity.

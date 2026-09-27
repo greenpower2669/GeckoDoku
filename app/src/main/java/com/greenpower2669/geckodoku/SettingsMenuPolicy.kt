@@ -21,8 +21,8 @@ class SettingsMenuPolicy {
         mode: GameMode
     ): List<SettingsEntry> =
         if (
-            mode ==
-                GameMode.SUDOKU
+            mode !=
+                GameMode.GECKODOKU
         ) {
             listOf(
                 SettingsEntry.GAME_MODE,
