@@ -146,3 +146,27 @@ Après #120 RED attendu, #121 GREEN policies et #122 GREEN runtime : versionCode
 <!-- GECKO-036-CI123-GREEN-2026-09-27 -->
 ## Preuve CI finale versionnée
 Run #123 : SUCCESS complet sur v0.10.14-dev (versionCode 25), avec tests, APK, AAB et artifact. Mission reste ouverte pour validation téléphone Fab.
+
+
+<!-- GECKO-036-FRAME-SERIAL-RED-2026-09-27 -->
+## Correctif urgent — intro/Prof figés après GECKO-036
+
+Retour téléphone :
+- Intro 1 peut rester figée après VIDEO_RENDERING_START.
+- ProfParle peut enchaîner VIDEO_RENDERING_START puis aucun VIDEO_FIRST_FRAME, jusqu'au timeout 900 ms.
+- Les animations Gecko sur une autre ChromaKeyVideoView continuent de fonctionner.
+
+Hypothèse confirmée par lecture du code :
+`armFirstFrameNotification()` remet actuellement `frameAvailable=false`.
+Cette écriture peut jeter la vraie frame déjà signalée par SurfaceTexture avant que le GL thread ne l'ait consommée, bloquant ensuite la production.
+
+Correction cible :
+- ne jamais effacer une frame disponible pour déterminer sa fraîcheur ;
+- consommer toutes les frames avec `updateTexImage()` ;
+- compter les callbacks `onFrameAvailable` avec un serial monotone ;
+- au moment d'armer, mémoriser le serial courant comme baseline ;
+- seule une frame consommée avec serial > baseline peut valider la première frame du playback courant ;
+- une frame stale <= baseline est consommée normalement mais ne valide rien ;
+- INTRO avec `revealOnFirstFrame=false` ne doit jamais armer le gate de première frame.
+
+RED ajouté avant production.

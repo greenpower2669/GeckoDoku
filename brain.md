@@ -712,3 +712,8 @@ v0.10.14-dev porte la continuité Prof.png→ProfParle, le rejet des frames rés
 <!-- GECKO-036-CI123-GREEN-2026-09-27 -->
 ## Preuve technique GECKO-036
 Run #123 GREEN complet pour v0.10.14-dev. Le contrat logiciel/build est validé ; le téléphone de Fab reste l'autorité finale pour continuité PNG→vidéo, disparition du -38 et affichage QUICK_TALK dans la bulle.
+
+
+<!-- GECKO-036-FRAME-SERIAL-RED-2026-09-27 -->
+## Garde-fou SurfaceTexture
+Une frame SurfaceTexture disponible ne doit jamais être supprimée en remettant un booléen de disponibilité à faux. La fraîcheur d'une frame doit être déterminée par identité/serial, tout en consommant toutes les frames reçues. Les intros hors gate ne doivent pas être soumises au mécanisme de première frame.

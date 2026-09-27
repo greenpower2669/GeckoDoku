@@ -288,3 +288,18 @@ Aucun ordre de mission actif actuellement.
 - [ ] Fab : confirmer les 100 phrases dans la bulle.
 - [ ] Fab : confirmer une seule voix QUICK_TALK par appui.
 - [ ] Fab : confirmer grille immuable.
+
+
+<!-- GECKO-036-FRAME-SERIAL-RED-2026-09-27 -->
+## GECKO-036 — serial de frame
+- [x] RED stale serial consommé mais non validant.
+- [x] RED serial suivant validant.
+- [x] RED ancienne génération rejetée.
+- [x] RED intro hors gate.
+- [ ] Vérifier RED CI.
+- [ ] Remplacer bool frameAvailable par compteur produit/consommé sûr.
+- [ ] Ne jamais clear une frame à l'armement.
+- [ ] Ne pas armer INTRO.
+- [ ] CI GREEN.
+- [ ] v0.10.15-dev.
+- [ ] Test téléphone Intro + Prof répété.

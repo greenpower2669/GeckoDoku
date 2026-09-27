@@ -912,3 +912,8 @@ Le renderer était armé dès PLAY_REQUEST et le log montrait parfois FIRST_FRAM
 <!-- GECKO-036-CI123-GREEN-2026-09-27 -->
 ## 2026-09-27 — #123 GREEN
 Candidate v0.10.14-dev : tests + APK + AAB + artifact réussis après correction continuité PNG, génération de frame et bulle QUICK_TALK.
+
+
+<!-- GECKO-036-FRAME-SERIAL-RED-2026-09-27 -->
+## 2026-09-27 — régression figée Intro/Prof
+v0.10.14-dev téléphone : INTRO et ProfParle peuvent recevoir VIDEO_RENDERING_START sans VIDEO_FIRST_FRAME. Pour ProfParle, plusieurs générations finissent en timeout 900 ms. Cause probable localisée : `armFirstFrameNotification()` force `frameAvailable=false`, créant une course où une vraie frame déjà signalée est perdue avant `updateTexImage()`.
