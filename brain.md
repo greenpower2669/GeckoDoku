@@ -2319,3 +2319,48 @@ SudokuBoardView retire également les 4dp internes : quadrillage réel jusqu'au 
 
 <!-- GECKO-038-GREEN-FULLWIDTH-LAYOUT-2026-09-27 -->
 MainActivity réserve désormais au Sudoku un carré égal à largeur écran - 6 px, left=3 px, avant les commandes. Le mode GeckoDoku retrouve son anchor weight=1 historique. Le pavé/Notes/Effacer permanents sont retirés : la palette long press garde ces fonctions ; Undo/Redo restent visibles en ligne compacte. Selector réduit de 66dp à 48dp.
+
+
+<!-- GECKO-038-CANDIDATE-0112-2026-09-27 -->
+# GECKO-038 — candidate 0.11.2-dev : pleine largeur, Prof joue, Gecko-repère
+
+Candidate : `0.11.2-dev`, versionCode `30`.
+
+## Grille / lisibilité
+- grille Sudoku prioritaire, largeur utile moins 3 px par côté ;
+- marge interne de la grille = 0 px ;
+- mini-candidats = petits chiffres noirs, indépendants du style principal ;
+- valeurs principales restent Classic / Gecko N/B / Gecko couleur ;
+- commandes permanentes compactées, saisie principale locale via appui long.
+
+## Prof Gecko
+- premier tap Prof : explique et montre la prochaine déduction sûre ;
+- second tap, si la même déduction est toujours valide : joue réellement le chiffre ;
+- appui long Prof : recalcule et joue directement la prochaine déduction sûre ;
+- coup Prof marqué `SudokuMoveOrigin.PROFESSOR` ;
+- coup Prof reste Undo/Redo ;
+- aucune attribution `CORRECT_MOVE` artificielle au joueur ;
+- pending invalidé par les mutations joueur / puzzle / mode ;
+- invariant Pierre ↔ bulle conservé.
+
+## Gecko-repère joueur
+Le joueur peut poser un petit gecko dans une case vide depuis la palette locale.
+Ce gecko signifie : « trop de possibilités / je reviendrai ici ».
+
+Contrat :
+- annotation pure, aucune valeur Sudoku ;
+- n'entre pas dans le solveur ;
+- peut coexister avec les mini-candidats noirs ;
+- s'affiche en filigrane derrière les candidats ;
+- utilise le PNG Gecko canonique ;
+- mouvement doux déphasé selon la case pour paraître vivant ;
+- si Animations = OFF, le gecko reste visible mais statique ;
+- Undo / Redo ;
+- Effacer retire aussi le repère ;
+- poser une vraie valeur retire automatiquement le repère ;
+- case given protégée.
+
+CI #171 = RED attendu du contrat marqueur.
+CI #172, #173, #174, #175 et #176 = GREEN successifs après moteur, rendu, câblage, test palette et respect du réglage Animations.
+
+Aucun merge main. Aucune release. Téléphone Fab = autorité finale.

@@ -949,3 +949,19 @@ BoardView inner margin=0px. QuickPalette: Value→VisualStyle ; Candidate→BLAC
 
 <!-- GECKO-038-GREEN-FULLWIDTH-LAYOUT-2026-09-27 -->
 SUDOKU → reserve boardAnchor(screenWidth-6, weight0) → overlay left3 square → selector48 → undo/redo40. GECKODOKU → boardAnchor height0 weight1 historique.
+
+
+<!-- GECKO-038-CANDIDATE-0112-2026-09-27 -->
+0.11.2-dev/code30
+├─ Grid: width useful - 6px, inner margin 0
+├─ Candidate: black mini numbers
+├─ Prof tap → Explain(pending)
+│   └─ tap again → Apply(PROFESSOR)
+├─ Prof long press → recompute → Apply(PROFESSOR)
+└─ Cell long press → QuickPalette
+    ├─ Value 1..9
+    ├─ Candidate 1..9
+    ├─ 🦎 Gecko marker
+    └─ Erase
+
+Gecko marker → engine annotation → Undo/Redo → overlay watermark → animated iff Animations ON.

@@ -226,3 +226,25 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [x] Undo/Redo compacts + selector48.
 - [ ] Câbler Prof tap/tap/longpress.
 - [ ] CI GREEN.
+
+
+<!-- GECKO-038-CANDIDATE-0112-2026-09-27 -->
+## Validation téléphone 0.11.2-dev
+- [x] Core grille pleine largeur GREEN.
+- [x] Mini-candidats noirs GREEN.
+- [x] Prof tap1 explique / tap2 joue GREEN.
+- [x] Prof long press joue direct GREEN.
+- [x] Provenance PROFESSOR + Undo/Redo GREEN.
+- [x] Gecko-repère joueur Undo/Redo GREEN.
+- [x] Gecko-repère animé si Animations ON, statique si OFF.
+- [x] Palette Repère / Effacer testée par policy.
+- [x] CI #176 GREEN complet.
+- [ ] CI candidate 0.11.2-dev GREEN.
+- [ ] Fab : vérifier marge grille ≈ 3 px par côté.
+- [ ] Fab : vérifier candidats noirs lisibles.
+- [ ] Fab : tester tap Prof puis retap.
+- [ ] Fab : tester long press Prof.
+- [ ] Fab : Undo après coup Prof.
+- [ ] Fab : poser / retirer petit gecko-repère.
+- [ ] Fab : vérifier son animation mignonne.
+- [ ] Fab : vérifier Animations OFF = repère statique.

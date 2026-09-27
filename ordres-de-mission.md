@@ -668,3 +668,7 @@ Vues GREEN prêtes. Dernier bloc fonctionnel : MainActivity.
 
 <!-- GECKO-038-GREEN-FULLWIDTH-LAYOUT-2026-09-27 -->
 Layout pleine largeur codé. Reste uniquement câblage comportement Prof puis CI.
+
+
+<!-- GECKO-038-CANDIDATE-0112-2026-09-27 -->
+STATUT : candidate `0.11.2-dev / code 30` préparée après CI #176 GREEN. Le gecko-repère demandé à la volée est maintenant intégré et documenté sans refaire la structure de mission. Geler les nouvelles fonctions jusqu'au test téléphone Fab. Aucun merge main / release sans GO explicite.

@@ -1338,3 +1338,19 @@ Quatrième bloc GREEN : alignement BoardView/Overlay sur marge interne zéro et 
 
 <!-- GECKO-038-GREEN-FULLWIDTH-LAYOUT-2026-09-27 -->
 Bloc layout GREEN : correction structurelle plutôt qu'overlay qui recouvre les boutons. La grille prend d'abord sa hauteur carrée pleine largeur, puis les contrôles compacts sont layoutés dessous.
+
+
+<!-- GECKO-038-CANDIDATE-0112-2026-09-27 -->
+## 2026-09-27 — candidate 0.11.2-dev
+
+Après le retour 0.11.1-dev (grille trop petite), la géométrie a été corrigée vers une grille quasi pleine largeur. Les candidats sont devenus noirs pour la lisibilité. Le Prof a reçu le contrat explique/joue et la provenance PROFESSOR.
+
+Ajout à la volée demandé par Fab : gecko-repère joueur, analogue fonctionnel d'une croix/pense-bête quand trop de possibilités restent ouvertes.
+- RED #171 attendu ;
+- #172 moteur marqueur GREEN ;
+- #173 rendu/palette animé GREEN ;
+- #174 Prof + marker MainActivity GREEN ;
+- #175 garde-fou footer palette GREEN ;
+- #176 respect du toggle Animations GREEN.
+
+Le gecko-repère ne participe jamais à la logique Sudoku.
