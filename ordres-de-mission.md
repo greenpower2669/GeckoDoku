@@ -244,3 +244,7 @@ Incident #150 classé contrat de test obsolète, pas régression runtime : les t
 
 <!-- GECKO-038-CANDIDATE-0110-2026-09-27 -->
 Candidate 0.11.0-dev préparée après GREEN #151. Ne pas ajouter de techniques Sudoku avant validation téléphone du rendu, des touches, du sélecteur et du mode historique.
+
+
+<!-- GECKO-038-SPRITE-CROP-2026-09-27 -->
+Les ajustements futurs de cadrage doivent modifier uniquement SudokuNumberSheetLayout ; ne jamais recadrer/réexporter les PNG canoniques.

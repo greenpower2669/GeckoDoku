@@ -375,6 +375,61 @@ object SudokuNumberSheetLayout {
         require(width > 0)
         require(height > 0)
 
+        if (!colored) {
+            val bounds =
+                NB_BOUNDS[digit]
+
+            val padX = .010f
+            val padY = .012f
+
+            return Rect(
+                (
+                    width *
+                        (
+                            bounds[0] -
+                                padX
+                            )
+                    ).toInt()
+                    .coerceIn(
+                        0,
+                        width - 1
+                    ),
+                (
+                    height *
+                        (
+                            bounds[1] -
+                                padY
+                            )
+                    ).toInt()
+                    .coerceIn(
+                        0,
+                        height - 1
+                    ),
+                (
+                    width *
+                        (
+                            bounds[2] +
+                                padX
+                            )
+                    ).toInt()
+                    .coerceIn(
+                        1,
+                        width
+                    ),
+                (
+                    height *
+                        (
+                            bounds[3] +
+                                padY
+                            )
+                    ).toInt()
+                    .coerceIn(
+                        1,
+                        height
+                    )
+            )
+        }
+
         val col =
             digit % 5
 
@@ -385,11 +440,7 @@ object SudokuNumberSheetLayout {
             width / 5f
 
         val usableHeight =
-            if (colored) {
-                height * .88f
-            } else {
-                height.toFloat()
-            }
+            height * .88f
 
         val rowHeight =
             usableHeight / 2f
@@ -401,28 +452,13 @@ object SudokuNumberSheetLayout {
             row * rowHeight
 
         val horizontalInset =
-            cardWidth *
-                if (colored) {
-                    .05f
-                } else {
-                    .025f
-                }
+            cardWidth * .05f
 
         val topInset =
-            rowHeight *
-                if (colored) {
-                    .025f
-                } else {
-                    .015f
-                }
+            rowHeight * .025f
 
         val bottomInset =
-            rowHeight *
-                if (colored) {
-                    .16f
-                } else {
-                    .02f
-                }
+            rowHeight * .25f
 
         return Rect(
             (
@@ -459,6 +495,21 @@ object SudokuNumberSheetLayout {
                     1,
                     height
                 )
+        )
+    }
+
+    private val NB_BOUNDS =
+        arrayOf(
+            floatArrayOf(.0260f, .0576f, .2012f, .4385f),
+            floatArrayOf(.2441f, .0566f, .3535f, .4541f),
+            floatArrayOf(.3939f, .0635f, .5677f, .4531f),
+            floatArrayOf(.5990f, .0596f, .7565f, .4521f),
+            floatArrayOf(.7799f, .0449f, .9564f, .4629f),
+            floatArrayOf(.0299f, .5117f, .1908f, .9189f),
+            floatArrayOf(.2233f, .5215f, .3874f, .9121f),
+            floatArrayOf(.4043f, .5195f, .5710f, .9307f),
+            floatArrayOf(.5924f, .5156f, .7682f, .9189f),
+            floatArrayOf(.8125f, .5264f, .9622f, .9141f)
         )
     }
 }

@@ -1279,3 +1279,7 @@ CI #150 confirme la compilation complète du câblage Sudoku. Seul l'ancien cont
 <!-- GECKO-038-CANDIDATE-0110-2026-09-27 -->
 ## GECKO-038 — candidate Sudoku 0.11.0-dev
 CI #151 GREEN sur le câblage complet. Candidate identifiée versionName 0.11.0-dev / versionCode 28. Le changement de mode restaure aussi la difficulté correspondant à la partie active. Aucune fusion main ni release.
+
+
+<!-- GECKO-038-SPRITE-CROP-2026-09-27 -->
+Les PNG restent intacts. Le renderer utilise des rectangles source : planche couleur = grille 5×2 avec exclusion de la bande de labels/logo ; planche NB = bornes normalisées par glyphe car les silhouettes ne sont pas centrées sur cinq colonnes strictement égales.

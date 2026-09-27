@@ -762,3 +762,9 @@ Aucune mission active.
 - [ ] Télécharger/tester APK téléphone.
 - [ ] Vérifier visuellement les trois rendus et les découpes des planches.
 - [ ] Vérifier aucune régression GeckoDoku.
+
+
+<!-- GECKO-038-SPRITE-CROP-2026-09-27 -->
+- [x] Vérification visuelle interne des découpes source NB/couleur.
+- [x] Corriger les rectangles source sans modifier les PNG.
+- [ ] Confirmer rendu sur écran téléphone réel.

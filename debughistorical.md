@@ -1122,3 +1122,7 @@ CI #150 : compilation Kotlin réussie, 77 tests exécutés, 1 échec de contrat 
 <!-- GECKO-038-CANDIDATE-0110-2026-09-27 -->
 ## 2026-09-27 — CI #151 GREEN et candidate 0.11.0-dev
 Le câblage MainActivity, le sélecteur 3 états, les assets canoniques, les contrôles Sudoku et le Prof passent tests/build APK/AAB. Version candidate portée à 0.11.0-dev code 28. Ajustement mineur : chaque mode restaure sa difficulté active lors de la bascule.
+
+
+<!-- GECKO-038-SPRITE-CROP-2026-09-27 -->
+Inspection visuelle des sources : découpe 5 colonnes égales sur NB coupait/contaminait notamment 3/4/7. Correction uniquement dans SudokuNumberSheetLayout. Planche couleur : bottom inset augmenté pour exclure les chiffres imprimés sous les geckos. Aucun octet asset modifié.
