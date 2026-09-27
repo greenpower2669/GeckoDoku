@@ -21,6 +21,12 @@ class SudokuGameEngine(
             SudokuPuzzle.CELL_COUNT
         )
 
+    private var customMarkers =
+        linkedMapOf<
+            Int,
+            CustomMarker
+        >()
+
     private val givenMask =
         BooleanArray(
             SudokuPuzzle.CELL_COUNT
@@ -57,7 +63,17 @@ class SudokuGameEngine(
                     puzzle.solution
                 ),
             lastMoveOrigin =
-                lastMoveOrigin
+                lastMoveOrigin,
+            customMarkers =
+                customMarkers.mapKeys {
+                    (index, _) ->
+                    Cell(
+                        index /
+                            SudokuPuzzle.SIZE,
+                        index %
+                            SudokuPuzzle.SIZE
+                    )
+                }
         )
 
     fun enterDigit(
@@ -116,6 +132,7 @@ class SudokuGameEngine(
         values[index] = digit
         notes[index].clear()
         geckoMarkers[index] = false
+        customMarkers.remove(index)
         lastMoveOrigin =
             origin
         removePeerNote(
@@ -164,6 +181,51 @@ class SudokuGameEngine(
             .MARKER_TOGGLED
     }
 
+    fun setCustomMarker(
+        cell: Cell,
+        marker: CustomMarker?
+    ): SudokuActionFeedback {
+        val index =
+            puzzle.indexOf(cell)
+
+        if (givenMask[index]) {
+            return SudokuActionFeedback
+                .GIVEN_LOCKED
+        }
+
+        if (values[index] != 0) {
+            return SudokuActionFeedback
+                .NOTHING_CHANGED
+        }
+
+        if (
+            customMarkers[index] ==
+                marker
+        ) {
+            return SudokuActionFeedback
+                .NOTHING_CHANGED
+        }
+
+        pushUndo()
+
+        if (marker == null) {
+            customMarkers.remove(index)
+            lastMoveOrigin =
+                SudokuMoveOrigin.PLAYER
+
+            return SudokuActionFeedback
+                .PERSONAL_MARKER_CLEARED
+        }
+
+        customMarkers[index] =
+            marker
+        lastMoveOrigin =
+            SudokuMoveOrigin.PLAYER
+
+        return SudokuActionFeedback
+            .PERSONAL_MARKER_SET
+    }
+
     fun erase(
         cell: Cell
     ): SudokuActionFeedback {
@@ -178,7 +240,9 @@ class SudokuGameEngine(
         if (
             values[index] == 0 &&
             notes[index].isEmpty() &&
-            !geckoMarkers[index]
+            !geckoMarkers[index] &&
+            !customMarkers
+                .containsKey(index)
         ) {
             return SudokuActionFeedback
                 .NOTHING_CHANGED
@@ -188,6 +252,7 @@ class SudokuGameEngine(
         values[index] = 0
         notes[index].clear()
         geckoMarkers[index] = false
+        customMarkers.remove(index)
         lastMoveOrigin =
             SudokuMoveOrigin.PLAYER
 
@@ -255,6 +320,8 @@ class SudokuGameEngine(
                 },
             geckoMarkers =
                 geckoMarkers.copyOf(),
+            customMarkers =
+                customMarkers.toMap(),
             lastMoveOrigin =
                 lastMoveOrigin
         )
@@ -272,6 +339,14 @@ class SudokuGameEngine(
 
         geckoMarkers =
             state.geckoMarkers.copyOf()
+
+        customMarkers =
+            linkedMapOf<Int, CustomMarker>()
+                .apply {
+                    putAll(
+                        state.customMarkers
+                    )
+                }
 
         lastMoveOrigin =
             state.lastMoveOrigin
@@ -324,6 +399,8 @@ class SudokuGameEngine(
         val values: IntArray,
         val notes: List<Set<Int>>,
         val geckoMarkers: BooleanArray,
+        val customMarkers:
+            Map<Int, CustomMarker>,
         val lastMoveOrigin:
             SudokuMoveOrigin?
     )

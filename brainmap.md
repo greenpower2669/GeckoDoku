@@ -1101,3 +1101,7 @@ SUDOKU RED → GesturePolicy + custom marker state + AppTitlePolicy + SudokuReas
 
 <!-- GECKO-039-PHASE2-MODELS-2026-09-27 -->
 Sudoku gestures → intent policy. ReasoningTrace → steps/eliminations. App title → mode independent.
+
+
+<!-- GECKO-039-PHASE2-ENGINE-TRACE-2026-09-27 -->
+Engine customMarkers ↔ Undo/Redo. HintEngine → conflictFor(row/col/box) → grouped eliminations → ordered ReasoningTrace.

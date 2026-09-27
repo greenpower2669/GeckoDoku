@@ -2618,3 +2618,7 @@ Phase 2 Sudoku RED : repères personnels persistants/Undo, double tap distinct d
 
 <!-- GECKO-039-PHASE2-MODELS-2026-09-27 -->
 Phase 2 modèles : GesturePolicy explicite, AppTitlePolicy invariant, structures SudokuReasoningTrace/Step/Elimination, et Snapshot préparé pour les repères personnels.
+
+
+<!-- GECKO-039-PHASE2-ENGINE-TRACE-2026-09-27 -->
+SudokuGameEngine stocke désormais les CustomMarker visuels dans l'historique Undo/Redo et les efface lorsqu'une vraie valeur est posée. SudokuHintEngine construit une ReasoningTrace à partir des conflits réels ligne/colonne/bloc pour les techniques déjà implémentées.

@@ -461,3 +461,11 @@ STATUT : spécification prête, code non lancé dans cette intervention.
 - [ ] Moteur repères personnels.
 - [ ] HintEngine produit ReasoningTrace.
 - [ ] UI Phase 2.
+
+
+<!-- GECKO-039-PHASE2-ENGINE-TRACE-2026-09-27 -->
+- [x] Moteur repères personnels.
+- [x] HintEngine ReasoningTrace réelle.
+- [ ] UI double tap/rendu repères.
+- [ ] UI projection/speech sequence.
+- [ ] Animation Classic sur Gecko-repère.

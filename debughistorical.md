@@ -1487,3 +1487,8 @@ Contrats posés après Phase 1 #182 GREEN.
 <!-- GECKO-039-PHASE2-MODELS-2026-09-27 -->
 ## Phase 2 modèles
 Modèles/policies ajoutés avant câblage moteur/UI.
+
+
+<!-- GECKO-039-PHASE2-ENGINE-TRACE-2026-09-27 -->
+## Phase 2 moteur/trace
+Le texte détaillé est désormais dérivable des mêmes contraintes structurées que le futur overlay graphique.
