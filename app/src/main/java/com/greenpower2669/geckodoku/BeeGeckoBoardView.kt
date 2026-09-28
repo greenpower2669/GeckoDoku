@@ -1405,8 +1405,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     content =
                         worldBounds,
                     preferredMinScale =
-                        BeeGeckoViewportPolicy
-                            .MIN_SCALE
+                        minimumScale()
                 )
 
         initializedCamera = true

@@ -57,3 +57,6 @@ Le drag/zoom agit désormais par rapport au carré. Les événements ACTION_DOWN
 Le média Bee reste dans l'overlay global pour préserver l'architecture vidéo existante. Pour empêcher tout débordement, sa cible dynamique est réduite à 50 % puis désactivée si elle franchit le carré.
 
 État : code préparé, CI non encore exécutée.
+### GECKO-045 — prévention saut premier pinch
+
+Audit statique post-commit : `centered()` appliquait un fit à 92 % alors que la borne de zoom utilisait le fit complet. Correction avant validation téléphone : le centrage reçoit directement `minimumScale()` comme minimum.

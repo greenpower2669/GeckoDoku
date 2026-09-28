@@ -99,3 +99,6 @@ Animation Bee
 → réduction 50 %
 → vérification `viewport.contains(reducedRect)`
 → sinon null / vidéo masquée.
+### Caméra
+
+`minimumScale(viewport)` → source commune pour centrage initial et limite zoom-out. Pas de seuil différent entre ouverture et pinch.

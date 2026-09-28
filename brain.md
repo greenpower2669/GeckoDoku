@@ -66,3 +66,6 @@ Architecture choisie : viewport carré **interne** à `BeeGeckoBoardView`, plut�
 `BeeGeckoVisualPolicy.BEE_SCALE = 0.50f` devient la source unique de la réduction Abeille. Le sprite statique et la cible vidéo l'utilisent tous deux.
 
 Pour éviter qu'une vidéo Bee déborde du carré alors qu'elle vit dans `RichMediaOverlayView`, son target dynamique devient nul dès que le rectangle réduit n'est plus entièrement contenu dans le viewport : la vidéo est alors cachée au bord au lieu de déborder sur le HUD.
+### GECKO-045 — cohérence du scale initial
+
+`BeeGeckoBoardView.ensureCamera()` utilise désormais `minimumScale()` comme minimum du centrage initial. Le premier pinch ne doit donc plus provoquer de saut entre le scale de départ et la borne minimale.

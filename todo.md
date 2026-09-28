@@ -48,3 +48,4 @@
 - [ ] CI GREEN ;
 - [ ] publier APK téléphone 0.15.2 ;
 - [ ] Fab valide taille Bee et navigation interne.
+- [x] aligner scale initial et zoom minimum pour supprimer le saut au premier pinch ;

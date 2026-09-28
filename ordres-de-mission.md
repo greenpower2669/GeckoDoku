@@ -335,3 +335,6 @@ Choix d'architecture appliqué : **viewport carré interne réel dans `BeeGeckoB
 - keycolor VERT inchangé.
 
 Ne pas déclarer la mission terminée avant CI + validation téléphone Fab.
+### Ajustement caméra GECKO-045
+
+Le scale initial doit utiliser le même `minimumScale()` que la borne de pinch afin d'éviter tout saut de zoom au premier geste. Cette règle fait partie du critère « navigation fluide ».
