@@ -97,3 +97,30 @@ jobs:
             --title "GeckoDoku ${APP_VERSION} • test téléphone" \
             --notes "APK téléphone de test construit automatiquement depuis ${GITHUB_SHA}. Variante phone non débogable, signée avec la clé de test Android ; ne pas utiliser comme signature Google Play." \
             --prerelease
+
+      - name: Promote validated phone release
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[phone-publish]')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          PREFIX="phone-${APP_VERSION}-run-"
+          TAG="$(
+            gh release list \
+              --repo "${GITHUB_REPOSITORY}" \
+              --limit 100 \
+              --json tagName,isPrerelease,publishedAt \
+            | jq -r --arg prefix "$PREFIX" \
+                '.[] | select(.isPrerelease == true and (.tagName | startswith($prefix))) | .tagName' \
+            | head -n 1
+          )"
+
+          test -n "$TAG"
+
+          gh release edit "$TAG" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --prerelease=false \
+            --latest \
+            --title "GeckoDoku ${APP_VERSION} • téléphone validé" \
+            --notes "APK téléphone validé. Variante phone non débogable, signée avec la clé de test Android ; ne pas utiliser comme signature Google Play."
