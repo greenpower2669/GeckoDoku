@@ -1,52 +1,42 @@
 # GeckoDoku — TODO actif
 
-## GECKO-047
-- [x] axes validés Fab ;
-- [x] audio validé Fab ;
-- [x] mission close.
+> Seulement le travail encore utile. Les commandes de Fab restent dans ordres-de-mission.md.
 
-## GECKO-048
+## GECKO-048 — prononciation Pierre + couleurs d’axes
 
-### Pierre
-- [x] créer PierrePronunciationPolicy ;
-- [x] église → eglize ;
-- [x] appliquer uniquement avant Piper ;
-- [x] préserver texte UI ;
-- [x] tests prononciation.
-
-### Axes Classic
+### Réalisé
+- [x] PierrePronunciationPolicy dédiée au bord Piper ;
+- [x] église → eglize pour la voix ;
+- [x] texte UI préservé ;
+- [x] tests de prononciation ;
 - [x] AxisGuideColor jaune / vert / rouge ;
 - [x] ClassicAxisGuide porte la couleur ;
-- [x] rendu couleur semi-transparente ;
-- [x] drag conserve couleur ;
-- [x] remplacement couleur sur même axe.
+- [x] rendu semi-transparent ;
+- [x] drag Classic conserve la couleur ;
+- [x] Bee axisColors + rendu + drag ;
+- [x] popup couleur après choix d’axe ;
+- [x] Bee session schema 4 ;
+- [x] anciennes données Bee sans couleur → rouge ;
+- [x] correction CI #229 ;
+- [x] CI branche verte : run #232, 28/09/2026 ;
+- [x] artefact CI : GeckoDoku-v0.15.5-dev-phone, artifact 10984668170.
 
-### Axes GeckoBee
-- [x] axisColors ajouté aux LogicalMarks ;
-- [x] rendu jaune / vert / rouge ;
-- [x] drag conserve couleur ;
-- [x] popup couleur après axe ;
-- [x] persistance schema 4 ;
-- [x] compat anciennes sauvegardes → rouge.
+### Reste
+- [ ] validation téléphone Fab : Pierre prononce correctement église ;
+- [ ] validation téléphone Fab : affichage reste église ;
+- [ ] validation téléphone Fab : jaune / vert / rouge visibles ;
+- [ ] validation téléphone Fab : drag conserve la couleur ;
+- [ ] validation téléphone Fab : session Bee restaure la couleur ;
+- [ ] validation téléphone Fab : audio et axes GECKO-047 sans régression ;
+- [ ] après validation : clore GECKO-048 et produire une release téléphone directe si demandée.
 
-### Livraison
-- [ ] commit code + 5 fichiers vivants ;
-- [ ] CI GREEN ;
-- [ ] APK téléphone 0.15.5-dev ;
-- [ ] validation Fab prononciation + couleurs.
-### GECKO-048 — correctif CI
-- [x] identifier échec CI #229 ;
-- [x] corriger argument couleur manquant pendant drag Classic ;
-- [ ] CI suivante GREEN ;
-- [ ] APK téléphone 0.15.5-dev ;
-- [ ] validation Fab prononciation « église » et couleurs d'axes.
+## GECKO-MEM-001 — restructuration des mémoires
 
-
-## GECKO-MEM-001 — Préparation restructuration des mémoires
-- [x] créer `sauvegarde.md` comme snapshot froid avant restructuration — commit `fd230d996adc0f3083ab25d1dbc4e583aaebd6de` ;
-- [x] ne pas modifier `brain.md` ni `brainmap.md` pendant le snapshot ;
-- [x] créer une documentation fonctionnelle détaillée de l'état actuel avant restructuration ;
-- [ ] relire avec Fab la structure cible de `brain.md` ;
-- [ ] relire avec Fab la structure cible de `brainmap.md` ;
-- [ ] seulement après validation de Fab : restructurer les mémoires actives ;
-- [ ] délester l'ancien `debughistorical.md` vers `sauvegarde.md` en gardant le récent/utile.
+- [x] snapshot froid sauvegarde.md — commit fd230d996adc0f3083ab25d1dbc4e583aaebd6de ;
+- [x] documentation détaillée docs/GECKODOKU-FONCTIONNEMENT.md ;
+- [x] structure discutée avec Fab : documentation → brain compact → brainmap cartographique ;
+- [x] brain.md restructuré depuis la documentation ;
+- [x] brainmap.md restructuré avec organigrammes ;
+- [x] debughistorical.md condensé ;
+- [x] sauvegarde.md laissé intact ;
+- [ ] validation Fab de la nouvelle lecture Brain / Brainmap.

@@ -1,40 +1,52 @@
-# GeckoDoku — debug historical condensé
+# GeckoDoku — debughistorical actif
 
-## GECKO-047
-Validé par Fab le 2026-09-28 :
-- axes parfaits ;
-- audio parfait ;
-- mission close.
+> Historique court utile au diagnostic courant.
+> L’état complet avant restructuration est dans sauvegarde.md, archive froide à ne pas lire par défaut.
 
-Cause audio historique :
-Pierre passait par AudioTrack ACCESSIBILITY.
-Corrigé en MEDIA + SPEECH + ALLOW_CAPTURE_BY_ALL.
-Les vidéos muted désélectionnent leurs pistes audio.
+## GECKO-047 — Pierre non capturable — CLOS / VALIDÉ
 
-## GECKO-048
+Symptôme :
+Pierre pouvait être audible localement mais absent d’une capture configurée sur les sons multimédia.
 
-Retour Fab :
-- conserver totalement les axes actuels ;
-- ajouter choix de couleur jaune / vert / rouge après choix axe ;
-- améliorer Pierre : « église » doit être envoyé au moteur comme « eglize ».
+Cause démontrée :
+le PCM de Pierre utilisait un AudioTrack classé ACCESSIBILITY.
 
-Choix d’architecture :
-- correction prononciation uniquement au bord Piper ;
-- UI non modifiée ;
-- enum AxisGuideColor partagé ;
-- ClassicAxisGuide porte sa couleur ;
-- GeckoBee conserve excludedAxes et ajoute axisColors pour compatibilité ;
-- Bee session passe schema 4 avec lecture schema 2/3 conservée.
+Correction :
+- usage MEDIA ;
+- contenu SPEECH ;
+- capture autorisée ;
+- manifeste compatible capture ;
+- vidéos muted sans piste audio fantôme.
 
-Version cible :
-0.15.5-dev / versionCode 40.
-## GECKO-048 — CI #229
+Preuve :
+Fab a validé sur téléphone le 28/09/2026 l’audio capturable, Pierre dans la capture et les axes GECKO-047.
 
-Échec de compilation, pas un défaut fonctionnel :
-`GeckoBoardView.kt:309` → argument `color` manquant.
+Ne rouvrir que sur régression.
 
-Origine :
-migration de `ClassicAxisGuide` vers un guide coloré, un appel ACTION_MOVE resté sur l'ancienne signature.
+## GECKO-048 — CI #229 — CLOS
 
-Correction appliquée :
-`active.color` transmis dans ACTION_MOVE.
+Symptôme :
+échec compilation Kotlin dans GeckoBoardView après ajout des couleurs d’axes.
+
+Cause :
+guideAtPointer demandait désormais color mais ACTION_MOVE utilisait encore l’ancienne signature.
+
+Correction :
+ACTION_MOVE et ACTION_UP propagent active.color.
+
+Preuve :
+les CI suivantes de la branche sont vertes.
+
+## GECKO-048 — validation appareil encore ouverte
+
+Ce n’est pas un bug confirmé.
+
+À valider :
+- prononciation réelle de église via eglize ;
+- UI restant église ;
+- rendu jaune/vert/rouge ;
+- couleur conservée au drag ;
+- restauration couleur Bee ;
+- non-régression capture audio.
+
+Le reste vit dans todo.md.
