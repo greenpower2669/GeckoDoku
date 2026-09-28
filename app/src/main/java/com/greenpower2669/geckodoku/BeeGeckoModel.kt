@@ -240,6 +240,21 @@ data class BeeGeckoSnapshot(
     val confirmedGeckos: Set<HexCoord>,
     val confirmedBees: Set<HexCoord>,
     val manualCrosses: Set<HexCoord>,
+    val crossStates:
+        Map<
+            HexCoord,
+            BeeGeckoCrossState
+            > =
+        manualCrosses.associateWith {
+            BeeGeckoCrossState
+                .IMPOSSIBLE
+        },
+    val logicalMarkers:
+        Map<
+            HexCoord,
+            BeeGeckoLogicalMarks
+            > =
+        emptyMap(),
     val markers:
         Map<HexCoord, CustomMarker>,
     val mistakes: Int,
@@ -302,6 +317,18 @@ class BeeGeckoGameEngine(
     initialCrosses:
         Set<HexCoord> =
         emptySet(),
+    initialCrossStates:
+        Map<
+            HexCoord,
+            BeeGeckoCrossState
+            > =
+        emptyMap(),
+    initialLogicalMarkers:
+        Map<
+            HexCoord,
+            BeeGeckoLogicalMarks
+            > =
+        emptyMap(),
     initialMarkers:
         Map<HexCoord, CustomMarker> =
         emptyMap(),
@@ -338,17 +365,72 @@ class BeeGeckoGameEngine(
                 )
             }
 
-    private val manualCrosses =
-        linkedSetOf<HexCoord>()
+    private val crossStates =
+        linkedMapOf<
+            HexCoord,
+            BeeGeckoCrossState
+            >()
             .apply {
-                addAll(
-                    initialCrosses
-                        .filter {
-                            puzzle.contains(it) &&
-                                it !in confirmedGeckos &&
-                                it !in confirmedBees
-                        }
-                )
+                initialCrosses
+                    .filter {
+                        puzzle.contains(it) &&
+                            it !in confirmedGeckos &&
+                            it !in confirmedBees
+                    }
+                    .forEach {
+                        put(
+                            it,
+                            BeeGeckoCrossState
+                                .IMPOSSIBLE
+                        )
+                    }
+
+                initialCrossStates
+                    .filterKeys {
+                        puzzle.contains(it) &&
+                            it !in confirmedGeckos &&
+                            it !in confirmedBees
+                    }
+                    .forEach {
+                        (cell, state) ->
+                        put(
+                            cell,
+                            state
+                        )
+                    }
+            }
+
+    private val manualCrosses:
+        Set<HexCoord>
+        get() =
+            crossStates
+                .filterValues {
+                    it !=
+                        BeeGeckoCrossState
+                            .HYPOTHESIS
+                }
+                .keys
+
+    private val logicalMarkers =
+        linkedMapOf<
+            HexCoord,
+            BeeGeckoLogicalMarks
+            >()
+            .apply {
+                initialLogicalMarkers
+                    .filterKeys {
+                        puzzle.contains(it)
+                    }
+                    .filterValues {
+                        !it.isEmpty
+                    }
+                    .forEach {
+                        (cell, value) ->
+                        put(
+                            cell,
+                            value
+                        )
+                    }
             }
 
     private val markers =
@@ -388,6 +470,12 @@ class BeeGeckoGameEngine(
             manualCrosses =
                 manualCrosses
                     .toSet(),
+            crossStates =
+                crossStates
+                    .toMap(),
+            logicalMarkers =
+                logicalMarkers
+                    .toMap(),
             markers =
                 markers.toMap(),
             mistakes =
@@ -423,20 +511,129 @@ class BeeGeckoGameEngine(
                 .CROSS_BLOCKED
         }
 
-        return if (
-            manualCrosses.remove(
-                cell
-            )
+        val current =
+            crossStates[cell]
+
+        val next =
+            current
+                ?.next()
+                ?: BeeGeckoCrossState
+                    .HYPOTHESIS
+
+        if (current ==
+            BeeGeckoCrossState
+                .IMPOSSIBLE
         ) {
-            BeeGeckoActionFeedback
-                .CROSS_REMOVED
-        } else {
-            manualCrosses.add(
+            crossStates.remove(
                 cell
             )
-            BeeGeckoActionFeedback
-                .CROSS_SET
+
+            return BeeGeckoActionFeedback
+                .CROSS_REMOVED
         }
+
+        crossStates[cell] =
+            next
+
+        return BeeGeckoActionFeedback
+            .CROSS_SET
+    }
+
+    fun setCrossState(
+        cell: HexCoord,
+        state:
+            BeeGeckoCrossState?
+    ): BeeGeckoActionFeedback {
+        if (
+            !puzzle.contains(cell) ||
+            cell in confirmedGeckos ||
+            cell in confirmedBees
+        ) {
+            return BeeGeckoActionFeedback
+                .CROSS_BLOCKED
+        }
+
+        if (state == null) {
+            crossStates.remove(cell)
+
+            return BeeGeckoActionFeedback
+                .CROSS_REMOVED
+        }
+
+        crossStates[cell] = state
+
+        return BeeGeckoActionFeedback
+            .CROSS_SET
+    }
+
+    fun toggleLogicalPieceMarker(
+        cell: HexCoord,
+        piece: BeeGeckoPiece
+    ): BeeGeckoActionFeedback {
+        if (!puzzle.contains(cell)) {
+            return BeeGeckoActionFeedback
+                .CROSS_BLOCKED
+        }
+
+        val current =
+            logicalMarkers[cell]
+                ?: BeeGeckoLogicalMarks()
+
+        val next =
+            if (
+                piece ==
+                    BeeGeckoPiece.GECKO
+            ) {
+                current.toggleGecko()
+            } else {
+                current.toggleBee()
+            }
+
+        if (next.isEmpty) {
+            logicalMarkers.remove(cell)
+        } else {
+            logicalMarkers[cell] =
+                next
+        }
+
+        return BeeGeckoActionFeedback
+            .MARKER_SET
+    }
+
+    fun toggleAxisMarker(
+        cell: HexCoord,
+        axis: HexAxis
+    ): BeeGeckoActionFeedback {
+        if (!puzzle.contains(cell)) {
+            return BeeGeckoActionFeedback
+                .CROSS_BLOCKED
+        }
+
+        val current =
+            logicalMarkers[cell]
+                ?: BeeGeckoLogicalMarks()
+
+        val next =
+            current.toggleAxis(axis)
+
+        if (next.isEmpty) {
+            logicalMarkers.remove(cell)
+        } else {
+            logicalMarkers[cell] =
+                next
+        }
+
+        return BeeGeckoActionFeedback
+            .MARKER_SET
+    }
+
+    fun clearLogicalMarkers(
+        cell: HexCoord
+    ): BeeGeckoActionFeedback {
+        logicalMarkers.remove(cell)
+
+        return BeeGeckoActionFeedback
+            .MARKER_CLEARED
     }
 
     fun placePiece(
@@ -480,9 +677,9 @@ class BeeGeckoGameEngine(
             confirmedBees.remove(
                 cell
             )
-            manualCrosses.add(
-                cell
-            )
+            crossStates[cell] =
+                BeeGeckoCrossState
+                    .IMPOSSIBLE
 
             return BeeGeckoActionFeedback
                 .WRONG_PIECE
@@ -494,7 +691,7 @@ class BeeGeckoGameEngine(
         confirmedBees.remove(
             cell
         )
-        manualCrosses.remove(
+        crossStates.remove(
             cell
         )
 
@@ -590,9 +787,9 @@ class BeeGeckoGameEngine(
                         confirmedBees &&
                     puzzle.contains(cell)
                 ) {
-                    manualCrosses.add(
-                        cell
-                    )
+                    crossStates[cell] =
+                        BeeGeckoCrossState
+                            .CONFIRMED
                 }
             }
 
@@ -605,7 +802,7 @@ class BeeGeckoGameEngine(
                     confirmedGeckos.add(
                         it
                     )
-                    manualCrosses.remove(
+                    crossStates.remove(
                         it
                     )
                     changed = true
@@ -621,7 +818,7 @@ class BeeGeckoGameEngine(
                     confirmedBees.add(
                         it
                     )
-                    manualCrosses.remove(
+                    crossStates.remove(
                         it
                     )
                     changed = true
@@ -681,7 +878,19 @@ data class BeeGeckoHint(
         Set<HexCoord>,
     val green:
         Set<HexCoord>,
-    val message: String
+    val message: String,
+    val logicalMarkers:
+        Map<
+            HexCoord,
+            BeeGeckoLogicalMarks
+            > =
+        emptyMap(),
+    val crossStates:
+        Map<
+            HexCoord,
+            BeeGeckoCrossState
+            > =
+        emptyMap()
 )
 
 data class BeeGeckoDifficultyReport(
@@ -873,6 +1082,13 @@ object BeeGeckoSolver {
                     }
             }
 
+        val professorVisuals =
+            BeeGeckoProfessorMarkerPolicy
+                .forStep(
+                    snapshot,
+                    step
+                )
+
         return BeeGeckoHint(
             step = step,
             blue =
@@ -885,7 +1101,13 @@ object BeeGeckoSolver {
             green =
                 green,
             message =
-                step.explanation
+                step.explanation,
+            logicalMarkers =
+                professorVisuals
+                    .markers,
+            crossStates =
+                professorVisuals
+                    .crosses
         )
     }
 

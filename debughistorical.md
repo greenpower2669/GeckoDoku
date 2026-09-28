@@ -31,3 +31,21 @@ Retour Fab :
 - remplacer dans Classic et GeckoBeeDoku le cercle noir de départage par un nuage de fumée / brouillard transparent animé.
 
 État : mission documentée avant code, conformément à la demande Fab.
+## GECKO-046 — code préparé
+
+Le système précédent Bee utilisait :
+- un Set binaire de croix ;
+- des CustomMarker génériques ;
+- un anneau sombre autour des givens ;
+- une célébration visuelle Bee sans démarrage explicite de la musique Classic.
+
+La passe 0.15.3 remplace / étend ces points sans toucher aux règles du puzzle.
+
+Décision importante :
+- croix jaune = note personnelle, ne ferme pas une possibilité pour le solveur ;
+- croix verte / rouge = exclusion logique effective.
+Cela évite qu'une simple hypothèse du joueur modifie silencieusement le raisonnement du solveur.
+
+Le brouillard est rendu procéduralement dans le Canvas afin d'éviter un nouvel asset lourd et de partager la métaphore entre Classic et GeckoBeeDoku.
+
+État : code prêt à commit, CI pas encore exécutée.

@@ -355,3 +355,26 @@ Le joueur doit pouvoir poser exactement les mêmes types d'indices que ceux qu'i
 Et lors de la victoire :
 
 **tout le plateau prend vie.**
+---
+
+## GECKO-046 — implémentation 0.15.3-dev
+
+Version cible : **0.15.3-dev** / versionCode **38**.
+
+Implémenté dans la passe en cours :
+
+- palette logique enrichie sur double clic ;
+- repère Gecko vert ;
+- repère Abeille jaune, décalé du centre ;
+- barres d'exclusion pour les trois axes hexagonaux ;
+- croix à trois états : jaune → vert → rouge → aucune ;
+- le solveur/Prof produit les mêmes structures visuelles que le joueur ;
+- sauvegarde des cross states et des nouveaux repères logiques ;
+- migration de session Bee schema 2 → 3 ;
+- musique de victoire Classic réutilisée pour GeckoBeeDoku ;
+- animation de victoire légère sur toutes les pièces Gecko/Abeille ;
+- animation de victoire ajoutée aux Geckos Classic ;
+- cercle de départ remplacé par un brouillard animé transparent dans Classic et GeckoBeeDoku ;
+- tests unitaires des nouveaux marqueurs / croix / brouillard.
+
+Ne pas déclarer la mission terminée avant CI GREEN et test téléphone Fab.

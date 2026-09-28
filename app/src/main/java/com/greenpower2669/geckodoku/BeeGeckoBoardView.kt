@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
@@ -129,6 +130,12 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     private var professorHint:
         BeeGeckoHint? = null
 
+    private var victoryStartedAt =
+        0L
+
+    private var victoryRunning =
+        false
+
     private val scaleDetector =
         ScaleGestureDetector(
             context,
@@ -209,6 +216,8 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             restoredCamera != null
 
         professorHint = null
+        victoryRunning = false
+        victoryStartedAt = 0L
         cancelPendingSingleTap()
         cancelPendingLongPress()
 
@@ -225,6 +234,15 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     fun currentCamera():
         BeeGeckoCamera =
         camera
+
+    fun startVictoryAnimation() {
+        victoryStartedAt =
+            SystemClock
+                .uptimeMillis()
+
+        victoryRunning = true
+        invalidate()
+    }
 
     fun showProfessorHint(
         hint: BeeGeckoHint
@@ -516,6 +534,32 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             viewport.bottom,
             viewportPaint
         )
+
+        if (victoryRunning) {
+            val elapsed =
+                SystemClock
+                    .uptimeMillis() -
+                    victoryStartedAt
+
+            if (elapsed <
+                VICTORY_DURATION_MS
+            ) {
+                postInvalidateOnAnimation()
+            } else {
+                victoryRunning = false
+            }
+        }
+
+        if (
+            snapshot.puzzle
+                .givenGeckos
+                .isNotEmpty() ||
+            snapshot.puzzle
+                .givenBees
+                .isNotEmpty()
+        ) {
+            postInvalidateOnAnimation()
+        }
     }
 
     private fun drawRegionsAndGrid(
@@ -650,10 +694,16 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     1f
                 }
 
+            val victoryScale =
+                victoryScaleFor(
+                    cell
+                )
+
             val radius =
                 baseRadius *
                     .61f *
-                    pieceScale
+                    pieceScale *
+                    victoryScale
 
             val target =
                 RectF(
@@ -751,24 +801,24 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     cell
                 )
             ) {
-                paint.style =
-                    Paint.Style.STROKE
-                paint.strokeWidth =
-                    dp(3f) /
-                        camera.scale
-                paint.color =
-                    Color.rgb(
-                        35,
-                        35,
-                        35
-                    )
-
-                canvas.drawCircle(
-                    center.first,
-                    center.second,
-                    radius *
-                        .77f,
-                    paint
+                drawGivenFog(
+                    canvas =
+                        canvas,
+                    centerX =
+                        center.first,
+                    centerY =
+                        center.second,
+                    radius =
+                        maxOf(
+                            radius,
+                            baseRadius *
+                                .32f
+                        ),
+                    seed =
+                        cell.q *
+                            31 +
+                            cell.r *
+                                17
                 )
             }
         }
@@ -778,24 +828,36 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         canvas: Canvas,
         snapshot: BeeGeckoSnapshot
     ) {
-        paint.style =
-            Paint.Style.STROKE
-        paint.strokeCap =
-            Paint.Cap.ROUND
-        paint.strokeWidth =
-            dp(3f) /
-                camera.scale
-        paint.color =
-            Color.rgb(
-                170,
-                40,
-                40
-            )
+        val states =
+            if (
+                snapshot.crossStates
+                    .isNotEmpty()
+            ) {
+                snapshot.crossStates
+            } else {
+                snapshot.manualCrosses
+                    .associateWith {
+                        BeeGeckoCrossState
+                            .IMPOSSIBLE
+                    }
+            }
 
-        for (
-            cell in
-            snapshot.manualCrosses
-        ) {
+        drawCrossStates(
+            canvas,
+            states
+        )
+    }
+
+    private fun drawCrossStates(
+        canvas: Canvas,
+        states:
+            Map<
+                HexCoord,
+                BeeGeckoCrossState
+                >
+    ) {
+        states.forEach {
+            (cell, state) ->
             val center =
                 cellCenter(cell)
 
@@ -803,6 +865,73 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 baseRadius *
                     .31f
 
+            paint.style =
+                Paint.Style.STROKE
+            paint.strokeCap =
+                Paint.Cap.ROUND
+            paint.pathEffect =
+                when (state) {
+                    BeeGeckoCrossState
+                        .HYPOTHESIS ->
+                        DashPathEffect(
+                            floatArrayOf(
+                                baseRadius *
+                                    .15f,
+                                baseRadius *
+                                    .09f
+                            ),
+                            0f
+                        )
+
+                    else ->
+                        null
+                }
+
+            paint.strokeWidth =
+                when (state) {
+                    BeeGeckoCrossState
+                        .HYPOTHESIS ->
+                        dp(2.6f) /
+                            camera.scale
+
+                    BeeGeckoCrossState
+                        .CONFIRMED ->
+                        dp(3.5f) /
+                            camera.scale
+
+                    BeeGeckoCrossState
+                        .IMPOSSIBLE ->
+                        dp(4.3f) /
+                            camera.scale
+                }
+
+            paint.color =
+                when (state) {
+                    BeeGeckoCrossState
+                        .HYPOTHESIS ->
+                        Color.rgb(
+                            224,
+                            166,
+                            24
+                        )
+
+                    BeeGeckoCrossState
+                        .CONFIRMED ->
+                        Color.rgb(
+                            35,
+                            150,
+                            65
+                        )
+
+                    BeeGeckoCrossState
+                        .IMPOSSIBLE ->
+                        Color.rgb(
+                            190,
+                            45,
+                            45
+                        )
+                }
+
             canvas.drawLine(
                 center.first - size,
                 center.second - size,
@@ -818,6 +947,8 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 center.second + size,
                 paint
             )
+
+            paint.pathEffect = null
         }
     }
 
@@ -825,6 +956,11 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         canvas: Canvas,
         snapshot: BeeGeckoSnapshot
     ) {
+        drawLogicalMarkers(
+            canvas,
+            snapshot.logicalMarkers
+        )
+
         paint.style =
             Paint.Style.FILL
         paint.color =
@@ -865,12 +1001,352 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             false
     }
 
+    private fun drawLogicalMarkers(
+        canvas: Canvas,
+        logicalMarkers:
+            Map<
+                HexCoord,
+                BeeGeckoLogicalMarks
+                >
+    ) {
+        logicalMarkers
+            .forEach {
+                (cell, marker) ->
+                val center =
+                    cellCenter(cell)
+
+                if (
+                    marker.geckoCandidate
+                ) {
+                    drawPieceMarker(
+                        canvas =
+                            canvas,
+                        centerX =
+                            center.first -
+                                baseRadius *
+                                    .27f,
+                        centerY =
+                            center.second -
+                                baseRadius *
+                                    .20f,
+                        label = "G",
+                        color =
+                            Color.rgb(
+                                32,
+                                145,
+                                65
+                            )
+                    )
+                }
+
+                if (
+                    marker.beeCandidate
+                ) {
+                    drawPieceMarker(
+                        canvas =
+                            canvas,
+                        centerX =
+                            center.first +
+                                baseRadius *
+                                    .27f,
+                        centerY =
+                            center.second +
+                                baseRadius *
+                                    .20f,
+                        label = "A",
+                        color =
+                            Color.rgb(
+                                230,
+                                170,
+                                25
+                            )
+                    )
+                }
+
+                marker.excludedAxes
+                    .forEach {
+                        axis ->
+                        drawAxisExclusion(
+                            canvas,
+                            center.first,
+                            center.second,
+                            axis
+                        )
+                    }
+            }
+    }
+
+    private fun drawPieceMarker(
+        canvas: Canvas,
+        centerX: Float,
+        centerY: Float,
+        label: String,
+        color: Int
+    ) {
+        paint.style =
+            Paint.Style.FILL
+        paint.color =
+            Color.argb(
+                218,
+                Color.red(color),
+                Color.green(color),
+                Color.blue(color)
+            )
+
+        canvas.drawCircle(
+            centerX,
+            centerY,
+            baseRadius *
+                .18f,
+            paint
+        )
+
+        paint.color =
+            Color.WHITE
+        paint.textAlign =
+            Paint.Align.CENTER
+        paint.textSize =
+            baseRadius *
+                .25f
+        paint.isFakeBoldText =
+            true
+
+        canvas.drawText(
+            label,
+            centerX,
+            centerY -
+                (
+                    paint.ascent() +
+                        paint.descent()
+                    ) /
+                    2f,
+            paint
+        )
+
+        paint.isFakeBoldText =
+            false
+    }
+
+    private fun drawAxisExclusion(
+        canvas: Canvas,
+        centerX: Float,
+        centerY: Float,
+        axis: HexAxis
+    ) {
+        val length =
+            baseRadius *
+                .55f
+
+        val angle =
+            when (axis) {
+                HexAxis.Q ->
+                    Math.toRadians(
+                        60.0
+                    )
+
+                HexAxis.R ->
+                    Math.toRadians(
+                        -60.0
+                    )
+
+                HexAxis.S ->
+                    Math.toRadians(
+                        0.0
+                    )
+            }
+
+        val dx =
+            cos(angle)
+                .toFloat() *
+                length
+
+        val dy =
+            sin(angle)
+                .toFloat() *
+                length
+
+        paint.style =
+            Paint.Style.STROKE
+        paint.strokeCap =
+            Paint.Cap.ROUND
+        paint.strokeWidth =
+            dp(4.2f) /
+                camera.scale
+        paint.color =
+            Color.rgb(
+                155,
+                55,
+                55
+            )
+
+        canvas.drawLine(
+            centerX - dx,
+            centerY - dy,
+            centerX + dx,
+            centerY + dy,
+            paint
+        )
+
+        paint.style =
+            Paint.Style.FILL
+        paint.textAlign =
+            Paint.Align.CENTER
+        paint.textSize =
+            baseRadius *
+                .20f
+        paint.color =
+            Color.rgb(
+                80,
+                40,
+                40
+            )
+
+        canvas.drawText(
+            "×",
+            centerX,
+            centerY -
+                (
+                    paint.ascent() +
+                        paint.descent()
+                    ) /
+                    2f,
+            paint
+        )
+    }
+
+    private fun drawGivenFog(
+        canvas: Canvas,
+        centerX: Float,
+        centerY: Float,
+        radius: Float,
+        seed: Int
+    ) {
+        val phase =
+            BeeGeckoFogPolicy
+                .phase(
+                    SystemClock
+                        .uptimeMillis(),
+                    seed
+                )
+
+        repeat(4) {
+            index ->
+            val local =
+                (
+                    phase +
+                        index *
+                            .23f
+                    ) %
+                    1f
+
+            val angle =
+                local *
+                    Math.PI *
+                    2.0 +
+                    index *
+                        .8
+
+            val driftX =
+                cos(angle)
+                    .toFloat() *
+                    radius *
+                    .18f
+
+            val driftY =
+                sin(angle)
+                    .toFloat() *
+                    radius *
+                    .12f
+
+            paint.style =
+                Paint.Style.FILL
+            paint.color =
+                Color.argb(
+                    42 +
+                        index *
+                            8,
+                    72,
+                    78,
+                    82
+                )
+
+            val fog =
+                RectF(
+                    centerX -
+                        radius *
+                            (.78f +
+                                index *
+                                    .05f) +
+                        driftX,
+                    centerY -
+                        radius *
+                            (.34f +
+                                index *
+                                    .035f) +
+                        driftY,
+                    centerX +
+                        radius *
+                            (.78f +
+                                index *
+                                    .05f) +
+                        driftX,
+                    centerY +
+                        radius *
+                            (.34f +
+                                index *
+                                    .035f) +
+                        driftY
+                )
+
+            canvas.drawOval(
+                fog,
+                paint
+            )
+        }
+    }
+
+    private fun victoryScaleFor(
+        cell: HexCoord
+    ): Float {
+        if (!victoryRunning) {
+            return 1f
+        }
+
+        val elapsed =
+            SystemClock
+                .uptimeMillis() -
+                victoryStartedAt
+
+        val phase =
+            elapsed /
+                130f +
+                cell.q *
+                    .65f +
+                cell.r *
+                    .41f
+
+        return 1f +
+            sin(phase)
+                .toFloat() *
+                .13f
+    }
+
     private fun drawProfessorProjection(
         canvas: Canvas
     ) {
         val hint =
             professorHint
                 ?: return
+
+        drawLogicalMarkers(
+            canvas,
+            hint.logicalMarkers
+        )
+
+        drawCrossStates(
+            canvas,
+            hint.crossStates
+        )
 
         drawHintSet(
             canvas =
@@ -1649,6 +2125,9 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 .density
 
     companion object {
+        private const val VICTORY_DURATION_MS =
+            3600L
+
         private const val DOUBLE_TAP_MS =
             285L
 

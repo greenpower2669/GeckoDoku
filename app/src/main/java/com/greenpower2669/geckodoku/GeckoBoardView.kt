@@ -13,7 +13,9 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import kotlin.math.cos
 import kotlin.math.min
+import kotlin.math.sin
 
 class GeckoBoardView @JvmOverloads constructor(
     context: Context,
@@ -52,6 +54,12 @@ class GeckoBoardView @JvmOverloads constructor(
     private var professorTargets: Set<Cell> = emptySet()
     private var professorGhosts: Set<Cell> = emptySet()
     private var professorLevel = 0
+
+    private var victoryStartedAt =
+        0L
+
+    private var victoryRunning =
+        false
 
     private val gestures =
         GestureDetector(
@@ -121,6 +129,8 @@ class GeckoBoardView @JvmOverloads constructor(
         newPuzzle: Puzzle
     ) {
         puzzle = newPuzzle
+        victoryRunning = false
+        victoryStartedAt = 0L
         clearProfessorHint()
         requestLayout()
         invalidate()
@@ -162,6 +172,13 @@ class GeckoBoardView @JvmOverloads constructor(
             emptySet()
         professorGhosts =
             step.sourceCells
+        invalidate()
+    }
+
+    fun startVictoryAnimation() {
+        victoryStartedAt =
+            SystemClock.uptimeMillis()
+        victoryRunning = true
         invalidate()
     }
 
@@ -275,6 +292,25 @@ class GeckoBoardView @JvmOverloads constructor(
             }
         ) {
             postInvalidateDelayed(450)
+        }
+
+        if (state.givens.isNotEmpty()) {
+            postInvalidateOnAnimation()
+        }
+
+        if (victoryRunning) {
+            val elapsed =
+                SystemClock.uptimeMillis() -
+                    victoryStartedAt
+
+            if (
+                elapsed <
+                    VICTORY_DURATION_MS
+            ) {
+                postInvalidateOnAnimation()
+            } else {
+                victoryRunning = false
+            }
         }
     }
 
@@ -418,22 +454,25 @@ class GeckoBoardView @JvmOverloads constructor(
 
                 when {
                     state.givens.contains(cell) -> {
-                        drawGecko(
+                        drawVictoryGecko(
                             canvas,
                             rect,
+                            cell,
                             1f,
                             false
                         )
-                        drawGivenRing(
+                        drawGivenFog(
                             canvas,
-                            rect
+                            rect,
+                            cell
                         )
                     }
 
                     state.confirmed.contains(cell) ->
-                        drawGecko(
+                        drawVictoryGecko(
                             canvas,
                             rect,
+                            cell,
                             1f,
                             false
                         )
@@ -595,29 +634,135 @@ class GeckoBoardView @JvmOverloads constructor(
         }
     }
 
-    private fun drawGivenRing(
+    private fun drawGivenFog(
         canvas: Canvas,
-        rect: RectF
+        rect: RectF,
+        cell: Cell
     ) {
-        paint.style =
-            Paint.Style.STROKE
-
-        paint.strokeWidth =
-            cellSize * .045f
-
-        paint.color =
-            Color.rgb(
-                16,
-                78,
-                44
+        val phase =
+            BeeGeckoFogPolicy.phase(
+                SystemClock.uptimeMillis(),
+                cell.row * 37 +
+                    cell.col * 19
             )
 
-        canvas.drawCircle(
+        repeat(4) {
+            index ->
+            val local =
+                (
+                    phase +
+                        index * .22f
+                    ) % 1f
+
+            val angle =
+                local *
+                    Math.PI *
+                    2.0 +
+                    index * .75
+
+            val driftX =
+                cos(angle)
+                    .toFloat() *
+                    cellSize *
+                    .06f
+
+            val driftY =
+                sin(angle)
+                    .toFloat() *
+                    cellSize *
+                    .04f
+
+            paint.style =
+                Paint.Style.FILL
+            paint.color =
+                Color.argb(
+                    38 +
+                        index * 8,
+                    72,
+                    78,
+                    82
+                )
+
+            canvas.drawOval(
+                RectF(
+                    rect.left +
+                        cellSize * .13f +
+                        driftX,
+                    rect.top +
+                        cellSize *
+                            (
+                                .29f +
+                                    index *
+                                        .015f
+                                ) +
+                        driftY,
+                    rect.right -
+                        cellSize * .13f +
+                        driftX,
+                    rect.bottom -
+                        cellSize *
+                            (
+                                .29f +
+                                    index *
+                                        .015f
+                                ) +
+                        driftY
+                ),
+                paint
+            )
+        }
+    }
+
+    private fun drawVictoryGecko(
+        canvas: Canvas,
+        rect: RectF,
+        cell: Cell,
+        alpha: Float,
+        alert: Boolean
+    ) {
+        if (!victoryRunning) {
+            drawGecko(
+                canvas,
+                rect,
+                alpha,
+                alert
+            )
+            return
+        }
+
+        val elapsed =
+            SystemClock.uptimeMillis() -
+                victoryStartedAt
+
+        val pulse =
+            1f +
+                sin(
+                    elapsed /
+                        130f +
+                        cell.row *
+                            .55f +
+                        cell.col *
+                            .43f
+                )
+                    .toFloat() *
+                .12f
+
+        canvas.save()
+        canvas.scale(
+            pulse,
+            pulse,
             rect.centerX(),
-            rect.centerY(),
-            cellSize * .34f,
-            paint
+            rect.centerY()
         )
+
+        drawGecko(
+            canvas,
+            rect,
+            alpha,
+            alert
+        )
+
+        canvas.restore()
     }
 
     private fun drawCross(
@@ -1058,4 +1203,9 @@ class GeckoBoardView @JvmOverloads constructor(
             resources
                 .displayMetrics
                 .density
+    companion object {
+        private const val VICTORY_DURATION_MS =
+            3600L
+    }
+
 }

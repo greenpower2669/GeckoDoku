@@ -55,3 +55,38 @@
 - [ ] CI GREEN ;
 - [ ] APK téléphone direct ;
 - [ ] validation Fab.
+## GECKO-046 — code 0.15.3 préparé
+
+### Repères
+- [x] cross state jaune / vert / rouge ;
+- [x] repère Gecko vert ;
+- [x] repère Abeille jaune excentré ;
+- [x] barres Q/R/S ;
+- [x] palette double clic enrichie ;
+- [x] renderer partagé Prof / joueur.
+
+### Solveur / Prof
+- [x] mapping solve step → repères communs ;
+- [x] exclusions Prof rendues avec les mêmes croix / barres.
+
+### Persistance
+- [x] session schema 3 ;
+- [x] compat schema 2 ;
+- [x] cross states persistés ;
+- [x] logical markers persistés.
+
+### Victoire
+- [x] musique Classic dans GeckoBeeDoku ;
+- [x] animation de toutes les pièces Bee ;
+- [x] animation de tous les Geckos Classic.
+
+### Brouillard
+- [x] anneau donné Classic remplacé ;
+- [x] anneau donné Bee remplacé ;
+- [x] brouillard animé semi-transparent.
+
+### Validation
+- [x] tests unitaires marqueurs / axes / cycle croix / fog ;
+- [ ] CI GREEN ;
+- [ ] APK téléphone ;
+- [ ] validation Fab.

@@ -41,3 +41,31 @@ Axes :
 Un seul langage graphique partagé entre joueur, solveur et Prof.
 
 Ne pas refaire la logique du puzzle.
+## GECKO-046 — implémentation 0.15.3-dev
+
+Nouveau langage logique Bee :
+
+- `BeeGeckoCrossState` :
+  - HYPOTHESIS = jaune ;
+  - CONFIRMED = vert ;
+  - IMPOSSIBLE = rouge.
+- `BeeGeckoLogicalMarks` :
+  - geckoCandidate ;
+  - beeCandidate ;
+  - excludedAxes Q/R/S.
+- `BeeGeckoProfessorMarkerPolicy` transforme un `BeeGeckoSolveStep` en ces mêmes repères.
+
+Le moteur conserve `manualCrosses` comme vue logique dérivée : jaune n'exclut pas le solveur ; vert/rouge sont de vraies exclusions.
+
+Persistance :
+- Bee session schema 3 ;
+- lecture de schema 2 conservée ;
+- crossStates + logicalMarkers exportés dans les mêmes SharedPreferences, donc l'export/import global reste compatible.
+
+Victoire :
+- GeckoBeeDoku appelle la musique `AssetAudioCatalog.CELEBRATION` via la même méthode que Classic ;
+- `BeeGeckoBoardView.startVictoryAnimation()` pulse toutes les pièces ;
+- Classic reçoit aussi `GeckoBoardView.startVictoryAnimation()`.
+
+Départage :
+- ancien anneau autour des givens remplacé par un brouillard animé semi-transparent dans Classic et GeckoBeeDoku.

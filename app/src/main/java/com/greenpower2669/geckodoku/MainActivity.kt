@@ -3398,6 +3398,10 @@ class MainActivity : Activity() {
 
         celebrationUsesMusic = true
 
+        if (::board.isInitialized) {
+            board.startVictoryAnimation()
+        }
+
         if (playCelebrationMusicImmediately) {
             startCelebrationMusic()
         }
@@ -5586,6 +5590,22 @@ class MainActivity : Activity() {
                     } else {
                         emptySet()
                     },
+                initialCrossStates =
+                    if (restoredMatches) {
+                        restored
+                            ?.crossStates
+                            ?: emptyMap()
+                    } else {
+                        emptyMap()
+                    },
+                initialLogicalMarkers =
+                    if (restoredMatches) {
+                        restored
+                            ?.logicalMarkers
+                            ?: emptyMap()
+                    } else {
+                        emptyMap()
+                    },
                 initialMarkers =
                     if (restoredMatches) {
                         restored
@@ -5766,6 +5786,12 @@ class MainActivity : Activity() {
                 crosses =
                     snapshot
                         .manualCrosses,
+                crossStates =
+                    snapshot
+                        .crossStates,
+                logicalMarkers =
+                    snapshot
+                        .logicalMarkers,
                 markers =
                     snapshot
                         .markers,
@@ -5866,8 +5892,29 @@ class MainActivity : Activity() {
             BeeGeckoActionFeedback
                 .CROSS_SET -> {
                 fx.cross()
+
+                val state =
+                    engine
+                        .snapshot()
+                        .crossStates[cell]
+
                 status.text =
-                    "Case exclue."
+                    when (state) {
+                        BeeGeckoCrossState
+                            .HYPOTHESIS ->
+                            "Croix jaune : hypothèse."
+
+                        BeeGeckoCrossState
+                            .CONFIRMED ->
+                            "Croix verte : déduction sûre."
+
+                        BeeGeckoCrossState
+                            .IMPOSSIBLE ->
+                            "Croix rouge : impossible."
+
+                        null ->
+                            "Croix retirée."
+                    }
             }
 
             BeeGeckoActionFeedback
@@ -5906,35 +5953,28 @@ class MainActivity : Activity() {
             beeGeckoEngine
                 ?: return
 
-        val snapshot =
-            engine.snapshot()
-
-        if (snapshot.isGiven(cell)) {
-            fx.blocked()
-            status.text =
-                "Cette pièce est donnée et verrouillée."
-            return
-        }
-
-        val current =
-            snapshot.pieceAt(cell)
-
         val labels =
-            buildList {
-                add("🦎 Placer un Gecko")
-                add("🐝 Placer une Abeille")
-
-                if (current != null) {
-                    add("⌫ Retirer la pièce")
-                }
-            }
+            arrayOf(
+                "🦎 Placer / retirer un Gecko",
+                "🐝 Placer / retirer une Abeille",
+                "🟢 G  Repère Gecko",
+                "🟡 A  Repère Abeille",
+                "╲  Barre axe ↖↘",
+                "━  Barre axe ↑↓",
+                "╱  Barre axe ↗↙",
+                "✕  Croix jaune • hypothèse",
+                "✕  Croix verte • sûre",
+                "✕  Croix rouge • impossible",
+                "⌫  Effacer repères logiques",
+                "✎  Autres repères personnels"
+            )
 
         AlertDialog.Builder(this)
             .setTitle(
-                "Case hexagonale"
+                "Case hexagonale • outils logiques"
             )
             .setItems(
-                labels.toTypedArray()
+                labels
             ) {
                     _,
                     which ->
@@ -5942,124 +5982,127 @@ class MainActivity : Activity() {
                 recordBoardAction()
                 clearProfessorSession()
 
-                val feedback =
-                    when (which) {
-                        0 ->
-                            engine.placePiece(
-                                cell,
-                                BeeGeckoPiece
-                                    .GECKO
-                            )
+                when (which) {
+                    0 ->
+                        handleBeeGeckoPalettePiece(
+                            engine,
+                            cell,
+                            BeeGeckoPiece
+                                .GECKO
+                        )
 
-                        1 ->
-                            engine.placePiece(
-                                cell,
-                                BeeGeckoPiece
-                                    .BEE
-                            )
+                    1 ->
+                        handleBeeGeckoPalettePiece(
+                            engine,
+                            cell,
+                            BeeGeckoPiece
+                                .BEE
+                        )
 
-                        else ->
-                            engine.removePiece(
-                                cell
-                            )
-                    }
-
-                when (feedback) {
-                    BeeGeckoActionFeedback
-                        .PIECE_CONFIRMED -> {
-                        fx.gecko()
-
-                        val piece =
-                            engine
-                                .snapshot()
-                                .pieceAt(cell)
-
+                    2 -> {
+                        engine.toggleLogicalPieceMarker(
+                            cell,
+                            BeeGeckoPiece
+                                .GECKO
+                        )
+                        fx.marker()
                         status.text =
-                            if (
-                                piece ==
-                                    BeeGeckoPiece
-                                        .BEE
-                            ) {
-                                "Abeille confirmée."
-                            } else {
-                                "Gecko confirmé."
-                            }
-
-                        if (
-                            piece ==
-                                BeeGeckoPiece
-                                    .BEE
-                        ) {
-                            playBeeGeckoAnimation(
-                                cell
-                            )
-                        }
+                            "Repère Gecko vert basculé."
                     }
 
-                    BeeGeckoActionFeedback
-                        .COMPLETED -> {
-                        fx.complete()
-
-                        if (
-                            engine
-                                .snapshot()
-                                .pieceAt(cell) ==
-                                BeeGeckoPiece
-                                    .BEE
-                        ) {
-                            playBeeGeckoAnimation(
-                                cell
-                            )
-                        }
-
-                        completeBeeGeckoGame()
+                    3 -> {
+                        engine.toggleLogicalPieceMarker(
+                            cell,
+                            BeeGeckoPiece
+                                .BEE
+                        )
+                        fx.marker()
+                        status.text =
+                            "Repère Abeille jaune basculé."
                     }
 
-                    BeeGeckoActionFeedback
-                        .PIECE_REMOVED -> {
+                    4 -> {
+                        engine.toggleAxisMarker(
+                            cell,
+                            HexAxis.Q
+                        )
+                        fx.marker()
+                        status.text =
+                            "Barre d'exclusion ↖↘ basculée."
+                    }
+
+                    5 -> {
+                        engine.toggleAxisMarker(
+                            cell,
+                            HexAxis.S
+                        )
+                        fx.marker()
+                        status.text =
+                            "Barre d'exclusion ↑↓ basculée."
+                    }
+
+                    6 -> {
+                        engine.toggleAxisMarker(
+                            cell,
+                            HexAxis.R
+                        )
+                        fx.marker()
+                        status.text =
+                            "Barre d'exclusion ↗↙ basculée."
+                    }
+
+                    7 -> {
+                        engine.setCrossState(
+                            cell,
+                            BeeGeckoCrossState
+                                .HYPOTHESIS
+                        )
                         fx.cross()
                         status.text =
-                            "Pièce retirée."
+                            "Croix jaune : hypothèse."
                     }
 
-                    BeeGeckoActionFeedback
-                        .WRONG_PIECE -> {
-                        fx.error()
-                        statsStore.recordMistake()
-
-                        professorLife.observe(
-                            ProfessorPlayerEvent
-                                .WRONG_MOVE,
-                            selectedDifficulty
+                    8 -> {
+                        engine.setCrossState(
+                            cell,
+                            BeeGeckoCrossState
+                                .CONFIRMED
                         )
-
+                        fx.cross()
                         status.text =
-                            "Pas ici : erreur = −3 étoiles. Une croix reste pour éviter de retester au hasard."
+                            "Croix verte : déduction sûre."
+                    }
 
-                        beeGeckoBoard
-                            .announceForAccessibility(
-                                "Placement incorrect. Trois étoiles de pénalité."
-                            )
-
-                        speakLivingProfessor(
-                            event =
-                                ProfessorPlayerEvent
-                                    .WRONG_MOVE,
-                            origin =
-                                SpeechOrigin
-                                    .QUICK_TALK
+                    9 -> {
+                        engine.setCrossState(
+                            cell,
+                            BeeGeckoCrossState
+                                .IMPOSSIBLE
                         )
-                    }
-
-                    BeeGeckoActionFeedback
-                        .GIVEN_LOCKED -> {
-                        fx.blocked()
+                        fx.cross()
                         status.text =
-                            "Pièce donnée : elle est verrouillée."
+                            "Croix rouge : impossible."
                     }
 
-                    else ->
-                        Unit
+                    10 -> {
+                        engine.clearLogicalMarkers(
+                            cell
+                        )
+                        engine.setCrossState(
+                            cell,
+                            null
+                        )
+                        fx.marker()
+                        status.text =
+                            "Repères logiques effacés."
+                    }
+
+                    11 -> {
+                        showBeeGeckoMarkerPalette(
+                            cell
+                        )
+                        return@setItems
+                    }
                 }
 
                 beeGeckoBoard.invalidate()
@@ -6071,6 +6114,113 @@ class MainActivity : Activity() {
                 null
             )
             .show()
+    }
+
+    private fun handleBeeGeckoPalettePiece(
+        engine: BeeGeckoGameEngine,
+        cell: HexCoord,
+        piece: BeeGeckoPiece
+    ) {
+        val feedback =
+            engine.placePiece(
+                cell,
+                piece
+            )
+
+        when (feedback) {
+            BeeGeckoActionFeedback
+                .PIECE_CONFIRMED -> {
+                fx.gecko()
+
+                status.text =
+                    if (
+                        piece ==
+                            BeeGeckoPiece.BEE
+                    ) {
+                        "Abeille confirmée."
+                    } else {
+                        "Gecko confirmé."
+                    }
+
+                if (
+                    piece ==
+                        BeeGeckoPiece.BEE
+                ) {
+                    playBeeGeckoAnimation(
+                        cell
+                    )
+                }
+            }
+
+            BeeGeckoActionFeedback
+                .COMPLETED -> {
+                fx.complete()
+
+                if (
+                    piece ==
+                        BeeGeckoPiece.BEE
+                ) {
+                    playBeeGeckoAnimation(
+                        cell
+                    )
+                }
+
+                completeBeeGeckoGame()
+            }
+
+            BeeGeckoActionFeedback
+                .PIECE_REMOVED -> {
+                fx.cross()
+                status.text =
+                    "Pièce retirée."
+            }
+
+            BeeGeckoActionFeedback
+                .WRONG_PIECE -> {
+                fx.error()
+                statsStore.recordMistake()
+
+                professorLife.observe(
+                    ProfessorPlayerEvent
+                        .WRONG_MOVE,
+                    selectedDifficulty
+                )
+
+                status.text =
+                    "Pas ici : erreur = −3 étoiles. Croix rouge posée."
+
+                beeGeckoBoard
+                    .announceForAccessibility(
+                        "Placement incorrect. Trois étoiles de pénalité."
+                    )
+
+                speakLivingProfessor(
+                    event =
+                        ProfessorPlayerEvent
+                            .WRONG_MOVE,
+                    origin =
+                        SpeechOrigin
+                            .QUICK_TALK
+                )
+            }
+
+            BeeGeckoActionFeedback
+                .GIVEN_LOCKED -> {
+                fx.blocked()
+                status.text =
+                    "Pièce donnée : elle est verrouillée."
+            }
+
+            BeeGeckoActionFeedback
+                .CROSS_BLOCKED -> {
+                fx.blocked()
+                status.text =
+                    "Cette case est actuellement exclue."
+            }
+
+            else ->
+                Unit
+        }
     }
 
     private fun showBeeGeckoMarkerPalette(
@@ -6358,6 +6508,17 @@ class MainActivity : Activity() {
                     .symbols(stars)
 
         beeGeckoSessionStore.clear()
+
+        celebrationUsesMusic = true
+        startCelebrationMusic()
+
+        if (
+            ::beeGeckoBoard
+                .isInitialized
+        ) {
+            beeGeckoBoard
+                .startVictoryAnimation()
+        }
 
         if (
             ::celebrationView

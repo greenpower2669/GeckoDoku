@@ -63,3 +63,42 @@ session + export/import
 → markers
 → axis exclusions
 → cross state
+## GECKO-046 — architecture implémentée
+
+`BeeGeckoCrossState`
+→ HYPOTHESIS / CONFIRMED / IMPOSSIBLE
+→ rendu jaune / vert / rouge
+→ solverCrosses = CONFIRMED + IMPOSSIBLE
+
+`BeeGeckoLogicalMarks`
+→ GeckoCandidate
+→ BeeCandidate
+→ excludedAxes Set<HexAxis>
+
+`double tap Bee`
+→ palette pièce + repères + axes + croix
+
+`BeeGeckoProfessorMarkerPolicy`
+→ BeeGeckoSolveStep
+→ logicalMarkers
+→ crossStates
+→ BeeGeckoBoardView partage le même renderer que le joueur
+
+`BeeGeckoSessionStore schema 3`
+→ crossStates
+→ logicalMarkers
+→ compat schema 2
+
+Victoire :
+`completeBeeGeckoGame()`
+→ startCelebrationMusic()
+→ BeeGeckoBoardView.startVictoryAnimation()
+→ celebrationView
+
+Classic :
+`completeGame()`
+→ GeckoBoardView.startVictoryAnimation()
+
+Givens Classic + Bee :
+→ fog animation partagée par BeeGeckoFogPolicy
+→ plus d'anneau sombre.

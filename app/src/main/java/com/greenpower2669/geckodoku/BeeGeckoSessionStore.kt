@@ -12,6 +12,16 @@ data class BeeGeckoSession(
         Set<HexCoord>,
     val crosses:
         Set<HexCoord>,
+    val crossStates:
+        Map<
+            HexCoord,
+            BeeGeckoCrossState
+            >,
+    val logicalMarkers:
+        Map<
+            HexCoord,
+            BeeGeckoLogicalMarks
+            >,
     val markers:
         Map<HexCoord, CustomMarker>,
     val mistakes: Int,
@@ -145,6 +155,20 @@ class BeeGeckoSessionStore(
             )
         )
 
+        root.put(
+            "crossStates",
+            encodeCrossStates(
+                session.crossStates
+            )
+        )
+
+        root.put(
+            "logicalMarkers",
+            encodeLogicalMarkers(
+                session.logicalMarkers
+            )
+        )
+
         val markers =
             JSONArray()
 
@@ -195,12 +219,15 @@ class BeeGeckoSessionStore(
             val root =
                 JSONObject(raw)
 
-            if (
+            val schema =
                 root.optInt(
                     "schema",
                     -1
-                ) !=
-                SCHEMA
+                )
+
+            if (
+                schema !in
+                    2..SCHEMA
             ) {
                 return null
             }
@@ -369,6 +396,20 @@ class BeeGeckoSessionStore(
                         )
                             ?: JSONArray()
                     ),
+                crossStates =
+                    decodeCrossStates(
+                        root.optJSONArray(
+                            "crossStates"
+                        )
+                            ?: JSONArray()
+                    ),
+                logicalMarkers =
+                    decodeLogicalMarkers(
+                        root.optJSONArray(
+                            "logicalMarkers"
+                        )
+                            ?: JSONArray()
+                    ),
                 markers =
                     markers.toMap(),
                 mistakes =
@@ -451,6 +492,175 @@ class BeeGeckoSessionStore(
                         item.getInt("r")
                     )
                 )
+            }
+        }
+
+    private fun encodeCrossStates(
+        states:
+            Map<
+                HexCoord,
+                BeeGeckoCrossState
+                >
+    ): JSONArray {
+        val array =
+            JSONArray()
+
+        states.forEach {
+            (cell, state) ->
+            array.put(
+                JSONObject()
+                    .put("q", cell.q)
+                    .put("r", cell.r)
+                    .put(
+                        "state",
+                        state.name
+                    )
+            )
+        }
+
+        return array
+    }
+
+    private fun decodeCrossStates(
+        source: JSONArray
+    ): Map<
+        HexCoord,
+        BeeGeckoCrossState
+        > =
+        buildMap {
+            for (
+                index in
+                0 until source.length()
+            ) {
+                val item =
+                    source
+                        .getJSONObject(index)
+
+                put(
+                    HexCoord(
+                        item.getInt("q"),
+                        item.getInt("r")
+                    ),
+                    enumValueOf<
+                        BeeGeckoCrossState
+                        >(
+                        item.getString(
+                            "state"
+                        )
+                    )
+                )
+            }
+        }
+
+    private fun encodeLogicalMarkers(
+        markers:
+            Map<
+                HexCoord,
+                BeeGeckoLogicalMarks
+                >
+    ): JSONArray {
+        val array =
+            JSONArray()
+
+        markers.forEach {
+            (cell, marker) ->
+            val axes =
+                JSONArray()
+
+            marker.excludedAxes
+                .forEach {
+                    axes.put(it.name)
+                }
+
+            array.put(
+                JSONObject()
+                    .put("q", cell.q)
+                    .put("r", cell.r)
+                    .put(
+                        "gecko",
+                        marker
+                            .geckoCandidate
+                    )
+                    .put(
+                        "bee",
+                        marker
+                            .beeCandidate
+                    )
+                    .put(
+                        "axes",
+                        axes
+                    )
+            )
+        }
+
+        return array
+    }
+
+    private fun decodeLogicalMarkers(
+        source: JSONArray
+    ): Map<
+        HexCoord,
+        BeeGeckoLogicalMarks
+        > =
+        buildMap {
+            for (
+                index in
+                0 until source.length()
+            ) {
+                val item =
+                    source
+                        .getJSONObject(index)
+
+                val axesJson =
+                    item.optJSONArray(
+                        "axes"
+                    )
+                        ?: JSONArray()
+
+                val axes =
+                    buildSet {
+                        for (
+                            axisIndex in
+                            0 until axesJson.length()
+                        ) {
+                            add(
+                                enumValueOf<
+                                    HexAxis
+                                    >(
+                                    axesJson
+                                        .getString(
+                                            axisIndex
+                                        )
+                                )
+                            )
+                        }
+                    }
+
+                val marker =
+                    BeeGeckoLogicalMarks(
+                        geckoCandidate =
+                            item.optBoolean(
+                                "gecko",
+                                false
+                            ),
+                        beeCandidate =
+                            item.optBoolean(
+                                "bee",
+                                false
+                            ),
+                        excludedAxes =
+                            axes
+                    )
+
+                if (!marker.isEmpty) {
+                    put(
+                        HexCoord(
+                            item.getInt("q"),
+                            item.getInt("r")
+                        ),
+                        marker
+                    )
+                }
             }
         }
 
@@ -590,7 +800,7 @@ class BeeGeckoSessionStore(
             "geckodoku_bee_gecko_session_v2"
 
         private const val SCHEMA =
-            2
+            3
 
         private const val KEY_SESSION =
             "active_session"
