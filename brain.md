@@ -2858,3 +2858,22 @@ Le helper local de gestion d'appui long a été renommé `cancelPendingLongPress
 CI #215 est GREEN avec repères/navigation. Pour les tests Fab sur téléphone, une variante Android `phone` est ajoutée : elle hérite de `release`, reste non débogable, mais utilise uniquement la clé de test Android afin de produire un APK installable sans toucher à la configuration `release` destinée à une future signature Google Play.
 
 Le workflow n'empaquette plus inutilement un AAB pour cette boucle téléphone : tests + `assemblePhone`, artefact APK seul. Un commit marqué `[phone-release]` publie en plus une GitHub prerelease avec l'APK comme asset direct.
+## 2026-09-28 — GECKO-043 : correction de conception
+
+Fab a corrigé la première 0.14 : Abeilles & Geckos doit être **Classic + hexagones + Abeille**, pas un matching exploratoire.
+
+Nouvelle architecture 0.15 :
+- `BeeGeckoPuzzle` contient une vraie solution cachée : sets Gecko/Abeille, zones, couples locaux par zone, givens et trace solveur ;
+- plateau hexagonal régulier en coordonnées axiales/cube ;
+- chaque zone contient exactement 1 Gecko + 1 Abeille adjacents ;
+- pour chaque type, q/r/s sont des contraintes d'axe « au plus une pièce par ligne » ;
+- le couple logique est local à la zone, donc aucun reliage lointain ;
+- `BeeGeckoSolver` travaille par options de couples locaux, élimine avec axes/zone/voisinage, propage puis projette si nécessaire ;
+- `BeeGeckoGenerator` construit une solution, fait pousser les zones autour des couples, retire les givens et vérifie unicité + difficulté ; `generateExact()` boucle jusqu'au vrai niveau demandé ;
+- gestes : tap=croix, double tap=palette Gecko/Abeille, appui long=repère ;
+- rendu : couleurs `GeckoBoardPalette`, frontières de zones épaisses, Prof bleu/orange/rouge/vert + symboles ;
+- compteur = couples réellement confirmés, pas hypothèses.
+
+Notation : `CompletionRatingPolicy.starsFor(assistancePoints, mistakes)` applique **−3 étoiles par erreur** après le coût des aides, plancher 1.
+
+Gomoku reste la seconde partie du même ordre : corriger force par niveau et trace pédagogique graphique sur demande dans la passe suivante.

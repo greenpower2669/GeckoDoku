@@ -58,3 +58,38 @@
 - [x] préparer la publication automatique en GitHub prerelease sur commit `[phone-release]` ;
 - [ ] valider le build `assemblePhone` et la création réelle de la prerelease ;
 - [ ] tester l'APK sur téléphone.
+## GECKO-043 — mission active
+
+### Abeilles & Geckos
+- [x] abandonner le matching libre / grande carte ;
+- [x] nouveau modèle solution cachée Gecko + Abeille ;
+- [x] zones colorées, exactement 1 Gecko + 1 Abeille ;
+- [x] contraintes trois axes hexagonaux ;
+- [x] voisinage local Abeille↔Gecko dans la zone ;
+- [x] solveur zone + axes + voisinage + projection ;
+- [x] générateur solution → retrait givens → unicité → difficulté ;
+- [x] `generateExact()` jusqu'au niveau demandé ;
+- [x] tap croix / double tap choix pièce / appui long repère ;
+- [x] Prof visuel bleu/orange/rouge/vert + symboles ;
+- [x] compteur des couples confirmés uniquement ;
+- [x] persistance du nouvel état + caméra ;
+- [ ] CI de la refonte Bee GREEN ;
+- [ ] test téléphone mise en page compacte / zones / gestes / Prof.
+
+### Étoiles
+- [x] ajouter `mistakes` à la note ;
+- [x] 1 erreur = −3 étoiles ;
+- [ ] CI + test Classic/Sudoku/Abeilles.
+
+### Gomoku — même mission
+- [ ] vraie politique de force par niveau ;
+- [ ] Découverte/Facile cohérents mais non optimaux ;
+- [ ] niveaux hauts gardent win/block/traps ;
+- [ ] trace de raisonnement concrète ;
+- [ ] overlay graphique ligne / projection / blocage ;
+- [ ] explication seulement sur demande ;
+- [ ] supprimer persona agressive de la 0.13.
+
+### Livraison
+- [ ] CI complète GREEN ;
+- [ ] GitHub prerelease téléphone APK direct 0.15.

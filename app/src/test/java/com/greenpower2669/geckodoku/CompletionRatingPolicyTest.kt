@@ -18,6 +18,28 @@ class CompletionRatingPolicyTest {
         )
     }
 
+
+    @Test
+    fun oneMistakeCostsExactlyThreeStars() {
+        assertEquals(
+            2,
+            CompletionRatingPolicy
+                .starsFor(
+                    assistancePoints = 0,
+                    mistakes = 1
+                )
+        )
+
+        assertEquals(
+            1,
+            CompletionRatingPolicy
+                .starsFor(
+                    assistancePoints = 1,
+                    mistakes = 1
+                )
+        )
+    }
+
     @Test
     fun assistanceProgressivelyReducesStars() {
         assertEquals(

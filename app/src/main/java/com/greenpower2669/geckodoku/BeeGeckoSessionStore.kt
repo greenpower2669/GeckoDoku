@@ -6,9 +6,15 @@ import org.json.JSONObject
 
 data class BeeGeckoSession(
     val puzzle: BeeGeckoPuzzle,
-    val pairs: Set<BeeGeckoPair>,
+    val confirmedGeckos:
+        Set<HexCoord>,
+    val confirmedBees:
+        Set<HexCoord>,
+    val crosses:
+        Set<HexCoord>,
     val markers:
         Map<HexCoord, CustomMarker>,
+    val mistakes: Int,
     val camera: BeeGeckoCamera,
     val elapsedSeconds: Long,
     val assistancePoints: Int
@@ -30,19 +36,15 @@ class BeeGeckoSessionStore(
             JSONObject()
                 .put(
                     "schema",
-                    1
+                    SCHEMA
                 )
                 .put(
                     "id",
                     session.puzzle.id
                 )
                 .put(
-                    "columns",
-                    session.puzzle.columns
-                )
-                .put(
-                    "rows",
-                    session.puzzle.rows
+                    "radius",
+                    session.puzzle.radius
                 )
                 .put(
                     "difficulty",
@@ -51,12 +53,20 @@ class BeeGeckoSessionStore(
                         .name
                 )
                 .put(
+                    "seed",
+                    session.puzzle.seed
+                )
+                .put(
                     "elapsedSeconds",
                     session.elapsedSeconds
                 )
                 .put(
                     "assistancePoints",
                     session.assistancePoints
+                )
+                .put(
+                    "mistakes",
+                    session.mistakes
                 )
                 .put(
                     "camera",
@@ -75,70 +85,64 @@ class BeeGeckoSessionStore(
                         )
                 )
 
-        val pieces =
-            JSONArray()
-
-        session.puzzle.pieces
-            .toSortedMap(
-                compareBy<HexCoord> {
-                    it.r
-                }.thenBy {
-                    it.q
-                }
-            )
-            .forEach {
-                (cell, piece) ->
-                pieces.put(
-                    JSONObject()
-                        .put(
-                            "q",
-                            cell.q
-                        )
-                        .put(
-                            "r",
-                            cell.r
-                        )
-                        .put(
-                            "piece",
-                            piece.name
-                        )
-                )
-            }
-
         root.put(
-            "pieces",
-            pieces
+            "regions",
+            encodeRegions(
+                session.puzzle.regions
+            )
         )
-
-        val pairs =
-            JSONArray()
-
-        session.pairs.forEach {
-            pair ->
-            pairs.put(
-                JSONObject()
-                    .put(
-                        "gq",
-                        pair.gecko.q
-                    )
-                    .put(
-                        "gr",
-                        pair.gecko.r
-                    )
-                    .put(
-                        "bq",
-                        pair.bee.q
-                    )
-                    .put(
-                        "br",
-                        pair.bee.r
-                    )
-            )
-        }
-
         root.put(
-            "pairs",
-            pairs
+            "solutionGeckos",
+            encodeCells(
+                session.puzzle
+                    .solutionGeckos
+            )
+        )
+        root.put(
+            "solutionBees",
+            encodeCells(
+                session.puzzle
+                    .solutionBees
+            )
+        )
+        root.put(
+            "givenGeckos",
+            encodeCells(
+                session.puzzle
+                    .givenGeckos
+            )
+        )
+        root.put(
+            "givenBees",
+            encodeCells(
+                session.puzzle
+                    .givenBees
+            )
+        )
+        root.put(
+            "solutionPairs",
+            encodePairs(
+                session.puzzle
+                    .solutionPairs
+            )
+        )
+        root.put(
+            "confirmedGeckos",
+            encodeCells(
+                session.confirmedGeckos
+            )
+        )
+        root.put(
+            "confirmedBees",
+            encodeCells(
+                session.confirmedBees
+            )
+        )
+        root.put(
+            "crosses",
+            encodeCells(
+                session.crosses
+            )
         )
 
         val markers =
@@ -156,14 +160,8 @@ class BeeGeckoSessionStore(
                 (cell, marker) ->
                 markers.put(
                     JSONObject()
-                        .put(
-                            "q",
-                            cell.q
-                        )
-                        .put(
-                            "r",
-                            cell.r
-                        )
+                        .put("q", cell.q)
+                        .put("r", cell.r)
                         .put(
                             "marker",
                             marker.name
@@ -201,45 +199,25 @@ class BeeGeckoSessionStore(
                 root.optInt(
                     "schema",
                     -1
-                ) != 1
+                ) !=
+                SCHEMA
             ) {
                 return null
             }
 
-            val pieces =
-                linkedMapOf<
-                    HexCoord,
-                    BeeGeckoPiece
-                    >()
-
-            val pieceArray =
-                root.getJSONArray(
-                    "pieces"
+            val regions =
+                decodeRegions(
+                    root.getJSONArray(
+                        "regions"
+                    )
                 )
 
-            for (
-                i in
-                0 until pieceArray.length()
-            ) {
-                val item =
-                    pieceArray
-                        .getJSONObject(i)
-
-                val cell =
-                    HexCoord(
-                        item.getInt("q"),
-                        item.getInt("r")
+            val pairs =
+                decodePairs(
+                    root.getJSONArray(
+                        "solutionPairs"
                     )
-
-                pieces[cell] =
-                    enumValueOf<
-                        BeeGeckoPiece
-                        >(
-                        item.getString(
-                            "piece"
-                        )
-                    )
-            }
+                )
 
             val puzzle =
                 BeeGeckoPuzzle(
@@ -247,16 +225,38 @@ class BeeGeckoSessionStore(
                         root.getString(
                             "id"
                         ),
-                    columns =
+                    radius =
                         root.getInt(
-                            "columns"
+                            "radius"
                         ),
-                    rows =
-                        root.getInt(
-                            "rows"
+                    regions =
+                        regions,
+                    solutionGeckos =
+                        decodeCells(
+                            root.getJSONArray(
+                                "solutionGeckos"
+                            )
                         ),
-                    pieces =
-                        pieces.toMap(),
+                    solutionBees =
+                        decodeCells(
+                            root.getJSONArray(
+                                "solutionBees"
+                            )
+                        ),
+                    solutionPairs =
+                        pairs,
+                    givenGeckos =
+                        decodeCells(
+                            root.getJSONArray(
+                                "givenGeckos"
+                            )
+                        ),
+                    givenBees =
+                        decodeCells(
+                            root.getJSONArray(
+                                "givenBees"
+                            )
+                        ),
                     difficulty =
                         enumValueOf<
                             GameDifficulty
@@ -264,61 +264,13 @@ class BeeGeckoSessionStore(
                             root.getString(
                                 "difficulty"
                             )
+                        ),
+                    seed =
+                        root.optLong(
+                            "seed",
+                            0L
                         )
                 )
-
-            val pairs =
-                linkedSetOf<
-                    BeeGeckoPair
-                    >()
-
-            val pairArray =
-                root.optJSONArray(
-                    "pairs"
-                )
-                    ?: JSONArray()
-
-            for (
-                i in
-                0 until pairArray.length()
-            ) {
-                val item =
-                    pairArray
-                        .getJSONObject(i)
-
-                pairs.add(
-                    BeeGeckoPair(
-                        gecko =
-                            HexCoord(
-                                item.getInt(
-                                    "gq"
-                                ),
-                                item.getInt(
-                                    "gr"
-                                )
-                            ),
-                        bee =
-                            HexCoord(
-                                item.getInt(
-                                    "bq"
-                                ),
-                                item.getInt(
-                                    "br"
-                                )
-                            )
-                    )
-                )
-            }
-
-            if (
-                !BeeGeckoRules
-                    .validatePairs(
-                        puzzle,
-                        pairs
-                    )
-            ) {
-                return null
-            }
 
             val markers =
                 linkedMapOf<
@@ -333,12 +285,14 @@ class BeeGeckoSessionStore(
                     ?: JSONArray()
 
             for (
-                i in
+                index in
                 0 until markerArray.length()
             ) {
                 val item =
                     markerArray
-                        .getJSONObject(i)
+                        .getJSONObject(
+                            index
+                        )
 
                 val cell =
                     HexCoord(
@@ -394,26 +348,49 @@ class BeeGeckoSessionStore(
 
             BeeGeckoSession(
                 puzzle = puzzle,
-                pairs = pairs,
+                confirmedGeckos =
+                    decodeCells(
+                        root.optJSONArray(
+                            "confirmedGeckos"
+                        )
+                            ?: JSONArray()
+                    ),
+                confirmedBees =
+                    decodeCells(
+                        root.optJSONArray(
+                            "confirmedBees"
+                        )
+                            ?: JSONArray()
+                    ),
+                crosses =
+                    decodeCells(
+                        root.optJSONArray(
+                            "crosses"
+                        )
+                            ?: JSONArray()
+                    ),
                 markers =
                     markers.toMap(),
-                camera = camera,
+                mistakes =
+                    root.optInt(
+                        "mistakes",
+                        0
+                    )
+                        .coerceAtLeast(0),
+                camera =
+                    camera,
                 elapsedSeconds =
                     root.optLong(
                         "elapsedSeconds",
                         0L
                     )
-                        .coerceAtLeast(
-                            0L
-                        ),
+                        .coerceAtLeast(0L),
                 assistancePoints =
                     root.optInt(
                         "assistancePoints",
                         0
                     )
-                        .coerceAtLeast(
-                            0
-                        )
+                        .coerceAtLeast(0)
             )
         } catch (
             _: Exception
@@ -430,9 +407,190 @@ class BeeGeckoSessionStore(
             .apply()
     }
 
+    private fun encodeCells(
+        cells: Collection<HexCoord>
+    ): JSONArray {
+        val array =
+            JSONArray()
+
+        cells
+            .sortedWith(
+                compareBy<HexCoord> {
+                    it.r
+                }.thenBy {
+                    it.q
+                }
+            )
+            .forEach {
+                array.put(
+                    JSONObject()
+                        .put("q", it.q)
+                        .put("r", it.r)
+                )
+            }
+
+        return array
+    }
+
+    private fun decodeCells(
+        source: JSONArray
+    ): Set<HexCoord> =
+        buildSet {
+            for (
+                index in
+                0 until source.length()
+            ) {
+                val item =
+                    source.getJSONObject(
+                        index
+                    )
+
+                add(
+                    HexCoord(
+                        item.getInt("q"),
+                        item.getInt("r")
+                    )
+                )
+            }
+        }
+
+    private fun encodeRegions(
+        regions:
+            Map<HexCoord, Int>
+    ): JSONArray {
+        val array =
+            JSONArray()
+
+        regions
+            .toSortedMap(
+                compareBy<HexCoord> {
+                    it.r
+                }.thenBy {
+                    it.q
+                }
+            )
+            .forEach {
+                (cell, region) ->
+                array.put(
+                    JSONObject()
+                        .put("q", cell.q)
+                        .put("r", cell.r)
+                        .put(
+                            "region",
+                            region
+                        )
+                )
+            }
+
+        return array
+    }
+
+    private fun decodeRegions(
+        source: JSONArray
+    ): Map<HexCoord, Int> =
+        buildMap {
+            for (
+                index in
+                0 until source.length()
+            ) {
+                val item =
+                    source.getJSONObject(
+                        index
+                    )
+
+                put(
+                    HexCoord(
+                        item.getInt("q"),
+                        item.getInt("r")
+                    ),
+                    item.getInt(
+                        "region"
+                    )
+                )
+            }
+        }
+
+    private fun encodePairs(
+        pairs:
+            List<BeeGeckoPair>
+    ): JSONArray {
+        val array =
+            JSONArray()
+
+        pairs
+            .sortedBy {
+                it.region
+            }
+            .forEach {
+                pair ->
+                array.put(
+                    JSONObject()
+                        .put(
+                            "gq",
+                            pair.gecko.q
+                        )
+                        .put(
+                            "gr",
+                            pair.gecko.r
+                        )
+                        .put(
+                            "bq",
+                            pair.bee.q
+                        )
+                        .put(
+                            "br",
+                            pair.bee.r
+                        )
+                        .put(
+                            "region",
+                            pair.region
+                        )
+                )
+            }
+
+        return array
+    }
+
+    private fun decodePairs(
+        source: JSONArray
+    ): List<BeeGeckoPair> =
+        buildList {
+            for (
+                index in
+                0 until source.length()
+            ) {
+                val item =
+                    source.getJSONObject(
+                        index
+                    )
+
+                add(
+                    BeeGeckoPair(
+                        gecko =
+                            HexCoord(
+                                item.getInt("gq"),
+                                item.getInt("gr")
+                            ),
+                        bee =
+                            HexCoord(
+                                item.getInt("bq"),
+                                item.getInt("br")
+                            ),
+                        region =
+                            item.getInt(
+                                "region"
+                            )
+                    )
+                )
+            }
+        }
+
     companion object {
         const val PREFERENCES_NAME =
-            "geckodoku_bee_gecko_session_v1"
+            "geckodoku_bee_gecko_session_v2"
+
+        private const val SCHEMA =
+            2
 
         private const val KEY_SESSION =
             "active_session"

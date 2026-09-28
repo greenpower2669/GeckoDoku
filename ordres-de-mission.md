@@ -485,3 +485,66 @@ Ne pas déclarer les 45 points terminés avant tests CI + validation téléphone
 ### Packaging de test demandé par Fab
 
 Pour les validations téléphone, privilégier désormais une GitHub Release/prerelease contenant directement l'APK, plutôt qu'un ZIP Actions contenant APK+AAB. La variante `phone` doit rester séparée de la vraie build `release` afin que la signature de test ne soit jamais confondue avec la future signature Google Play.
+---
+
+# GECKO-043 — CORRECTION CANONIQUE ABEILLES & GECKOS + GOMOKU + ÉTOILES
+
+Date : 2026-09-28
+Version cible : **0.15.0-dev** / versionCode **35**.
+
+## A — Abeilles & Geckos : la conception de matching libre est abandonnée
+
+Le mode n'est pas un jeu de reliage ni une grande carte Gomoku. Il reprend l'esprit du Classic : grille logique compacte, zones colorées, axes, élimination, solveur et difficulté mesurée.
+
+Règles canoniques :
+- plateau régulier de cases hexagonales, centré et adapté à l'écran ;
+- zones colorées utilisant le langage visuel du Classic ;
+- chaque zone contient exactement **1 Gecko + 1 Abeille** ;
+- trois familles d'axes logiques hexagonaux, vues comme six directions opposées deux à deux ;
+- pour une même famille de pièce, une ligne déjà occupée exclut les autres cases de cette ligne ;
+- une Abeille et son Gecko partenaire sont **voisins directs**, donc partagent un côté ;
+- le partenaire exclusif est celui de la même zone : 1 zone = 1 Gecko + 1 Abeille adjacents = 1 couple logique ;
+- aucun lien longue distance ; une liaison graphique éventuelle reste locale entre deux voisins et uniquement pour l'explication ;
+- le solveur combine zone + axes + type + voisinage + propagation ;
+- le générateur part d'une solution complète, retire des données, vérifie unicité + solveur + difficulté réelle ;
+- le générateur exact continue à chercher tant que la difficulté demandée n'est pas réellement obtenue.
+
+Adaptation géométrique : dans un plateau hexagonal fini, les axes supplémentaires peuvent comporter plus de lignes que le nombre de zones. La règle d'axe canonique est donc **au plus une pièce de chaque type par ligne**. Les zones imposent le nombre total de Geckos/Abeilles. Cela conserve exactement la déduction demandée : « cette ligne possède déjà son Gecko/Abeille, donc les autres cases de la ligne sont exclues » sans imposer artificiellement qu'une pièce existe sur chaque ligne extérieure.
+
+Gestes :
+- tap simple = croix / exclusion, comme l'esprit Classic ;
+- double tap = choisir Gecko ou Abeille sur la case ;
+- appui long = repère personnel ;
+- zoom/drag restent disponibles mais la vue initiale doit ajuster et centrer toute la grille.
+
+Prof :
+- jamais de réponse sèche ;
+- sur demande seulement, il déroule la chaîne : zone analysée → candidats → exclusions d'axes/zone/voisinage → dernière possibilité → conclusion ;
+- code visuel : bleu = analysé, orange = hypothèse, rouge = éliminé, vert = certain ;
+- couleur toujours doublée d'un symbole/contour ;
+- bulle au-dessus du plateau en z-order, jamais masquée par le board.
+
+## B — Gomoku
+
+Deux corrections obligatoires :
+- difficulté réelle : Découverte/Facile voient moins loin et peuvent choisir un coup cohérent non optimal ; niveaux hauts augmentent profondeur, défense, pièges et doubles menaces ;
+- pédagogie uniquement lorsque le joueur demande le Prof : montrer ligne, cases projetées, menace, blocage et suite anticipée. Les tours automatiques du Prof ne doivent pas réciter une explication générique.
+
+Le précédent comportement « Prof teigneux partout » est supprimé : le ton redevient professeur/taquin, jamais hostile.
+
+## C — étoiles
+
+Règle globale : **1 erreur joueur = −3 étoiles**. Une aide coûte moins qu'une erreur afin de pousser l'ordre : réfléchir > demander une aide > tester au hasard. Le minimum affiché reste 1 étoile.
+
+## Validation
+
+- Abeilles & Geckos ressemble visuellement au Classic ;
+- zones visibles, 1 Gecko + 1 Abeille par zone ;
+- axes hexagonaux actifs ;
+- partenaire local uniquement ;
+- pas de trait longue distance ;
+- solveur + unicité + génération exacte par difficulté ;
+- Prof multi-étapes + projection graphique ;
+- HUD / Prof / boutons jamais recouverts ;
+- Gomoku réellement différencié par niveau + explications projetées sur demande ;
+- une erreur enlève exactement 3 étoiles.

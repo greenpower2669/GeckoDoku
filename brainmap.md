@@ -1381,3 +1381,53 @@ Résultats : `GameMode.BEES_GECKOS` → stats mode+difficulté → étoiles → 
 `buildTypes.phone` ← `release` + signature Android de test, `isDebuggable=false`.
 `build.yml` → tests → assemblePhone → APK seul → upload-artifact ; si message contient `[phone-release]` → `gh release create` prerelease.
 `buildTypes.release` reste inchangé pour ne pas mélanger la clé de test avec une future signature Play.
+## GECKO-043 — architecture Abeilles & Geckos Classic-like
+
+`BeeGeckoPuzzle`
+→ plateau hex axial `HexCoord(q,r,s)`
+→ `regions[cell]`
+→ `solutionGeckos` / `solutionBees`
+→ `solutionPairs(region, gecko, bee)` avec voisinage direct
+→ `givenGeckos` / `givenBees`
+
+`BeeGeckoGameEngine`
+→ confirmedGeckos / confirmedBees
+→ manualCrosses
+→ markers
+→ mistakes
+
+`BeeGeckoRules`
+→ 6 voisins
+→ 3 familles Q/R/S
+→ au plus 1 Gecko et 1 Abeille par ligne
+→ exactement 1 Gecko + 1 Abeille par zone
+→ couple de zone adjacent
+
+`BeeGeckoSolver`
+→ options (Gecko,Abeille) adjacentes par zone
+→ filtre givens/croix
+→ filtre axes
+→ single zone/axe/adja
+→ propagation
+→ projection par contradiction
+→ difficulté calculée
+
+`BeeGeckoGenerator`
+→ solution non-attacking
+→ Abeille voisine de chaque Gecko
+→ croissance zones depuis les couples
+→ retrait de givens
+→ countSolutions(limit=2)
+→ solveur / difficulté
+→ generateExact boucle jusqu'au niveau demandé
+
+`BeeGeckoBoardView`
+→ zones `GeckoBoardPalette`
+→ tap croix / double tap pièce / long press repère
+→ fit initial centré, zoom/drag optionnels
+→ Prof : bleu A / orange ? / rouge × / vert ✓
+
+`CompletionRatingPolicy`
+→ aide progressive
+→ puis mistakes × 3 étoiles de pénalité
+→ plancher 1.

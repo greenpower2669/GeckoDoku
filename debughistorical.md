@@ -1714,3 +1714,20 @@ Run `36362591311` : échec compilation Kotlin dans `BeeGeckoBoardView.kt:949` �
 Run `36362738107` GREEN après le renommage du helper d'appui long. Artefact avant changement de packaging : `GeckoDoku-v0.14.0-dev-Android`, id `10946123078`, digest `sha256:66b5f72de60b0213d6bf3404828b8e61457af71b494891b2c0f297c08c90d2a1`.
 
 Décision Fab appliquée : les prochaines candidates téléphone doivent être fournies comme GitHub Release avec APK direct et éviter le gros couple APK+AAB de debug. Une variante `phone` non débogable et signée avec la clé de test Android est introduite ; la vraie build `release` reste sans cette signature de test.
+## 2026-09-28 — GECKO-043 — abandon du matching libre
+
+Constat Fab après APK 0.14 : le mode était mal interprété. Les sprites Gecko/Abeille étaient déjà posés et le joueur reliait des couples sur une carte exploratoire ; ce n'est pas le gameplay voulu.
+
+Correction structurelle préparée :
+- remplacement du modèle de matching par une solution cachée Classic-like ;
+- zones colorées réintroduites ;
+- trois axes Q/R/S ;
+- relation Abeille↔Gecko uniquement entre voisins et dans la même zone ;
+- saisie joueur par croix + placement Gecko/Abeille ;
+- erreur de placement comptabilisée ;
+- Prof basé sur la propagation du solveur ;
+- génération exacte asynchrone prévue comme le Classic.
+
+Point géométrique important : exiger exactement une pièce sur **chaque** ligne des trois familles d'un hexagone fini rend certaines petites tailles incompatibles avec le nombre de zones. La règle utilisée est donc « au plus une pièce par ligne » et « exactement une de chaque type par zone ». C'est cohérent avec les déductions demandées et évite un faux modèle mathématique.
+
+État : code de refonte créé mais pas encore validé par CI au moment de cette entrée. Ne pas publier de candidate avant GREEN.

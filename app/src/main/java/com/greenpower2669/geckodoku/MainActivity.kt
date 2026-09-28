@@ -360,6 +360,14 @@ class MainActivity : Activity() {
     private var classicGenerationActive =
         false
 
+    @Volatile
+    private var beeGenerationToken =
+        0
+
+    @Volatile
+    private var beeGenerationActive =
+        false
+
     private var selectedDifficulty =
         GameDifficulty.EASY
 
@@ -828,10 +836,18 @@ class MainActivity : Activity() {
                     ).snapshot()
                 }
 
-                onTapPiece = {
+                onSingleTapCell = {
                         cell ->
 
-                    handleBeeGeckoTap(
+                    handleBeeGeckoSingleTap(
+                        cell
+                    )
+                }
+
+                onDoubleTapCell = {
+                        cell ->
+
+                    showBeeGeckoPiecePalette(
                         cell
                     )
                 }
@@ -992,23 +1008,33 @@ class MainActivity : Activity() {
                 minHeight = dp(46)
 
                 setOnClickListener {
-                    if (
+                    when {
                         selectedGameMode ==
                             GameMode.GECKODOKU &&
-                        classicGenerationActive
-                    ) {
-                        cancelClassicPuzzleSearch(
-                            announce = true
-                        )
-                    } else {
-                        createActivePuzzle()
+                            classicGenerationActive ->
+                            cancelClassicPuzzleSearch(
+                                announce = true
+                            )
 
-                        if (
-                            selectedGameMode !=
-                                GameMode.GECKODOKU
-                        ) {
-                            refreshGameUi()
-                            playLevelStartMusic()
+                        selectedGameMode ==
+                            GameMode.BEES_GECKOS &&
+                            beeGenerationActive ->
+                            cancelBeeGeckoPuzzleSearch(
+                                announce = true
+                            )
+
+                        else -> {
+                            createActivePuzzle()
+
+                            if (
+                                selectedGameMode !=
+                                    GameMode.GECKODOKU &&
+                                selectedGameMode !=
+                                    GameMode.BEES_GECKOS
+                            ) {
+                                refreshGameUi()
+                                playLevelStartMusic()
+                            }
                         }
                     }
                 }
@@ -1141,7 +1167,7 @@ class MainActivity : Activity() {
 
                         GameMode.BEES_GECKOS -> {
                             showBeeGeckoProfessorHint(
-                                applyPair = true
+                                applyStep = true
                             )
                             true
                         }
@@ -1624,8 +1650,8 @@ class MainActivity : Activity() {
                 startGomokuGame()
 
             GameMode.BEES_GECKOS ->
-                startBeeGeckoGame(
-                    restoreSaved = false
+                requestBeeGeckoPuzzle(
+                    recordStart = true
                 )
 
             GameMode.GECKODOKU ->
@@ -1904,11 +1930,12 @@ class MainActivity : Activity() {
                 if (current != null) {
                     startBeeGeckoGame(
                         puzzle = current,
-                        restoreSaved = false
+                        restoreSaved = false,
+                        recordStart = true
                     )
                     refreshGameUi()
                     status.text =
-                        "Même carte Abeilles & Geckos réinitialisée."
+                        "Même grille Abeilles & Geckos réinitialisée."
                 }
             }
 
@@ -2584,7 +2611,7 @@ class MainActivity : Activity() {
                 GameMode.BEES_GECKOS
         ) {
             showBeeGeckoProfessorHint(
-                applyPair = false
+                applyStep = false
             )
             return
         }
@@ -3241,6 +3268,31 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun mistakeCountForMode(
+        mode: GameMode
+    ): Int =
+        when (mode) {
+            GameMode.GECKODOKU ->
+                engine
+                    .snapshot()
+                    .mistakes
+
+            GameMode.SUDOKU ->
+                sudokuEngine
+                    ?.snapshot()
+                    ?.mistakes
+                    ?: 0
+
+            GameMode.BEES_GECKOS ->
+                beeGeckoEngine
+                    ?.snapshot()
+                    ?.mistakes
+                    ?: 0
+
+            GameMode.GOMOKU ->
+                0
+        }
+
     private fun recordRatedCompletionIfNeeded(
         mode: GameMode,
         size: Int,
@@ -3249,7 +3301,12 @@ class MainActivity : Activity() {
         val stars =
             CompletionRatingPolicy
                 .starsFor(
-                    assistancePoints
+                    assistancePoints =
+                        assistancePoints,
+                    mistakes =
+                        mistakeCountForMode(
+                            mode
+                        )
                 )
 
         if (!completionRecorded) {
@@ -3476,16 +3533,21 @@ class MainActivity : Activity() {
 
                 dialog.dismiss()
 
-                if (
-                    selectedGameMode ==
-                        GameMode.GECKODOKU
-                ) {
-                    requestClassicPuzzle(
-                        recordStart = true
-                    )
-                } else {
-                    createActivePuzzle()
-                    refreshGameUi()
+                when (selectedGameMode) {
+                    GameMode.GECKODOKU ->
+                        requestClassicPuzzle(
+                            recordStart = true
+                        )
+
+                    GameMode.BEES_GECKOS ->
+                        requestBeeGeckoPuzzle(
+                            recordStart = true
+                        )
+
+                    else -> {
+                        createActivePuzzle()
+                        refreshGameUi()
+                    }
                 }
             }
             .show()
@@ -3755,7 +3817,7 @@ class MainActivity : Activity() {
                 }
 
                 append(
-                    "\n5 étoiles = terminé sans aide demandée."
+                    "\n5 étoiles = sans aide et sans erreur. Une erreur coûte 3 étoiles."
                 )
             }
 
@@ -4996,6 +5058,9 @@ class MainActivity : Activity() {
             mode !=
                 GameMode.BEES_GECKOS
         ) {
+            cancelBeeGeckoPuzzleSearch(
+                announce = false
+            )
             persistBeeGeckoSession()
         }
 
@@ -5297,9 +5362,153 @@ class MainActivity : Activity() {
                 " • glisser / pincer"
     }
 
+    private fun requestBeeGeckoPuzzle(
+        recordStart: Boolean
+    ) {
+        beeGenerationToken += 1
+
+        val token =
+            beeGenerationToken
+
+        val requestedDifficulty =
+            selectedDifficulty
+
+        beeGenerationActive = true
+
+        if (::newButton.isInitialized) {
+            newButton.text =
+                "✕ Annuler"
+        }
+
+        if (::status.isInitialized) {
+            status.text =
+                "Recherche d'une grille Abeilles & Geckos " +
+                    requestedDifficulty.label +
+                    "…"
+        }
+
+        Thread {
+            val generated =
+                BeeGeckoGenerator
+                    .generateExact(
+                        requested =
+                            requestedDifficulty,
+                        shouldCancel = {
+                            token !=
+                                beeGenerationToken ||
+                                Thread
+                                    .currentThread()
+                                    .isInterrupted
+                        },
+                        onBatchCompleted = {
+                            batch ->
+
+                            if (
+                                batch == 1 ||
+                                batch % 2 ==
+                                    0
+                            ) {
+                                runOnUiThread {
+                                    if (
+                                        token ==
+                                            beeGenerationToken &&
+                                        beeGenerationActive &&
+                                        selectedGameMode ==
+                                            GameMode
+                                                .BEES_GECKOS
+                                    ) {
+                                        status.text =
+                                            "Recherche Abeilles & Geckos " +
+                                                requestedDifficulty.label +
+                                                "… série " +
+                                                (batch + 1)
+                                    }
+                                }
+                            }
+                        }
+                    )
+
+            runOnUiThread {
+                if (
+                    token !=
+                        beeGenerationToken
+                ) {
+                    return@runOnUiThread
+                }
+
+                beeGenerationActive =
+                    false
+
+                if (::newButton.isInitialized) {
+                    newButton.text =
+                        "↻ Nouvelle"
+                }
+
+                if (
+                    generated == null ||
+                    selectedGameMode !=
+                        GameMode.BEES_GECKOS ||
+                    selectedDifficulty !=
+                        requestedDifficulty
+                ) {
+                    return@runOnUiThread
+                }
+
+                startBeeGeckoGame(
+                    puzzle =
+                        generated,
+                    restoreSaved =
+                        false,
+                    recordStart =
+                        recordStart
+                )
+
+                refreshGameUi()
+
+                status.text =
+                    "Grille " +
+                        generated
+                            .difficulty
+                            .label +
+                        " trouvée • " +
+                        generated
+                            .regionCount +
+                        " zones • axes ↖↘ ↑↓ ↗↙."
+
+                playLevelStartMusic()
+            }
+        }.start()
+    }
+
+    private fun cancelBeeGeckoPuzzleSearch(
+        announce: Boolean
+    ) {
+        if (!beeGenerationActive) {
+            return
+        }
+
+        beeGenerationToken += 1
+        beeGenerationActive =
+            false
+
+        if (::newButton.isInitialized) {
+            newButton.text =
+                "↻ Nouvelle"
+        }
+
+        if (
+            announce &&
+            ::status.isInitialized
+        ) {
+            status.text =
+                "Recherche Abeilles & Geckos annulée."
+        }
+    }
+
     private fun startBeeGeckoGame(
         puzzle: BeeGeckoPuzzle? = null,
-        restoreSaved: Boolean = false
+        restoreSaved: Boolean = false,
+        recordStart: Boolean = true
     ) {
         val restored =
             if (
@@ -5331,61 +5540,76 @@ class MainActivity : Activity() {
             .selectedDifficulty =
             selectedDifficulty
 
-        val restoredPairs =
-            if (
-                restored
-                    ?.puzzle
-                    ?.id ==
-                    nextPuzzle.id
-            ) {
-                restored.pairs
-            } else {
-                emptySet()
-            }
-
-        val restoredMarkers =
-            if (
-                restored
-                    ?.puzzle
-                    ?.id ==
-                    nextPuzzle.id
-            ) {
-                restored.markers
-            } else {
-                emptyMap()
-            }
+        val restoredMatches =
+            restored
+                ?.puzzle
+                ?.id ==
+                nextPuzzle.id
 
         beeGeckoEngine =
             BeeGeckoGameEngine(
                 puzzle =
                     nextPuzzle,
-                initialPairs =
-                    restoredPairs,
+                initialGeckos =
+                    if (restoredMatches) {
+                        restored
+                            ?.confirmedGeckos
+                            ?: nextPuzzle
+                                .givenGeckos
+                    } else {
+                        nextPuzzle
+                            .givenGeckos
+                    },
+                initialBees =
+                    if (restoredMatches) {
+                        restored
+                            ?.confirmedBees
+                            ?: nextPuzzle
+                                .givenBees
+                    } else {
+                        nextPuzzle
+                            .givenBees
+                    },
+                initialCrosses =
+                    if (restoredMatches) {
+                        restored
+                            ?.crosses
+                            ?: emptySet()
+                    } else {
+                        emptySet()
+                    },
                 initialMarkers =
-                    restoredMarkers
+                    if (restoredMatches) {
+                        restored
+                            ?.markers
+                            ?: emptyMap()
+                    } else {
+                        emptyMap()
+                    },
+                initialMistakes =
+                    if (restoredMatches) {
+                        restored
+                            ?.mistakes
+                            ?: 0
+                    } else {
+                        0
+                    }
             )
 
         beeGeckoCamera =
-            if (
+            if (restoredMatches) {
                 restored
-                    ?.puzzle
-                    ?.id ==
-                    nextPuzzle.id
-            ) {
-                restored.camera
+                    ?.camera
+                    ?: BeeGeckoCamera()
             } else {
                 BeeGeckoCamera()
             }
 
         assistancePoints =
-            if (
+            if (restoredMatches) {
                 restored
-                    ?.puzzle
-                    ?.id ==
-                    nextPuzzle.id
-            ) {
-                restored
-                    .assistancePoints
+                    ?.assistancePoints
+                    ?: 0
             } else {
                 0
             }
@@ -5396,13 +5620,10 @@ class MainActivity : Activity() {
         completionRecorded = false
 
         val restoredSeconds =
-            if (
+            if (restoredMatches) {
                 restored
-                    ?.puzzle
-                    ?.id ==
-                    nextPuzzle.id
-            ) {
-                restored.elapsedSeconds
+                    ?.elapsedSeconds
+                    ?: 0L
             } else {
                 0L
             }
@@ -5421,9 +5642,7 @@ class MainActivity : Activity() {
                 next =
                     nextPuzzle,
                 restoredCamera =
-                    if (
-                        restored != null
-                    ) {
+                    if (restoredMatches) {
                         beeGeckoCamera
                     } else {
                         null
@@ -5454,17 +5673,20 @@ class MainActivity : Activity() {
             )
         }
 
-        if (restored == null) {
+        if (
+            recordStart &&
+            !restoredMatches
+        ) {
             statsStore.recordStart(
                 size =
-                    maxOf(
-                        nextPuzzle.columns,
-                        nextPuzzle.rows
-                    ),
+                    nextPuzzle
+                        .regionCount,
                 difficulty =
-                    nextPuzzle.difficulty,
+                    nextPuzzle
+                        .difficulty,
                 mode =
-                    GameMode.BEES_GECKOS
+                    GameMode
+                        .BEES_GECKOS
             )
         }
 
@@ -5475,7 +5697,8 @@ class MainActivity : Activity() {
             professorLife.observe(
                 ProfessorPlayerEvent
                     .GAME_STARTED,
-                nextPuzzle.difficulty
+                nextPuzzle
+                    .difficulty
             )
         }
 
@@ -5502,6 +5725,9 @@ class MainActivity : Activity() {
                     .currentCamera()
         }
 
+        val snapshot =
+            engine.snapshot()
+
         val elapsed =
             if (
                 gameStartedAt >
@@ -5523,14 +5749,21 @@ class MainActivity : Activity() {
         beeGeckoSessionStore.save(
             BeeGeckoSession(
                 puzzle = puzzle,
-                pairs =
-                    engine
-                        .snapshot()
-                        .pairs,
+                confirmedGeckos =
+                    snapshot
+                        .confirmedGeckos,
+                confirmedBees =
+                    snapshot
+                        .confirmedBees,
+                crosses =
+                    snapshot
+                        .manualCrosses,
                 markers =
-                    engine
-                        .snapshot()
+                    snapshot
                         .markers,
+                mistakes =
+                    snapshot
+                        .mistakes,
                 camera =
                     beeGeckoCamera,
                 elapsedSeconds =
@@ -5570,7 +5803,7 @@ class MainActivity : Activity() {
             if (
                 snapshot.complete
             ) {
-                "🧑‍🏫 Carte terminée"
+                "🧑‍🏫 Grille terminée"
             } else {
                 "🧑‍🏫 Prof Gecko"
             }
@@ -5596,109 +5829,240 @@ class MainActivity : Activity() {
 
         info.text =
             "Abeilles & Geckos • " +
-                puzzle.columns +
-                "×" +
-                puzzle.rows +
-                " hex • " +
-                snapshot.pairs.size +
+                puzzle.regionCount +
+                " zones • " +
+                snapshot
+                    .confirmedPairCount +
                 "/" +
-                puzzle.geckos.size +
-                " couples • " +
+                puzzle.regionCount +
+                " couples confirmés • " +
                 puzzle.difficulty.label +
-                " • glisser / pincer"
+                "\nAxes : ↖↘  ↑↓  ↗↙ • tap = croix • double tap = pièce"
     }
 
-    private fun handleBeeGeckoTap(
+    private fun handleBeeGeckoSingleTap(
         cell: HexCoord
     ) {
         val engine =
             beeGeckoEngine
                 ?: return
 
-        clearProfessorSession()
         recordBoardAction()
+        clearProfessorSession()
 
-        val result =
-            engine.tap(cell)
-
-        when (result) {
-            BeeGeckoTapResult
-                .SELECTED -> {
-                fx.marker()
-                status.text =
-                    "Pièce sélectionnée. Touche une pièce voisine de l'autre famille."
-            }
-
-            BeeGeckoTapResult
-                .DESELECTED -> {
-                fx.marker()
-                status.text =
-                    "Sélection retirée."
-            }
-
-            BeeGeckoTapResult
-                .PAIRED -> {
-                fx.gecko()
-                status.text =
-                    "Couple Gecko ↔ Abeille confirmé."
-
-                engine.snapshot()
-                    .pairFor(cell)
-                    ?.let {
-                        pair ->
-                        playBeeGeckoAnimation(
-                            pair.bee
-                        )
-                    }
-            }
-
-            BeeGeckoTapResult
-                .UNPAIRED -> {
+        when (
+            engine.toggleCross(
+                cell
+            )
+        ) {
+            BeeGeckoActionFeedback
+                .CROSS_SET -> {
                 fx.cross()
                 status.text =
-                    "Couple retiré."
+                    "Case exclue."
             }
 
-            BeeGeckoTapResult
-                .RESERVED -> {
+            BeeGeckoActionFeedback
+                .CROSS_REMOVED -> {
+                fx.cross()
+                status.text =
+                    "Croix retirée."
+            }
+
+            BeeGeckoActionFeedback
+                .GIVEN_LOCKED -> {
                 fx.blocked()
                 status.text =
-                    "Cette pièce appartient déjà à un autre couple."
+                    "Pièce donnée : elle est verrouillée."
             }
 
-            BeeGeckoTapResult
-                .NOT_NEIGHBORS -> {
+            BeeGeckoActionFeedback
+                .CROSS_BLOCKED -> {
                 fx.blocked()
                 status.text =
-                    "Un couple doit partager un côté d'hexagone."
+                    "Cette case contient déjà une pièce."
             }
 
-            BeeGeckoTapResult
-                .EMPTY_CELL -> {
-                status.text =
-                    "Case vide • glisse pour explorer, pince pour zoomer."
-            }
-
-            BeeGeckoTapResult
-                .COMPLETED -> {
-                fx.complete()
-
-                engine.snapshot()
-                    .pairFor(cell)
-                    ?.let {
-                        pair ->
-                        playBeeGeckoAnimation(
-                            pair.bee
-                        )
-                    }
-
-                completeBeeGeckoGame()
-            }
+            else ->
+                Unit
         }
 
         beeGeckoBoard.invalidate()
-        refreshBeeGeckoInfo()
         persistBeeGeckoSession()
+    }
+
+    private fun showBeeGeckoPiecePalette(
+        cell: HexCoord
+    ) {
+        val engine =
+            beeGeckoEngine
+                ?: return
+
+        val snapshot =
+            engine.snapshot()
+
+        if (snapshot.isGiven(cell)) {
+            fx.blocked()
+            status.text =
+                "Cette pièce est donnée et verrouillée."
+            return
+        }
+
+        val current =
+            snapshot.pieceAt(cell)
+
+        val labels =
+            buildList {
+                add("🦎 Placer un Gecko")
+                add("🐝 Placer une Abeille")
+
+                if (current != null) {
+                    add("⌫ Retirer la pièce")
+                }
+            }
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Case hexagonale"
+            )
+            .setItems(
+                labels.toTypedArray()
+            ) {
+                    _,
+                    which ->
+
+                recordBoardAction()
+                clearProfessorSession()
+
+                val feedback =
+                    when (which) {
+                        0 ->
+                            engine.placePiece(
+                                cell,
+                                BeeGeckoPiece
+                                    .GECKO
+                            )
+
+                        1 ->
+                            engine.placePiece(
+                                cell,
+                                BeeGeckoPiece
+                                    .BEE
+                            )
+
+                        else ->
+                            engine.removePiece(
+                                cell
+                            )
+                    }
+
+                when (feedback) {
+                    BeeGeckoActionFeedback
+                        .PIECE_CONFIRMED -> {
+                        fx.gecko()
+
+                        val piece =
+                            engine
+                                .snapshot()
+                                .pieceAt(cell)
+
+                        status.text =
+                            if (
+                                piece ==
+                                    BeeGeckoPiece
+                                        .BEE
+                            ) {
+                                "Abeille confirmée."
+                            } else {
+                                "Gecko confirmé."
+                            }
+
+                        if (
+                            piece ==
+                                BeeGeckoPiece
+                                    .BEE
+                        ) {
+                            playBeeGeckoAnimation(
+                                cell
+                            )
+                        }
+                    }
+
+                    BeeGeckoActionFeedback
+                        .COMPLETED -> {
+                        fx.complete()
+
+                        if (
+                            engine
+                                .snapshot()
+                                .pieceAt(cell) ==
+                                BeeGeckoPiece
+                                    .BEE
+                        ) {
+                            playBeeGeckoAnimation(
+                                cell
+                            )
+                        }
+
+                        completeBeeGeckoGame()
+                    }
+
+                    BeeGeckoActionFeedback
+                        .PIECE_REMOVED -> {
+                        fx.cross()
+                        status.text =
+                            "Pièce retirée."
+                    }
+
+                    BeeGeckoActionFeedback
+                        .WRONG_PIECE -> {
+                        fx.error()
+                        statsStore.recordMistake()
+
+                        professorLife.observe(
+                            ProfessorPlayerEvent
+                                .WRONG_MOVE,
+                            selectedDifficulty
+                        )
+
+                        status.text =
+                            "Pas ici : erreur = −3 étoiles. Une croix reste pour éviter de retester au hasard."
+
+                        beeGeckoBoard
+                            .announceForAccessibility(
+                                "Placement incorrect. Trois étoiles de pénalité."
+                            )
+
+                        speakLivingProfessor(
+                            event =
+                                ProfessorPlayerEvent
+                                    .WRONG_MOVE,
+                            origin =
+                                SpeechOrigin
+                                    .QUICK_TALK
+                        )
+                    }
+
+                    BeeGeckoActionFeedback
+                        .GIVEN_LOCKED -> {
+                        fx.blocked()
+                        status.text =
+                            "Pièce donnée : elle est verrouillée."
+                    }
+
+                    else ->
+                        Unit
+                }
+
+                beeGeckoBoard.invalidate()
+                refreshBeeGeckoInfo()
+                persistBeeGeckoSession()
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
     }
 
     private fun showBeeGeckoMarkerPalette(
@@ -5745,26 +6109,24 @@ class MainActivity : Activity() {
                         markers[which]
                     }
 
-                if (
-                    engine.setMarker(
-                        cell,
-                        marker
-                    )
-                ) {
-                    fx.marker()
+                engine.setMarker(
+                    cell,
+                    marker
+                )
 
-                    status.text =
-                        if (marker == null) {
-                            "Repère personnel retiré."
-                        } else {
-                            "Repère personnel posé : " +
-                                marker.label +
-                                "."
-                        }
+                fx.marker()
 
-                    beeGeckoBoard.invalidate()
-                    persistBeeGeckoSession()
-                }
+                status.text =
+                    if (marker == null) {
+                        "Repère personnel retiré."
+                    } else {
+                        "Repère personnel posé : " +
+                            marker.label +
+                            "."
+                    }
+
+                beeGeckoBoard.invalidate()
+                persistBeeGeckoSession()
             }
             .setNegativeButton(
                 "Annuler",
@@ -5781,36 +6143,46 @@ class MainActivity : Activity() {
         val snapshot =
             engine.snapshot()
 
-        val paired =
-            snapshot.pairs
-                .flatMap {
-                    listOf(
-                        it.gecko,
-                        it.bee
-                    )
-                }
-                .toSet()
-
-        val target =
-            snapshot.puzzle
-                .pieces
-                .keys
-                .sortedWith(
-                    compareBy<HexCoord> {
-                        it.r
-                    }.thenBy {
-                        it.q
-                    }
+        val targetRegion =
+            (
+                0 until
+                    snapshot
+                        .puzzle
+                        .regionCount
                 )
                 .firstOrNull {
-                    it !in paired
+                    region ->
+                    snapshot
+                        .puzzle
+                        .pairForRegion(
+                            region
+                        )
+                        ?.let {
+                            pair ->
+                            pair.gecko !in
+                                snapshot
+                                    .confirmedGeckos ||
+                                pair.bee !in
+                                    snapshot
+                                        .confirmedBees
+                        } ==
+                        true
                 }
 
-        if (target == null) {
+        if (targetRegion == null) {
             status.text =
-                "Toutes les pièces sont déjà appariées."
+                "Toutes les zones sont résolues."
             return
         }
+
+        val target =
+            snapshot
+                .puzzle
+                .cellsInRegion(
+                    targetRegion
+                )
+                .firstOrNull()
+                ?: return
 
         beeGeckoBoard
             .centerOn(target)
@@ -5822,11 +6194,13 @@ class MainActivity : Activity() {
         persistBeeGeckoSession()
 
         status.text =
-            "Zone non résolue centrée."
+            "Zone " +
+                (targetRegion + 1) +
+                " non résolue centrée."
     }
 
     private fun showBeeGeckoProfessorHint(
-        applyPair: Boolean
+        applyStep: Boolean
     ) {
         val engine =
             beeGeckoEngine
@@ -5838,7 +6212,7 @@ class MainActivity : Activity() {
         if (snapshot.complete) {
             fx.blocked()
             status.text =
-                "La carte est déjà terminée."
+                "La grille est déjà terminée."
             return
         }
 
@@ -5852,7 +6226,7 @@ class MainActivity : Activity() {
             fx.blocked()
 
             val message =
-                "Je ne trouve plus de déduction sûre avec les couples actuels. Vérifie les associations déjà confirmées."
+                "Je ne trouve plus de déduction sûre avec l'état actuel. Vérifie les croix et les pièces déjà posées."
 
             showProfessorBubble(
                 message
@@ -5865,7 +6239,7 @@ class MainActivity : Activity() {
 
         professorUsed = true
         assistancePoints +=
-            if (applyPair) {
+            if (applyStep) {
                 AssistanceKind
                     .DIRECT_MOVE
                     .points
@@ -5881,16 +6255,27 @@ class MainActivity : Activity() {
             )
 
         val visualLegend =
-            "\n\nBleu : pièce étudiée. Orange : possibilité. Gris : impossible. Violet : déjà réservé. Vert : couple déduit."
+            "\n\nBleu A : zone analysée. Orange ? : hypothèse encore possible. Rouge × : élimination. Vert ✓ : conclusion certaine."
 
         showProfessorBubble(
             hint.message +
                 visualLegend
         )
 
+        if (
+            ::professorBubble
+                .isInitialized
+        ) {
+            professorBubble
+                .bringToFront()
+            professorBubble.elevation =
+                dp(24)
+                    .toFloat()
+        }
+
         status.text =
-            if (applyPair) {
-                "Prof Gecko • déduction appliquée"
+            if (applyStep) {
+                "Prof Gecko • raisonnement expliqué puis appliqué"
             } else {
                 "Prof Gecko • raisonnement affiché"
             }
@@ -5902,29 +6287,36 @@ class MainActivity : Activity() {
                 hint.message
             )
 
-        if (!applyPair) {
+        if (!applyStep) {
             persistBeeGeckoSession()
             return
         }
 
         when (
-            engine.applyPair(
-                hint.pair
+            engine.applyProfessorStep(
+                hint.step
             )
         ) {
-            BeeGeckoTapResult
+            BeeGeckoActionFeedback
                 .COMPLETED -> {
                 beeGeckoBoard.invalidate()
                 persistBeeGeckoSession()
                 completeBeeGeckoGame()
             }
 
-            BeeGeckoTapResult
-                .PAIRED -> {
+            BeeGeckoActionFeedback
+                .PIECE_CONFIRMED,
+            BeeGeckoActionFeedback
+                .CROSS_SET -> {
                 beeGeckoBoard.invalidate()
-                playBeeGeckoAnimation(
-                    hint.pair.bee
-                )
+
+                hint.step.bee
+                    ?.let {
+                        playBeeGeckoAnimation(
+                            it
+                        )
+                    }
+
                 persistBeeGeckoSession()
                 refreshBeeGeckoInfo()
             }
@@ -5947,16 +6339,13 @@ class MainActivity : Activity() {
                 mode =
                     GameMode.BEES_GECKOS,
                 size =
-                    maxOf(
-                        puzzle.columns,
-                        puzzle.rows
-                    ),
+                    puzzle.regionCount,
                 difficulty =
                     puzzle.difficulty
             )
 
         status.text =
-            "Carte terminée 🐝🦎  " +
+            "Grille terminée 🐝🦎  " +
                 CompletionRatingPolicy
                     .symbols(stars)
 
@@ -5977,7 +6366,7 @@ class MainActivity : Activity() {
         ) {
             beeGeckoBoard
                 .announceForAccessibility(
-                    "Carte Abeilles et Geckos terminée. " +
+                    "Grille Abeilles et Geckos terminée. " +
                         stars +
                         " étoiles."
                 )

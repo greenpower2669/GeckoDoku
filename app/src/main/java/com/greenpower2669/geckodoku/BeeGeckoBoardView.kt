@@ -8,11 +8,11 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.os.SystemClock
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
-import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
@@ -25,7 +25,10 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     lateinit var snapshotProvider:
         () -> BeeGeckoSnapshot
 
-    var onTapPiece:
+    var onSingleTapCell:
+        ((HexCoord) -> Unit)? = null
+
+    var onDoubleTapCell:
         ((HexCoord) -> Unit)? = null
 
     var onLongPressCell:
@@ -38,9 +41,6 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         Paint(Paint.ANTI_ALIAS_FLAG)
 
     private val hexPaint =
-        Paint(Paint.ANTI_ALIAS_FLAG)
-
-    private val pairPaint =
         Paint(Paint.ANTI_ALIAS_FLAG)
 
     private val geckoBitmap:
@@ -75,7 +75,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         )
 
     private val baseRadius =
-        dp(34f)
+        dp(35f)
 
     private val horizontalStep =
         sqrt(3f) *
@@ -93,7 +93,6 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         false
     private var scaledGesture =
         false
-
     private var longPressTriggered =
         false
 
@@ -103,11 +102,17 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     private var longPressRunnable:
         Runnable? = null
 
+    private var pendingSingleTap:
+        Runnable? = null
+
+    private var lastTapCell:
+        HexCoord? = null
+
+    private var lastTapAtMs =
+        0L
+
     private val dragThreshold =
         dp(10f)
-
-    private val longPressDelayMs =
-        520L
 
     private var professorHint:
         BeeGeckoHint? = null
@@ -124,6 +129,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 ): Boolean {
                     scaledGesture = true
                     cancelPendingLongPress()
+                    cancelPendingSingleTap()
                     return true
                 }
 
@@ -160,8 +166,9 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         isFocusable = true
         importantForAccessibility =
             IMPORTANT_FOR_ACCESSIBILITY_YES
+
         contentDescription =
-            "Plateau Abeilles et Geckos. Touchez deux voisins opposés pour créer un couple, glissez pour explorer et pincez pour zoomer."
+            "Plateau Abeilles et Geckos. Un tap pose ou retire une croix, un double tap choisit Gecko ou Abeille, un appui long ouvre les repères. Glissez pour déplacer et pincez pour zoomer."
     }
 
     override fun performClick():
@@ -188,6 +195,8 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             restoredCamera != null
 
         professorHint = null
+        cancelPendingSingleTap()
+        cancelPendingLongPress()
 
         if (
             width > 0 &&
@@ -207,9 +216,17 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         hint: BeeGeckoHint
     ) {
         professorHint = hint
-        centerOn(
-            hint.source
-        )
+
+        val focus =
+            hint.green
+                .firstOrNull()
+                ?: hint.blue
+                    .firstOrNull()
+
+        if (focus != null) {
+            centerOn(focus)
+        }
+
         invalidate()
     }
 
@@ -362,20 +379,18 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             camera.scale
         )
 
-        drawGrid(
+        drawRegionsAndGrid(
             canvas,
-            puzzle,
-            snapshot
-        )
-
-        drawPairs(
-            canvas,
-            snapshot
+            puzzle
         )
 
         drawPieces(
             canvas,
-            puzzle,
+            snapshot
+        )
+
+        drawCrosses(
+            canvas,
             snapshot
         )
 
@@ -391,157 +406,130 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         canvas.restore()
     }
 
-    private fun drawGrid(
+    private fun drawRegionsAndGrid(
         canvas: Canvas,
-        puzzle: BeeGeckoPuzzle,
-        snapshot: BeeGeckoSnapshot
+        puzzle: BeeGeckoPuzzle
     ) {
-        for (
-            r in
-            0 until puzzle.rows
-        ) {
-            for (
-                q in
-                0 until puzzle.columns
-            ) {
-                val cell =
-                    HexCoord(
-                        q,
-                        r
+        for (cell in puzzle.cells) {
+            val path =
+                hexPath(cell)
+
+            hexPaint.style =
+                Paint.Style.FILL
+
+            hexPaint.color =
+                GeckoBoardPalette
+                    .colorFor(
+                        puzzle
+                            .regionAt(cell)
                     )
 
-                val path =
-                    hexPath(cell)
+            canvas.drawPath(
+                path,
+                hexPaint
+            )
 
-                val selected =
-                    snapshot.selected ==
-                        cell
-
-                hexPaint.style =
-                    Paint.Style.FILL
-
-                hexPaint.color =
-                    when {
-                        selected ->
-                            Color.rgb(
-                                229,
-                                245,
-                                214
-                            )
-
-                        (
-                            q +
-                                r
-                            ) % 2 ==
-                            0 ->
-                            Color.rgb(
-                                251,
-                                247,
-                                221
-                            )
-
-                        else ->
-                            Color.rgb(
-                                243,
-                                238,
-                                206
-                            )
-                    }
-
-                canvas.drawPath(
-                    path,
-                    hexPaint
+            hexPaint.style =
+                Paint.Style.STROKE
+            hexPaint.strokeWidth =
+                dp(1.05f) /
+                    camera.scale
+            hexPaint.color =
+                Color.rgb(
+                    88,
+                    88,
+                    82
                 )
 
-                hexPaint.style =
-                    Paint.Style.STROKE
-                hexPaint.strokeWidth =
-                    if (selected) {
-                        dp(3f) /
-                            camera.scale
-                    } else {
-                        dp(1.2f) /
-                            camera.scale
-                    }
-
-                hexPaint.color =
-                    if (selected) {
-                        Color.rgb(
-                            52,
-                            126,
-                            70
-                        )
-                    } else {
-                        Color.rgb(
-                            145,
-                            132,
-                            92
-                        )
-                    }
-
-                canvas.drawPath(
-                    path,
-                    hexPaint
-                )
-            }
+            canvas.drawPath(
+                path,
+                hexPaint
+            )
         }
-    }
 
-    private fun drawPairs(
-        canvas: Canvas,
-        snapshot: BeeGeckoSnapshot
-    ) {
-        pairPaint.style =
-            Paint.Style.STROKE
-        pairPaint.strokeCap =
-            Paint.Cap.ROUND
-        pairPaint.strokeWidth =
-            dp(6f) /
-                camera.scale
-        pairPaint.color =
-            Color.rgb(
-                76,
-                113,
-                61
-            )
+        for (cell in puzzle.cells) {
+            val region =
+                puzzle.regionAt(cell)
 
-        snapshot.pairs.forEach {
-            pair ->
-            val g =
-                cellCenter(
-                    pair.gecko
-                )
+            val vertices =
+                hexVertices(cell)
 
-            val b =
-                cellCenter(
-                    pair.bee
-                )
+            val neighbors =
+                cell.neighbors()
 
-            canvas.drawLine(
-                g.first,
-                g.second,
-                b.first,
-                b.second,
-                pairPaint
-            )
+            for (
+                direction in
+                0 until 6
+            ) {
+                val neighbor =
+                    neighbors[direction]
+
+                if (
+                    !puzzle.contains(
+                        neighbor
+                    ) ||
+                    puzzle.regionAt(
+                        neighbor
+                    ) != region
+                ) {
+                    val edge =
+                        edgeVertices(
+                            direction
+                        )
+
+                    hexPaint.style =
+                        Paint.Style.STROKE
+                    hexPaint.strokeCap =
+                        Paint.Cap.ROUND
+                    hexPaint.strokeWidth =
+                        dp(3.2f) /
+                            camera.scale
+                    hexPaint.color =
+                        Color.rgb(
+                            40,
+                            40,
+                            38
+                        )
+
+                    canvas.drawLine(
+                        vertices[
+                            edge.first
+                        ].first,
+                        vertices[
+                            edge.first
+                        ].second,
+                        vertices[
+                            edge.second
+                        ].first,
+                        vertices[
+                            edge.second
+                        ].second,
+                        hexPaint
+                    )
+                }
+            }
         }
     }
 
     private fun drawPieces(
         canvas: Canvas,
-        puzzle: BeeGeckoPuzzle,
         snapshot: BeeGeckoSnapshot
     ) {
-        puzzle.pieces.forEach {
-            (cell, piece) ->
+        val puzzle =
+            snapshot.puzzle
+
+        for (cell in puzzle.cells) {
+            val piece =
+                snapshot
+                    .pieceAt(cell)
+                    ?: continue
+
             val center =
-                cellCenter(
-                    cell
-                )
+                cellCenter(cell)
 
             val radius =
                 baseRadius *
-                    .66f
+                    .61f
 
             val target =
                 RectF(
@@ -566,16 +554,8 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 }
 
             if (bitmap != null) {
-                paint.alpha =
-                    if (
-                        snapshot
-                            .pairFor(cell) !=
-                            null
-                    ) {
-                        255
-                    } else {
-                        235
-                    }
+                paint.alpha = 255
+                paint.colorFilter = null
 
                 canvas.drawBitmap(
                     bitmap,
@@ -592,15 +572,15 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                             BeeGeckoPiece.GECKO
                     ) {
                         Color.rgb(
-                            60,
-                            144,
-                            83
+                            51,
+                            137,
+                            72
                         )
                     } else {
                         Color.rgb(
-                            247,
-                            193,
-                            48
+                            243,
+                            183,
+                            32
                         )
                     }
 
@@ -608,7 +588,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     center.first,
                     center.second,
                     radius *
-                        .55f,
+                        .58f,
                     paint
                 )
 
@@ -629,7 +609,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     ) {
                         "G"
                     } else {
-                        "B"
+                        "A"
                     },
                     center.first,
                     center.second +
@@ -641,6 +621,79 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 paint.isFakeBoldText =
                     false
             }
+
+            if (
+                snapshot.isGiven(
+                    cell
+                )
+            ) {
+                paint.style =
+                    Paint.Style.STROKE
+                paint.strokeWidth =
+                    dp(3f) /
+                        camera.scale
+                paint.color =
+                    Color.rgb(
+                        35,
+                        35,
+                        35
+                    )
+
+                canvas.drawCircle(
+                    center.first,
+                    center.second,
+                    radius *
+                        .77f,
+                    paint
+                )
+            }
+        }
+    }
+
+    private fun drawCrosses(
+        canvas: Canvas,
+        snapshot: BeeGeckoSnapshot
+    ) {
+        paint.style =
+            Paint.Style.STROKE
+        paint.strokeCap =
+            Paint.Cap.ROUND
+        paint.strokeWidth =
+            dp(3f) /
+                camera.scale
+        paint.color =
+            Color.rgb(
+                170,
+                40,
+                40
+            )
+
+        for (
+            cell in
+            snapshot.manualCrosses
+        ) {
+            val center =
+                cellCenter(cell)
+
+            val size =
+                baseRadius *
+                    .31f
+
+            canvas.drawLine(
+                center.first - size,
+                center.second - size,
+                center.first + size,
+                center.second + size,
+                paint
+            )
+
+            canvas.drawLine(
+                center.first + size,
+                center.second - size,
+                center.first - size,
+                center.second + size,
+                paint
+            )
         }
     }
 
@@ -660,7 +713,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             Paint.Align.CENTER
         paint.textSize =
             baseRadius *
-                .48f
+                .44f
         paint.isFakeBoldText =
             true
 
@@ -676,10 +729,10 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     marker.symbol,
                     center.first +
                         baseRadius *
-                            .52f,
+                            .49f,
                     center.second -
                         baseRadius *
-                            .42f,
+                            .40f,
                     paint
                 )
             }
@@ -695,11 +748,134 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             professorHint
                 ?: return
 
-        fun outline(
-            cell: HexCoord,
-            color: Int,
-            widthDp: Float
+        drawHintSet(
+            canvas =
+                canvas,
+            cells =
+                hint.blue,
+            color =
+                Color.rgb(
+                    43,
+                    105,
+                    190
+                ),
+            symbol =
+                "A",
+            widthDp =
+                4.7f
+        )
+
+        drawHintSet(
+            canvas =
+                canvas,
+            cells =
+                hint.orange,
+            color =
+                Color.rgb(
+                    224,
+                    145,
+                    20
+                ),
+            symbol =
+                "?",
+            widthDp =
+                4.1f
+        )
+
+        drawHintSet(
+            canvas =
+                canvas,
+            cells =
+                hint.red,
+            color =
+                Color.rgb(
+                    190,
+                    45,
+                    45
+                ),
+            symbol =
+                "×",
+            widthDp =
+                4.0f
+        )
+
+        drawHintSet(
+            canvas =
+                canvas,
+            cells =
+                hint.green,
+            color =
+                Color.rgb(
+                    35,
+                    150,
+                    65
+                ),
+            symbol =
+                "✓",
+            widthDp =
+                5.6f
+        )
+
+        val g =
+            hint.step.gecko
+
+        val b =
+            hint.step.bee
+
+        if (
+            g != null &&
+            b != null &&
+            BeeGeckoRules
+                .areNeighbors(
+                    g,
+                    b
+                )
         ) {
+            val gc =
+                cellCenter(g)
+            val bc =
+                cellCenter(b)
+
+            paint.style =
+                Paint.Style.STROKE
+            paint.strokeCap =
+                Paint.Cap.ROUND
+            paint.strokeWidth =
+                dp(5f) /
+                    camera.scale
+            paint.color =
+                Color.rgb(
+                    35,
+                    150,
+                    65
+                )
+
+            canvas.drawLine(
+                gc.first,
+                gc.second,
+                bc.first,
+                bc.second,
+                paint
+            )
+        }
+    }
+
+    private fun drawHintSet(
+        canvas: Canvas,
+        cells: Set<HexCoord>,
+        color: Int,
+        symbol: String,
+        widthDp: Float
+    ) {
+        for (cell in cells) {
+            if (
+                puzzle
+                    ?.contains(cell) !=
+                    true
+            ) {
+                continue
+            }
+
             hexPaint.style =
                 Paint.Style.STROKE
             hexPaint.strokeWidth =
@@ -712,91 +888,34 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 hexPath(cell),
                 hexPaint
             )
+
+            val center =
+                cellCenter(cell)
+
+            paint.style =
+                Paint.Style.FILL
+            paint.color =
+                color
+            paint.textAlign =
+                Paint.Align.CENTER
+            paint.textSize =
+                baseRadius *
+                    .38f
+            paint.isFakeBoldText =
+                true
+
+            canvas.drawText(
+                symbol,
+                center.first,
+                center.second -
+                    baseRadius *
+                        .52f,
+                paint
+            )
+
+            paint.isFakeBoldText =
+                false
         }
-
-        outline(
-            hint.source,
-            Color.rgb(
-                35,
-                93,
-                176
-            ),
-            5f
-        )
-
-        hint.candidates.forEach {
-            outline(
-                it,
-                Color.rgb(
-                    229,
-                    164,
-                    25
-                ),
-                4f
-            )
-        }
-
-        hint.excluded.forEach {
-            outline(
-                it,
-                Color.rgb(
-                    125,
-                    125,
-                    125
-                ),
-                2.5f
-            )
-        }
-
-        hint.reserved.forEach {
-            outline(
-                it,
-                Color.rgb(
-                    151,
-                    70,
-                    156
-                ),
-                3.5f
-            )
-        }
-
-        outline(
-            hint.target,
-            Color.rgb(
-                38,
-                152,
-                64
-            ),
-            6f
-        )
-
-        val from =
-            cellCenter(
-                hint.source
-            )
-
-        val to =
-            cellCenter(
-                hint.target
-            )
-
-        pairPaint.color =
-            Color.rgb(
-                38,
-                152,
-                64
-            )
-        pairPaint.strokeWidth =
-            dp(5f) /
-                camera.scale
-
-        canvas.drawLine(
-            from.first,
-            from.second,
-            to.first,
-            to.second,
-            pairPaint
-        )
     }
 
     override fun onTouchEvent(
@@ -819,12 +938,21 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 dragging = false
                 scaledGesture = false
                 longPressTriggered = false
+
                 downCell =
                     screenToCell(
                         event.x,
                         event.y
                     )
+
                 scheduleLongPress()
+                return true
+            }
+
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                scaledGesture = true
+                cancelPendingLongPress()
+                cancelPendingSingleTap()
                 return true
             }
 
@@ -835,6 +963,8 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     scaleDetector
                         .isInProgress
                 ) {
+                    scaledGesture = true
+                    cancelPendingLongPress()
                     return true
                 }
 
@@ -852,6 +982,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 ) {
                     dragging = true
                     cancelPendingLongPress()
+                    cancelPendingSingleTap()
                 }
 
                 if (dragging) {
@@ -895,8 +1026,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                         event.y
                     )
                         ?.let {
-                            onTapPiece
-                                ?.invoke(it)
+                            handleTap(it)
                         }
                 }
 
@@ -909,13 +1039,67 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     ?.requestDisallowInterceptTouchEvent(
                         false
                     )
+
                 cancelPendingLongPress()
+                cancelPendingSingleTap()
                 downCell = null
                 return true
             }
         }
 
         return true
+    }
+
+    private fun handleTap(
+        cell: HexCoord
+    ) {
+        val now =
+            SystemClock
+                .uptimeMillis()
+
+        if (
+            lastTapCell ==
+                cell &&
+            now -
+                lastTapAtMs <=
+                DOUBLE_TAP_MS
+        ) {
+            cancelPendingSingleTap()
+            lastTapCell = null
+            lastTapAtMs = 0L
+
+            onDoubleTapCell
+                ?.invoke(cell)
+
+            return
+        }
+
+        lastTapCell = cell
+        lastTapAtMs = now
+
+        cancelPendingSingleTap()
+
+        val runnable =
+            Runnable {
+                if (
+                    lastTapCell ==
+                        cell
+                ) {
+                    lastTapCell = null
+                    lastTapAtMs = 0L
+
+                    onSingleTapCell
+                        ?.invoke(cell)
+                }
+            }
+
+        pendingSingleTap =
+            runnable
+
+        postDelayed(
+            runnable,
+            DOUBLE_TAP_MS
+        )
     }
 
     private fun scheduleLongPress() {
@@ -932,6 +1116,8 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     !scaledGesture
                 ) {
                     longPressTriggered = true
+                    cancelPendingSingleTap()
+
                     onLongPressCell
                         ?.invoke(cell)
                 }
@@ -942,7 +1128,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
 
         postDelayed(
             runnable,
-            longPressDelayMs
+            LONG_PRESS_MS
         )
     }
 
@@ -953,6 +1139,15 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             }
 
         longPressRunnable = null
+    }
+
+    private fun cancelPendingSingleTap() {
+        pendingSingleTap
+            ?.let {
+                removeCallbacks(it)
+            }
+
+        pendingSingleTap = null
     }
 
     private fun screenToCell(
@@ -983,40 +1178,27 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         var bestDistance =
             Float.MAX_VALUE
 
-        for (
-            r in
-            0 until puzzle.rows
-        ) {
-            for (
-                q in
-                0 until puzzle.columns
+        for (cell in puzzle.cells) {
+            val center =
+                cellCenter(
+                    cell
+                )
+
+            val distance =
+                hypot(
+                    center.first -
+                        worldX,
+                    center.second -
+                        worldY
+                )
+
+            if (
+                distance <
+                    bestDistance
             ) {
-                val cell =
-                    HexCoord(
-                        q,
-                        r
-                    )
-
-                val center =
-                    cellCenter(
-                        cell
-                    )
-
-                val d =
-                    hypot(
-                        center.first -
-                            worldX,
-                        center.second -
-                            worldY
-                    )
-
-                if (
-                    d <
-                        bestDistance
-                ) {
-                    bestDistance = d
-                    best = cell
-                }
+                bestDistance =
+                    distance
+                best = cell
             }
         }
 
@@ -1024,7 +1206,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             ?.takeIf {
                 bestDistance <=
                     baseRadius *
-                        .95f
+                        .94f
             }
     }
 
@@ -1047,7 +1229,10 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     viewHeight =
                         height.toFloat(),
                     content =
-                        worldBounds
+                        worldBounds,
+                    preferredMinScale =
+                        BeeGeckoViewportPolicy
+                            .MIN_SCALE
                 )
 
         initializedCamera = true
@@ -1059,7 +1244,8 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         camera =
             BeeGeckoViewportPolicy
                 .clamp(
-                    camera = camera,
+                    camera =
+                        camera,
                     viewWidth =
                         width.toFloat(),
                     viewHeight =
@@ -1067,7 +1253,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     content =
                         worldBounds,
                     visibleMarginPx =
-                        dp(56f)
+                        dp(54f)
                 )
     }
 
@@ -1079,30 +1265,57 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     private fun calculateWorldBounds(
         puzzle: BeeGeckoPuzzle
     ) {
-        val left =
-            -baseRadius
+        val centers =
+            puzzle.cells
+                .map {
+                    cellCenter(it)
+                }
 
-        val top =
-            -baseRadius
-
-        val last =
-            cellCenter(
-                HexCoord(
-                    puzzle.columns - 1,
-                    puzzle.rows - 1
+        if (centers.isEmpty()) {
+            worldBounds =
+                BeeGeckoBounds(
+                    0f,
+                    0f,
+                    0f,
+                    0f
                 )
-            )
+            return
+        }
+
+        val minX =
+            centers.minOf {
+                it.first
+            } -
+                baseRadius
+
+        val maxX =
+            centers.maxOf {
+                it.first
+            } +
+                baseRadius
+
+        val minY =
+            centers.minOf {
+                it.second
+            } -
+                baseRadius
+
+        val maxY =
+            centers.maxOf {
+                it.second
+            } +
+                baseRadius
 
         worldBounds =
             BeeGeckoBounds(
-                left = left,
-                top = top,
+                left =
+                    minX,
+                top =
+                    minY,
                 right =
-                    last.first +
-                        baseRadius,
+                    maxX,
                 bottom =
-                    last.second +
-                        baseRadius
+                    maxY
             )
     }
 
@@ -1127,55 +1340,73 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     private fun hexPath(
         cell: HexCoord
     ): Path {
+        val vertices =
+            hexVertices(cell)
+
+        return Path()
+            .apply {
+                vertices
+                    .forEachIndexed {
+                        index,
+                        point ->
+
+                        if (index == 0) {
+                            moveTo(
+                                point.first,
+                                point.second
+                            )
+                        } else {
+                            lineTo(
+                                point.first,
+                                point.second
+                            )
+                        }
+                    }
+
+                close()
+            }
+    }
+
+    private fun hexVertices(
+        cell: HexCoord
+    ): List<Pair<Float, Float>> {
         val center =
             cellCenter(
                 cell
             )
 
-        val path =
-            Path()
+        return List(6) {
+            index ->
 
-        for (
-            index in
-            0 until 6
-        ) {
             val angle =
                 Math.toRadians(
-                    (
-                        60.0 *
-                            index -
-                            30.0
-                        )
+                    60.0 *
+                        index -
+                        30.0
                 )
 
-            val x =
-                center.first +
-                    baseRadius *
-                        cos(angle)
-                            .toFloat()
-
-            val y =
+            center.first +
+                baseRadius *
+                    cos(angle)
+                        .toFloat() to
                 center.second +
                     baseRadius *
                         sin(angle)
                             .toFloat()
-
-            if (index == 0) {
-                path.moveTo(
-                    x,
-                    y
-                )
-            } else {
-                path.lineTo(
-                    x,
-                    y
-                )
-            }
         }
-
-        path.close()
-        return path
     }
+
+    private fun edgeVertices(
+        direction: Int
+    ): Pair<Int, Int> =
+        when (direction) {
+            0 -> 0 to 1
+            1 -> 5 to 0
+            2 -> 4 to 5
+            3 -> 3 to 4
+            4 -> 2 to 3
+            else -> 1 to 2
+        }
 
     private fun loadBitmap(
         path: String
@@ -1200,4 +1431,12 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             resources
                 .displayMetrics
                 .density
+
+    companion object {
+        private const val DOUBLE_TAP_MS =
+            285L
+
+        private const val LONG_PRESS_MS =
+            520L
+    }
 }

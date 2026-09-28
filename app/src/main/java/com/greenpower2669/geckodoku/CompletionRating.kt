@@ -9,24 +9,38 @@ enum class AssistanceKind(
 
 object CompletionRatingPolicy {
     fun starsFor(
-        assistancePoints: Int
-    ): Int =
-        when {
-            assistancePoints <= 0 ->
+        assistancePoints: Int,
+        mistakes: Int = 0
+    ): Int {
+        val assistanceStars =
+            when {
+                assistancePoints <= 0 ->
+                    5
+
+                assistancePoints == 1 ->
+                    4
+
+                assistancePoints <= 3 ->
+                    3
+
+                assistancePoints <= 5 ->
+                    2
+
+                else ->
+                    1
+            }
+
+        return (
+            assistanceStars -
+                mistakes
+                    .coerceAtLeast(0) *
+                    3
+            )
+            .coerceIn(
+                1,
                 5
-
-            assistancePoints == 1 ->
-                4
-
-            assistancePoints <= 3 ->
-                3
-
-            assistancePoints <= 5 ->
-                2
-
-            else ->
-                1
-        }
+            )
+    }
 
     fun symbols(
         stars: Int

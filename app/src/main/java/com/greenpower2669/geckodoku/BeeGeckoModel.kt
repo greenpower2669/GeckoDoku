@@ -1,16 +1,33 @@
 package com.greenpower2669.geckodoku
 
-import kotlin.math.max
-import kotlin.random.Random
+import java.util.Random
+import kotlin.math.abs
 
 data class HexCoord(
     val q: Int,
     val r: Int
 ) {
-    fun neighbors(): List<HexCoord> =
+    val s: Int
+        get() =
+            -q - r
+
+    fun neighbors():
+        List<HexCoord> =
         HEX_DIRECTIONS.map {
             (dq, dr) ->
-            HexCoord(q + dq, r + dr)
+            HexCoord(
+                q + dq,
+                r + dr
+            )
+        }
+
+    fun axisValue(
+        axis: HexAxis
+    ): Int =
+        when (axis) {
+            HexAxis.Q -> q
+            HexAxis.R -> r
+            HexAxis.S -> s
         }
 
     companion object {
@@ -26,6 +43,12 @@ data class HexCoord(
     }
 }
 
+enum class HexAxis {
+    Q,
+    R,
+    S
+}
+
 enum class BeeGeckoPiece {
     GECKO,
     BEE
@@ -33,260 +56,273 @@ enum class BeeGeckoPiece {
 
 data class BeeGeckoPair(
     val gecko: HexCoord,
-    val bee: HexCoord
+    val bee: HexCoord,
+    val region: Int
 )
 
 data class BeeGeckoPuzzle(
     val id: String,
-    val columns: Int,
-    val rows: Int,
-    val pieces: Map<HexCoord, BeeGeckoPiece>,
-    val difficulty: GameDifficulty
+    val radius: Int,
+    val regions: Map<HexCoord, Int>,
+    val solutionGeckos: Set<HexCoord>,
+    val solutionBees: Set<HexCoord>,
+    val solutionPairs: List<BeeGeckoPair>,
+    val givenGeckos: Set<HexCoord>,
+    val givenBees: Set<HexCoord>,
+    val difficulty: GameDifficulty,
+    val seed: Long,
+    val solverTrace:
+        List<BeeGeckoSolveStep> =
+        emptyList()
 ) {
-    val geckos: Set<HexCoord>
-        get() =
-            pieces
-                .filterValues {
-                    it == BeeGeckoPiece.GECKO
-                }
-                .keys
+    init {
+        require(radius in 1..6)
+        require(regions.isNotEmpty())
+        require(solutionGeckos.size == solutionPairs.size)
+        require(solutionBees.size == solutionPairs.size)
+        require(regions.values.toSet().size == solutionPairs.size)
+        require(givenGeckos.all { it in solutionGeckos })
+        require(givenBees.all { it in solutionBees })
 
-    val bees: Set<HexCoord>
+        solutionPairs.forEach {
+            pair ->
+            require(pair.gecko in solutionGeckos)
+            require(pair.bee in solutionBees)
+            require(regionAt(pair.gecko) == pair.region)
+            require(regionAt(pair.bee) == pair.region)
+            require(areNeighbors(pair.gecko, pair.bee))
+        }
+
+        for (
+            typeCells in
+            listOf(
+                solutionGeckos,
+                solutionBees
+            )
+        ) {
+            for (axis in HexAxis.entries) {
+                require(
+                    typeCells
+                        .groupBy {
+                            it.axisValue(axis)
+                        }
+                        .values
+                        .all {
+                            it.size <= 1
+                        }
+                )
+            }
+        }
+
+        for (
+            region in
+            regions.values.toSet()
+        ) {
+            require(
+                solutionGeckos.count {
+                    regionAt(it) ==
+                        region
+                } == 1
+            )
+
+            require(
+                solutionBees.count {
+                    regionAt(it) ==
+                        region
+                } == 1
+            )
+        }
+    }
+
+    val cells: Set<HexCoord>
         get() =
-            pieces
-                .filterValues {
-                    it == BeeGeckoPiece.BEE
-                }
-                .keys
+            regions.keys
+
+    val regionCount: Int
+        get() =
+            solutionPairs.size
 
     fun contains(
         cell: HexCoord
     ): Boolean =
-        cell.q in 0 until columns &&
-            cell.r in 0 until rows
+        regions.containsKey(cell)
 
-    fun pieceAt(
+    fun regionAt(
+        cell: HexCoord
+    ): Int =
+        requireNotNull(
+            regions[cell]
+        )
+
+    fun solutionPieceAt(
         cell: HexCoord
     ): BeeGeckoPiece? =
-        pieces[cell]
+        when (cell) {
+            in solutionGeckos ->
+                BeeGeckoPiece.GECKO
+
+            in solutionBees ->
+                BeeGeckoPiece.BEE
+
+            else ->
+                null
+        }
+
+    fun givenPieceAt(
+        cell: HexCoord
+    ): BeeGeckoPiece? =
+        when (cell) {
+            in givenGeckos ->
+                BeeGeckoPiece.GECKO
+
+            in givenBees ->
+                BeeGeckoPiece.BEE
+
+            else ->
+                null
+        }
+
+    fun cellsInRegion(
+        region: Int
+    ): Set<HexCoord> =
+        regions
+            .filterValues {
+                it == region
+            }
+            .keys
+
+    fun pairForRegion(
+        region: Int
+    ): BeeGeckoPair? =
+        solutionPairs
+            .firstOrNull {
+                it.region == region
+            }
+
+    companion object {
+        fun areNeighbors(
+            first: HexCoord,
+            second: HexCoord
+        ): Boolean =
+            second in
+                first.neighbors()
+    }
 }
 
 data class BeeGeckoSnapshot(
     val puzzle: BeeGeckoPuzzle,
-    val pairs: Set<BeeGeckoPair>,
-    val selected: HexCoord?,
+    val confirmedGeckos: Set<HexCoord>,
+    val confirmedBees: Set<HexCoord>,
+    val manualCrosses: Set<HexCoord>,
     val markers:
-        Map<HexCoord, CustomMarker> =
-        emptyMap()
-) {
+        Map<HexCoord, CustomMarker>,
+    val mistakes: Int,
     val complete: Boolean
-        get() =
-            BeeGeckoRules.isComplete(
-                puzzle,
-                pairs
-            )
-
-    fun pairFor(
+) {
+    fun pieceAt(
         cell: HexCoord
-    ): BeeGeckoPair? =
-        pairs.firstOrNull {
-            it.gecko == cell ||
-                it.bee == cell
-        }
-}
-
-enum class BeeGeckoTapResult {
-    SELECTED,
-    DESELECTED,
-    PAIRED,
-    UNPAIRED,
-    RESERVED,
-    NOT_NEIGHBORS,
-    EMPTY_CELL,
-    COMPLETED
-}
-
-object BeeGeckoRules {
-    fun getHexNeighbors(
-        cell: HexCoord,
-        puzzle: BeeGeckoPuzzle
-    ): List<HexCoord> =
-        cell.neighbors()
-            .filter {
-                puzzle.contains(it)
-            }
-
-    fun areNeighbors(
-        first: HexCoord,
-        second: HexCoord
-    ): Boolean =
-        second in first.neighbors()
-
-    fun candidateOpposites(
-        puzzle: BeeGeckoPuzzle,
-        cell: HexCoord
-    ): List<HexCoord> {
-        val piece =
-            puzzle.pieceAt(cell)
-                ?: return emptyList()
-
-        val wanted =
-            if (
-                piece ==
-                    BeeGeckoPiece.GECKO
-            ) {
-                BeeGeckoPiece.BEE
-            } else {
+    ): BeeGeckoPiece? =
+        when (cell) {
+            in confirmedGeckos ->
                 BeeGeckoPiece.GECKO
-            }
 
-        return getHexNeighbors(
-            cell,
-            puzzle
-        )
-            .filter {
-                puzzle.pieceAt(it) ==
-                    wanted
-            }
-            .sortedWith(
-                compareBy<HexCoord> {
-                    it.r
-                }.thenBy {
-                    it.q
-                }
-            )
-    }
+            in confirmedBees ->
+                BeeGeckoPiece.BEE
 
-    fun normalizePair(
-        puzzle: BeeGeckoPuzzle,
-        first: HexCoord,
-        second: HexCoord
-    ): BeeGeckoPair? {
-        if (
-            !areNeighbors(
-                first,
-                second
-            )
-        ) {
-            return null
+            else ->
+                null
         }
 
-        return when {
-            puzzle.pieceAt(first) ==
-                BeeGeckoPiece.GECKO &&
-                puzzle.pieceAt(second) ==
-                    BeeGeckoPiece.BEE ->
-                BeeGeckoPair(
-                    gecko = first,
-                    bee = second
-                )
-
-            puzzle.pieceAt(first) ==
-                BeeGeckoPiece.BEE &&
-                puzzle.pieceAt(second) ==
-                    BeeGeckoPiece.GECKO ->
-                BeeGeckoPair(
-                    gecko = second,
-                    bee = first
-                )
-
-            else -> null
-        }
-    }
-
-    fun validatePairs(
-        puzzle: BeeGeckoPuzzle,
-        pairs: Set<BeeGeckoPair>
-    ): Boolean {
-        val usedGeckos =
-            linkedSetOf<HexCoord>()
-        val usedBees =
-            linkedSetOf<HexCoord>()
-
-        for (pair in pairs) {
-            if (
-                puzzle.pieceAt(
-                    pair.gecko
-                ) !=
-                BeeGeckoPiece.GECKO ||
-                puzzle.pieceAt(
-                    pair.bee
-                ) !=
-                BeeGeckoPiece.BEE ||
-                !areNeighbors(
-                    pair.gecko,
-                    pair.bee
-                ) ||
-                !usedGeckos.add(
-                    pair.gecko
-                ) ||
-                !usedBees.add(
-                    pair.bee
-                )
-            ) {
-                return false
-            }
-        }
-
-        return true
-    }
-
-    fun isComplete(
-        puzzle: BeeGeckoPuzzle,
-        pairs: Set<BeeGeckoPair>
+    fun isGiven(
+        cell: HexCoord
     ): Boolean =
-        validatePairs(
-            puzzle,
-            pairs
-        ) &&
-            pairs.size ==
-                puzzle.geckos.size &&
-            pairs.size ==
-                puzzle.bees.size &&
-            puzzle.geckos.all {
-                gecko ->
-                pairs.count {
-                    it.gecko == gecko
-                } == 1
-            } &&
-            puzzle.bees.all {
-                bee ->
-                pairs.count {
-                    it.bee == bee
-                } == 1
-            }
+        cell in
+            puzzle.givenGeckos ||
+            cell in
+                puzzle.givenBees
+
+    val confirmedPairCount: Int
+        get() =
+            puzzle.solutionPairs
+                .count {
+                    it.gecko in
+                        confirmedGeckos &&
+                        it.bee in
+                            confirmedBees
+                }
+}
+
+enum class BeeGeckoActionFeedback {
+    CROSS_SET,
+    CROSS_REMOVED,
+    CROSS_BLOCKED,
+    PIECE_CONFIRMED,
+    PIECE_REMOVED,
+    WRONG_PIECE,
+    GIVEN_LOCKED,
+    COMPLETED,
+    MARKER_SET,
+    MARKER_CLEARED
 }
 
 class BeeGeckoGameEngine(
     private val puzzle: BeeGeckoPuzzle,
-    initialPairs:
-        Set<BeeGeckoPair> =
+    initialGeckos:
+        Set<HexCoord> =
+        puzzle.givenGeckos,
+    initialBees:
+        Set<HexCoord> =
+        puzzle.givenBees,
+    initialCrosses:
+        Set<HexCoord> =
         emptySet(),
-    initialSelected:
-        HexCoord? = null,
     initialMarkers:
         Map<HexCoord, CustomMarker> =
-        emptyMap()
+        emptyMap(),
+    initialMistakes:
+        Int = 0
 ) {
-    private val pairs =
-        linkedSetOf<BeeGeckoPair>()
+    private val confirmedGeckos =
+        linkedSetOf<HexCoord>()
             .apply {
-                if (
-                    BeeGeckoRules
-                        .validatePairs(
-                            puzzle,
-                            initialPairs
-                        )
-                ) {
-                    addAll(initialPairs)
-                }
+                addAll(
+                    initialGeckos
+                        .filter {
+                            it in
+                                puzzle.solutionGeckos
+                        }
+                )
+                addAll(
+                    puzzle.givenGeckos
+                )
             }
 
-    private var selected:
-        HexCoord? =
-        initialSelected
-            ?.takeIf {
-                puzzle.contains(it)
+    private val confirmedBees =
+        linkedSetOf<HexCoord>()
+            .apply {
+                addAll(
+                    initialBees
+                        .filter {
+                            it in
+                                puzzle.solutionBees
+                        }
+                )
+                addAll(
+                    puzzle.givenBees
+                )
+            }
+
+    private val manualCrosses =
+        linkedSetOf<HexCoord>()
+            .apply {
+                addAll(
+                    initialCrosses
+                        .filter {
+                            puzzle.contains(it) &&
+                                it !in confirmedGeckos &&
+                                it !in confirmedBees
+                        }
+                )
             }
 
     private val markers =
@@ -308,565 +344,1246 @@ class BeeGeckoGameEngine(
                     }
             }
 
+    var mistakes: Int =
+        initialMistakes
+            .coerceAtLeast(0)
+        private set
+
     fun snapshot():
         BeeGeckoSnapshot =
         BeeGeckoSnapshot(
             puzzle = puzzle,
-            pairs = pairs.toSet(),
-            selected = selected,
+            confirmedGeckos =
+                confirmedGeckos
+                    .toSet(),
+            confirmedBees =
+                confirmedBees
+                    .toSet(),
+            manualCrosses =
+                manualCrosses
+                    .toSet(),
             markers =
-                markers.toMap()
+                markers.toMap(),
+            mistakes =
+                mistakes,
+            complete =
+                confirmedGeckos ==
+                    puzzle.solutionGeckos &&
+                    confirmedBees ==
+                        puzzle.solutionBees
         )
+
+    fun toggleCross(
+        cell: HexCoord
+    ): BeeGeckoActionFeedback {
+        if (!puzzle.contains(cell)) {
+            return BeeGeckoActionFeedback
+                .CROSS_BLOCKED
+        }
+
+        if (
+            cell in puzzle.givenGeckos ||
+            cell in puzzle.givenBees
+        ) {
+            return BeeGeckoActionFeedback
+                .GIVEN_LOCKED
+        }
+
+        if (
+            cell in confirmedGeckos ||
+            cell in confirmedBees
+        ) {
+            return BeeGeckoActionFeedback
+                .CROSS_BLOCKED
+        }
+
+        return if (
+            manualCrosses.remove(
+                cell
+            )
+        ) {
+            BeeGeckoActionFeedback
+                .CROSS_REMOVED
+        } else {
+            manualCrosses.add(
+                cell
+            )
+            BeeGeckoActionFeedback
+                .CROSS_SET
+        }
+    }
+
+    fun placePiece(
+        cell: HexCoord,
+        piece: BeeGeckoPiece
+    ): BeeGeckoActionFeedback {
+        if (!puzzle.contains(cell)) {
+            return BeeGeckoActionFeedback
+                .CROSS_BLOCKED
+        }
+
+        val given =
+            puzzle.givenPieceAt(
+                cell
+            )
+
+        if (given != null) {
+            return BeeGeckoActionFeedback
+                .GIVEN_LOCKED
+        }
+
+        val already =
+            snapshot()
+                .pieceAt(cell)
+
+        if (already == piece) {
+            return removePiece(cell)
+        }
+
+        if (
+            puzzle.solutionPieceAt(
+                cell
+            ) !=
+                piece
+        ) {
+            mistakes += 1
+
+            confirmedGeckos.remove(
+                cell
+            )
+            confirmedBees.remove(
+                cell
+            )
+            manualCrosses.add(
+                cell
+            )
+
+            return BeeGeckoActionFeedback
+                .WRONG_PIECE
+        }
+
+        confirmedGeckos.remove(
+            cell
+        )
+        confirmedBees.remove(
+            cell
+        )
+        manualCrosses.remove(
+            cell
+        )
+
+        if (
+            piece ==
+                BeeGeckoPiece.GECKO
+        ) {
+            confirmedGeckos.add(
+                cell
+            )
+        } else {
+            confirmedBees.add(
+                cell
+            )
+        }
+
+        return if (
+            snapshot().complete
+        ) {
+            BeeGeckoActionFeedback
+                .COMPLETED
+        } else {
+            BeeGeckoActionFeedback
+                .PIECE_CONFIRMED
+        }
+    }
+
+    fun removePiece(
+        cell: HexCoord
+    ): BeeGeckoActionFeedback {
+        if (
+            puzzle.givenPieceAt(
+                cell
+            ) !=
+                null
+        ) {
+            return BeeGeckoActionFeedback
+                .GIVEN_LOCKED
+        }
+
+        val removed =
+            confirmedGeckos.remove(
+                cell
+            ) ||
+                confirmedBees.remove(
+                    cell
+                )
+
+        return if (removed) {
+            BeeGeckoActionFeedback
+                .PIECE_REMOVED
+        } else {
+            BeeGeckoActionFeedback
+                .CROSS_BLOCKED
+        }
+    }
 
     fun setMarker(
         cell: HexCoord,
         marker: CustomMarker?
-    ): Boolean {
+    ): BeeGeckoActionFeedback {
         if (!puzzle.contains(cell)) {
-            return false
+            return BeeGeckoActionFeedback
+                .CROSS_BLOCKED
         }
 
         if (marker == null) {
             markers.remove(cell)
-        } else {
-            markers[cell] =
-                marker
+
+            return BeeGeckoActionFeedback
+                .MARKER_CLEARED
         }
 
-        return true
+        markers[cell] =
+            marker
+
+        return BeeGeckoActionFeedback
+            .MARKER_SET
     }
 
-    fun tap(
-        cell: HexCoord
-    ): BeeGeckoTapResult {
-        val piece =
-            puzzle.pieceAt(cell)
+    fun applyProfessorStep(
+        step: BeeGeckoSolveStep
+    ): BeeGeckoActionFeedback {
+        var changed = false
 
-        if (piece == null) {
-            selected = null
-            return BeeGeckoTapResult
-                .EMPTY_CELL
-        }
-
-        val current =
-            selected
-
-        if (current == null) {
-            selected = cell
-            return BeeGeckoTapResult
-                .SELECTED
-        }
-
-        if (current == cell) {
-            selected = null
-            return BeeGeckoTapResult
-                .DESELECTED
-        }
-
-        val pair =
-            BeeGeckoRules
-                .normalizePair(
-                    puzzle,
-                    current,
-                    cell
-                )
-
-        if (pair == null) {
-            selected = cell
-
-            return if (
-                BeeGeckoRules
-                    .areNeighbors(
-                        current,
+        step.eliminated
+            .forEach {
+                cell ->
+                if (
+                    cell !in
+                        confirmedGeckos &&
+                    cell !in
+                        confirmedBees &&
+                    puzzle.contains(cell)
+                ) {
+                    manualCrosses.add(
                         cell
                     )
-            ) {
-                BeeGeckoTapResult
-                    .SELECTED
-            } else {
-                BeeGeckoTapResult
-                    .NOT_NEIGHBORS
-            }
-        }
-
-        val currentPair =
-            pairs.firstOrNull {
-                it.gecko ==
-                    pair.gecko ||
-                    it.bee ==
-                        pair.bee
+                }
             }
 
-        if (currentPair != null) {
-            if (currentPair == pair) {
-                pairs.remove(
-                    currentPair
-                )
-                selected = null
-                return BeeGeckoTapResult
-                    .UNPAIRED
+        step.gecko
+            ?.let {
+                if (
+                    it in
+                        puzzle.solutionGeckos
+                ) {
+                    confirmedGeckos.add(
+                        it
+                    )
+                    manualCrosses.remove(
+                        it
+                    )
+                    changed = true
+                }
             }
 
-            selected = cell
-            return BeeGeckoTapResult
-                .RESERVED
-        }
-
-        pairs.add(pair)
-        selected = null
-
-        return if (
-            BeeGeckoRules.isComplete(
-                puzzle,
-                pairs
-            )
-        ) {
-            BeeGeckoTapResult
-                .COMPLETED
-        } else {
-            BeeGeckoTapResult
-                .PAIRED
-        }
-    }
-
-    fun applyPair(
-        pair: BeeGeckoPair
-    ): BeeGeckoTapResult {
-        if (
-            BeeGeckoRules
-                .normalizePair(
-                    puzzle,
-                    pair.gecko,
-                    pair.bee
-                ) !=
-                pair
-        ) {
-            return BeeGeckoTapResult
-                .NOT_NEIGHBORS
-        }
-
-        if (
-            pairs.any {
-                it.gecko ==
-                    pair.gecko ||
-                    it.bee ==
-                        pair.bee
+        step.bee
+            ?.let {
+                if (
+                    it in
+                        puzzle.solutionBees
+                ) {
+                    confirmedBees.add(
+                        it
+                    )
+                    manualCrosses.remove(
+                        it
+                    )
+                    changed = true
+                }
             }
-        ) {
-            return BeeGeckoTapResult
-                .RESERVED
-        }
 
-        pairs.add(pair)
-        selected = null
+        return when {
+            snapshot().complete ->
+                BeeGeckoActionFeedback
+                    .COMPLETED
 
-        return if (
-            BeeGeckoRules.isComplete(
-                puzzle,
-                pairs
-            )
-        ) {
-            BeeGeckoTapResult
-                .COMPLETED
-        } else {
-            BeeGeckoTapResult
-                .PAIRED
+            changed ->
+                BeeGeckoActionFeedback
+                    .PIECE_CONFIRMED
+
+            else ->
+                BeeGeckoActionFeedback
+                    .CROSS_SET
         }
     }
 }
 
-data class BeeGeckoHint(
-    val source: HexCoord,
-    val target: HexCoord,
-    val candidates: List<HexCoord>,
-    val excluded: List<HexCoord>,
-    val reserved: List<HexCoord>,
-    val message: String,
-    val pair: BeeGeckoPair
+enum class BeeGeckoTechnique {
+    ZONE_SINGLE,
+    AXIS_ELIMINATION,
+    ADJACENCY_SINGLE,
+    CHAIN_PROPAGATION,
+    PROJECTION
+}
+
+data class BeeGeckoSolveStep(
+    val technique:
+        BeeGeckoTechnique,
+    val region: Int,
+    val gecko: HexCoord? = null,
+    val bee: HexCoord? = null,
+    val analyzed:
+        Set<HexCoord> =
+        emptySet(),
+    val candidates:
+        Set<HexCoord> =
+        emptySet(),
+    val eliminated:
+        Set<HexCoord> =
+        emptySet(),
+    val explanation: String
 )
+
+data class BeeGeckoHint(
+    val step:
+        BeeGeckoSolveStep,
+    val blue:
+        Set<HexCoord>,
+    val orange:
+        Set<HexCoord>,
+    val red:
+        Set<HexCoord>,
+    val green:
+        Set<HexCoord>,
+    val message: String
+)
+
+data class BeeGeckoDifficultyReport(
+    val ratedDifficulty:
+        GameDifficulty,
+    val logicallySolvable: Boolean,
+    val directSteps: Int,
+    val adjacencySteps: Int,
+    val projectionSteps: Int,
+    val maxPairOptions: Int,
+    val steps:
+        List<BeeGeckoSolveStep>
+)
+
+private data class BeeGeckoPairOption(
+    val gecko: HexCoord,
+    val bee: HexCoord
+)
+
+object BeeGeckoRules {
+    fun getHexNeighbors(
+        cell: HexCoord,
+        puzzle: BeeGeckoPuzzle
+    ): List<HexCoord> =
+        cell.neighbors()
+            .filter {
+                puzzle.contains(it)
+            }
+
+    fun areNeighbors(
+        first: HexCoord,
+        second: HexCoord
+    ): Boolean =
+        BeeGeckoPuzzle
+            .areNeighbors(
+                first,
+                second
+            )
+
+    fun sameAxis(
+        first: HexCoord,
+        second: HexCoord
+    ): Boolean =
+        HexAxis.entries.any {
+            first.axisValue(it) ==
+                second.axisValue(it)
+        }
+
+    fun axisLabel(
+        first: HexCoord,
+        second: HexCoord
+    ): String =
+        when {
+            first.q == second.q ->
+                "l'axe ↖↘"
+
+            first.r == second.r ->
+                "l'axe ↗↙"
+
+            first.s == second.s ->
+                "l'axe ↑↓"
+
+            else ->
+                "un autre axe"
+        }
+
+    fun validateComplete(
+        puzzle: BeeGeckoPuzzle,
+        geckos: Set<HexCoord>,
+        bees: Set<HexCoord>
+    ): Boolean {
+        if (
+            geckos.size !=
+                puzzle.regionCount ||
+            bees.size !=
+                puzzle.regionCount
+        ) {
+            return false
+        }
+
+        for (
+            region in
+            0 until puzzle.regionCount
+        ) {
+            val regionGeckos =
+                geckos.filter {
+                    puzzle.regionAt(it) ==
+                        region
+                }
+
+            val regionBees =
+                bees.filter {
+                    puzzle.regionAt(it) ==
+                        region
+                }
+
+            if (
+                regionGeckos.size != 1 ||
+                regionBees.size != 1 ||
+                !areNeighbors(
+                    regionGeckos.single(),
+                    regionBees.single()
+                )
+            ) {
+                return false
+            }
+        }
+
+        for (axis in HexAxis.entries) {
+            if (
+                geckos
+                    .groupBy {
+                        it.axisValue(axis)
+                    }
+                    .values
+                    .any {
+                        it.size > 1
+                    } ||
+                bees
+                    .groupBy {
+                        it.axisValue(axis)
+                    }
+                    .values
+                    .any {
+                        it.size > 1
+                    }
+            ) {
+                return false
+            }
+        }
+
+        return true
+    }
+}
 
 object BeeGeckoSolver {
     fun nextHint(
         snapshot: BeeGeckoSnapshot
     ): BeeGeckoHint? {
-        if (snapshot.complete) {
-            return null
-        }
+        val report =
+            analyze(
+                puzzle =
+                    snapshot.puzzle,
+                snapshot =
+                    snapshot,
+                stopAfterFirstStep =
+                    true
+            )
 
-        val puzzle =
-            snapshot.puzzle
+        val step =
+            report.steps
+                .firstOrNull()
+                ?: return null
 
-        val used =
-            snapshot.pairs
-                .flatMap {
-                    listOf(
-                        it.gecko,
-                        it.bee
-                    )
-                }
+        val green =
+            buildSet {
+                step.gecko
+                    ?.let {
+                        add(it)
+                    }
+                step.bee
+                    ?.let {
+                        add(it)
+                    }
+            }
+
+        return BeeGeckoHint(
+            step = step,
+            blue =
+                step.analyzed,
+            orange =
+                step.candidates -
+                    green,
+            red =
+                step.eliminated,
+            green =
+                green,
+            message =
+                step.explanation
+        )
+    }
+
+    fun analyze(
+        puzzle: BeeGeckoPuzzle,
+        snapshot:
+            BeeGeckoSnapshot =
+            BeeGeckoSnapshot(
+                puzzle =
+                    puzzle,
+                confirmedGeckos =
+                    puzzle.givenGeckos,
+                confirmedBees =
+                    puzzle.givenBees,
+                manualCrosses =
+                    emptySet(),
+                markers =
+                    emptyMap(),
+                mistakes = 0,
+                complete = false
+            ),
+        stopAfterFirstStep:
+            Boolean = false
+    ): BeeGeckoDifficultyReport {
+        val geckos =
+            snapshot.confirmedGeckos
+                .toMutableSet()
+
+        val bees =
+            snapshot.confirmedBees
+                .toMutableSet()
+
+        val crosses =
+            snapshot.manualCrosses
                 .toSet()
 
-        val pieces =
-            puzzle.pieces.keys
-                .filter {
-                    it !in used
-                }
-                .sortedWith(
-                    compareBy<HexCoord> {
-                        it.r
-                    }.thenBy {
-                        it.q
-                    }
+        val steps =
+            mutableListOf<
+                BeeGeckoSolveStep
+                >()
+
+        var directSteps = 0
+        var adjacencySteps = 0
+        var projectionSteps = 0
+        var maxPairOptions = 0
+
+        fun isComplete():
+            Boolean =
+            BeeGeckoRules
+                .validateComplete(
+                    puzzle,
+                    geckos,
+                    bees
                 )
 
-        for (source in pieces) {
-            val allCandidates =
-                BeeGeckoRules
-                    .candidateOpposites(
-                        puzzle,
-                        source
-                    )
+        var guard = 0
 
-            val available =
-                allCandidates.filter {
-                    it !in used
+        while (
+            !isComplete() &&
+            guard < 256
+        ) {
+            guard += 1
+
+            val options =
+                buildOptions(
+                    puzzle =
+                        puzzle,
+                    confirmedGeckos =
+                        geckos,
+                    confirmedBees =
+                        bees,
+                    crosses =
+                        crosses
+                )
+
+            if (
+                options.values
+                    .any {
+                        it.isEmpty()
+                    }
+            ) {
+                break
+            }
+
+            maxPairOptions =
+                maxOf(
+                    maxPairOptions,
+                    options.values
+                        .maxOfOrNull {
+                            it.size
+                        }
+                        ?: 0
+                )
+
+            var step:
+                BeeGeckoSolveStep? =
+                null
+
+            for (
+                region in
+                0 until puzzle.regionCount
+            ) {
+                val regionOptions =
+                    options[region]
+                        ?: emptyList()
+
+                if (regionOptions.isEmpty()) {
+                    continue
                 }
 
-            if (available.size == 1) {
-                return buildHint(
-                    snapshot =
-                        snapshot,
-                    source =
-                        source,
-                    target =
-                        available.single(),
-                    candidates =
-                        available,
-                    branchExplanation =
+                val knownG =
+                    geckos
+                        .firstOrNull {
+                            puzzle.regionAt(it) ==
+                                region
+                        }
+
+                val knownB =
+                    bees
+                        .firstOrNull {
+                            puzzle.regionAt(it) ==
+                                region
+                        }
+
+                val geckoChoices =
+                    regionOptions
+                        .map {
+                            it.gecko
+                        }
+                        .toSet()
+
+                val beeChoices =
+                    regionOptions
+                        .map {
+                            it.bee
+                        }
+                        .toSet()
+
+                val regionCells =
+                    puzzle.cellsInRegion(
+                        region
+                    )
+
+                val forcedG =
+                    if (
+                        knownG == null &&
+                        geckoChoices.size ==
+                            1
+                    ) {
+                        geckoChoices.single()
+                    } else {
                         null
-                )
-            }
-        }
-
-        for (source in pieces) {
-            val available =
-                BeeGeckoRules
-                    .candidateOpposites(
-                        puzzle,
-                        source
-                    )
-                    .filter {
-                        it !in used
                     }
 
-            if (available.size <= 1) {
-                continue
+                val forcedB =
+                    if (
+                        knownB == null &&
+                        beeChoices.size ==
+                            1
+                    ) {
+                        beeChoices.single()
+                    } else {
+                        null
+                    }
+
+                if (
+                    forcedG != null ||
+                    forcedB != null
+                ) {
+                    val typeWord =
+                        when {
+                            forcedG != null &&
+                                forcedB != null ->
+                                "le Gecko et l'Abeille"
+
+                            forcedG != null ->
+                                "le Gecko"
+
+                            else ->
+                                "l'Abeille"
+                        }
+
+                    val technique =
+                        when {
+                            regionOptions.size ==
+                                1 ->
+                                BeeGeckoTechnique
+                                    .ADJACENCY_SINGLE
+
+                            geckoChoices.size ==
+                                1 ||
+                                beeChoices.size ==
+                                    1 ->
+                                BeeGeckoTechnique
+                                    .AXIS_ELIMINATION
+
+                            else ->
+                                BeeGeckoTechnique
+                                    .ZONE_SINGLE
+                        }
+
+                    val candidateCells =
+                        (
+                            geckoChoices +
+                                beeChoices
+                            )
+
+                    val eliminated =
+                        regionCells -
+                            candidateCells -
+                            geckos -
+                            bees
+
+                    val axisDetail =
+                        forcedG
+                            ?.let {
+                                axisReason(
+                                    puzzle,
+                                    it,
+                                    geckos
+                                )
+                            }
+                            ?: forcedB
+                                ?.let {
+                                    axisReason(
+                                        puzzle,
+                                        it,
+                                        bees
+                                    )
+                                }
+
+                    val explanation =
+                        buildString {
+                            append(
+                                "J'analyse la zone "
+                            )
+                            append(
+                                region + 1
+                            )
+                            append(
+                                ". Elle doit contenir exactement un Gecko et une Abeille, et ces deux pièces doivent se toucher. "
+                            )
+                            append(
+                                "Après les exclusions de zone, d'axes et de voisinage, il reste "
+                            )
+                            append(
+                                regionOptions.size
+                            )
+                            append(
+                                if (
+                                    regionOptions.size ==
+                                        1
+                                ) {
+                                    " couple local possible. "
+                                } else {
+                                    " couples locaux possibles. "
+                                }
+                            )
+
+                            if (
+                                axisDetail != null
+                            ) {
+                                append(
+                                    axisDetail
+                                )
+                                append(" ")
+                            }
+
+                            append(
+                                "Il ne reste qu'une position possible pour "
+                            )
+                            append(
+                                typeWord
+                            )
+                            append(
+                                ". La conclusion certaine est indiquée en vert."
+                            )
+                        }
+
+                    step =
+                        BeeGeckoSolveStep(
+                            technique =
+                                technique,
+                            region =
+                                region,
+                            gecko =
+                                forcedG,
+                            bee =
+                                forcedB,
+                            analyzed =
+                                regionCells,
+                            candidates =
+                                candidateCells,
+                            eliminated =
+                                eliminated,
+                            explanation =
+                                explanation
+                        )
+
+                    break
+                }
             }
 
-            val viable =
-                available.filter {
-                    candidate ->
-                    val pair =
-                        BeeGeckoRules
-                            .normalizePair(
-                                puzzle,
-                                source,
-                                candidate
-                            )
-                            ?: return@filter false
+            if (step == null) {
+                val projection =
+                    findProjection(
+                        puzzle =
+                            puzzle,
+                        geckos =
+                            geckos,
+                        bees =
+                            bees,
+                        crosses =
+                            crosses,
+                        options =
+                            options
+                    )
 
-                    countSolutions(
-                        puzzle,
-                        snapshot.pairs +
-                            pair,
-                        limit = 1
-                    ) > 0
+                if (projection != null) {
+                    projectionSteps += 1
+                    step = projection
+                }
+            }
+
+            if (step == null) {
+                break
+            }
+
+            if (
+                step.technique ==
+                    BeeGeckoTechnique
+                        .ADJACENCY_SINGLE
+            ) {
+                adjacencySteps += 1
+            } else if (
+                step.technique !=
+                    BeeGeckoTechnique
+                        .PROJECTION
+            ) {
+                directSteps += 1
+            }
+
+            step.gecko
+                ?.let {
+                    geckos.add(it)
                 }
 
-            if (viable.size == 1) {
-                val target =
-                    viable.single()
+            step.bee
+                ?.let {
+                    bees.add(it)
+                }
 
-                return buildHint(
-                    snapshot =
-                        snapshot,
-                    source =
-                        source,
-                    target =
-                        target,
-                    candidates =
-                        available,
-                    branchExplanation =
-                        "J'ai projeté les autres associations : elles conduisent à une pièce sans partenaire disponible."
-                )
+            steps.add(step)
+
+            if (stopAfterFirstStep) {
+                break
             }
         }
 
-        val solution =
-            solveOne(
-                puzzle,
-                snapshot.pairs
+        val solved =
+            BeeGeckoRules
+                .validateComplete(
+                    puzzle,
+                    geckos,
+                    bees
+                )
+
+        val rated =
+            rateDifficulty(
+                solved =
+                    solved,
+                directSteps =
+                    directSteps,
+                adjacencySteps =
+                    adjacencySteps,
+                projectionSteps =
+                    projectionSteps,
+                maxPairOptions =
+                    maxPairOptions,
+                givens =
+                    puzzle.givenGeckos
+                        .size +
+                        puzzle.givenBees
+                            .size
             )
-                ?: return null
 
-        val nextPair =
-            solution.firstOrNull {
-                it !in snapshot.pairs
-            }
-                ?: return null
-
-        return buildHint(
-            snapshot =
-                snapshot,
-            source =
-                nextPair.gecko,
-            target =
-                nextPair.bee,
-            candidates =
-                BeeGeckoRules
-                    .candidateOpposites(
-                        puzzle,
-                        nextPair.gecko
-                    )
-                    .filter {
-                        it !in used
-                    },
-            branchExplanation =
-                "Je projette les associations restantes : cette liaison appartient à la seule solution complète encore possible."
+        return BeeGeckoDifficultyReport(
+            ratedDifficulty =
+                rated,
+            logicallySolvable =
+                solved,
+            directSteps =
+                directSteps,
+            adjacencySteps =
+                adjacencySteps,
+            projectionSteps =
+                projectionSteps,
+            maxPairOptions =
+                maxPairOptions,
+            steps =
+                steps
         )
     }
 
     fun countSolutions(
         puzzle: BeeGeckoPuzzle,
-        forcedPairs:
-            Set<BeeGeckoPair> =
+        confirmedGeckos:
+            Set<HexCoord> =
+            puzzle.givenGeckos,
+        confirmedBees:
+            Set<HexCoord> =
+            puzzle.givenBees,
+        crosses:
+            Set<HexCoord> =
             emptySet(),
         limit: Int = 2
     ): Int {
-        if (
-            !BeeGeckoRules
-                .validatePairs(
+        val options =
+            buildOptions(
+                puzzle =
                     puzzle,
-                    forcedPairs
-                )
+                confirmedGeckos =
+                    confirmedGeckos,
+                confirmedBees =
+                    confirmedBees,
+                crosses =
+                    crosses,
+                includeAxisAgainstConfirmedOnly =
+                    false
+            )
+
+        if (
+            options.values
+                .any {
+                    it.isEmpty()
+                }
         ) {
             return 0
         }
 
-        val usedGeckos =
-            forcedPairs
-                .mapTo(
-                    linkedSetOf()
-                ) {
-                    it.gecko
+        val orderedRegions =
+            options.keys
+                .sortedBy {
+                    options[it]
+                        ?.size
+                        ?: Int.MAX_VALUE
                 }
 
-        val usedBees =
-            forcedPairs
-                .mapTo(
-                    linkedSetOf()
-                ) {
-                    it.bee
-                }
+        val usedGQ =
+            mutableSetOf<Int>()
+        val usedGR =
+            mutableSetOf<Int>()
+        val usedGS =
+            mutableSetOf<Int>()
+        val usedBQ =
+            mutableSetOf<Int>()
+        val usedBR =
+            mutableSetOf<Int>()
+        val usedBS =
+            mutableSetOf<Int>()
 
         var count = 0
 
-        fun search() {
+        fun search(
+            index: Int
+        ) {
             if (count >= limit) {
                 return
             }
 
             if (
-                usedGeckos.size ==
-                    puzzle.geckos.size
+                index ==
+                    orderedRegions.size
             ) {
-                if (
-                    usedBees.size ==
-                        puzzle.bees.size
-                ) {
-                    count += 1
-                }
+                count += 1
                 return
             }
 
-            val next =
-                puzzle.geckos
-                    .asSequence()
-                    .filter {
-                        it !in usedGeckos
-                    }
-                    .map {
-                        gecko ->
-                        gecko to
-                            BeeGeckoRules
-                                .candidateOpposites(
-                                    puzzle,
-                                    gecko
-                                )
-                                .filter {
-                                    it !in usedBees
-                                }
-                    }
-                    .minByOrNull {
-                        it.second.size
-                    }
+            val region =
+                orderedRegions[index]
+
+            val regionOptions =
+                options[region]
                     ?: return
 
-            if (next.second.isEmpty()) {
-                return
-            }
+            for (option in regionOptions) {
+                val g =
+                    option.gecko
+                val b =
+                    option.bee
 
-            val gecko =
-                next.first
+                if (
+                    g.q in usedGQ ||
+                    g.r in usedGR ||
+                    g.s in usedGS ||
+                    b.q in usedBQ ||
+                    b.r in usedBR ||
+                    b.s in usedBS
+                ) {
+                    continue
+                }
 
-            usedGeckos.add(gecko)
+                usedGQ.add(g.q)
+                usedGR.add(g.r)
+                usedGS.add(g.s)
+                usedBQ.add(b.q)
+                usedBR.add(b.r)
+                usedBS.add(b.s)
 
-            for (bee in next.second) {
-                usedBees.add(bee)
-                search()
-                usedBees.remove(bee)
+                search(
+                    index + 1
+                )
+
+                usedGQ.remove(g.q)
+                usedGR.remove(g.r)
+                usedGS.remove(g.s)
+                usedBQ.remove(b.q)
+                usedBR.remove(b.r)
+                usedBS.remove(b.s)
 
                 if (count >= limit) {
-                    break
+                    return
                 }
             }
-
-            usedGeckos.remove(gecko)
         }
 
-        search()
+        search(0)
         return count
     }
 
-    fun solveOne(
+    private fun buildOptions(
         puzzle: BeeGeckoPuzzle,
-        forcedPairs:
-            Set<BeeGeckoPair> =
-            emptySet()
-    ): Set<BeeGeckoPair>? {
-        if (
-            !BeeGeckoRules
-                .validatePairs(
-                    puzzle,
-                    forcedPairs
-                )
+        confirmedGeckos:
+            Set<HexCoord>,
+        confirmedBees:
+            Set<HexCoord>,
+        crosses:
+            Set<HexCoord>,
+        includeAxisAgainstConfirmedOnly:
+            Boolean = true
+    ): Map<
+        Int,
+        List<BeeGeckoPairOption>
+        > {
+        val result =
+            linkedMapOf<
+                Int,
+                List<BeeGeckoPairOption>
+                >()
+
+        for (
+            region in
+            0 until puzzle.regionCount
         ) {
+            val cells =
+                puzzle.cellsInRegion(
+                    region
+                )
+
+            val knownG =
+                confirmedGeckos
+                    .firstOrNull {
+                        puzzle.regionAt(it) ==
+                            region
+                    }
+
+            val knownB =
+                confirmedBees
+                    .firstOrNull {
+                        puzzle.regionAt(it) ==
+                            region
+                    }
+
+            val geckoCandidates =
+                cells.filter {
+                    cell ->
+                    cell !in crosses &&
+                        cell !in
+                            confirmedBees &&
+                        (
+                            knownG == null ||
+                                cell ==
+                                    knownG
+                            ) &&
+                        !axisBlocked(
+                            cell =
+                                cell,
+                            confirmed =
+                                confirmedGeckos,
+                            sameCellAllowed =
+                                knownG
+                        )
+                }
+
+            val beeCandidates =
+                cells.filter {
+                    cell ->
+                    cell !in crosses &&
+                        cell !in
+                            confirmedGeckos &&
+                        (
+                            knownB == null ||
+                                cell ==
+                                    knownB
+                            ) &&
+                        !axisBlocked(
+                            cell =
+                                cell,
+                            confirmed =
+                                confirmedBees,
+                            sameCellAllowed =
+                                knownB
+                        )
+                }
+
+            val options =
+                mutableListOf<
+                    BeeGeckoPairOption
+                    >()
+
+            for (g in geckoCandidates) {
+                for (b in beeCandidates) {
+                    if (
+                        g != b &&
+                        BeeGeckoRules
+                            .areNeighbors(
+                                g,
+                                b
+                            )
+                    ) {
+                        options.add(
+                            BeeGeckoPairOption(
+                                gecko = g,
+                                bee = b
+                            )
+                        )
+                    }
+                }
+            }
+
+            result[region] =
+                options
+        }
+
+        if (
+            includeAxisAgainstConfirmedOnly
+        ) {
+            return result
+        }
+
+        return result
+    }
+
+    private fun axisBlocked(
+        cell: HexCoord,
+        confirmed: Set<HexCoord>,
+        sameCellAllowed:
+            HexCoord?
+    ): Boolean =
+        confirmed.any {
+            other ->
+            other !=
+                sameCellAllowed &&
+                BeeGeckoRules
+                    .sameAxis(
+                        cell,
+                        other
+                    )
+        }
+
+    private fun axisReason(
+        puzzle: BeeGeckoPuzzle,
+        cell: HexCoord,
+        confirmed:
+            Set<HexCoord>
+    ): String? {
+        val blocker =
+            confirmed
+                .firstOrNull {
+                    other ->
+                    other != cell &&
+                        BeeGeckoRules
+                            .sameAxis(
+                                cell,
+                                other
+                            )
+                }
+                ?: return null
+
+        return "Une autre position est exclue parce que " +
+            BeeGeckoRules
+                .axisLabel(
+                    cell,
+                    blocker
+                ) +
+            " possède déjà cette famille de pièce."
+    }
+
+    private fun findProjection(
+        puzzle: BeeGeckoPuzzle,
+        geckos: Set<HexCoord>,
+        bees: Set<HexCoord>,
+        crosses: Set<HexCoord>,
+        options:
+            Map<
+                Int,
+                List<BeeGeckoPairOption>
+                >
+    ): BeeGeckoSolveStep? {
+        val candidateRegion =
+            options
+                .entries
+                .filter {
+                    it.value.size > 1
+                }
+                .minByOrNull {
+                    it.value.size
+                }
+                ?: return null
+
+        val viable =
+            candidateRegion.value
+                .filter {
+                    option ->
+                    countSolutions(
+                        puzzle =
+                            puzzle,
+                        confirmedGeckos =
+                            geckos +
+                                option.gecko,
+                        confirmedBees =
+                            bees +
+                                option.bee,
+                        crosses =
+                            crosses,
+                        limit = 1
+                    ) >
+                        0
+                }
+
+        if (viable.size != 1) {
             return null
         }
 
-        val result =
-            linkedSetOf<BeeGeckoPair>()
-                .apply {
-                    addAll(
-                        forcedPairs
-                    )
-                }
+        val winner =
+            viable.single()
 
-        val usedGeckos =
-            result
-                .mapTo(
-                    linkedSetOf()
-                ) {
-                    it.gecko
-                }
-
-        val usedBees =
-            result
-                .mapTo(
-                    linkedSetOf()
-                ) {
-                    it.bee
-                }
-
-        fun search(): Boolean {
-            if (
-                usedGeckos.size ==
-                    puzzle.geckos.size
-            ) {
-                return usedBees.size ==
-                    puzzle.bees.size
-            }
-
-            val next =
-                puzzle.geckos
-                    .asSequence()
-                    .filter {
-                        it !in usedGeckos
-                    }
-                    .map {
-                        gecko ->
-                        gecko to
-                            BeeGeckoRules
-                                .candidateOpposites(
-                                    puzzle,
-                                    gecko
-                                )
-                                .filter {
-                                    it !in usedBees
-                                }
-                    }
-                    .minByOrNull {
-                        it.second.size
-                    }
-                    ?: return false
-
-            val gecko =
-                next.first
-
-            if (next.second.isEmpty()) {
-                return false
-            }
-
-            usedGeckos.add(gecko)
-
-            for (bee in next.second) {
-                val pair =
-                    BeeGeckoPair(
-                        gecko,
-                        bee
-                    )
-
-                usedBees.add(bee)
-                result.add(pair)
-
-                if (search()) {
-                    return true
-                }
-
-                result.remove(pair)
-                usedBees.remove(bee)
-            }
-
-            usedGeckos.remove(gecko)
-            return false
-        }
-
-        return if (search()) {
-            result.toSet()
-        } else {
-            null
-        }
-    }
-
-    private fun buildHint(
-        snapshot: BeeGeckoSnapshot,
-        source: HexCoord,
-        target: HexCoord,
-        candidates: List<HexCoord>,
-        branchExplanation: String?
-    ): BeeGeckoHint {
-        val puzzle =
-            snapshot.puzzle
-
-        val allNeighbors =
-            BeeGeckoRules
-                .getHexNeighbors(
-                    source,
-                    puzzle
-                )
-
-        val pairedCells =
-            snapshot.pairs
+        val allCells =
+            candidateRegion.value
                 .flatMap {
                     listOf(
                         it.gecko,
@@ -875,151 +1592,122 @@ object BeeGeckoSolver {
                 }
                 .toSet()
 
-        val allOpposites =
-            BeeGeckoRules
-                .candidateOpposites(
-                    puzzle,
-                    source
-                )
-
-        val reserved =
-            allOpposites.filter {
-                it in pairedCells
-            }
-
-        val excluded =
-            allNeighbors.filter {
-                it !in candidates &&
-                    it !in reserved
-            }
-
-        val sourceLabel =
-            if (
-                puzzle.pieceAt(source) ==
-                    BeeGeckoPiece.GECKO
-            ) {
-                "Ce Gecko"
-            } else {
-                "Cette Abeille"
-            }
-
-        val targetLabel =
-            if (
-                puzzle.pieceAt(target) ==
-                    BeeGeckoPiece.BEE
-            ) {
-                "Abeille"
-            } else {
-                "Gecko"
-            }
-
-        val message =
-            buildString {
-                append(sourceLabel)
-                append(
-                    " doit appartenir à exactement un couple. "
-                )
-                append(
-                    "Je regarde ses six directions hexagonales : "
-                )
-                append(
-                    candidates.size
-                )
-                append(
-                    if (
-                        candidates.size ==
-                            1
-                    ) {
-                        " partenaire encore disponible"
-                    } else {
-                        " partenaires encore possibles"
-                    }
-                )
-                append(".")
-
-                if (reserved.isNotEmpty()) {
-                    append(
-                        " "
-                    )
-                    append(
-                        reserved.size
-                    )
-                    append(
-                        " possibilité(s) sont déjà réservées par un autre couple."
-                    )
-                }
-
-                if (excluded.isNotEmpty()) {
-                    append(
-                        " "
-                    )
-                    append(
-                        excluded.size
-                    )
-                    append(
-                        " direction(s) ne contiennent pas de partenaire compatible."
-                    )
-                }
-
-                if (
-                    branchExplanation !=
-                        null
-                ) {
-                    append(
-                        " "
-                    )
-                    append(
-                        branchExplanation
-                    )
-                }
-
-                append(
-                    " Donc le couple forcé relie "
-                )
-                append(
-                    sourceLabel
-                        .lowercase()
-                )
-                append(
-                    if (
-                        targetLabel ==
-                            "Abeille"
-                    ) {
-                        " à l'abeille mise en évidence."
-                    } else {
-                        " au Gecko mis en évidence."
-                    }
-                )
-            }
-
-        val pair =
-            requireNotNull(
-                BeeGeckoRules
-                    .normalizePair(
-                        puzzle,
-                        source,
-                        target
-                    )
+        val green =
+            setOf(
+                winner.gecko,
+                winner.bee
             )
 
-        return BeeGeckoHint(
-            source = source,
-            target = target,
+        return BeeGeckoSolveStep(
+            technique =
+                BeeGeckoTechnique
+                    .PROJECTION,
+            region =
+                candidateRegion.key,
+            gecko =
+                if (
+                    winner.gecko !in
+                        geckos
+                ) {
+                    winner.gecko
+                } else {
+                    null
+                },
+            bee =
+                if (
+                    winner.bee !in
+                        bees
+                ) {
+                    winner.bee
+                } else {
+                    null
+                },
+            analyzed =
+                puzzle.cellsInRegion(
+                    candidateRegion.key
+                ),
             candidates =
-                candidates,
-            excluded = excluded,
-            reserved = reserved,
-            message = message,
-            pair = pair
+                allCells,
+            eliminated =
+                allCells -
+                    green,
+            explanation =
+                "Je teste les possibilités de la zone " +
+                    (candidateRegion.key + 1) +
+                    ". Les hypothèses orange conduisent chacune à une contradiction de zone, d'axe ou de voisinage. Une seule branche reste cohérente : le Gecko et l'Abeille verts, voisins l'un de l'autre."
         )
+    }
+
+    private fun rateDifficulty(
+        solved: Boolean,
+        directSteps: Int,
+        adjacencySteps: Int,
+        projectionSteps: Int,
+        maxPairOptions: Int,
+        givens: Int
+    ): GameDifficulty {
+        if (!solved) {
+            return GameDifficulty
+                .INFERNAL
+        }
+
+        val score =
+            directSteps +
+                adjacencySteps *
+                    3 +
+                projectionSteps *
+                    12 +
+                maxOf(
+                    0,
+                    maxPairOptions - 1
+                ) *
+                    2 +
+                maxOf(
+                    0,
+                    8 - givens
+                )
+
+        return when {
+            score <= 4 ->
+                GameDifficulty
+                    .DISCOVERY
+
+            score <= 8 ->
+                GameDifficulty
+                    .EASY
+
+            score <= 14 ->
+                GameDifficulty
+                    .THINKING
+
+            score <= 21 ->
+                GameDifficulty
+                    .HARD
+
+            score <= 30 ->
+                GameDifficulty
+                    .EXPERT
+
+            score <= 40 ->
+                GameDifficulty
+                    .DEMENTIAL
+
+            score <= 52 ->
+                GameDifficulty
+                    .MISSION_IMPOSSIBLE
+
+            else ->
+                GameDifficulty
+                    .INFERNAL
+        }
     }
 }
 
 data class BeeGeckoDifficultyProfile(
-    val columns: Int,
-    val rows: Int,
+    val radius: Int,
     val pairCount: Int,
-    val maxChainPairs: Int
+    val targetGivenCount: Int,
+    val attemptsPerBatch: Int
 )
 
 object BeeGeckoGenerator {
@@ -1030,210 +1718,888 @@ object BeeGeckoGenerator {
         when (difficulty) {
             GameDifficulty.DISCOVERY ->
                 BeeGeckoDifficultyProfile(
-                    columns = 10,
-                    rows = 8,
-                    pairCount = 4,
-                    maxChainPairs = 4
+                    radius = 1,
+                    pairCount = 2,
+                    targetGivenCount = 3,
+                    attemptsPerBatch = 70
                 )
 
             GameDifficulty.EASY ->
                 BeeGeckoDifficultyProfile(
-                    columns = 12,
-                    rows = 9,
-                    pairCount = 7,
-                    maxChainPairs = 6
+                    radius = 2,
+                    pairCount = 3,
+                    targetGivenCount = 4,
+                    attemptsPerBatch = 90
                 )
 
             GameDifficulty.THINKING ->
                 BeeGeckoDifficultyProfile(
-                    columns = 14,
-                    rows = 11,
-                    pairCount = 12,
-                    maxChainPairs = 7
+                    radius = 2,
+                    pairCount = 4,
+                    targetGivenCount = 3,
+                    attemptsPerBatch = 120
                 )
 
             GameDifficulty.HARD ->
                 BeeGeckoDifficultyProfile(
-                    columns = 16,
-                    rows = 12,
-                    pairCount = 18,
-                    maxChainPairs = 8
+                    radius = 3,
+                    pairCount = 5,
+                    targetGivenCount = 4,
+                    attemptsPerBatch = 140
                 )
 
             GameDifficulty.EXPERT ->
                 BeeGeckoDifficultyProfile(
-                    columns = 18,
-                    rows = 14,
-                    pairCount = 24,
-                    maxChainPairs = 9
+                    radius = 3,
+                    pairCount = 6,
+                    targetGivenCount = 3,
+                    attemptsPerBatch = 160
                 )
 
             GameDifficulty.DEMENTIAL ->
                 BeeGeckoDifficultyProfile(
-                    columns = 20,
-                    rows = 15,
-                    pairCount = 30,
-                    maxChainPairs = 10
+                    radius = 4,
+                    pairCount = 7,
+                    targetGivenCount = 3,
+                    attemptsPerBatch = 190
                 )
 
             GameDifficulty.MISSION_IMPOSSIBLE ->
                 BeeGeckoDifficultyProfile(
-                    columns = 22,
-                    rows = 17,
-                    pairCount = 36,
-                    maxChainPairs = 11
+                    radius = 4,
+                    pairCount = 8,
+                    targetGivenCount = 2,
+                    attemptsPerBatch = 220
                 )
 
             GameDifficulty.INFERNAL ->
                 BeeGeckoDifficultyProfile(
-                    columns = 24,
-                    rows = 18,
-                    pairCount = 42,
-                    maxChainPairs = 11
+                    radius = 4,
+                    pairCount = 9,
+                    targetGivenCount = 1,
+                    attemptsPerBatch = 260
                 )
         }
 
     fun generate(
-        difficulty:
+        requested:
             GameDifficulty,
-        seed: Int =
-            Random.nextInt()
+        seed: Long =
+            System.nanoTime()
     ): BeeGeckoPuzzle {
         val profile =
-            profile(difficulty)
+            profile(requested)
 
-        val pieces =
-            linkedMapOf<
-                HexCoord,
-                BeeGeckoPiece
-                >()
+        val random =
+            Random(seed)
 
-        var remaining =
-            profile.pairCount
+        var best:
+            BeeGeckoPuzzle? = null
 
-        var row = 1
-        var chainIndex = 0
+        var bestDistance =
+            Int.MAX_VALUE
 
-        while (
-            remaining > 0 &&
-            row <
-                profile.rows - 1
+        repeat(
+            profile.attemptsPerBatch
         ) {
-            val capacity =
-                max(
-                    1,
-                    minOf(
-                        profile.maxChainPairs,
-                        (profile.columns - 2) /
-                            2,
-                        remaining
-                    )
+            attempt ->
+
+            val solution =
+                generateSolution(
+                    profile =
+                        profile,
+                    random =
+                        random
+                )
+                    ?: return@repeat
+
+            val regions =
+                growRegions(
+                    radius =
+                        profile.radius,
+                    pairs =
+                        solution,
+                    random =
+                        random
+                )
+                    ?: return@repeat
+
+            val allGeckos =
+                solution
+                    .mapTo(
+                        linkedSetOf()
+                    ) {
+                        it.gecko
+                    }
+
+            val allBees =
+                solution
+                    .mapTo(
+                        linkedSetOf()
+                    ) {
+                        it.bee
+                    }
+
+            val full =
+                BeeGeckoPuzzle(
+                    id =
+                        "bee-classic-" +
+                            requested.name +
+                            "-" +
+                            seed +
+                            "-" +
+                            attempt,
+                    radius =
+                        profile.radius,
+                    regions =
+                        regions,
+                    solutionGeckos =
+                        allGeckos,
+                    solutionBees =
+                        allBees,
+                    solutionPairs =
+                        solution,
+                    givenGeckos =
+                        allGeckos,
+                    givenBees =
+                        allBees,
+                    difficulty =
+                        requested,
+                    seed =
+                        seed
                 )
 
-            val count =
-                capacity
+            val tuned =
+                tuneGivens(
+                    full =
+                        full,
+                    requested =
+                        requested,
+                    targetGivenCount =
+                        profile
+                            .targetGivenCount,
+                    random =
+                        random
+                )
 
-            val reverse =
-                (
-                    seed +
-                        chainIndex *
-                            31
-                    ).and(1) != 0
+            val report =
+                BeeGeckoSolver
+                    .analyze(
+                        tuned
+                    )
 
-            val startQ =
-                if (reverse) {
-                    profile.columns -
-                        2 * count
+            if (
+                !report.logicallySolvable ||
+                BeeGeckoSolver
+                    .countSolutions(
+                        tuned,
+                        limit = 2
+                    ) != 1
+            ) {
+                return@repeat
+            }
+
+            val rated =
+                tuned.copy(
+                    difficulty =
+                        report
+                            .ratedDifficulty,
+                    solverTrace =
+                        report.steps
+                )
+
+            if (
+                report.ratedDifficulty ==
+                    requested
+            ) {
+                return rated
+            }
+
+            val distance =
+                abs(
+                    report
+                        .ratedDifficulty
+                        .ordinal -
+                        requested.ordinal
+                )
+
+            if (
+                distance <
+                    bestDistance
+            ) {
+                bestDistance =
+                    distance
+                best = rated
+            }
+        }
+
+        return best
+            ?: safePuzzle(
+                requested =
+                    requested,
+                seed =
+                    seed
+            )
+    }
+
+    fun generateExact(
+        requested:
+            GameDifficulty,
+        seed: Long =
+            System.nanoTime(),
+        shouldCancel:
+            () -> Boolean = {
+                false
+            },
+        onBatchCompleted:
+            ((Int) -> Unit)? =
+            null
+    ): BeeGeckoPuzzle? {
+        var batch = 0
+
+        while (!shouldCancel()) {
+            val candidate =
+                generate(
+                    requested =
+                        requested,
+                    seed =
+                        seed +
+                            batch.toLong() *
+                                65_537L
+                )
+
+            if (shouldCancel()) {
+                return null
+            }
+
+            val report =
+                BeeGeckoSolver
+                    .analyze(
+                        candidate
+                    )
+
+            if (
+                report.logicallySolvable &&
+                report.ratedDifficulty ==
+                    requested &&
+                BeeGeckoSolver
+                    .countSolutions(
+                        candidate,
+                        limit = 2
+                    ) == 1
+            ) {
+                return candidate.copy(
+                    difficulty =
+                        requested,
+                    solverTrace =
+                        report.steps
+                )
+            }
+
+            batch += 1
+            onBatchCompleted
+                ?.invoke(batch)
+        }
+
+        return null
+    }
+
+    private fun tuneGivens(
+        full: BeeGeckoPuzzle,
+        requested:
+            GameDifficulty,
+        targetGivenCount: Int,
+        random: Random
+    ): BeeGeckoPuzzle {
+        val all =
+            (
+                full.solutionGeckos
+                    .map {
+                        it to
+                            BeeGeckoPiece
+                                .GECKO
+                    } +
+                    full.solutionBees
+                        .map {
+                            it to
+                                BeeGeckoPiece
+                                    .BEE
+                        }
+                )
+                .shuffled(random)
+
+        var givenG =
+            full.solutionGeckos
+                .toMutableSet()
+
+        var givenB =
+            full.solutionBees
+                .toMutableSet()
+
+        var best =
+            full
+
+        var bestDistance =
+            Int.MAX_VALUE
+
+        for (
+            (cell, piece) in
+            all
+        ) {
+            if (
+                givenG.size +
+                    givenB.size <=
+                    targetGivenCount
+            ) {
+                break
+            }
+
+            if (
+                piece ==
+                    BeeGeckoPiece.GECKO
+            ) {
+                givenG.remove(cell)
+            } else {
+                givenB.remove(cell)
+            }
+
+            val probe =
+                full.copy(
+                    givenGeckos =
+                        givenG.toSet(),
+                    givenBees =
+                        givenB.toSet()
+                )
+
+            if (
+                BeeGeckoSolver
+                    .countSolutions(
+                        probe,
+                        limit = 2
+                    ) != 1
+            ) {
+                if (
+                    piece ==
+                        BeeGeckoPiece.GECKO
+                ) {
+                    givenG.add(cell)
                 } else {
-                    1
+                    givenB.add(cell)
                 }
+                continue
+            }
+
+            val report =
+                BeeGeckoSolver
+                    .analyze(
+                        probe
+                    )
+
+            if (!report.logicallySolvable) {
+                if (
+                    piece ==
+                        BeeGeckoPiece.GECKO
+                ) {
+                    givenG.add(cell)
+                } else {
+                    givenB.add(cell)
+                }
+                continue
+            }
+
+            val distance =
+                abs(
+                    report
+                        .ratedDifficulty
+                        .ordinal -
+                        requested.ordinal
+                )
+
+            if (
+                distance <
+                    bestDistance
+            ) {
+                bestDistance =
+                    distance
+                best =
+                    probe.copy(
+                        difficulty =
+                            report
+                                .ratedDifficulty,
+                        solverTrace =
+                            report.steps
+                    )
+            }
+
+            if (
+                report.ratedDifficulty ==
+                    requested &&
+                givenG.size +
+                    givenB.size <=
+                    targetGivenCount
+            ) {
+                return probe.copy(
+                    difficulty =
+                        requested,
+                    solverTrace =
+                        report.steps
+                )
+            }
+        }
+
+        return best
+    }
+
+    private fun generateSolution(
+        profile:
+            BeeGeckoDifficultyProfile,
+        random: Random
+    ): List<BeeGeckoPair>? {
+        val cells =
+            boardCells(
+                profile.radius
+            )
+
+        repeat(180) {
+            val geckos =
+                chooseNonAttacking(
+                    cells =
+                        cells,
+                    count =
+                        profile.pairCount,
+                    random =
+                        random
+                )
+                    ?: return@repeat
+
+            val order =
+                geckos.indices
+                    .shuffled(random)
+
+            val chosenBees =
+                arrayOfNulls<
+                    HexCoord
+                    >(
+                    geckos.size
+                )
+
+            val usedBeeCells =
+                linkedSetOf<
+                    HexCoord
+                    >()
+
+            val usedQ =
+                linkedSetOf<Int>()
+            val usedR =
+                linkedSetOf<Int>()
+            val usedS =
+                linkedSetOf<Int>()
+
+            fun placeBee(
+                index: Int
+            ): Boolean {
+                if (
+                    index ==
+                        order.size
+                ) {
+                    return true
+                }
+
+                val geckoIndex =
+                    order[index]
+
+                val gecko =
+                    geckos[
+                        geckoIndex
+                    ]
+
+                val choices =
+                    gecko.neighbors()
+                        .filter {
+                            it in cells &&
+                                it !in geckos &&
+                                it !in
+                                    usedBeeCells
+                        }
+                        .shuffled(random)
+
+                for (bee in choices) {
+                    if (
+                        bee.q in usedQ ||
+                        bee.r in usedR ||
+                        bee.s in usedS
+                    ) {
+                        continue
+                    }
+
+                    usedBeeCells.add(
+                        bee
+                    )
+                    usedQ.add(bee.q)
+                    usedR.add(bee.r)
+                    usedS.add(bee.s)
+                    chosenBees[
+                        geckoIndex
+                    ] =
+                        bee
+
+                    if (
+                        placeBee(
+                            index + 1
+                        )
+                    ) {
+                        return true
+                    }
+
+                    chosenBees[
+                        geckoIndex
+                    ] =
+                        null
+                    usedBeeCells.remove(
+                        bee
+                    )
+                    usedQ.remove(bee.q)
+                    usedR.remove(bee.r)
+                    usedS.remove(bee.s)
+                }
+
+                return false
+            }
+
+            if (!placeBee(0)) {
+                return@repeat
+            }
+
+            return geckos
+                .mapIndexed {
+                    region,
+                    gecko ->
+
+                    BeeGeckoPair(
+                        gecko =
+                            gecko,
+                        bee =
+                            requireNotNull(
+                                chosenBees[
+                                    region
+                                ]
+                            ),
+                        region =
+                            region
+                    )
+                }
+        }
+
+        return null
+    }
+
+    private fun chooseNonAttacking(
+        cells: Set<HexCoord>,
+        count: Int,
+        random: Random
+    ): List<HexCoord>? {
+        val shuffled =
+            cells
+                .toList()
+                .shuffled(random)
+
+        val chosen =
+            mutableListOf<
+                HexCoord
+                >()
+
+        val usedQ =
+            linkedSetOf<Int>()
+        val usedR =
+            linkedSetOf<Int>()
+        val usedS =
+            linkedSetOf<Int>()
+
+        fun search(
+            start: Int
+        ): Boolean {
+            if (
+                chosen.size ==
+                    count
+            ) {
+                return true
+            }
+
+            if (
+                shuffled.size -
+                    start <
+                    count -
+                        chosen.size
+            ) {
+                return false
+            }
 
             for (
                 index in
-                0 until count
+                start until
+                    shuffled.size
             ) {
-                val baseQ =
-                    startQ +
-                        index * 2
+                val cell =
+                    shuffled[index]
 
-                val geckoQ =
-                    if (reverse) {
-                        baseQ + 1
-                    } else {
-                        baseQ
-                    }
+                if (
+                    cell.q in usedQ ||
+                    cell.r in usedR ||
+                    cell.s in usedS
+                ) {
+                    continue
+                }
 
-                val beeQ =
-                    if (reverse) {
-                        baseQ
-                    } else {
-                        baseQ + 1
-                    }
+                chosen.add(cell)
+                usedQ.add(cell.q)
+                usedR.add(cell.r)
+                usedS.add(cell.s)
 
-                pieces[
-                    HexCoord(
-                        geckoQ,
-                        row
+                if (
+                    search(
+                        index + 1
                     )
-                ] =
-                    BeeGeckoPiece
-                        .GECKO
+                ) {
+                    return true
+                }
 
-                pieces[
-                    HexCoord(
-                        beeQ,
-                        row
-                    )
-                ] =
-                    BeeGeckoPiece
-                        .BEE
+                chosen.removeAt(
+                    chosen.lastIndex
+                )
+                usedQ.remove(cell.q)
+                usedR.remove(cell.r)
+                usedS.remove(cell.s)
             }
 
-            remaining -= count
-            row += 3
-            chainIndex += 1
+            return false
         }
 
-        require(
-            remaining == 0
+        return if (search(0)) {
+            chosen.toList()
+        } else {
+            null
+        }
+    }
+
+    private fun growRegions(
+        radius: Int,
+        pairs:
+            List<BeeGeckoPair>,
+        random: Random
+    ): Map<HexCoord, Int>? {
+        val all =
+            boardCells(radius)
+                .toMutableSet()
+
+        val regions =
+            linkedMapOf<
+                HexCoord,
+                Int
+                >()
+
+        for (pair in pairs) {
+            if (
+                regions.containsKey(
+                    pair.gecko
+                ) ||
+                regions.containsKey(
+                    pair.bee
+                )
+            ) {
+                return null
+            }
+
+            regions[
+                pair.gecko
+            ] =
+                pair.region
+
+            regions[
+                pair.bee
+            ] =
+                pair.region
+
+            all.remove(
+                pair.gecko
+            )
+            all.remove(
+                pair.bee
+            )
+        }
+
+        var guard = 0
+
+        while (
+            all.isNotEmpty() &&
+            guard < 4096
         ) {
-            "BeeGecko profile does not fit board."
+            guard += 1
+
+            val frontier =
+                all
+                    .mapNotNull {
+                        cell ->
+
+                        val touching =
+                            cell.neighbors()
+                                .mapNotNull {
+                                    regions[it]
+                                }
+                                .distinct()
+
+                        if (
+                            touching.isEmpty()
+                        ) {
+                            null
+                        } else {
+                            cell to
+                                touching
+                        }
+                    }
+
+            if (frontier.isEmpty()) {
+                return null
+            }
+
+            val pick =
+                frontier[
+                    random.nextInt(
+                        frontier.size
+                    )
+                ]
+
+            val regionChoices =
+                pick.second
+
+            regions[
+                pick.first
+            ] =
+                regionChoices[
+                    random.nextInt(
+                        regionChoices.size
+                    )
+                ]
+
+            all.remove(
+                pick.first
+            )
         }
 
-        val puzzle =
-            BeeGeckoPuzzle(
-                id =
-                    "bee-" +
-                        difficulty.name +
-                        "-" +
-                        seed,
-                columns =
-                    profile.columns,
-                rows =
-                    profile.rows,
-                pieces =
-                    pieces.toMap(),
-                difficulty =
-                    difficulty
+        return if (all.isEmpty()) {
+            regions
+        } else {
+            null
+        }
+    }
+
+    private fun boardCells(
+        radius: Int
+    ): Set<HexCoord> =
+        buildSet {
+            for (
+                q in
+                -radius..radius
+            ) {
+                for (
+                    r in
+                    -radius..radius
+                ) {
+                    val cell =
+                        HexCoord(
+                            q,
+                            r
+                        )
+
+                    if (
+                        abs(cell.s) <=
+                            radius
+                    ) {
+                        add(cell)
+                    }
+                }
+            }
+        }
+
+    private fun safePuzzle(
+        requested:
+            GameDifficulty,
+        seed: Long
+    ): BeeGeckoPuzzle {
+        val easyProfile =
+            BeeGeckoDifficultyProfile(
+                radius = 1,
+                pairCount = 2,
+                targetGivenCount = 4,
+                attemptsPerBatch = 100
             )
 
-        require(
-            puzzle.geckos.size ==
-                profile.pairCount &&
-                puzzle.bees.size ==
-                    profile.pairCount
-        )
+        val random =
+            Random(
+                seed xor
+                    0xBEE6ECL
+            )
 
-        require(
-            BeeGeckoSolver
-                .countSolutions(
-                    puzzle,
-                    limit = 2
-                ) == 1
-        ) {
-            "Generated BeeGecko puzzle must have one matching."
+        repeat(500) {
+            val pairs =
+                generateSolution(
+                    easyProfile,
+                    random
+                )
+                    ?: return@repeat
+
+            val regions =
+                growRegions(
+                    radius =
+                        easyProfile.radius,
+                    pairs =
+                        pairs,
+                    random =
+                        random
+                )
+                    ?: return@repeat
+
+            val geckos =
+                pairs.mapTo(
+                    linkedSetOf()
+                ) {
+                    it.gecko
+                }
+
+            val bees =
+                pairs.mapTo(
+                    linkedSetOf()
+                ) {
+                    it.bee
+                }
+
+            return BeeGeckoPuzzle(
+                id =
+                    "bee-safe-" +
+                        seed,
+                radius =
+                    easyProfile.radius,
+                regions =
+                    regions,
+                solutionGeckos =
+                    geckos,
+                solutionBees =
+                    bees,
+                solutionPairs =
+                    pairs,
+                givenGeckos =
+                    geckos,
+                givenBees =
+                    bees,
+                difficulty =
+                    GameDifficulty
+                        .DISCOVERY,
+                seed =
+                    seed
+            )
         }
 
-        return puzzle
+        throw IllegalStateException(
+            "Impossible de générer une grille Abeilles & Geckos sûre."
+        )
     }
 }
