@@ -60,3 +60,6 @@ Le média Bee reste dans l'overlay global pour préserver l'architecture vidéo 
 ### GECKO-045 — prévention saut premier pinch
 
 Audit statique post-commit : `centered()` appliquait un fit à 92 % alors que la borne de zoom utilisait le fit complet. Correction avant validation téléphone : le centrage reçoit directement `minimumScale()` comme minimum.
+### CI #223 GREEN
+
+Run `36401929872` terminé avec succès. Toutes les étapes tests/build/nommage/upload passent. `Publish phone prerelease` est volontairement skipped car le commit n'avait pas encore le marqueur `[phone-release]`.

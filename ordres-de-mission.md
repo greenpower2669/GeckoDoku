@@ -338,3 +338,6 @@ Ne pas déclarer la mission terminée avant CI + validation téléphone Fab.
 ### Ajustement caméra GECKO-045
 
 Le scale initial doit utiliser le même `minimumScale()` que la borne de pinch afin d'éviter tout saut de zoom au premier geste. Cette règle fait partie du critère « navigation fluide ».
+### Jalon GECKO-045
+
+CI #222 GREEN sur l'implémentation initiale. CI #223 GREEN après alignement du scale initial avec le zoom minimum. Candidate 0.15.2-dev techniquement validée ; publication téléphone demandée.

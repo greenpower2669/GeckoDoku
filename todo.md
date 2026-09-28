@@ -49,3 +49,8 @@
 - [ ] publier APK téléphone 0.15.2 ;
 - [ ] Fab valide taille Bee et navigation interne.
 - [x] aligner scale initial et zoom minimum pour supprimer le saut au premier pinch ;
+### GECKO-045 — après CI #223
+- [x] CI #222 GREEN ;
+- [x] CI #223 GREEN après correction du premier pinch ;
+- [ ] publier prerelease téléphone 0.15.2 ;
+- [ ] Fab valide la fenêtre carrée, navigation et Abeilles 50 %.

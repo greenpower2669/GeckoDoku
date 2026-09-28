@@ -102,3 +102,6 @@ Animation Bee
 ### Caméra
 
 `minimumScale(viewport)` → source commune pour centrage initial et limite zoom-out. Pas de seuil différent entre ouverture et pinch.
+### Validation
+
+GECKO-045 code → CI #222 GREEN → ajustement scale → CI #223 GREEN → prerelease téléphone 0.15.2.

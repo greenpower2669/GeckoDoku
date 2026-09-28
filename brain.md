@@ -69,3 +69,6 @@ Pour éviter qu'une vidéo Bee déborde du carré alors qu'elle vit dans `RichMe
 ### GECKO-045 — cohérence du scale initial
 
 `BeeGeckoBoardView.ensureCamera()` utilise désormais `minimumScale()` comme minimum du centrage initial. Le premier pinch ne doit donc plus provoquer de saut entre le scale de départ et la borne minimale.
+### GECKO-045 — CI #223 GREEN
+
+La 0.15.2-dev passe les tests et le build téléphone avec viewport carré interne, clipping, Bee scale 0.50 et caméra cohérente ouverture/pinch. Prochaine porte : validation tactile/visuelle Fab.
