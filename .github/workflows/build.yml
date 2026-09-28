@@ -1,9 +1,12 @@
-name: Build GeckoDoku APK + AAB
+name: Build GeckoDoku phone APK
 
 on:
   push:
     branches: [ main, gecko-022-rich-media, gecko-024-grid-audio, gecko-025-canonical-gecko-prof, gecko-026-floating-prof-ui, gecko-027-prof-foreground, gecko-028-prof-voice-idle-mask, gecko-029-more-life-full-celebration, gecko-030-restore-prof-video, gecko-031-voice-ab-experiment, gecko-032-pierre-medium, gecko-033-identity-prof-life, gecko-038-sudoku-mode, gecko-039-sudoku-tap-gecko-gomoku ]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   android:
@@ -17,6 +20,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.6.0'
+
       - name: Prepare Sherpa-ONNX Android AAR
         shell: bash
         run: |
@@ -54,22 +58,42 @@ jobs:
           test -d assets/tts/piper/pierre/espeak-ng-data
 
           du -sh assets/tts/piper/pierre
-      - name: Test and build Android
-        run: gradle :app:testDebugUnitTest :app:assembleDebug :app:bundleDebug --no-daemon
+
+      - name: Test and build phone APK
+        run: gradle :app:testDebugUnitTest :app:assemblePhone --no-daemon
+
       - name: Resolve app version
         shell: bash
         run: |
           set -euo pipefail
-          APP_VERSION="$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -n 1)"
+          APP_VERSION="$(sed -n 's/.*versionName = \"\([^\"]*\)\".*/\1/p' app/build.gradle.kts | head -n 1)"
           test -n "$APP_VERSION"
           echo "APP_VERSION=$APP_VERSION" >> "$GITHUB_ENV"
-      - name: Name APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk "GeckoDoku-v${APP_VERSION}.apk"
-      - name: Name AAB
-        run: cp app/build/outputs/bundle/debug/app-debug.aab "GeckoDoku-v${APP_VERSION}.aab"
+
+      - name: Name phone APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp app/build/outputs/apk/phone/app-phone.apk "GeckoDoku-v${APP_VERSION}.apk"
+          test -s "GeckoDoku-v${APP_VERSION}.apk"
+
       - uses: actions/upload-artifact@v4
         with:
-          name: GeckoDoku-v${{ env.APP_VERSION }}-Android
-          path: |
-            GeckoDoku-v${{ env.APP_VERSION }}.apk
-            GeckoDoku-v${{ env.APP_VERSION }}.aab
+          name: GeckoDoku-v${{ env.APP_VERSION }}-phone
+          path: GeckoDoku-v${{ env.APP_VERSION }}.apk
+
+      - name: Publish phone prerelease
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[phone-release]')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="phone-${APP_VERSION}-run-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" \
+            "GeckoDoku-v${APP_VERSION}.apk#GeckoDoku v${APP_VERSION} APK" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --target "${GITHUB_SHA}" \
+            --title "GeckoDoku ${APP_VERSION} • test téléphone" \
+            --notes "APK téléphone de test construit automatiquement depuis ${GITHUB_SHA}. Variante phone non débogable, signée avec la clé de test Android ; ne pas utiliser comme signature Google Play." \
+            --prerelease

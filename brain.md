@@ -2853,3 +2853,8 @@ Après CI #213 GREEN, le mode reçoit les repères personnels hexagonaux persist
 ### GECKO-042 — CI #214
 
 Le helper local de gestion d'appui long a été renommé `cancelPendingLongPress()` pour ne pas masquer `android.view.View.cancelLongPress()`. Aucun changement fonctionnel.
+### GECKO-042 — packaging téléphone après CI #215
+
+CI #215 est GREEN avec repères/navigation. Pour les tests Fab sur téléphone, une variante Android `phone` est ajoutée : elle hérite de `release`, reste non débogable, mais utilise uniquement la clé de test Android afin de produire un APK installable sans toucher à la configuration `release` destinée à une future signature Google Play.
+
+Le workflow n'empaquette plus inutilement un AAB pour cette boucle téléphone : tests + `assemblePhone`, artefact APK seul. Un commit marqué `[phone-release]` publie en plus une GitHub prerelease avec l'APK comme asset direct.

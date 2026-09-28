@@ -1376,3 +1376,8 @@ Résultats : `GameMode.BEES_GECKOS` → stats mode+difficulté → étoiles → 
 ### Appui long hexagonal
 
 `BeeGeckoBoardView.scheduleLongPress()` annule désormais via `cancelPendingLongPress()` ; pas de collision avec l'API `View`.
+### Packaging téléphone
+
+`buildTypes.phone` ← `release` + signature Android de test, `isDebuggable=false`.
+`build.yml` → tests → assemblePhone → APK seul → upload-artifact ; si message contient `[phone-release]` → `gh release create` prerelease.
+`buildTypes.release` reste inchangé pour ne pas mélanger la clé de test avec une future signature Play.

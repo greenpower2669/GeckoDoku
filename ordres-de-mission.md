@@ -482,3 +482,6 @@ Ne pas déclarer les 45 points terminés avant tests CI + validation téléphone
 - recentrage global + accès à la prochaine zone non résolue : intégrés dans ⚙️ ;
 - différenciation de secours Gecko/Abeille par forme/lettre si sprite indisponible ;
 - CI #213 a validé la première fondation ; les ajouts postérieurs exigent une nouvelle CI.
+### Packaging de test demandé par Fab
+
+Pour les validations téléphone, privilégier désormais une GitHub Release/prerelease contenant directement l'APK, plutôt qu'un ZIP Actions contenant APK+AAB. La variante `phone` doit rester séparée de la vraie build `release` afin que la signature de test ne soit jamais confondue avec la future signature Google Play.

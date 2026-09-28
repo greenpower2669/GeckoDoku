@@ -51,3 +51,10 @@
 - [x] CI #214 : diagnostiquer la collision `View.cancelLongPress()` ;
 - [x] renommer le helper en `cancelPendingLongPress()` ;
 - [ ] revalider sur CI suivante.
+### Packaging téléphone après CI #215
+- [x] CI #215 GREEN avec repères + navigation ;
+- [x] ajouter une variante `phone` non débogable sans contaminer `release` ;
+- [x] alléger le workflow téléphone à un APK seul ;
+- [x] préparer la publication automatique en GitHub prerelease sur commit `[phone-release]` ;
+- [ ] valider le build `assemblePhone` et la création réelle de la prerelease ;
+- [ ] tester l'APK sur téléphone.

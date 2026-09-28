@@ -1709,3 +1709,8 @@ Après ce jalon, ajout des repères personnels sur appui long, persistance de ce
 ### CI #214 — erreur de nom Android
 
 Run `36362591311` : échec compilation Kotlin dans `BeeGeckoBoardView.kt:949` — le helper `cancelLongPress` masquait un membre de `View`. Correction : renommage en `cancelPendingLongPress()` sur tous les appels.
+### CI #215 GREEN — préparation Release téléphone
+
+Run `36362738107` GREEN après le renommage du helper d'appui long. Artefact avant changement de packaging : `GeckoDoku-v0.14.0-dev-Android`, id `10946123078`, digest `sha256:66b5f72de60b0213d6bf3404828b8e61457af71b494891b2c0f297c08c90d2a1`.
+
+Décision Fab appliquée : les prochaines candidates téléphone doivent être fournies comme GitHub Release avec APK direct et éviter le gros couple APK+AAB de debug. Une variante `phone` non débogable et signée avec la clé de test Android est introduite ; la vraie build `release` reste sans cette signature de test.
