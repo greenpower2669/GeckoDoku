@@ -1468,3 +1468,21 @@ Résultats : `GameMode.BEES_GECKOS` → stats mode+difficulté → étoiles → 
 ### GECKO-043 — validation CI
 
 `#217 Bee+stars GREEN` → `#218 Gomoku GREEN` → `#219 exclusivité/calibration GREEN` → candidate téléphone 0.15 → validation Fab.
+## GECKO-044 — média + navigation
+
+`RichMediaOverlayView.play(keyColor=BLUE)`
+→ `ChromaKeyVideoView.setKeyColor()`
+→ `ChromaRenderer.greenKeyStrength`
+→ shader : dominance bleue ou verte + despill correspondant.
+
+`playBeeGeckoAnimation()`
+→ `keyColor = GREEN`
+→ fond vert transparent, ailes bleues conservées.
+
+`BeeGeckoBoardView`
+→ `BeeGeckoGesturePolicy` calqué sur la sémantique Gomoku
+→ TAP si mouvement sous seuil
+→ PAN si un doigt dépasse le seuil
+→ ZOOM si pinch / 2 doigts
+→ `BeeGeckoViewportPolicy.fitScale()` comme zoom minimum
+→ `clamp()` : recentre si plus petit, borne aux bords si plus grand.

@@ -17,6 +17,13 @@ import java.util.concurrent.atomic.AtomicLong
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
+enum class ChromaKeyColor(
+    val greenStrength: Float
+) {
+    BLUE(0f),
+    GREEN(1f)
+}
+
 class ChromaKeyVideoView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
@@ -294,6 +301,18 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             chromaRenderer
                 .setYellowTint(
                     enabled
+                )
+        }
+        requestRender()
+    }
+
+    fun setKeyColor(
+        color: ChromaKeyColor
+    ) {
+        queueEvent {
+            chromaRenderer
+                .setKeyColor(
+                    color
                 )
         }
         requestRender()
@@ -764,6 +783,11 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         private var yellowTintStrength =
             0f
 
+        private var greenKeyStrength =
+            ChromaKeyColor
+                .BLUE
+                .greenStrength
+
         private val textureMatrix =
             FloatArray(16)
 
@@ -957,6 +981,12 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                     "uYellowTint"
                 )
 
+            val greenKeyHandle =
+                GLES20.glGetUniformLocation(
+                    program,
+                    "uGreenKeyStrength"
+                )
+
             GLES20.glActiveTexture(
                 GLES20.GL_TEXTURE0
             )
@@ -1020,6 +1050,11 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             GLES20.glUniform1f(
                 yellowTintHandle,
                 yellowTintStrength
+            )
+
+            GLES20.glUniform1f(
+                greenKeyHandle,
+                greenKeyStrength
             )
 
             GLES20.glDrawArrays(
@@ -1099,6 +1134,13 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 } else {
                     0f
                 }
+        }
+
+        fun setKeyColor(
+            color: ChromaKeyColor
+        ) {
+            greenKeyStrength =
+                color.greenStrength
         }
 
         fun releaseSurfaceTexture() {
@@ -1314,17 +1356,24 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 "uniform float uSoftness;\n" +
                 "uniform float uDespill;\n" +
                 "uniform float uYellowTint;\n" +
+                "uniform float uGreenKeyStrength;\n" +
                 "varying vec2 vTexCoord;\n" +
                 "void main() {\n" +
                 "  vec4 color = texture2D(sTexture, vTexCoord);\n" +
-                "  float maxRG = max(color.r, color.g);\n" +
-                "  float dominance = color.b - maxRG;\n" +
-                "  float blueKey = smoothstep(uThreshold, uThreshold + uSoftness, dominance);\n" +
-                "  float brightness = smoothstep(0.18, 0.42, color.b);\n" +
-                "  float key = clamp(blueKey * brightness, 0.0, 1.0);\n" +
+                "  float blueMax = max(color.r, color.g);\n" +
+                "  float greenMax = max(color.r, color.b);\n" +
+                "  float blueDominance = color.b - blueMax;\n" +
+                "  float greenDominanceKey = color.g - greenMax;\n" +
+                "  float dominance = mix(blueDominance, greenDominanceKey, uGreenKeyStrength);\n" +
+                "  float keyChannel = mix(color.b, color.g, uGreenKeyStrength);\n" +
+                "  float chromaKey = smoothstep(uThreshold, uThreshold + uSoftness, dominance);\n" +
+                "  float brightness = smoothstep(0.18, 0.42, keyChannel);\n" +
+                "  float key = clamp(chromaKey * brightness, 0.0, 1.0);\n" +
                 "  vec3 clean = color.rgb;\n" +
-                "  float neutralBlue = maxRG + 0.04;\n" +
-                "  clean.b = mix(clean.b, min(clean.b, neutralBlue), key * uDespill);\n" +
+                "  float neutralBlue = blueMax + 0.04;\n" +
+                "  float neutralGreen = greenMax + 0.04;\n" +
+                "  clean.b = mix(clean.b, min(clean.b, neutralBlue), key * uDespill * (1.0 - uGreenKeyStrength));\n" +
+                "  clean.g = mix(clean.g, min(clean.g, neutralGreen), key * uDespill * uGreenKeyStrength);\n" +
                 "  float greenDominance = max(clean.g - max(clean.r, clean.b), 0.0);\n" +
                 "  float greenMask = smoothstep(0.04, 0.34, greenDominance) * uYellowTint;\n" +
                 "  vec3 yellowized = vec3(max(clean.r, clean.g * 0.95), clean.g, clean.b * 0.25);\n" +

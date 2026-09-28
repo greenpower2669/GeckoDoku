@@ -122,3 +122,16 @@
 - [ ] Fab : tester Prof Bee et projection Gomoku ;
 - [ ] Fab : tester les écarts de force Gomoku, surtout Découverte vs niveaux hauts ;
 - [ ] ajuster ensuite uniquement les points révélés par le test téléphone.
+## GECKO-044 — test téléphone 0.15.1
+- [x] audit du rectangle vert Abeille ;
+- [x] keycolor paramétrable BLUE/GREEN ;
+- [x] Abeille forcée au keycolor VERT ;
+- [x] préserver les ailes bleues ;
+- [x] aligner gestes Bee sur sémantique Gomoku ;
+- [x] empêcher le zoom-out au-delà du fit complet ;
+- [x] recentrer automatiquement une grille plus petite que le viewport ;
+- [x] clamp strict quand la grille est zoomée ;
+- [x] tests viewport / gestes / sélection keycolor ;
+- [ ] CI GREEN ;
+- [ ] publier prerelease téléphone directe 0.15.1 ;
+- [ ] Fab valide : fond vert disparu + drag/pinch satisfaisants.

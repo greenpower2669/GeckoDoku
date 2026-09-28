@@ -3,6 +3,37 @@ package com.greenpower2669.geckodoku
 import kotlin.math.max
 import kotlin.math.min
 
+enum class BeeGeckoGestureAction {
+    TAP,
+    PAN,
+    ZOOM
+}
+
+class BeeGeckoGesturePolicy(
+    private val dragThresholdPx: Float
+) {
+    fun actionFor(
+        pointerCount: Int,
+        distancePx: Float,
+        scaleInProgress: Boolean
+    ): BeeGeckoGestureAction =
+        when {
+            scaleInProgress ||
+                pointerCount >= 2 ->
+                BeeGeckoGestureAction
+                    .ZOOM
+
+            distancePx >
+                dragThresholdPx ->
+                BeeGeckoGestureAction
+                    .PAN
+
+            else ->
+                BeeGeckoGestureAction
+                    .TAP
+        }
+}
+
 data class BeeGeckoCamera(
     val scale: Float = 1f,
     val offsetX: Float = 0f,
@@ -42,14 +73,23 @@ object BeeGeckoViewportPolicy {
         camera: BeeGeckoCamera,
         factor: Float,
         focusX: Float,
-        focusY: Float
+        focusY: Float,
+        minimumScale:
+            Float = MIN_SCALE
     ): BeeGeckoCamera {
+        val effectiveMinimum =
+            minimumScale
+                .coerceIn(
+                    MIN_SCALE,
+                    MAX_SCALE
+                )
+
         val newScale =
             (
                 camera.scale *
                     factor
                 ).coerceIn(
-                MIN_SCALE,
+                effectiveMinimum,
                 MAX_SCALE
             )
 
@@ -100,6 +140,50 @@ object BeeGeckoViewportPolicy {
                 camera.offsetY +
                     dy
         )
+
+    fun fitScale(
+        viewWidth: Float,
+        viewHeight: Float,
+        content:
+            BeeGeckoBounds,
+        marginPx: Float = 0f
+    ): Float {
+        if (
+            viewWidth <= 0f ||
+            viewHeight <= 0f ||
+            content.width <= 0f ||
+            content.height <= 0f
+        ) {
+            return MIN_SCALE
+        }
+
+        val usableWidth =
+            (
+                viewWidth -
+                    marginPx *
+                        2f
+                )
+                .coerceAtLeast(1f)
+
+        val usableHeight =
+            (
+                viewHeight -
+                    marginPx *
+                        2f
+                )
+                .coerceAtLeast(1f)
+
+        return min(
+            usableWidth /
+                content.width,
+            usableHeight /
+                content.height
+        )
+            .coerceIn(
+                MIN_SCALE,
+                MAX_SCALE
+            )
+    }
 
     fun centered(
         viewWidth: Float,
@@ -163,77 +247,114 @@ object BeeGeckoViewportPolicy {
     ): BeeGeckoCamera {
         if (
             viewWidth <= 0f ||
-            viewHeight <= 0f
+            viewHeight <= 0f ||
+            content.width <= 0f ||
+            content.height <= 0f
         ) {
             return camera
         }
 
-        val left =
-            content.left *
-                camera.scale +
-                camera.offsetX
+        val margin =
+            visibleMarginPx
+                .coerceAtLeast(0f)
 
-        val right =
-            content.right *
-                camera.scale +
-                camera.offsetX
+        val scaledWidth =
+            content.width *
+                camera.scale
 
-        val top =
-            content.top *
-                camera.scale +
-                camera.offsetY
+        val scaledHeight =
+            content.height *
+                camera.scale
 
-        val bottom =
-            content.bottom *
-                camera.scale +
-                camera.offsetY
-
-        var dx = 0f
-        var dy = 0f
-
-        if (
-            right <
-                visibleMarginPx
-        ) {
-            dx =
-                visibleMarginPx -
-                    right
-        } else if (
-            left >
+        val usableWidth =
+            (
                 viewWidth -
-                    visibleMarginPx
-        ) {
-            dx =
-                viewWidth -
-                    visibleMarginPx -
-                    left
-        }
+                    margin *
+                        2f
+                )
+                .coerceAtLeast(1f)
 
-        if (
-            bottom <
-                visibleMarginPx
-        ) {
-            dy =
-                visibleMarginPx -
-                    bottom
-        } else if (
-            top >
+        val usableHeight =
+            (
                 viewHeight -
-                    visibleMarginPx
-        ) {
-            dy =
-                viewHeight -
-                    visibleMarginPx -
-                    top
-        }
+                    margin *
+                        2f
+                )
+                .coerceAtLeast(1f)
+
+        val desiredLeft =
+            if (
+                scaledWidth <=
+                    usableWidth
+            ) {
+                margin +
+                    (
+                        usableWidth -
+                            scaledWidth
+                        ) /
+                        2f
+            } else {
+                val currentLeft =
+                    content.left *
+                        camera.scale +
+                        camera.offsetX
+
+                val minimumLeft =
+                    viewWidth -
+                        margin -
+                        scaledWidth
+
+                val maximumLeft =
+                    margin
+
+                currentLeft
+                    .coerceIn(
+                        minimumLeft,
+                        maximumLeft
+                    )
+            }
+
+        val desiredTop =
+            if (
+                scaledHeight <=
+                    usableHeight
+            ) {
+                margin +
+                    (
+                        usableHeight -
+                            scaledHeight
+                        ) /
+                        2f
+            } else {
+                val currentTop =
+                    content.top *
+                        camera.scale +
+                        camera.offsetY
+
+                val minimumTop =
+                    viewHeight -
+                        margin -
+                        scaledHeight
+
+                val maximumTop =
+                    margin
+
+                currentTop
+                    .coerceIn(
+                        minimumTop,
+                        maximumTop
+                    )
+            }
 
         return camera.copy(
             offsetX =
-                camera.offsetX +
-                    dx,
+                desiredLeft -
+                    content.left *
+                        camera.scale,
             offsetY =
-                camera.offsetY +
-                    dy
+                desiredTop -
+                    content.top *
+                        camera.scale
         )
     }
 }

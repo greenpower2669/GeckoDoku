@@ -114,6 +114,12 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     private val dragThreshold =
         dp(10f)
 
+    private val gesturePolicy =
+        BeeGeckoGesturePolicy(
+            dragThresholdPx =
+                dragThreshold
+        )
+
     private var professorHint:
         BeeGeckoHint? = null
 
@@ -150,7 +156,9 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                                         .focusX,
                                 focusY =
                                     detector
-                                        .focusY
+                                        .focusY,
+                                minimumScale =
+                                    minimumScale()
                             )
 
                     clampCamera()
@@ -926,11 +934,6 @@ class BeeGeckoBoardView @JvmOverloads constructor(
 
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                parent
-                    ?.requestDisallowInterceptTouchEvent(
-                        true
-                    )
-
                 downX = event.x
                 downY = event.y
                 lastX = event.x
@@ -958,13 +961,15 @@ class BeeGeckoBoardView @JvmOverloads constructor(
 
             MotionEvent.ACTION_MOVE -> {
                 if (
-                    event.pointerCount >
-                        1 ||
                     scaleDetector
-                        .isInProgress
+                        .isInProgress ||
+                    event.pointerCount >= 2
                 ) {
                     scaledGesture = true
                     cancelPendingLongPress()
+                    cancelPendingSingleTap()
+                    lastX = event.x
+                    lastY = event.y
                     return true
                 }
 
@@ -976,24 +981,38 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                             downY
                     )
 
+                val action =
+                    gesturePolicy
+                        .actionFor(
+                            pointerCount =
+                                event
+                                    .pointerCount,
+                            distancePx =
+                                distance,
+                            scaleInProgress =
+                                false
+                        )
+
                 if (
-                    distance >
-                        dragThreshold
+                    action ==
+                        BeeGeckoGestureAction
+                            .PAN
                 ) {
                     dragging = true
                     cancelPendingLongPress()
                     cancelPendingSingleTap()
-                }
 
-                if (dragging) {
                     camera =
                         BeeGeckoViewportPolicy
                             .pan(
-                                camera,
-                                event.x -
-                                    lastX,
-                                event.y -
-                                    lastY
+                                camera =
+                                    camera,
+                                dx =
+                                    event.x -
+                                        lastX,
+                                dy =
+                                    event.y -
+                                        lastY
                             )
 
                     clampCamera()
@@ -1007,17 +1026,39 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_UP -> {
-                parent
-                    ?.requestDisallowInterceptTouchEvent(
-                        false
+                cancelPendingLongPress()
+
+                val distance =
+                    hypot(
+                        event.x -
+                            downX,
+                        event.y -
+                            downY
                     )
 
-                cancelPendingLongPress()
+                val action =
+                    gesturePolicy
+                        .actionFor(
+                            pointerCount =
+                                if (
+                                    scaledGesture
+                                ) {
+                                    2
+                                } else {
+                                    1
+                                },
+                            distancePx =
+                                distance,
+                            scaleInProgress =
+                                scaledGesture
+                        )
 
                 if (
                     !dragging &&
-                    !scaledGesture &&
-                    !longPressTriggered
+                    !longPressTriggered &&
+                    action ==
+                        BeeGeckoGestureAction
+                            .TAP
                 ) {
                     performClick()
 
@@ -1030,18 +1071,17 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                         }
                 }
 
+                dragging = false
+                scaledGesture = false
                 downCell = null
                 return true
             }
 
             MotionEvent.ACTION_CANCEL -> {
-                parent
-                    ?.requestDisallowInterceptTouchEvent(
-                        false
-                    )
-
                 cancelPendingLongPress()
                 cancelPendingSingleTap()
+                dragging = false
+                scaledGesture = false
                 downCell = null
                 return true
             }
@@ -1253,9 +1293,23 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     content =
                         worldBounds,
                     visibleMarginPx =
-                        dp(54f)
+                        dp(8f)
                 )
     }
+
+    private fun minimumScale():
+        Float =
+        BeeGeckoViewportPolicy
+            .fitScale(
+                viewWidth =
+                    width.toFloat(),
+                viewHeight =
+                    height.toFloat(),
+                content =
+                    worldBounds,
+                marginPx =
+                    dp(8f)
+            )
 
     private fun notifyViewport() {
         onViewportChanged

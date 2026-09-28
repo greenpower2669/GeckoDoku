@@ -2898,3 +2898,14 @@ Les textes de trace Gomoku sont rendus neutres (« camp adverse », « camp cons
 Run #219 (`36366990280`) GREEN après le durcissement final : exclusivité 1↔1 à travers les frontières de zones, génération/solveur alignés, calibration de difficulté et traces Gomoku neutres.
 
 État : version 0.15.0-dev candidate téléphone. Ne pas considérer l'ergonomie visuelle définitivement validée avant retour Fab sur appareil réel.
+## 2026-09-28 — GECKO-044 / retour téléphone Fab
+
+Validation utilisateur : logiciel OK, plateau Abeilles & Geckos OK. Défauts restants : vidéo Abeille encore sur rectangle vert et navigation/drag moins satisfaisants que Gomoku.
+
+Correctifs retenus :
+- `ChromaKeyVideoView` devient paramétrable BLUE/GREEN ; BLUE reste le défaut historique ;
+- `Abeillefondvert.mp4` appelle explicitement `ChromaKeyColor.GREEN` pour préserver les ailes bleues ;
+- shader GLSL calcule la dominance et le despill selon la couleur de key sélectionnée ;
+- caméra Bee garde sa représentation existante mais adopte la sémantique Gomoku : policy de geste TAP/PAN/ZOOM, seuil 10dp, pinch exclusif, clamp strict, recentrage automatique si la grille tient entièrement, minimum de zoom égal au fit complet.
+
+Le moteur logique 0.15 n'est pas touché.

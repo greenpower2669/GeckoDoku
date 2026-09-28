@@ -10,8 +10,8 @@ android {
         applicationId = "com.greenpower2669.geckodoku"
         minSdk = 26
         targetSdk = 36
-        versionCode = 35
-        versionName = "0.15.0-dev"
+        versionCode = 36
+        versionName = "0.15.1-dev"
     }
 
     sourceSets {

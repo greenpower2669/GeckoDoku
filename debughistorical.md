@@ -1752,3 +1752,10 @@ Une deuxième correction de calibration évite que le nombre cible de givens emp
 Run `36366990280` terminé avec succès : tests unitaires, compilation et APK téléphone passent après le correctif d'exclusivité globale et la calibration Bee. Aucun contournement des règles n'a été nécessaire.
 
 Prochaine étape : commit documentaire `[phone-release]` pour produire la prerelease APK 0.15 directement téléchargeable, puis test sur téléphone.
+## 2026-09-28 — GECKO-044 — bugs vus sur capture téléphone
+
+Capture Fab : le sprite/plateau statique est bon. La vidéo `Abeillefondvert.mp4` apparaît encore comme un carré vert. Audit : `ChromaKeyVideoView` supprimait uniquement une dominance **bleue** dans son fragment shader, donc le fond vert ne pouvait jamais devenir transparent. Utiliser un key bleu serait impossible ici sans abîmer les ailes bleues de l'Abeille.
+
+Second constat : Bee utilisait une caméra offset/scale avec clamp permissif à 54dp, permettant une sensation de carte flottante. Gomoku utilise un état de geste plus strict et un viewport toujours borné. La passe GECKO-044 reprend cette sémantique sans toucher au rendu logique.
+
+État au moment de cette entrée : correctifs codés en blobs, CI pas encore lancée. Ne pas marquer GREEN avant le run réel.

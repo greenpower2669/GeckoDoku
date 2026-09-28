@@ -572,3 +572,13 @@ CI #218 : GREEN — vraie difficulté Gomoku + projection pédagogique.
 CI #219 : GREEN — exclusivité globale Abeille↔Gecko + calibration de difficulté + texte Gomoku neutre.
 
 Le code est prêt pour la validation téléphone. Les critères visuels/ergonomiques restent soumis au test réel de Fab avant de déclarer la mission totalement close.
+### GECKO-044 — correctifs téléphone après test Fab
+
+Observation réelle sur la 0.15.0-dev : logique et plateau Abeilles & Geckos validés, mais deux défauts UX restent ouverts.
+
+1. **Animation Abeille** : `Abeillefondvert.mp4` possède un fond vert et des ailes bleues. Le keycolor doit donc être **VERT** pour cette animation uniquement. Le keycolor BLEU reste le défaut pour les vidéos historiques afin de ne rien casser.
+2. **Zoom / drag Abeilles & Geckos** : remplacer la sensation de caméra flottante par le comportement éprouvé du Gomoku : seuil anti-faux-tap, pan seulement après franchissement du seuil, pinch exclusif, zoom autour du point visé, impossibilité de dézoomer plus loin que la vue complète, plateau recentré automatiquement quand il est plus petit que le viewport, et clamp strict aux bords quand il est agrandi.
+
+Le plateau, les couleurs, les règles et le solveur ne doivent pas être modifiés par cette passe.
+
+Version cible : **0.15.1-dev** / versionCode **36**.

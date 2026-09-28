@@ -137,6 +137,9 @@ class RichMediaOverlayView @JvmOverloads constructor(
             (() -> RectF?)? = null,
         maskTarget: RectF? = null,
         maskColor: Int = Color.WHITE,
+        keyColor:
+            ChromaKeyColor =
+            ChromaKeyColor.BLUE,
         yellowTint: Boolean = false,
         onFirstFrameVisible:
             (() -> Unit)? = null,
@@ -213,6 +216,9 @@ class RichMediaOverlayView @JvmOverloads constructor(
                         } else {
                             1f
                         }
+                    setKeyColor(
+                        keyColor
+                    )
                     setYellowTint(
                         yellowTint
                     )

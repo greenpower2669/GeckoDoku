@@ -6463,7 +6463,10 @@ class MainActivity : Activity() {
             },
             titleText = null,
             skippable = false,
-            maskTarget = null
+            maskTarget = null,
+            keyColor =
+                ChromaKeyColor
+                    .GREEN
         )
     }
 
