@@ -487,7 +487,7 @@ object GomokuAi {
                             .coerceAtLeast(1) +
                         " Gecko(s) alignés autour de " +
                         coord(chosen) +
-                        ". En jouant ici, la ligne atteint cinq : c'est une victoire immédiate."
+                        ". Ce coup complète la ligne à cinq : c'est une victoire immédiate."
                 )
             }
 
@@ -495,7 +495,7 @@ object GomokuAi {
                 steps.add(
                     "Je regarde " +
                         opponent.label +
-                        ". Tu as " +
+                        ". Le camp adverse a " +
                         (opponent.length - 1)
                             .coerceAtLeast(1) +
                         " Gecko(s) qui convergent vers " +
@@ -504,7 +504,7 @@ object GomokuAi {
                 )
 
                 steps.add(
-                    "Si je laisse cette intersection libre, ta ligne peut devenir une menace directe. Je bloque donc " +
+                    "Si cette intersection reste libre, la ligne adverse peut devenir une menace directe. Le coup conseillé bloque donc " +
                         coord(chosen) +
                         "."
                 )
@@ -526,21 +526,21 @@ object GomokuAi {
 
             GomokuReasonKind.TRAP -> {
                 steps.add(
-                    "Je joue " +
+                    "Le coup " +
                         coord(chosen) +
-                        " parce que cette intersection agit sur plusieurs directions à la fois."
+                        " agit sur plusieurs directions à la fois."
                 )
 
                 steps.add(
-                    "Après ce coup, je crée " +
+                    "Après ce coup, le camp conseillé crée " +
                         threats +
-                        " menaces actives. Si tu réponds à une seule, l'autre peut rester ouverte."
+                        " menaces actives. Si l'adversaire répond à une seule, l'autre peut rester ouverte."
                 )
             }
 
             GomokuReasonKind.ATTACK -> {
                 steps.add(
-                    "Je prolonge " +
+                    "Ce coup prolonge " +
                         own.label +
                         " en " +
                         coord(chosen) +
@@ -554,9 +554,9 @@ object GomokuAi {
 
             GomokuReasonKind.POSITIONAL -> {
                 steps.add(
-                    "Il n'y a pas encore de combinaison forcée. Je choisis " +
+                    "Il n'y a pas encore de combinaison forcée. " +
                         coord(chosen) +
-                        " parce que cette intersection garde plusieurs directions actives sans fermer ma propre construction."
+                        " garde plusieurs directions actives sans fermer la construction du camp conseillé."
                 )
             }
         }
@@ -581,9 +581,9 @@ object GomokuAi {
                         index % 2 ==
                             0
                     ) {
-                        "Ta réponse plausible"
+                        "Réponse adverse plausible"
                     } else {
-                        "Ma suite prévue"
+                        "Suite prévue du camp conseillé"
                     }
 
                 steps.add(

@@ -560,3 +560,8 @@ Politique de force retenue :
 Le niveau faible n'est pas aléatoire ni absurde : il évalue de vrais coups mais peut ne pas voir une tactique immédiate ou choisir le 2e/3e bon candidat. Le comportement est déterministe pour rendre les tests reproductibles.
 
 Lors d'un tour automatique du Prof, aucune explication stratégique n'est récitée. Lorsqu'une aide est demandée, la même décision produit une `GomokuReasoningTrace` contenant : type attaque/défense/piège, ligne concernée, extrémités menacées, case choisie et suite projetée. Le plateau affiche alors ligne bleue, menaces rouges, coup certain vert et projections orange numérotées.
+### Précision exclusivité locale GECKO-043
+
+L'exclusivité ne se limite pas au couple enregistré dans la zone : dans une solution valide, chaque Abeille doit toucher **exactement un** Gecko de toute la grille, et chaque Gecko doit toucher **exactement une** Abeille de toute la grille. Le générateur refuse donc aussi les contacts croisés entre zones qui créeraient un second partenaire adjacent. Le solveur et le compteur de solutions appliquent la même règle.
+
+Le réglage de difficulté Bee est piloté par la trace réelle du solveur. Le nombre de données visibles reste une cible de génération, mais il ne peut plus empêcher d'accepter une grille dès que la difficulté mesurée correspond exactement à celle demandée.

@@ -1455,3 +1455,13 @@ Résultats : `GameMode.BEES_GECKOS` → stats mode+difficulté → étoiles → 
 `playGomokuProfessorTurn()`
 → joue uniquement
 → pas de commentaire stratégique automatique.
+### Exclusivité Abeille ↔ Gecko
+
+`solutionBees` → pour chaque Abeille, `adjacent(solutionGeckos).count == 1`.
+`solutionGeckos` → pour chaque Gecko, `adjacent(solutionBees).count == 1`.
+`generateSolution` filtre une Abeille si elle touche un autre Gecko que son partenaire.
+`buildOptions` élimine les contacts avec une pièce opposée confirmée d'une autre zone.
+`countSolutions` interdit les contacts croisés entre couples déjà choisis.
+
+### Calibration
+`rateDifficulty(trace)` reste la source de vérité ; `targetGivenCount` guide le retrait mais ne bloque plus une correspondance exacte.

@@ -93,6 +93,32 @@ data class BeeGeckoPuzzle(
             require(areNeighbors(pair.gecko, pair.bee))
         }
 
+        require(
+            solutionBees.all {
+                bee ->
+                solutionGeckos.count {
+                    gecko ->
+                    areNeighbors(
+                        gecko,
+                        bee
+                    )
+                } == 1
+            }
+        )
+
+        require(
+            solutionGeckos.all {
+                gecko ->
+                solutionBees.count {
+                    bee ->
+                    areNeighbors(
+                        gecko,
+                        bee
+                    )
+                } == 1
+            }
+        )
+
         for (
             typeCells in
             listOf(
@@ -764,6 +790,31 @@ object BeeGeckoRules {
             }
         }
 
+        if (
+            bees.any {
+                bee ->
+                geckos.count {
+                    gecko ->
+                    areNeighbors(
+                        gecko,
+                        bee
+                    )
+                } != 1
+            } ||
+            geckos.any {
+                gecko ->
+                bees.count {
+                    bee ->
+                    areNeighbors(
+                        gecko,
+                        bee
+                    )
+                } != 1
+            }
+        ) {
+            return false
+        }
+
         for (axis in HexAxis.entries) {
             if (
                 geckos
@@ -1296,6 +1347,12 @@ object BeeGeckoSolver {
         val usedBS =
             mutableSetOf<Int>()
 
+        val chosenGeckos =
+            linkedSetOf<HexCoord>()
+
+        val chosenBees =
+            linkedSetOf<HexCoord>()
+
         var count = 0
 
         fun search(
@@ -1332,7 +1389,23 @@ object BeeGeckoSolver {
                     g.s in usedGS ||
                     b.q in usedBQ ||
                     b.r in usedBR ||
-                    b.s in usedBS
+                    b.s in usedBS ||
+                    chosenBees.any {
+                        otherBee ->
+                        BeeGeckoRules
+                            .areNeighbors(
+                                g,
+                                otherBee
+                            )
+                    } ||
+                    chosenGeckos.any {
+                        otherGecko ->
+                        BeeGeckoRules
+                            .areNeighbors(
+                                otherGecko,
+                                b
+                            )
+                    }
                 ) {
                     continue
                 }
@@ -1343,11 +1416,15 @@ object BeeGeckoSolver {
                 usedBQ.add(b.q)
                 usedBR.add(b.r)
                 usedBS.add(b.s)
+                chosenGeckos.add(g)
+                chosenBees.add(b)
 
                 search(
                     index + 1
                 )
 
+                chosenGeckos.remove(g)
+                chosenBees.remove(b)
                 usedGQ.remove(g.q)
                 usedGR.remove(g.r)
                 usedGS.remove(g.s)
@@ -1426,7 +1503,18 @@ object BeeGeckoSolver {
                                 confirmedGeckos,
                             sameCellAllowed =
                                 knownG
-                        )
+                        ) &&
+                        confirmedBees.none {
+                            other ->
+                            puzzle.regionAt(
+                                other
+                            ) != region &&
+                                BeeGeckoRules
+                                    .areNeighbors(
+                                        cell,
+                                        other
+                                    )
+                        }
                 }
 
             val beeCandidates =
@@ -1447,7 +1535,18 @@ object BeeGeckoSolver {
                                 confirmedBees,
                             sameCellAllowed =
                                 knownB
-                        )
+                        ) &&
+                        confirmedGeckos.none {
+                            other ->
+                            puzzle.regionAt(
+                                other
+                            ) != region &&
+                                BeeGeckoRules
+                                    .areNeighbors(
+                                        other,
+                                        cell
+                                    )
+                        }
                 }
 
             val options =
@@ -1668,31 +1767,31 @@ object BeeGeckoSolver {
                 )
 
         return when {
-            score <= 4 ->
+            score <= 8 ->
                 GameDifficulty
                     .DISCOVERY
 
-            score <= 8 ->
+            score <= 14 ->
                 GameDifficulty
                     .EASY
 
-            score <= 14 ->
+            score <= 22 ->
                 GameDifficulty
                     .THINKING
 
-            score <= 21 ->
+            score <= 32 ->
                 GameDifficulty
                     .HARD
 
-            score <= 30 ->
+            score <= 44 ->
                 GameDifficulty
                     .EXPERT
 
-            score <= 40 ->
+            score <= 58 ->
                 GameDifficulty
                     .DEMENTIAL
 
-            score <= 52 ->
+            score <= 74 ->
                 GameDifficulty
                     .MISSION_IMPOSSIBLE
 
@@ -2133,10 +2232,7 @@ object BeeGeckoGenerator {
 
             if (
                 report.ratedDifficulty ==
-                    requested &&
-                givenG.size +
-                    givenB.size <=
-                    targetGivenCount
+                    requested
             ) {
                 return probe.copy(
                     difficulty =
@@ -2216,10 +2312,19 @@ object BeeGeckoGenerator {
                 val choices =
                     gecko.neighbors()
                         .filter {
-                            it in cells &&
-                                it !in geckos &&
-                                it !in
-                                    usedBeeCells
+                            bee ->
+                            bee in cells &&
+                                bee !in geckos &&
+                                bee !in
+                                    usedBeeCells &&
+                                geckos.count {
+                                    otherGecko ->
+                                    BeeGeckoRules
+                                        .areNeighbors(
+                                            otherGecko,
+                                            bee
+                                        )
+                                } == 1
                         }
                         .shuffled(random)
 

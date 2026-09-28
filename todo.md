@@ -104,3 +104,11 @@
 - [x] tests de différenciation IA et pédagogie réécrits ;
 - [ ] CI GREEN de l'ensemble GECKO-043 ;
 - [ ] validation téléphone des niveaux et projections.
+### GECKO-043 — contrôle post-CI #218
+- [x] CI #217 GREEN : refonte Bee + étoiles ;
+- [x] CI #218 GREEN : Gomoku difficulté + pédagogie graphique ;
+- [x] interdire les contacts Abeille↔plusieurs Geckos et Gecko↔plusieurs Abeilles entre zones ;
+- [x] appliquer cette exclusivité au générateur, solveur et test d'unicité ;
+- [x] recalibrer l'acceptation de difficulté sur la mesure du solveur ;
+- [ ] CI suivante GREEN ;
+- [ ] publier prerelease téléphone 0.15 après GREEN final.

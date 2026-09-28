@@ -2886,3 +2886,10 @@ Gomoku reste la seconde partie du même ordre : corriger force par niveau et tra
 `GomokuBoardView` sait rendre la trace uniquement lorsque MainActivity la demande : bleu ligne analysée, rouge menace, vert coup conseillé, orange projection numérotée. Les tours automatiques de Pierre ne déclenchent plus de bulle de stratégie. Fermer/changer la session Prof nettoie l'overlay.
 
 `GomokuProfessorPersona` n'est plus agressive : ton professeur/taquin, et les phrases de démarrage expliquent le niveau sans prétendre que Découverte est impitoyable.
+### GECKO-043 — exclusivité globale et calibration Bee
+
+Renforcement de la règle 1↔1 : `validateComplete`, les invariants du puzzle, le générateur, les candidats du solveur et `countSolutions` rejettent désormais tout contact croisé qui ferait toucher une Abeille à plusieurs Geckos ou un Gecko à plusieurs Abeilles, même entre zones différentes.
+
+Calibration : l'échelle de score du solveur a été élargie pour que les déductions simples puissent réellement tomber en Découverte/Facile. `tuneGivens` accepte immédiatement une configuration lorsque **la difficulté calculée** correspond à la demande ; le nombre de givens est un guide, pas une étiquette artificielle.
+
+Les textes de trace Gomoku sont rendus neutres (« camp adverse », « camp conseillé ») afin que la même trace soit correcte quand Pierre conseille le joueur ou analyse un camp en humain-vs-humain.

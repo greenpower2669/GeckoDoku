@@ -1740,3 +1740,10 @@ Correction : les niveaux faibles possèdent une fiabilité tactique et une fenê
 Ancienne persona agressive (`je ne fais pas de cadeaux`, `dignité`, etc.) supprimée : elle venait d'un contresens sur « Prof méchant », qui signifiait en réalité « trop fort ».
 
 Tests préparés : Infernal prend le gain immédiat ; un cas déterministe montre Découverte manquer un blocage que Infernal voit ; la trace contient coordonnées/lignes ; persona Découverte est pédagogique.
+### GECKO-043 — contrôle après CI #218
+
+CI #217 a validé la refonte Abeilles & Geckos + pénalité étoiles. CI #218 a validé la nouvelle politique Gomoku, les traces graphiques et les tests de persona/difficulté.
+
+Audit post-CI : le premier modèle 0.15 garantissait un couple voisin par zone mais pouvait encore autoriser une Abeille à toucher accidentellement un second Gecko d'une zone voisine. Cela violait l'exclusivité canonique. Correctif ajouté dans invariants, validation, génération, solveur et recherche d'unicité.
+
+Une deuxième correction de calibration évite que le nombre cible de givens empêche une grille déjà mesurée au bon niveau d'être acceptée.

@@ -17,13 +17,13 @@ class BeeGeckoLogicTest {
         givenBees:
             Set<HexCoord> =
             setOf(
-                HexCoord(-1, 1)
+                HexCoord(0, -1)
             )
     ): BeeGeckoPuzzle {
         val g0 =
             HexCoord(-1, 0)
         val b0 =
-            HexCoord(-1, 1)
+            HexCoord(0, -1)
         val g1 =
             HexCoord(0, 1)
         val b1 =
@@ -32,12 +32,12 @@ class BeeGeckoLogicTest {
         val regions =
             mapOf(
                 HexCoord(-1, 0) to 0,
-                HexCoord(-1, 1) to 0,
+                HexCoord(0, -1) to 0,
                 HexCoord(0, 0) to 0,
                 HexCoord(0, 1) to 1,
                 HexCoord(1, 0) to 1,
                 HexCoord(1, -1) to 1,
-                HexCoord(0, -1) to 1
+                HexCoord(-1, 1) to 1
             )
 
         return BeeGeckoPuzzle(
@@ -280,12 +280,48 @@ class BeeGeckoLogicTest {
                 .size
         )
 
-        assertTrue(
+        assertEquals(
+            generated.difficulty,
+            BeeGeckoSolver
+                .analyze(
+                    generated
+                )
+                .ratedDifficulty
+        )
+
+        assertEquals(
+            1,
             BeeGeckoSolver
                 .countSolutions(
                     generated,
                     limit = 2
-                ) <= 1
+                )
+        )
+    }
+
+    @Test
+    fun completeGridRejectsBeeTouchingTwoGeckos() {
+        val base =
+            puzzle(
+                givenGeckos =
+                    emptySet(),
+                givenBees =
+                    emptySet()
+            )
+
+        val badBees =
+            setOf(
+                HexCoord(0, -1),
+                HexCoord(-1, 1)
+            )
+
+        assertFalse(
+            BeeGeckoRules
+                .validateComplete(
+                    base,
+                    base.solutionGeckos,
+                    badBees
+                )
         )
     }
 
