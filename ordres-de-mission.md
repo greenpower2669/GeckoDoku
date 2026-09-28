@@ -45,7 +45,8 @@ Ne pas modifier :
 - [x] BeeGeckoRules.axisLabel dérive les textes Prof de cette géométrie ;
 - [x] tests unitaires dédiés ajoutés ;
 - [x] code : 8ccc0385c8314239976368811dab93808970e35a ;
-- [ ] CI branche ;
+- [x] CI #236 verte : tests + APK + prerelease ;
+- [x] APK : GeckoDoku-v0.15.6-dev.apk ;
 - [ ] validation téléphone Fab.
 
 ---

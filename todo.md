@@ -18,8 +18,8 @@
 - [x] commit code : 8ccc0385c8314239976368811dab93808970e35a.
 
 ### Reste
-- [ ] CI branche verte ;
-- [ ] APK téléphone ;
+- [x] CI #236 branche verte ;
+- [x] APK téléphone 0.15.6-dev publié en prerelease ;
 - [ ] validation téléphone Fab des trois axes, y compris double-clic ;
 - [ ] vérifier absence de régression couleur + drag.
 

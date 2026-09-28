@@ -69,5 +69,8 @@ Commit code :
 
 Règles, solveur, schema 4, couleurs et drag ne sont pas modifiés.
 
-Preuve attendue :
-tests + CI, puis validation téléphone Fab.
+Preuve technique :
+CI #236 verte, tests + compilation APK + publication prerelease réussis.
+
+Reste :
+validation téléphone Fab des trois orientations et du double-clic.

@@ -11,7 +11,7 @@
 - Version : 0.15.6-dev / versionCode 41
 - GECKO-047 : VALIDÉ FAB — grandes barres d’axes, drag/suppression hors plateau, Prof utilisant les axes, audio Android/Pierre capturable.
 - GECKO-048 : CODE + CI VERTE, validation téléphone encore attendue — prononciation Pierre et couleurs d’axes.
-- GECKO-049 : CODE INTÉGRÉ, CI à valider — géométrie canonique des axes Abeilles & Geckos et cohérence légende/double-clic/Prof.
+- GECKO-049 : CODE + CI #236 VERTE, validation téléphone attendue — géométrie canonique des axes Abeilles & Geckos et cohérence légende/double-clic/Prof.
 - Titre visible dans tous les modes : GeckoDoku 🦎.
 
 ## 1 — Contrat transversal
@@ -309,5 +309,8 @@ Correction commit 8ccc0385c8314239976368811dab93808970e35a :
 - BeeGeckoRules.axisLabel utilise la même source pour le Prof ;
 - aucun changement de règles, solveur ou persistance.
 
+Preuve technique :
+CI #236 verte, APK GeckoDoku-v0.15.6-dev publié en prerelease.
+
 Reste :
-CI puis validation téléphone Fab, notamment la popup du double-clic.
+validation téléphone Fab, notamment la popup du double-clic.
