@@ -602,7 +602,10 @@ class BeeGeckoGameEngine(
 
     fun toggleAxisMarker(
         cell: HexCoord,
-        axis: HexAxis
+        axis: HexAxis,
+        color:
+            AxisGuideColor =
+            AxisGuideColor.RED
     ): BeeGeckoActionFeedback {
         if (!puzzle.contains(cell)) {
             return BeeGeckoActionFeedback
@@ -614,7 +617,10 @@ class BeeGeckoGameEngine(
                 ?: BeeGeckoLogicalMarks()
 
         val next =
-            current.toggleAxis(axis)
+            current.toggleAxis(
+                axis,
+                color
+            )
 
         if (next.isEmpty) {
             logicalMarkers.remove(cell)
@@ -622,6 +628,30 @@ class BeeGeckoGameEngine(
             logicalMarkers[cell] =
                 next
         }
+
+        return BeeGeckoActionFeedback
+            .MARKER_SET
+    }
+
+    fun setAxisMarker(
+        cell: HexCoord,
+        axis: HexAxis,
+        color: AxisGuideColor
+    ): BeeGeckoActionFeedback {
+        if (!puzzle.contains(cell)) {
+            return BeeGeckoActionFeedback
+                .CROSS_BLOCKED
+        }
+
+        val current =
+            logicalMarkers[cell]
+                ?: BeeGeckoLogicalMarks()
+
+        logicalMarkers[cell] =
+            current.setAxis(
+                axis,
+                color
+            )
 
         return BeeGeckoActionFeedback
             .MARKER_SET
@@ -636,10 +666,18 @@ class BeeGeckoGameEngine(
             logicalMarkers[from]
                 ?: BeeGeckoLogicalMarks()
 
+        val sourceColor =
+            source.colorFor(
+                axis
+            )
+
         val removed =
             source.copy(
                 excludedAxes =
                     source.excludedAxes -
+                        axis,
+                axisColors =
+                    source.axisColors -
                         axis
             )
 
@@ -659,10 +697,9 @@ class BeeGeckoGameEngine(
                     ?: BeeGeckoLogicalMarks()
 
             logicalMarkers[to] =
-                target.copy(
-                    excludedAxes =
-                        target.excludedAxes +
-                            axis
+                target.setAxis(
+                    axis,
+                    sourceColor
                 )
         }
 

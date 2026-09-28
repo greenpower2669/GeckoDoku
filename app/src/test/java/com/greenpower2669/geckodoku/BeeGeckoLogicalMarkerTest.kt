@@ -98,6 +98,41 @@ class BeeGeckoLogicalMarkerTest {
     }
 
     @Test
+    fun axisMarkerKeepsChosenColor() {
+        val marker =
+            BeeGeckoLogicalMarks()
+                .setAxis(
+                    HexAxis.Q,
+                    AxisGuideColor.GREEN
+                )
+                .setAxis(
+                    HexAxis.R,
+                    AxisGuideColor.YELLOW
+                )
+
+        assertEquals(
+            AxisGuideColor.GREEN,
+            marker.colorFor(
+                HexAxis.Q
+            )
+        )
+
+        assertEquals(
+            AxisGuideColor.YELLOW,
+            marker.colorFor(
+                HexAxis.R
+            )
+        )
+
+        assertEquals(
+            AxisGuideColor.RED,
+            marker.colorFor(
+                HexAxis.S
+            )
+        )
+    }
+
+    @Test
     fun fogPhaseStaysNormalized() {
         val phase =
             BeeGeckoFogPolicy

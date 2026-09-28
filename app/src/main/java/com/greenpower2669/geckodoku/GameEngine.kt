@@ -76,9 +76,25 @@ class GameEngine(val puzzle: Puzzle) {
     fun toggleAxisGuide(
         guide: ClassicAxisGuide
     ) {
-        if (!axisGuides.add(guide)) {
-            axisGuides.remove(guide)
+        val existing =
+            axisGuides
+                .firstOrNull {
+                    it.kind ==
+                        guide.kind &&
+                        it.index ==
+                            guide.index
+                }
+
+        if (existing == guide) {
+            axisGuides.remove(existing)
+            return
         }
+
+        if (existing != null) {
+            axisGuides.remove(existing)
+        }
+
+        axisGuides.add(guide)
     }
 
     fun moveAxisGuide(

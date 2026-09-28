@@ -64,9 +64,16 @@ class PierrePiperSpeechEngine(
                 val engine =
                     ensureTts()
 
+                val spokenText =
+                    PierrePronunciationPolicy
+                        .forSpeech(
+                            text
+                        )
+
                 val audio =
                     engine.generate(
-                        text = text,
+                        text =
+                            spokenText,
                         sid =
                             PierreVoiceConfig
                                 .speakerId,

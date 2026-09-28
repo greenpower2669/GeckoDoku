@@ -1104,7 +1104,11 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                                 axis =
                                     axis,
                                 professor =
-                                    professor
+                                    professor,
+                                color =
+                                    marker.colorFor(
+                                        axis
+                                    )
                             )
                         }
                     }
@@ -1166,7 +1170,8 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         canvas: Canvas,
         origin: HexCoord,
         axis: HexAxis,
-        professor: Boolean
+        professor: Boolean,
+        color: AxisGuideColor
     ) {
         val board =
             puzzle
@@ -1247,12 +1252,31 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     20
                 )
             } else {
-                Color.argb(
-                    70,
-                    190,
-                    45,
-                    45
-                )
+                when (color) {
+                    AxisGuideColor.YELLOW ->
+                        Color.argb(
+                            72,
+                            232,
+                            178,
+                            28
+                        )
+
+                    AxisGuideColor.GREEN ->
+                        Color.argb(
+                            68,
+                            38,
+                            156,
+                            72
+                        )
+
+                    AxisGuideColor.RED ->
+                        Color.argb(
+                            70,
+                            190,
+                            45,
+                            45
+                        )
+                }
             }
 
         canvas.drawLine(

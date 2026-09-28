@@ -569,7 +569,20 @@ class BeeGeckoSessionStore(
 
             marker.excludedAxes
                 .forEach {
-                    axes.put(it.name)
+                    axis ->
+                    axes.put(
+                        JSONObject()
+                            .put(
+                                "axis",
+                                axis.name
+                            )
+                            .put(
+                                "color",
+                                marker
+                                    .colorFor(axis)
+                                    .name
+                            )
+                    )
                 }
 
             array.put(
@@ -618,23 +631,70 @@ class BeeGeckoSessionStore(
                         ?: JSONArray()
 
                 val axes =
-                    buildSet {
-                        for (
-                            axisIndex in
-                            0 until axesJson.length()
-                        ) {
-                            add(
-                                enumValueOf<
-                                    HexAxis
-                                    >(
-                                    axesJson
-                                        .getString(
-                                            axisIndex
-                                        )
+                    linkedSetOf<HexAxis>()
+
+                val axisColors =
+                    linkedMapOf<
+                        HexAxis,
+                        AxisGuideColor
+                        >()
+
+                for (
+                    axisIndex in
+                    0 until axesJson.length()
+                ) {
+                    val raw =
+                        axesJson.get(
+                            axisIndex
+                        )
+
+                    if (
+                        raw is JSONObject
+                    ) {
+                        val axis =
+                            enumValueOf<
+                                HexAxis
+                                >(
+                                raw.getString(
+                                    "axis"
                                 )
                             )
-                        }
+
+                        axes.add(axis)
+
+                        axisColors[axis] =
+                            runCatching {
+                                enumValueOf<
+                                    AxisGuideColor
+                                    >(
+                                    raw.optString(
+                                        "color",
+                                        AxisGuideColor
+                                            .RED
+                                            .name
+                                    )
+                                )
+                            }
+                                .getOrDefault(
+                                    AxisGuideColor
+                                        .RED
+                                )
+                    } else {
+                        val axis =
+                            enumValueOf<
+                                HexAxis
+                                >(
+                                axesJson
+                                    .getString(
+                                        axisIndex
+                                    )
+                            )
+
+                        axes.add(axis)
+                        axisColors[axis] =
+                            AxisGuideColor.RED
                     }
+                }
 
                 val marker =
                     BeeGeckoLogicalMarks(
@@ -649,7 +709,9 @@ class BeeGeckoSessionStore(
                                 false
                             ),
                         excludedAxes =
-                            axes
+                            axes,
+                        axisColors =
+                            axisColors
                     )
 
                 if (!marker.isEmpty) {
@@ -800,7 +862,7 @@ class BeeGeckoSessionStore(
             "geckodoku_bee_gecko_session_v2"
 
         private const val SCHEMA =
-            3
+            4
 
         private const val KEY_SESSION =
             "active_session"

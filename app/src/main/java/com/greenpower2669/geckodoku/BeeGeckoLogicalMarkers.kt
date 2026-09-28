@@ -28,7 +28,13 @@ data class BeeGeckoLogicalMarks(
         Boolean = false,
     val excludedAxes:
         Set<HexAxis> =
-        emptySet()
+        emptySet(),
+    val axisColors:
+        Map<
+            HexAxis,
+            AxisGuideColor
+            > =
+        emptyMap()
 ) {
     val isEmpty: Boolean
         get() =
@@ -51,21 +57,56 @@ data class BeeGeckoLogicalMarks(
         )
 
     fun toggleAxis(
-        axis: HexAxis
+        axis: HexAxis,
+        color:
+            AxisGuideColor =
+            AxisGuideColor.RED
     ): BeeGeckoLogicalMarks {
         val nextAxes =
             excludedAxes
                 .toMutableSet()
 
+        val nextColors =
+            axisColors
+                .toMutableMap()
+
         if (!nextAxes.add(axis)) {
             nextAxes.remove(axis)
+            nextColors.remove(axis)
+        } else {
+            nextColors[axis] =
+                color
         }
 
         return copy(
             excludedAxes =
-                nextAxes.toSet()
+                nextAxes.toSet(),
+            axisColors =
+                nextColors.toMap()
         )
     }
+
+    fun setAxis(
+        axis: HexAxis,
+        color: AxisGuideColor
+    ): BeeGeckoLogicalMarks =
+        copy(
+            excludedAxes =
+                excludedAxes +
+                    axis,
+            axisColors =
+                axisColors +
+                    (
+                        axis to
+                            color
+                        )
+        )
+
+    fun colorFor(
+        axis: HexAxis
+    ): AxisGuideColor =
+        axisColors[axis]
+            ?: AxisGuideColor.RED
 }
 
 data class BeeGeckoProfessorVisuals(

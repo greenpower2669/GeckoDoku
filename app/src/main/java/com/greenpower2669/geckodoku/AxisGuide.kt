@@ -1,5 +1,13 @@
 package com.greenpower2669.geckodoku
 
+enum class AxisGuideColor(
+    val label: String
+) {
+    YELLOW("Jaune"),
+    GREEN("Vert"),
+    RED("Rouge")
+}
+
 enum class ClassicAxisGuideKind {
     HORIZONTAL,
     VERTICAL
@@ -7,7 +15,10 @@ enum class ClassicAxisGuideKind {
 
 data class ClassicAxisGuide(
     val kind: ClassicAxisGuideKind,
-    val index: Int
+    val index: Int,
+    val color:
+        AxisGuideColor =
+        AxisGuideColor.RED
 )
 
 object ClassicProfessorAxisGuidePolicy {

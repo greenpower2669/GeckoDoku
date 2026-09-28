@@ -2512,16 +2512,67 @@ class MainActivity : Activity() {
                     _,
                     which ->
 
-                engine.toggleAxisGuide(
+                val selected =
                     guides[which]
+
+                showAxisGuideColorPalette {
+                    color ->
+
+                    engine.toggleAxisGuide(
+                        selected.copy(
+                            color =
+                                color
+                        )
+                    )
+
+                    fx.marker()
+
+                    status.text =
+                        "Barre d’axe " +
+                            color.label.lowercase() +
+                            " posée. Fais-la glisser ; hors du plateau elle disparaît."
+
+                    board.invalidate()
+                }
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
+    }
+
+    private fun showAxisGuideColorPalette(
+        onChosen:
+            (AxisGuideColor) -> Unit
+    ) {
+        val colors =
+            arrayOf(
+                AxisGuideColor.YELLOW,
+                AxisGuideColor.GREEN,
+                AxisGuideColor.RED
+            )
+
+        val labels =
+            arrayOf(
+                "🟡  Jaune",
+                "🟢  Vert",
+                "🔴  Rouge"
+            )
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Couleur de la barre"
+            )
+            .setItems(
+                labels
+            ) {
+                    _,
+                    which ->
+
+                onChosen(
+                    colors[which]
                 )
-
-                fx.marker()
-
-                status.text =
-                    "Barre d’axe posée. Fais-la glisser ; hors du plateau elle disparaît."
-
-                board.invalidate()
             }
             .setNegativeButton(
                 "Annuler",
@@ -6177,20 +6228,30 @@ class MainActivity : Activity() {
                     _,
                     which ->
 
-                engine.toggleAxisMarker(
-                    cell,
+                val selectedAxis =
                     axes[which]
-                )
 
-                fx.marker()
+                showAxisGuideColorPalette {
+                    color ->
 
-                status.text =
-                    "Barre d’axe posée. Fais-la glisser pour la déplacer ; sors-la du plateau pour l’effacer."
+                    engine.setAxisMarker(
+                        cell,
+                        selectedAxis,
+                        color
+                    )
 
-                beeGeckoBoard
-                    .invalidate()
+                    fx.marker()
 
-                persistBeeGeckoSession()
+                    status.text =
+                        "Barre d’axe " +
+                            color.label.lowercase() +
+                            " posée. Fais-la glisser pour la déplacer ; sors-la du plateau pour l’effacer."
+
+                    beeGeckoBoard
+                        .invalidate()
+
+                    persistBeeGeckoSession()
+                }
             }
             .setNegativeButton(
                 "Annuler",

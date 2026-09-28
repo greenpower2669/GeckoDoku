@@ -337,7 +337,8 @@ class GeckoBoardView @JvmOverloads constructor(
                         guideAtPointer(
                             active.kind,
                             event.x,
-                            event.y
+                            event.y,
+                            active.color
                         )
 
                     if (final == null) {
@@ -603,29 +604,49 @@ class GeckoBoardView @JvmOverloads constructor(
         paint.style =
             Paint.Style.FILL
 
-        paint.color =
-            if (professor) {
-                Color.argb(
-                    58,
-                    220,
-                    120,
-                    20
-                )
-            } else {
-                Color.argb(
-                    62,
-                    190,
-                    45,
-                    45
-                )
-            }
-
         val half =
             cellSize *
                 .17f
 
         guides.forEach {
             guide ->
+
+            paint.color =
+                if (professor) {
+                    Color.argb(
+                        58,
+                        220,
+                        120,
+                        20
+                    )
+                } else {
+                    when (guide.color) {
+                        AxisGuideColor.YELLOW ->
+                            Color.argb(
+                                70,
+                                232,
+                                178,
+                                28
+                            )
+
+                        AxisGuideColor.GREEN ->
+                            Color.argb(
+                                66,
+                                38,
+                                156,
+                                72
+                            )
+
+                        AxisGuideColor.RED ->
+                            Color.argb(
+                                70,
+                                190,
+                                45,
+                                45
+                            )
+                    }
+                }
+
             when (guide.kind) {
                 ClassicAxisGuideKind
                     .HORIZONTAL -> {
@@ -756,7 +777,8 @@ class GeckoBoardView @JvmOverloads constructor(
     private fun guideAtPointer(
         kind: ClassicAxisGuideKind,
         x: Float,
-        y: Float
+        y: Float,
+        color: AxisGuideColor
     ): ClassicAxisGuide? {
         if (
             !boardRect
@@ -804,7 +826,9 @@ class GeckoBoardView @JvmOverloads constructor(
             kind =
                 kind,
             index =
-                index
+                index,
+            color =
+                color
         )
     }
 
