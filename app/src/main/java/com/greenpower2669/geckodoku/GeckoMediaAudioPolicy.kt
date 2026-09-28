@@ -7,7 +7,8 @@ object GeckoMediaAudioPolicy {
         when (kind) {
             RichMediaKind.GECKO_APPEARANCE,
             RichMediaKind.GECKO_DISAPPEARANCE,
-            RichMediaKind.GECKO_LONG_ACTION -> true
+            RichMediaKind.GECKO_LONG_ACTION,
+            RichMediaKind.BEE_APPEARANCE -> true
 
             RichMediaKind.INTRO,
             RichMediaKind.PROF_LONG_ACTION -> false

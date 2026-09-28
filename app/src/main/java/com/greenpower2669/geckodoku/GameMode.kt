@@ -5,7 +5,8 @@ import android.content.Context
 enum class GameMode {
     GECKODOKU,
     SUDOKU,
-    GOMOKU
+    GOMOKU,
+    BEES_GECKOS
 }
 
 enum class GomokuMatchMode {

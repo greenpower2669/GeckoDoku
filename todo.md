@@ -1,33 +1,40 @@
-# TODO ACTIF — GECKODOKU 0.13
+# GeckoDoku — TODO actif
 
-Version cible : 0.13.0-dev / code 33.
+## GECKO-042 — Abeilles & Geckos / 0.14
 
-## Implémenté dans la candidate
-- [x] Version 0.13.0-dev.
-- [x] Difficulté Classic stricte et annulable conservée.
-- [x] Sauver + Journal dans ⚙️ conservés.
-- [x] GeckoTétu, étoiles, Hall of Fame, export/import conservés.
-- [x] Stats nouvelles séparées par mode + difficulté.
-- [x] Victoire Gomoku VS Prof → stats + étoiles + Hall of Fame.
-- [x] Aide Gomoku → baisse d'étoiles.
-- [x] Hall of Fame par mode puis difficulté.
-- [x] Prof Gecko teigneux en Gomoku, même en Découverte.
-- [x] Test de non-adoucissement de la persona.
+### Fondation codée dans la passe en cours
+- [x] coordonnées hexagonales axiales et six voisins ;
+- [x] modèle Gecko/Abeille/couple exclusif 1↔1 ;
+- [x] validation anti-partage ;
+- [x] solveur de matching + déductions forcées ;
+- [x] générateur avec contrôle d'unicité ;
+- [x] vue hexagonale exploratoire ;
+- [x] pinch zoom + drag + seuil anti-faux-clic + clamp ;
+- [x] recentrage dans les réglages ;
+- [x] Prof sur demande avec projection source/candidats/impossibles/réservés/couple ;
+- [x] session active : couples + caméra + temps + aides ;
+- [x] intégration export/import ;
+- [x] stats / étoiles / Hall par nouveau GameMode ;
+- [x] assets `AbeilleTr.png` et `Abeillefondvert.mp4` intégrés au catalogue.
 
-## Validation technique
-- [x] Tests unitaires 0.13 GREEN (CI #209).
-- [x] CI code 0.13 GREEN (CI #209) + packaging final GREEN (CI #210).
-- [x] APK 0.13.0-dev produit avec nom correct.
-- [x] AAB 0.13.0-dev produit avec nom correct.
+### À valider / enrichir
+- [ ] CI compilée et tests GREEN ;
+- [ ] test téléphone Fab : lisibilité hexagones / Gecko / Abeille ;
+- [ ] test téléphone : tap vs drag vs pinch, limites caméra, recentrage ;
+- [ ] test téléphone : animation Abeille fond vert correctement chroma-keyée et attachée au plateau ;
+- [ ] test téléphone : fermeture/réouverture reprend couples + zoom + position + temps ;
+- [ ] test téléphone : Prof explique correctement puis applique seulement en aide directe ;
+- [ ] test téléphone : stats, étoiles, Hall, export/import ;
+- [ ] enrichir les générateurs difficiles avec ambiguïtés et interactions régionales plus variées ;
+- [ ] ajouter les notes / repères personnels propres aux cases hexagonales ;
+- [ ] ajouter si utile un repère discret de zone non terminée / dernière zone Prof ;
+- [ ] optimiser le rendu visible-only si les cartes finales deviennent beaucoup plus grandes ;
+- [ ] non-régression complète Classic / Sudoku / Gomoku.
 
-## Validation téléphone Fab
-- [ ] Classic centré/agrandi.
-- [ ] Difficulté exacte sans fallback.
-- [ ] ★★★★★ sans aide, baisse avec aide.
-- [ ] Stats Classic/Sudoku/Gomoku séparées.
-- [ ] Hall of Fame mode+niveau+étoiles+nom.
-- [ ] Export/import.
-- [ ] Gomoku Prof teigneux en Découverte.
-- [ ] Gomoku zoom/drag/animations sans régression.
+## Gomoku — correctif séparé connu
+- [ ] Découverte : diminuer réellement la force du Prof pour qu'il ne gagne pas systématiquement ;
+- [ ] explication stratégique uniquement si demandée ;
+- [ ] quand demandée, exposer la vraie séquence anticipée avec repères graphiques multi-coups.
 
-Ne pas nettoyer avant validation téléphone.
+## Packaging téléphone
+- [ ] après candidate validée par CI, fournir une GitHub Release avec APK directement téléchargeable plutôt qu'un ZIP d'artefact.

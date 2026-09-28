@@ -352,3 +352,126 @@ Le workflow doit désormais dériver automatiquement le nom APK/AAB/artefact dep
 - Digest : `sha256:7b91aec1489ccb13556efae3d7b94466c0ec24dd967af3266d6b768499137371`
 
 Reste uniquement la validation téléphone Fab avant nettoyage/clôture.
+---
+
+# GECKO-042 — ABEILLES & GECKOS — ORDRE DE MISSION ACTIF
+
+Date : 2026-09-28
+Version cible : **0.14.0-dev** / versionCode **34**.
+
+## Correction de compréhension Gomoku à conserver
+
+La note GECKO-041 « Prof teigneux » est **supersédée** par la précision Fab :
+- le problème observé n'est pas le caractère du Prof ;
+- en **Découverte**, le Prof Gomoku joue actuellement trop fort et gagne trop souvent ;
+- la difficulté doit réellement piloter sa force de jeu ;
+- le Prof ne doit détailler sa stratégie **que lorsque le joueur lui demande une explication** ;
+- lorsqu'une explication est demandée, elle doit montrer la suite réellement anticipée, avec repères graphiques et séquence de coups, comme une explication d'échecs, et non une phrase vague du type « prépare la suite ».
+
+Ce correctif Gomoku reste un chantier distinct ; ne pas le confondre avec le nouveau mode.
+
+## Règle canonique du nouveau mode
+
+**ABEILLES & GECKOS** est un puzzle logique sur grande grille hexagonale exploratoire.
+
+- Chaque Gecko touche exactement **UNE** Abeille.
+- Chaque Abeille touche exactement **UN** Gecko.
+- Les couples sont exclusifs : **1 Gecko ↔ 1 Abeille**.
+- « Toucher » signifie partager **un côté d'hexagone** ; un sommet ne compte jamais.
+- Le solveur, le générateur, la validation et le Prof utilisent la même topologie hexagonale.
+- Le plateau se navigue comme Gomoku : drag fluide, zoom avant/arrière, pinch, caméra bornée.
+
+## Architecture et géométrie
+
+1. Utiliser de vraies coordonnées hexagonales axiales/cube ; ne jamais utiliser les pixels comme logique.
+2. Centraliser le voisinage dans une seule fonction canonique de six voisins.
+3. Séparer strictement coordonnées logiques et conversion écran.
+4. Geckos et Abeilles sont tous deux des objets logiques, jamais des bonus/décorations.
+5. Toute association confirmée réserve simultanément le Gecko et l'Abeille et élimine les relations concurrentes.
+6. Le solveur propage dans les deux directions Gecko→Abeille et Abeille→Gecko jusqu'à stabilisation.
+7. Le générateur produit directement une solution complète avec autant de Geckos que d'Abeilles ; aucune Abeille ajoutée au hasard après coup.
+8. Les grilles doivent viser une solution unique contrôlée et une difficulté issue du raisonnement, pas seulement de la taille.
+
+## Grande carte exploratoire
+
+9. Le plateau est volontairement plus grand que l'écran aux niveaux supérieurs.
+10. Pan/drag à un doigt et pinch zoom à deux doigts doivent être fluides.
+11. Le point visé doit rester stable pendant le zoom.
+12. Un mouvement dépassant le seuil de drag ne doit jamais déclencher un faux tap.
+13. La caméra doit empêcher de perdre totalement la carte hors écran.
+14. Une commande discrète de recentrage doit être disponible dans ⚙️.
+15. Les aides du Prof, traits, candidats et surbrillances utilisent les coordonnées de la carte et suivent parfaitement zoom + drag.
+16. À faible zoom conserver une lecture globale ; à fort zoom conserver les pièces et aides lisibles.
+
+## Raisonnement Prof Gecko — uniquement sur demande
+
+17. Le Prof comprend le 1↔1, les réservations et les chaînes de propagation.
+18. Lorsqu'il est demandé, son raisonnement visuel suit cet ordre : pièce de départ → six directions → candidats → impossibilités → réservés → dernière possibilité → déduction.
+19. L'explication textuelle/orale décrit la même déduction que la projection graphique.
+20. Les aides restent attachées à la grille pendant zoom et drag.
+21. Une demande de conseil compte comme aide ; une association appliquée par le Prof compte comme aide directe pour les étoiles.
+
+## Joueur, validation et solveur
+
+22. Les états Gecko / Abeille / vide / marques doivent rester non ambigus.
+23. Les repères personnels, lorsqu'ils sont branchés au mode, doivent être sauvegardés avec les coordonnées hexagonales.
+24. Validation obligatoire : pièce sans partenaire, partage d'un partenaire, association non voisine, ou autre contrainte = invalide.
+25. Le solveur conserve pour chaque Gecko les Abeilles candidates et réciproquement.
+26. Une relation réservée disparaît des autres ensembles de candidats.
+27. Les chaînes de type A forcé→B réservé→C perd B→C forcé doivent être gérées.
+28. Une grille complète n'est valide que si toutes les pièces appartiennent exactement à un couple.
+
+## Difficulté et génération
+
+29. Prévoir plusieurs dimensions et densités selon le niveau.
+30. La difficulté peut varier par nombre de couples, candidats, ambiguïtés, longueur de propagation et interactions de zones.
+31. Difficile/Expert ne doivent pas être seulement « plus grand » : le raisonnement doit s'allonger.
+32. La carte doit permettre de résoudre une région, naviguer vers une autre, puis revenir.
+33. Les indications de zone non terminée/contradiction/récente restent discrètes ; pas de mini-carte surchargée.
+
+## UI, accessibilité, performance
+
+34. Le plateau reste l'élément principal ; fonctions secondaires dans ⚙️/menus.
+35. Ne jamais dépendre uniquement de la couleur : Gecko/Abeille et états doivent rester reconnaissables par leur forme/sprite.
+36. Garder tailles minimales, contraste, surbrillances et aides lisibles avec zoom.
+37. Éviter tout recalcul global à chaque frame de drag ; rendre et recalculer seulement ce qui est nécessaire.
+38. L'ambiance peut évoquer ruche/nature/feuillage, sans réduire la lisibilité.
+
+## Persistance, progression et résultats
+
+39. Statistiques séparées de Classic/Sudoku/Gomoku : parties, réussite, difficulté, temps, aides, étoiles.
+40. Étoiles : jusqu'à 5 sans aide ; conseils et coups du Prof diminuent la note selon la politique existante.
+41. Hall of Fame : joueur, mode, niveau, étoiles, temps/score pertinent.
+42. Une partie en cours sauvegarde puzzle, couples, aides, temps, zoom et position caméra ; reprise exacte après redémarrage.
+43. Export/import global inclut toutes les données persistantes propres au mode sans casser les autres modes.
+44. Effacer l'historique ne doit jamais supprimer la sauvegarde active ni les paramètres.
+45. Non-régression obligatoire : Classic, Sudoku, Gomoku, Prof, animations, zoom/drag, Hall, étoiles, stats, import/export, paramètres et nom joueur.
+
+## Assets fournis par Fab sur main
+
+Sources canoniques :
+- `AbeilleTr.png` — portrait/sprite transparent de l'Abeille ;
+- `Abeillefondvert.mp4` — animation Abeille sur fond vert destinée au chroma key.
+
+Dans l'application, les copies runtime sont rangées sous `assets/abeille/` afin de ne pas mélanger racine Git et catalogue Android.
+
+## Priorité d'implémentation
+
+1. grille / coordonnées / voisinage hexagonal ;
+2. caméra zoom + drag + recentrage ;
+3. Gecko + Abeille ;
+4. règle exclusive 1↔1 et validation ;
+5. solveur + propagation ;
+6. générateur à solution contrôlée ;
+7. Prof + projection visuelle ;
+8. persistance/reprise ;
+9. stats/étoiles/Hall/export-import ;
+10. équilibrage des difficultés, notes personnelles, exploration avancée ;
+11. tests logiques, caméra, Prof et non-régression ;
+12. validation téléphone Fab.
+
+## État de la passe en cours
+
+La 0.14 démarre par une **fondation jouable de matching hexagonal** : les Geckos et Abeilles sont placés par le puzzle, et le joueur confirme les couples adjacents exclusifs. Cette représentation permet de valider proprement le cœur 1↔1 avant d'ajouter les raffinements de saisie/notes.
+
+Ne pas déclarer les 45 points terminés avant tests CI + validation téléphone.

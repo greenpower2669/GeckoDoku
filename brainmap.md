@@ -1322,3 +1322,46 @@ app/build.gradle.kts versionName → Resolve app version → GITHUB_ENV APP_VERS
 
 <!-- GECKO-041-V013-GREEN-MAP-2026-09-28 -->
 commit cae4ed4 → CI #210 GREEN → APK 0.13 + AAB 0.13 → artifact 10944486757 → test téléphone Fab.
+## GECKO-042 — carte architecture Abeilles & Geckos
+
+GameMode.BEES_GECKOS
+→ MainActivity
+  → BeeGeckoGameEngine
+  → BeeGeckoBoardView
+  → BeeGeckoSessionStore
+  → PlayerStatsStore / HallOfFameStore / CompletionRatingPolicy
+  → RichMediaOverlayView
+
+BeeGeckoPuzzle
+→ HexCoord(q,r)
+→ BeeGeckoPiece { GECKO, BEE }
+→ BeeGeckoPair 1 ↔ 1
+
+BeeGeckoRules
+→ getHexNeighbors()
+→ candidateOpposites()
+→ normalizePair()
+→ validatePairs()
+→ isComplete()
+
+BeeGeckoSolver
+→ candidat forcé
+→ propagation des réservations
+→ backtracking / unicité
+→ BeeGeckoHint visuel + textuel
+
+BeeGeckoGenerator
+→ profil de difficulté
+→ placement logique complet
+→ contrôle d'unicité
+
+BeeGeckoViewportPolicy
+→ zoom autour du focus
+→ pan
+→ clamp
+→ recentrage
+
+Rendu : logique axiale indépendante des pixels ; `BeeGeckoBoardView` transforme axial → écran. Les projections Prof et targets vidéo utilisent les mêmes coordonnées du plateau. `AbeilleTr.png` est le sprite statique ; `Abeillefondvert.mp4` l'animation chroma ciblée sur une case Abeille.
+
+Persistance : `BeeGeckoSessionStore` → SharedPreferences → `UserDataBackup.preferenceNames`.
+Résultats : `GameMode.BEES_GECKOS` → stats mode+difficulté → étoiles → Hall of Fame.

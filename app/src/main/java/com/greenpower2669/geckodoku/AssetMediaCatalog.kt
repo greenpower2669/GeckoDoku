@@ -28,6 +28,12 @@ object AssetMediaCatalog {
     const val GECKO_LONG_ACTIONS =
         "gecko/Gecko_actions_plusieurs.mp4"
 
+    const val BEE_PORTRAIT =
+        "abeille/AbeilleTr.png"
+
+    const val BEE_APPEARANCE =
+        "abeille/Abeillefondvert.mp4"
+
     const val PROF_PORTRAIT =
         "prof/Prof.png"
 
@@ -50,5 +56,6 @@ enum class RichMediaKind {
     GECKO_APPEARANCE,
     GECKO_DISAPPEARANCE,
     GECKO_LONG_ACTION,
-    PROF_LONG_ACTION
+    PROF_LONG_ACTION,
+    BEE_APPEARANCE
 }

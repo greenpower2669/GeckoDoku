@@ -1682,3 +1682,19 @@ Correctif workflow : lecture automatique de versionName puis nommage dynamique d
 
 <!-- GECKO-041-V013-CI210-GREEN-2026-09-28 -->
 CI #210 GREEN après correction du nommage dynamique. Les étapes Test and build Android, Resolve app version, Name APK, Name AAB et upload-artifact sont toutes GREEN. Artifact final : GeckoDoku-v0.13.0-dev-Android, id 10944486757, digest sha256:7b91aec1489ccb13556efae3d7b94466c0ec24dd967af3266d6b768499137371.
+## 2026-09-28 — GECKO-042 — démarrage Abeilles & Geckos
+
+Demande Fab : nouveau mode hexagonal exploratoire avec règle canonique exclusive 1 Gecko ↔ 1 Abeille, caméra type Gomoku et raisonnement Prof visuel.
+
+Décisions techniques :
+- ne pas réutiliser une géométrie carrée ;
+- coordonnées axiales dédiées ;
+- nouvelle vue plutôt que modifier `GomokuBoardView`, afin de préserver le Gomoku validé ;
+- moteur de matching séparé pour éviter toute contamination Classic/Sudoku/Gomoku ;
+- assets Bee copiés depuis les blobs de `main` vers `assets/abeille/` ;
+- session active stocke couples + caméra + temps + aides ;
+- export/import étendu via whitelist SharedPreferences.
+
+Tests ajoutés autour de : six voisins, invalidité zéro partenaire, partage Gecko/Abeille interdit, paire forcée, réservation/propagation, validation complète, unicité des puzzles générés, stabilité du point de zoom et clamp caméra.
+
+État au moment de cette entrée : implémentation en cours, **CI non encore exécutée**. Ne pas marquer GREEN avant le run réel.

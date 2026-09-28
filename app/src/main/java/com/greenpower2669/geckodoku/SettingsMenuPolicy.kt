@@ -3,6 +3,8 @@ package com.greenpower2669.geckodoku
 enum class SettingsEntry {
     GAME_MODE,
     DIFFICULTY,
+    STATS,
+    RECENTER,
     SAVE_GRID,
     JOURNAL,
     PLAYER_NAME,
@@ -27,36 +29,54 @@ class SettingsMenuPolicy {
     fun entriesFor(
         mode: GameMode
     ): List<SettingsEntry> =
-        if (
-            mode !=
-                GameMode.GECKODOKU
-        ) {
-            listOf(
-                SettingsEntry.GAME_MODE,
-                SettingsEntry.DIFFICULTY,
-                SettingsEntry.PLAYER_NAME,
-                SettingsEntry.HALL_OF_FAME,
-                SettingsEntry.CLEAR_HISTORY,
-                SettingsEntry.EXPORT_DATA,
-                SettingsEntry.IMPORT_DATA,
-                SettingsEntry.SOUND,
-                SettingsEntry.ANIMATIONS,
-                SettingsEntry.MEDIA_LOG
-            )
-        } else {
-            listOf(
-                SettingsEntry.GAME_MODE,
-                SettingsEntry.SAVE_GRID,
-                SettingsEntry.JOURNAL,
-                SettingsEntry.PLAYER_NAME,
-                SettingsEntry.HALL_OF_FAME,
-                SettingsEntry.CLEAR_HISTORY,
-                SettingsEntry.EXPORT_DATA,
-                SettingsEntry.IMPORT_DATA,
-                SettingsEntry.SOUND,
-                SettingsEntry.ANIMATIONS,
-                SettingsEntry.MEDIA_LOG
-            )
+        when (mode) {
+            GameMode.GECKODOKU ->
+                listOf(
+                    SettingsEntry.GAME_MODE,
+                    SettingsEntry.SAVE_GRID,
+                    SettingsEntry.JOURNAL,
+                    SettingsEntry.STATS,
+                    SettingsEntry.PLAYER_NAME,
+                    SettingsEntry.HALL_OF_FAME,
+                    SettingsEntry.CLEAR_HISTORY,
+                    SettingsEntry.EXPORT_DATA,
+                    SettingsEntry.IMPORT_DATA,
+                    SettingsEntry.SOUND,
+                    SettingsEntry.ANIMATIONS,
+                    SettingsEntry.MEDIA_LOG
+                )
+
+            GameMode.BEES_GECKOS ->
+                listOf(
+                    SettingsEntry.GAME_MODE,
+                    SettingsEntry.DIFFICULTY,
+                    SettingsEntry.RECENTER,
+                    SettingsEntry.STATS,
+                    SettingsEntry.PLAYER_NAME,
+                    SettingsEntry.HALL_OF_FAME,
+                    SettingsEntry.CLEAR_HISTORY,
+                    SettingsEntry.EXPORT_DATA,
+                    SettingsEntry.IMPORT_DATA,
+                    SettingsEntry.SOUND,
+                    SettingsEntry.ANIMATIONS,
+                    SettingsEntry.MEDIA_LOG
+                )
+
+            GameMode.SUDOKU,
+            GameMode.GOMOKU ->
+                listOf(
+                    SettingsEntry.GAME_MODE,
+                    SettingsEntry.DIFFICULTY,
+                    SettingsEntry.STATS,
+                    SettingsEntry.PLAYER_NAME,
+                    SettingsEntry.HALL_OF_FAME,
+                    SettingsEntry.CLEAR_HISTORY,
+                    SettingsEntry.EXPORT_DATA,
+                    SettingsEntry.IMPORT_DATA,
+                    SettingsEntry.SOUND,
+                    SettingsEntry.ANIMATIONS,
+                    SettingsEntry.MEDIA_LOG
+                )
         }
 
     val affectsBoardLayout:

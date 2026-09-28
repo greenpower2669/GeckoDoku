@@ -2820,3 +2820,27 @@ CI #209 GREEN sur le code 0.13. Défaut de packaging détecté après build : bu
 
 <!-- GECKO-041-V013-CI210-GREEN-2026-09-28 -->
 0.13 candidate technique validée : CI #210 GREEN, tests + APK + AAB + artifact correct `GeckoDoku-v0.13.0-dev-Android`. Prochaine porte : validation téléphone Fab.
+## 2026-09-28 — GECKO-042 / mode Abeilles & Geckos
+
+Nouvelle cible : 0.14.0-dev.
+
+Architecture retenue :
+- nouveau `GameMode.BEES_GECKOS` ;
+- logique hexagonale en coordonnées axiales `HexCoord(q,r)` ;
+- voisinage de six côtés centralisé et partagé par règles, solveur et validation ;
+- moteur basé sur un matching exclusif `BeeGeckoPair` : chaque Gecko et chaque Abeille au plus une fois, completion seulement si tous sont appariés ;
+- solveur bidirectionnel par ensembles de candidats + propagation/branch viability ;
+- générateur produit directement Geckos + Abeilles et vérifie l'unicité du matching ;
+- `BeeGeckoBoardView` sépare monde logique, monde graphique et caméra ;
+- caméra : pinch centré sur le focus, drag avec seuil anti-faux-tap, clamp et recentrage ;
+- Prof : explication uniquement sur demande, projection attachée à la carte et légende source/candidats/impossibles/réservés/couple forcé ;
+- sauvegarde active dédiée `geckodoku_bee_gecko_session_v1`, incluse dans export/import ;
+- stats, étoiles et Hall passent par les magasins génériques existants avec le nouveau `GameMode`.
+
+Assets de `main` intégrés sous `assets/abeille/` :
+- `AbeilleTr.png`
+- `Abeillefondvert.mp4`
+
+Attention : l'ancien texte disant « Prof Gomoku toujours teigneux en Découverte » était un contresens. Fab parlait de sa **force excessive** : Découverte doit être réellement plus faible, et l'explication stratégique ne doit apparaître que sur demande. Ce correctif Gomoku reste à traiter séparément.
+
+La première 0.14 est une fondation de puzzle de couples. Les raffinements non encore fermés (notes personnelles, régions avancées, difficulté plus riche, etc.) restent explicitement dans `todo.md`.

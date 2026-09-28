@@ -235,6 +235,21 @@ class MainActivity : Activity() {
     private var gomokuGeneration =
         0
 
+    private lateinit var beeGeckoBoard:
+        BeeGeckoBoardView
+
+    private var beeGeckoPuzzle:
+        BeeGeckoPuzzle? = null
+
+    private var beeGeckoEngine:
+        BeeGeckoGameEngine? = null
+
+    private lateinit var beeGeckoSessionStore:
+        BeeGeckoSessionStore
+
+    private var beeGeckoCamera =
+        BeeGeckoCamera()
+
     private var sudokuSelectedCell:
         Cell? = null
 
@@ -420,6 +435,9 @@ class MainActivity : Activity() {
         userDataBackup =
             UserDataBackup(this)
 
+        beeGeckoSessionStore =
+            BeeGeckoSessionStore(this)
+
         fx.enabled =
             playerProfileStore
                 .soundEnabled
@@ -463,6 +481,11 @@ class MainActivity : Activity() {
 
             GameMode.GOMOKU ->
                 startGomokuGame()
+
+            GameMode.BEES_GECKOS ->
+                startBeeGeckoGame(
+                    restoreSaved = true
+                )
 
             GameMode.GECKODOKU ->
                 Unit
@@ -785,6 +808,57 @@ class MainActivity : Activity() {
                 }
             }
 
+        beeGeckoBoard =
+            BeeGeckoBoardView(this).apply {
+                visibility =
+                    View.GONE
+
+                beeGeckoPuzzle
+                    ?.let {
+                        setPuzzle(
+                            next = it,
+                            restoredCamera =
+                                beeGeckoCamera
+                        )
+                    }
+
+                snapshotProvider = {
+                    requireNotNull(
+                        beeGeckoEngine
+                    ).snapshot()
+                }
+
+                onTapPiece = {
+                        cell ->
+
+                    handleBeeGeckoTap(
+                        cell
+                    )
+                }
+
+                onViewportChanged = {
+                        camera ->
+
+                    beeGeckoCamera =
+                        camera
+
+                    if (
+                        selectedGameMode ==
+                            GameMode.BEES_GECKOS
+                    ) {
+                        refreshBeeGeckoInfo()
+
+                        if (
+                            ::richMediaOverlay
+                                .isInitialized
+                        ) {
+                            richMediaOverlay
+                                .refreshDynamicTargets()
+                        }
+                    }
+                }
+            }
+
         sudokuValueOverlay =
             SudokuValueOverlayView(this).apply {
                 visibility =
@@ -1053,6 +1127,13 @@ class MainActivity : Activity() {
                                             .VS_PROFESSOR,
                                 deepAnalysis =
                                     true
+                            )
+                            true
+                        }
+
+                        GameMode.BEES_GECKOS -> {
+                            showBeeGeckoProfessorHint(
+                                applyPair = true
                             )
                             true
                         }
@@ -1409,6 +1490,19 @@ class MainActivity : Activity() {
             }
         )
 
+        screenRoot.addView(
+            beeGeckoBoard,
+            5,
+            FrameLayout.LayoutParams(
+                1,
+                1
+            ).apply {
+                gravity =
+                    Gravity.TOP or
+                        Gravity.START
+            }
+        )
+
         screenRoot.addOnLayoutChangeListener {
                 _,
                 _,
@@ -1520,6 +1614,11 @@ class MainActivity : Activity() {
 
             GameMode.GOMOKU ->
                 startGomokuGame()
+
+            GameMode.BEES_GECKOS ->
+                startBeeGeckoGame(
+                    restoreSaved = false
+                )
 
             GameMode.GECKODOKU ->
                 requestClassicPuzzle(
@@ -1790,6 +1889,21 @@ class MainActivity : Activity() {
                     }
             }
 
+            GameMode.BEES_GECKOS -> {
+                val current =
+                    beeGeckoPuzzle
+
+                if (current != null) {
+                    startBeeGeckoGame(
+                        puzzle = current,
+                        restoreSaved = false
+                    )
+                    refreshGameUi()
+                    status.text =
+                        "Même carte Abeilles & Geckos réinitialisée."
+                }
+            }
+
             GameMode.GECKODOKU -> {
                 startPuzzle(
                     puzzle,
@@ -2036,6 +2150,14 @@ class MainActivity : Activity() {
                 GameMode.GOMOKU
         ) {
             refreshGomokuUi()
+            return
+        }
+
+        if (
+            selectedGameMode ==
+                GameMode.BEES_GECKOS
+        ) {
+            refreshBeeGeckoUi()
             return
         }
 
@@ -2451,6 +2573,16 @@ class MainActivity : Activity() {
 
         if (
             selectedGameMode ==
+                GameMode.BEES_GECKOS
+        ) {
+            showBeeGeckoProfessorHint(
+                applyPair = false
+            )
+            return
+        }
+
+        if (
+            selectedGameMode ==
                 GameMode.SUDOKU
         ) {
             showSudokuProfessorHint()
@@ -2675,6 +2807,14 @@ class MainActivity : Activity() {
         }
 
         if (
+            ::beeGeckoBoard
+                .isInitialized
+        ) {
+            beeGeckoBoard
+                .clearProfessorHint()
+        }
+
+        if (
             ::professorButton.isInitialized
         ) {
             professorButton.text =
@@ -2824,6 +2964,15 @@ class MainActivity : Activity() {
                                 anchorTop
                         )
 
+                GameMode.BEES_GECKOS ->
+                    gomokuBoardLayoutPolicy
+                        .geometry(
+                            usefulWidthPx =
+                                screenRoot.width,
+                            topPx =
+                                anchorTop
+                        )
+
                 GameMode.GECKODOKU ->
                     BoardGeometry(
                         left = 0,
@@ -2923,6 +3072,16 @@ class MainActivity : Activity() {
                 geometry
             )
         }
+
+        if (
+            ::beeGeckoBoard
+                .isInitialized
+        ) {
+            positionSudokuLayer(
+                beeGeckoBoard,
+                geometry
+            )
+        }
     }
 
     private fun ensureBoardAnchorForMode():
@@ -2936,7 +3095,9 @@ class MainActivity : Activity() {
             selectedGameMode ==
                 GameMode.SUDOKU ||
             selectedGameMode ==
-                GameMode.GOMOKU
+                GameMode.GOMOKU ||
+            selectedGameMode ==
+                GameMode.BEES_GECKOS
         ) {
             val boardSide =
                 when (selectedGameMode) {
@@ -2950,6 +3111,15 @@ class MainActivity : Activity() {
                             .height
 
                     GameMode.GOMOKU ->
+                        gomokuBoardLayoutPolicy
+                            .geometry(
+                                usefulWidthPx =
+                                    screenRoot.width,
+                                topPx = 0
+                            )
+                            .height
+
+                    GameMode.BEES_GECKOS ->
                         gomokuBoardLayoutPolicy
                             .geometry(
                                 usefulWidthPx =
@@ -3275,6 +3445,9 @@ class MainActivity : Activity() {
 
                     GameMode.GOMOKU ->
                         "Difficulté stratégique de Pierre"
+
+                    GameMode.BEES_GECKOS ->
+                        "Difficulté Abeilles & Geckos"
 
                     GameMode.GECKODOKU ->
                         "Difficulté logique réelle"
@@ -4661,7 +4834,8 @@ class MainActivity : Activity() {
                 "🦎 GeckoDoku",
                 "🔢 Sudoku",
                 "🟩 Gomoku contre Prof Gecko",
-                "👥 Gomoku humain contre humain"
+                "👥 Gomoku humain contre humain",
+                "🐝 Abeilles & Geckos"
             )
 
         val checked =
@@ -4684,6 +4858,9 @@ class MainActivity : Activity() {
                     } else {
                         3
                     }
+
+                GameMode.BEES_GECKOS ->
+                    4
             }
 
         AlertDialog.Builder(this)
@@ -4716,6 +4893,12 @@ class MainActivity : Activity() {
                         selectGomokuMatchMode(
                             GomokuMatchMode
                                 .HUMAN_VS_HUMAN
+                        )
+
+                    4 ->
+                        setGameMode(
+                            GameMode
+                                .BEES_GECKOS
                         )
                 }
 
@@ -4843,6 +5026,11 @@ class MainActivity : Activity() {
 
                 GameMode.GOMOKU ->
                     selectedDifficulty
+
+                GameMode.BEES_GECKOS ->
+                    beeGeckoPuzzle
+                        ?.difficulty
+                        ?: selectedDifficulty
             }
 
         when (mode) {
@@ -4865,6 +5053,16 @@ class MainActivity : Activity() {
                         null
                 ) {
                     startGomokuGame()
+                }
+
+            GameMode.BEES_GECKOS ->
+                if (
+                    beeGeckoEngine ==
+                        null
+                ) {
+                    startBeeGeckoGame(
+                        restoreSaved = true
+                    )
                 }
 
             GameMode.GECKODOKU ->
@@ -4892,6 +5090,9 @@ class MainActivity : Activity() {
                     } else {
                         "Gomoku humain contre humain. Au joueur Vert."
                     }
+
+                GameMode.BEES_GECKOS ->
+                    "Mode Abeilles & Geckos activé 🐝🦎"
 
                 GameMode.GECKODOKU ->
                     "Mode GeckoDoku activé 🦎"
@@ -5079,6 +5280,637 @@ class MainActivity : Activity() {
                 " • glisser / pincer"
     }
 
+    private fun startBeeGeckoGame(
+        puzzle: BeeGeckoPuzzle? = null,
+        restoreSaved: Boolean = false
+    ) {
+        val restored =
+            if (
+                restoreSaved &&
+                puzzle == null
+            ) {
+                beeGeckoSessionStore
+                    .load()
+            } else {
+                null
+            }
+
+        val nextPuzzle =
+            puzzle
+                ?: restored
+                    ?.puzzle
+                ?: BeeGeckoGenerator
+                    .generate(
+                        selectedDifficulty
+                    )
+
+        beeGeckoPuzzle =
+            nextPuzzle
+
+        selectedDifficulty =
+            nextPuzzle.difficulty
+
+        gameModePreferences
+            .selectedDifficulty =
+            selectedDifficulty
+
+        val restoredPairs =
+            if (
+                restored
+                    ?.puzzle
+                    ?.id ==
+                    nextPuzzle.id
+            ) {
+                restored.pairs
+            } else {
+                emptySet()
+            }
+
+        beeGeckoEngine =
+            BeeGeckoGameEngine(
+                puzzle =
+                    nextPuzzle,
+                initialPairs =
+                    restoredPairs
+            )
+
+        beeGeckoCamera =
+            if (
+                restored
+                    ?.puzzle
+                    ?.id ==
+                    nextPuzzle.id
+            ) {
+                restored.camera
+            } else {
+                BeeGeckoCamera()
+            }
+
+        assistancePoints =
+            if (
+                restored
+                    ?.puzzle
+                    ?.id ==
+                    nextPuzzle.id
+            ) {
+                restored
+                    .assistancePoints
+            } else {
+                0
+            }
+
+        professorUsed =
+            assistancePoints > 0
+
+        completionRecorded = false
+
+        val restoredSeconds =
+            if (
+                restored
+                    ?.puzzle
+                    ?.id ==
+                    nextPuzzle.id
+            ) {
+                restored.elapsedSeconds
+            } else {
+                0L
+            }
+
+        gameStartedAt =
+            SystemClock
+                .elapsedRealtime() -
+                restoredSeconds *
+                    1000L
+
+        if (
+            ::beeGeckoBoard
+                .isInitialized
+        ) {
+            beeGeckoBoard.setPuzzle(
+                next =
+                    nextPuzzle,
+                restoredCamera =
+                    if (
+                        restored != null
+                    ) {
+                        beeGeckoCamera
+                    } else {
+                        null
+                    }
+            )
+        }
+
+        if (
+            ::richMediaOverlay
+                .isInitialized
+        ) {
+            richMediaOverlay.stopKind(
+                RichMediaKind
+                    .BEE_APPEARANCE
+            )
+        }
+
+        if (
+            ::professorSpeech
+                .isInitialized
+        ) {
+            professorSpeech.stop(
+                reason =
+                    SpeechStopReason
+                        .PUZZLE_RESET,
+                caller =
+                    "MainActivity.startBeeGeckoGame"
+            )
+        }
+
+        if (restored == null) {
+            statsStore.recordStart(
+                size =
+                    maxOf(
+                        nextPuzzle.columns,
+                        nextPuzzle.rows
+                    ),
+                difficulty =
+                    nextPuzzle.difficulty,
+                mode =
+                    GameMode.BEES_GECKOS
+            )
+        }
+
+        if (
+            ::professorLife
+                .isInitialized
+        ) {
+            professorLife.observe(
+                ProfessorPlayerEvent
+                    .GAME_STARTED,
+                nextPuzzle.difficulty
+            )
+        }
+
+        resetProfessorAmbientState()
+        clearProfessorSession()
+        persistBeeGeckoSession()
+    }
+
+    private fun persistBeeGeckoSession() {
+        val puzzle =
+            beeGeckoPuzzle
+                ?: return
+
+        val engine =
+            beeGeckoEngine
+                ?: return
+
+        if (
+            ::beeGeckoBoard
+                .isInitialized
+        ) {
+            beeGeckoCamera =
+                beeGeckoBoard
+                    .currentCamera()
+        }
+
+        val elapsed =
+            if (
+                gameStartedAt >
+                    0L
+            ) {
+                (
+                    SystemClock
+                        .elapsedRealtime() -
+                        gameStartedAt
+                    )
+                    .coerceAtLeast(
+                        0L
+                    ) /
+                    1000L
+            } else {
+                0L
+            }
+
+        beeGeckoSessionStore.save(
+            BeeGeckoSession(
+                puzzle = puzzle,
+                pairs =
+                    engine
+                        .snapshot()
+                        .pairs,
+                camera =
+                    beeGeckoCamera,
+                elapsedSeconds =
+                    elapsed,
+                assistancePoints =
+                    assistancePoints
+            )
+        )
+    }
+
+    private fun refreshBeeGeckoUi() {
+        val snapshot =
+            beeGeckoEngine
+                ?.snapshot()
+                ?: return
+
+        if (
+            ::beeGeckoBoard
+                .isInitialized
+        ) {
+            beeGeckoBoard.invalidate()
+        }
+
+        titleView.text =
+            AppTitlePolicy
+                .titleFor(
+                    GameMode
+                        .BEES_GECKOS
+                )
+
+        refreshBeeGeckoInfo()
+
+        difficultyButton.text =
+            selectedDifficulty.label
+
+        professorButton.text =
+            if (
+                snapshot.complete
+            ) {
+                "🧑‍🏫 Carte terminée"
+            } else {
+                "🧑‍🏫 Prof Gecko"
+            }
+
+        professorButton.isEnabled =
+            !snapshot.complete
+    }
+
+    private fun refreshBeeGeckoInfo() {
+        if (
+            !::info.isInitialized
+        ) {
+            return
+        }
+
+        val snapshot =
+            beeGeckoEngine
+                ?.snapshot()
+                ?: return
+
+        val puzzle =
+            snapshot.puzzle
+
+        info.text =
+            "Abeilles & Geckos • " +
+                puzzle.columns +
+                "×" +
+                puzzle.rows +
+                " hex • " +
+                snapshot.pairs.size +
+                "/" +
+                puzzle.geckos.size +
+                " couples • " +
+                puzzle.difficulty.label +
+                " • glisser / pincer"
+    }
+
+    private fun handleBeeGeckoTap(
+        cell: HexCoord
+    ) {
+        val engine =
+            beeGeckoEngine
+                ?: return
+
+        clearProfessorSession()
+        recordBoardAction()
+
+        val result =
+            engine.tap(cell)
+
+        when (result) {
+            BeeGeckoTapResult
+                .SELECTED -> {
+                fx.marker()
+                status.text =
+                    "Pièce sélectionnée. Touche une pièce voisine de l'autre famille."
+            }
+
+            BeeGeckoTapResult
+                .DESELECTED -> {
+                fx.marker()
+                status.text =
+                    "Sélection retirée."
+            }
+
+            BeeGeckoTapResult
+                .PAIRED -> {
+                fx.gecko()
+                status.text =
+                    "Couple Gecko ↔ Abeille confirmé."
+
+                engine.snapshot()
+                    .pairFor(cell)
+                    ?.let {
+                        pair ->
+                        playBeeGeckoAnimation(
+                            pair.bee
+                        )
+                    }
+            }
+
+            BeeGeckoTapResult
+                .UNPAIRED -> {
+                fx.cross()
+                status.text =
+                    "Couple retiré."
+            }
+
+            BeeGeckoTapResult
+                .RESERVED -> {
+                fx.blocked()
+                status.text =
+                    "Cette pièce appartient déjà à un autre couple."
+            }
+
+            BeeGeckoTapResult
+                .NOT_NEIGHBORS -> {
+                fx.blocked()
+                status.text =
+                    "Un couple doit partager un côté d'hexagone."
+            }
+
+            BeeGeckoTapResult
+                .EMPTY_CELL -> {
+                status.text =
+                    "Case vide • glisse pour explorer, pince pour zoomer."
+            }
+
+            BeeGeckoTapResult
+                .COMPLETED -> {
+                fx.complete()
+
+                engine.snapshot()
+                    .pairFor(cell)
+                    ?.let {
+                        pair ->
+                        playBeeGeckoAnimation(
+                            pair.bee
+                        )
+                    }
+
+                completeBeeGeckoGame()
+            }
+        }
+
+        beeGeckoBoard.invalidate()
+        refreshBeeGeckoInfo()
+        persistBeeGeckoSession()
+    }
+
+    private fun showBeeGeckoProfessorHint(
+        applyPair: Boolean
+    ) {
+        val engine =
+            beeGeckoEngine
+                ?: return
+
+        val snapshot =
+            engine.snapshot()
+
+        if (snapshot.complete) {
+            fx.blocked()
+            status.text =
+                "La carte est déjà terminée."
+            return
+        }
+
+        val hint =
+            BeeGeckoSolver
+                .nextHint(
+                    snapshot
+                )
+
+        if (hint == null) {
+            fx.blocked()
+
+            val message =
+                "Je ne trouve plus de déduction sûre avec les couples actuels. Vérifie les associations déjà confirmées."
+
+            showProfessorBubble(
+                message
+            )
+
+            status.text =
+                "Prof Gecko • aucune déduction sûre"
+            return
+        }
+
+        professorUsed = true
+        assistancePoints +=
+            if (applyPair) {
+                AssistanceKind
+                    .DIRECT_MOVE
+                    .points
+            } else {
+                AssistanceKind
+                    .ADVICE
+                    .points
+            }
+
+        beeGeckoBoard
+            .showProfessorHint(
+                hint
+            )
+
+        val visualLegend =
+            "\n\nBleu : pièce étudiée. Orange : possibilité. Gris : impossible. Violet : déjà réservé. Vert : couple déduit."
+
+        showProfessorBubble(
+            hint.message +
+                visualLegend
+        )
+
+        status.text =
+            if (applyPair) {
+                "Prof Gecko • déduction appliquée"
+            } else {
+                "Prof Gecko • raisonnement affiché"
+            }
+
+        fx.hint()
+
+        beeGeckoBoard
+            .announceForAccessibility(
+                hint.message
+            )
+
+        if (!applyPair) {
+            persistBeeGeckoSession()
+            return
+        }
+
+        when (
+            engine.applyPair(
+                hint.pair
+            )
+        ) {
+            BeeGeckoTapResult
+                .COMPLETED -> {
+                beeGeckoBoard.invalidate()
+                persistBeeGeckoSession()
+                completeBeeGeckoGame()
+            }
+
+            BeeGeckoTapResult
+                .PAIRED -> {
+                beeGeckoBoard.invalidate()
+                playBeeGeckoAnimation(
+                    hint.pair.bee
+                )
+                persistBeeGeckoSession()
+                refreshBeeGeckoInfo()
+            }
+
+            else -> {
+                fx.blocked()
+                status.text =
+                    "La déduction du Prof n'est plus applicable."
+            }
+        }
+    }
+
+    private fun completeBeeGeckoGame() {
+        val puzzle =
+            beeGeckoPuzzle
+                ?: return
+
+        val stars =
+            recordRatedCompletionIfNeeded(
+                mode =
+                    GameMode.BEES_GECKOS,
+                size =
+                    maxOf(
+                        puzzle.columns,
+                        puzzle.rows
+                    ),
+                difficulty =
+                    puzzle.difficulty
+            )
+
+        status.text =
+            "Carte terminée 🐝🦎  " +
+                CompletionRatingPolicy
+                    .symbols(stars)
+
+        beeGeckoSessionStore.clear()
+
+        if (
+            ::celebrationView
+                .isInitialized
+        ) {
+            celebrationView.start(
+                puzzle.difficulty
+            )
+        }
+
+        if (
+            ::beeGeckoBoard
+                .isInitialized
+        ) {
+            beeGeckoBoard
+                .announceForAccessibility(
+                    "Carte Abeilles et Geckos terminée. " +
+                        stars +
+                        " étoiles."
+                )
+        }
+
+        speakLivingProfessor(
+            event =
+                ProfessorPlayerEvent
+                    .LEVEL_COMPLETED,
+            origin =
+                SpeechOrigin
+                    .END_GAME
+        )
+
+        refreshBeeGeckoUi()
+    }
+
+    private fun beeGeckoOverlayTarget(
+        cell: HexCoord
+    ): RectF? {
+        if (
+            !::beeGeckoBoard
+                .isInitialized ||
+            !::screenRoot
+                .isInitialized
+        ) {
+            return null
+        }
+
+        val screenRect =
+            beeGeckoBoard
+                .cellRectOnScreen(
+                    cell
+                )
+                ?: return null
+
+        val rootLocation =
+            IntArray(2)
+
+        screenRoot.getLocationOnScreen(
+            rootLocation
+        )
+
+        return RectF(
+            screenRect
+        ).apply {
+            offset(
+                -rootLocation[0]
+                    .toFloat(),
+                -rootLocation[1]
+                    .toFloat()
+            )
+        }
+    }
+
+    private fun playBeeGeckoAnimation(
+        cell: HexCoord
+    ) {
+        if (
+            !richMediaSettings.enabled ||
+            !::richMediaOverlay
+                .isInitialized
+        ) {
+            return
+        }
+
+        val target =
+            beeGeckoOverlayTarget(
+                cell
+            )
+                ?: return
+
+        richMediaOverlay.play(
+            kind =
+                RichMediaKind
+                    .BEE_APPEARANCE,
+            assetPath =
+                AssetMediaCatalog
+                    .BEE_APPEARANCE,
+            muted = true,
+            target = target,
+            targetProvider = {
+                beeGeckoOverlayTarget(
+                    cell
+                )
+            },
+            titleText = null,
+            skippable = false,
+            maskTarget = null
+        )
+    }
+
     private fun gameModeLabel(
         mode: GameMode
     ): String =
@@ -5091,6 +5923,9 @@ class MainActivity : Activity() {
 
             GameMode.GOMOKU ->
                 "Gomoku"
+
+            GameMode.BEES_GECKOS ->
+                "Abeilles & Geckos"
         }
 
     private fun gomokuCampLabel(
@@ -6011,6 +6846,10 @@ class MainActivity : Activity() {
             selectedGameMode ==
                 GameMode.GOMOKU
 
+        val bees =
+            selectedGameMode ==
+                GameMode.BEES_GECKOS
+
         board.visibility =
             if (classic) {
                 View.VISIBLE
@@ -6072,6 +6911,18 @@ class MainActivity : Activity() {
         ) {
             gomokuBoard.visibility =
                 if (gomoku) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
+        }
+
+        if (
+            ::beeGeckoBoard
+                .isInitialized
+        ) {
+            beeGeckoBoard.visibility =
+                if (bees) {
                     View.VISIBLE
                 } else {
                     View.GONE
@@ -6995,6 +7846,11 @@ class MainActivity : Activity() {
             GameMode.GOMOKU ->
                 selectedDifficulty
 
+            GameMode.BEES_GECKOS ->
+                beeGeckoPuzzle
+                    ?.difficulty
+                    ?: selectedDifficulty
+
             GameMode.GECKODOKU ->
                 puzzle.difficulty
         }
@@ -7012,6 +7868,12 @@ class MainActivity : Activity() {
                 gomokuEngine
                     ?.snapshot()
                     ?.gameOver
+                    ?: false
+
+            GameMode.BEES_GECKOS ->
+                beeGeckoEngine
+                    ?.snapshot()
+                    ?.complete
                     ?: false
 
             GameMode.GECKODOKU ->
@@ -7546,6 +8408,9 @@ class MainActivity : Activity() {
                                     "🎮 Mode : Gomoku humain contre humain"
                                 }
 
+                            GameMode.BEES_GECKOS ->
+                                "🎮 Mode : Abeilles & Geckos"
+
                             GameMode.GECKODOKU ->
                                 "🎮 Mode : GeckoDoku"
                         }
@@ -7554,6 +8419,12 @@ class MainActivity : Activity() {
                         "🎯 Difficulté : " +
                             currentDifficulty()
                                 .label
+
+                    SettingsEntry.STATS ->
+                        "📊 Statistiques"
+
+                    SettingsEntry.RECENTER ->
+                        "🎯 Recentrer la carte"
 
                     SettingsEntry.SAVE_GRID ->
                         if (
@@ -7622,6 +8493,30 @@ class MainActivity : Activity() {
                     SettingsEntry.DIFFICULTY -> {
                         dialog.dismiss()
                         chooseDifficulty()
+                    }
+
+                    SettingsEntry.STATS -> {
+                        dialog.dismiss()
+                        showStats()
+                    }
+
+                    SettingsEntry.RECENTER -> {
+                        dialog.dismiss()
+
+                        if (
+                            selectedGameMode ==
+                                GameMode.BEES_GECKOS &&
+                            ::beeGeckoBoard
+                                .isInitialized
+                        ) {
+                            beeGeckoBoard.recenter()
+                            beeGeckoCamera =
+                                beeGeckoBoard
+                                    .currentCamera()
+                            persistBeeGeckoSession()
+                            status.text =
+                                "Carte Abeilles & Geckos recentrée."
+                        }
                     }
 
                     SettingsEntry.SAVE_GRID -> {
@@ -9648,6 +10543,13 @@ class MainActivity : Activity() {
     }
 
     override fun onPause() {
+        if (
+            selectedGameMode ==
+                GameMode.BEES_GECKOS
+        ) {
+            persistBeeGeckoSession()
+        }
+
         dismissSudokuPalette()
 
         professorPausedAtMs =

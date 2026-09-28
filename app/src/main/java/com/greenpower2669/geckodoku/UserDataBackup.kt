@@ -509,6 +509,8 @@ class UserDataBackup(
                 PlayerProfileStore
                     .PREFERENCES_NAME,
                 HallOfFameStore
+                    .PREFERENCES_NAME,
+                BeeGeckoSessionStore
                     .PREFERENCES_NAME
             )
     }
