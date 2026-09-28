@@ -108,3 +108,11 @@ maintenant, les pistes audio des vidéos hard-muted sont explicitement désélec
 
 Dernier nettoyage avant release :
 la légende Bee du Prof ne parle plus de grosses croix rouges et décrit les barres d’axes globales.
+## GECKO-047 — CI #228 / release
+
+Run #228 GREEN avec publication prerelease réussie.
+Release : `phone-0.15.4-dev-run-228`.
+APK : `GeckoDoku-v0.15.4-dev.apk`.
+SHA-256 : `a879911c7abc141bf34ded2fde31fc94c94791c690da8077fbc9b71b307080f2`.
+
+Aucune validation « Pierre capturé » n'est encore revendiquée : ce point nécessite le test matériel Samsung de Fab.

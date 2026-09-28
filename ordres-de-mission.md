@@ -664,3 +664,20 @@ Le dernier nettoyage retire de l’interface Bee la légende obsolète « rouge 
 
 La correction AUDIO reste à valider sur téléphone Samsung réel :
 Pierre doit apparaître dans l’enregistrement « Sons multimédia » et l’ancien son fantôme doit avoir disparu.
+### Publication GECKO-047
+
+CI #228 GREEN, y compris publication prerelease téléphone.
+
+Release :
+`phone-0.15.4-dev-run-228`
+
+APK :
+`GeckoDoku-v0.15.4-dev.apk`
+
+SHA-256 :
+`a879911c7abc141bf34ded2fde31fc94c94791c690da8077fbc9b71b307080f2`
+
+Reste uniquement la validation téléphone Fab :
+- Pierre présent dans l'enregistrement Samsung ;
+- ancien son fantôme absent ;
+- barres d'axes agréables et supprimables par sortie du plateau.

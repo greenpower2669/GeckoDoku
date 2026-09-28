@@ -167,3 +167,10 @@ double tap
 → grande bande
 → drag
 → dehors = suppression.
+### Livraison GECKO-047
+
+commit 9b73f6f
+→ CI #228 GREEN
+→ prerelease phone-0.15.4-dev-run-228
+→ APK direct
+→ test réel Samsung / barres Fab.

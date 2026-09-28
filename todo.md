@@ -146,3 +146,10 @@
 - [ ] Fab vérifie disparition du son fantôme ;
 - [ ] Fab valide drag / suppression des barres ;
 - [ ] ne clore GECKO-047 qu’après ces tests.
+### GECKO-047 — candidate 0.15.4 publiée
+- [x] CI #228 GREEN ;
+- [x] prerelease téléphone 0.15.4-dev publiée ;
+- [ ] Fab teste Pierre avec enregistreur Samsung « Sons multimédia » ;
+- [ ] Fab confirme ancien son fantôme absent ;
+- [ ] Fab valide les grandes barres d’axes et leur drag/suppression ;
+- [ ] clore seulement après validation téléphone.

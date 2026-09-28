@@ -162,3 +162,11 @@ Le chemin legacy `AssetAudioPlayer.playVoiceSegment` reste instrumenté et corre
 
 UI Prof Bee :
 l’ancienne légende de croix est supprimée ; les axes exclus sont décrits par les bandes semi-transparentes.
+## GECKO-047 — candidate téléphone publiée
+
+CI #228 GREEN.
+Release : `phone-0.15.4-dev-run-228`.
+APK direct : `GeckoDoku-v0.15.4-dev.apk`.
+SHA-256 : `a879911c7abc141bf34ded2fde31fc94c94791c690da8077fbc9b71b307080f2`.
+
+La mission n'est pas déclarée close tant que Fab n'a pas validé la capture Samsung réelle.
