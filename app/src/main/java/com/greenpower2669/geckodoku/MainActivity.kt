@@ -6411,6 +6411,48 @@ class MainActivity : Activity() {
                 )
                 ?: return null
 
+        val viewport =
+            beeGeckoBoard
+                .viewportRectOnScreen()
+                ?: return null
+
+        val halfWidth =
+            screenRect.width() *
+                BeeGeckoVisualPolicy
+                    .BEE_SCALE /
+                2f
+
+        val halfHeight =
+            screenRect.height() *
+                BeeGeckoVisualPolicy
+                    .BEE_SCALE /
+                2f
+
+        val reduced =
+            RectF(
+                screenRect.centerX() -
+                    halfWidth,
+                screenRect.centerY() -
+                    halfHeight,
+                screenRect.centerX() +
+                    halfWidth,
+                screenRect.centerY() +
+                    halfHeight
+            )
+
+        if (
+            reduced.left <
+                viewport.left ||
+            reduced.top <
+                viewport.top ||
+            reduced.right >
+                viewport.right ||
+            reduced.bottom >
+                viewport.bottom
+        ) {
+            return null
+        }
+
         val rootLocation =
             IntArray(2)
 
@@ -6418,9 +6460,7 @@ class MainActivity : Activity() {
             rootLocation
         )
 
-        return RectF(
-            screenRect
-        ).apply {
+        return reduced.apply {
             offset(
                 -rootLocation[0]
                     .toFloat(),

@@ -57,3 +57,12 @@ Passe uniquement visuelle / ergonomique :
 **Le carré est fixe ; le contenu bouge dedans.**
 
 La méthode Gomoku reste la référence de comportement tactile.
+## GECKO-045 — implémentation 0.15.2-dev
+
+Architecture choisie : viewport carré **interne** à `BeeGeckoBoardView`, plutôt qu'un nouveau ViewGroup externe. Cette solution conserve les coordonnées existantes, limite le risque sur les gestes et permet un vrai `canvas.clipRect()` commun aux hexagones, pièces, croix, repères et aides Prof.
+
+`BeeGeckoSquareViewportPolicy` calcule un carré centré à partir de la plus petite dimension disponible. `BeeGeckoViewportPolicy.centeredInViewport()` et `clampInViewport()` transforment la caméra dans ce repère carré.
+
+`BeeGeckoVisualPolicy.BEE_SCALE = 0.50f` devient la source unique de la réduction Abeille. Le sprite statique et la cible vidéo l'utilisent tous deux.
+
+Pour éviter qu'une vidéo Bee déborde du carré alors qu'elle vit dans `RichMediaOverlayView`, son target dynamique devient nul dès que le rectangle réduit n'est plus entièrement contenu dans le viewport : la vidéo est alors cachée au bord au lieu de déborder sur le HUD.

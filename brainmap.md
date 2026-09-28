@@ -72,3 +72,30 @@ Animation Bee
 → centrée sur la même case
 → keycolor GREEN inchangé
 → clip au viewport
+## GECKO-045 — implémentation
+
+`BeeGeckoSquareViewportPolicy.bounds(viewW, viewH, inset)`
+→ carré centré fixe
+
+`BeeGeckoBoardView.onDraw()`
+→ dessine fond de fenêtre
+→ `clipRect(square)`
+→ translate/scale caméra
+→ grille + pièces + aides
+→ restore
+→ dessine bordure carrée
+
+`BeeGeckoViewportPolicy`
+→ `centeredInViewport()`
+→ `clampInViewport()`
+→ `fitScaleInViewport()`
+
+`BeeGeckoVisualPolicy.BEE_SCALE = 0.5`
+→ sprite Bee 50 %
+→ target vidéo Bee 50 %
+
+`beeGeckoOverlayTarget()`
+→ rect case
+→ réduction 50 %
+→ vérification `viewport.contains(reducedRect)`
+→ sinon null / vidéo masquée.

@@ -35,3 +35,16 @@
 - [ ] ne pas modifier Sudoku ;
 - [ ] ne pas modifier Gomoku sauf code partagé strictement nécessaire ;
 - [ ] ne pas modifier le keycolor vert déjà validé.
+### GECKO-045 — code 0.15.2 préparé
+- [x] `BeeGeckoVisualPolicy.BEE_SCALE = 0.50` ;
+- [x] sprite Abeille réduit à 50 % ;
+- [x] cible vidéo Abeille réduite à 50 % ;
+- [x] viewport carré calculé par policy pure ;
+- [x] clipping Canvas du plateau et aides Prof ;
+- [x] caméra centrée / clampée dans le carré ;
+- [x] tap interdit hors fenêtre ;
+- [x] vidéo masquée si sa cible sortirait du carré ;
+- [x] tests policy : carré centré, caméra centrée, échelle Bee 50 % ;
+- [ ] CI GREEN ;
+- [ ] publier APK téléphone 0.15.2 ;
+- [ ] Fab valide taille Bee et navigation interne.

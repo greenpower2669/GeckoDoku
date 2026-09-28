@@ -43,6 +43,12 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     private val hexPaint =
         Paint(Paint.ANTI_ALIAS_FLAG)
 
+    private val viewportPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG)
+
+    private val viewportInset =
+        dp(8f)
+
     private val geckoBitmap:
         Bitmap? =
         loadBitmap(
@@ -256,16 +262,17 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         val center =
             cellCenter(cell)
 
+        val viewport =
+            viewportBounds()
+
         camera =
             camera.copy(
                 offsetX =
-                    width /
-                        2f -
+                    viewport.centerX -
                         center.first *
                             camera.scale,
                 offsetY =
-                    height /
-                        2f -
+                    viewport.centerY -
                         center.second *
                             camera.scale
             )
@@ -332,7 +339,54 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             location[1].toFloat()
         )
 
+        val viewport =
+            viewportBounds()
+
+        if (
+            rect.centerX() <
+                viewport.left ||
+            rect.centerX() >
+                viewport.right ||
+            rect.centerY() <
+                viewport.top ||
+            rect.centerY() >
+                viewport.bottom
+        ) {
+            return null
+        }
+
         return rect
+    }
+
+    fun viewportRectOnScreen():
+        RectF? {
+        if (
+            width <= 0 ||
+            height <= 0
+        ) {
+            return null
+        }
+
+        val viewport =
+            viewportBounds()
+
+        val location =
+            IntArray(2)
+
+        getLocationOnScreen(
+            location
+        )
+
+        return RectF(
+            viewport.left +
+                location[0],
+            viewport.top +
+                location[1],
+            viewport.right +
+                location[0],
+            viewport.bottom +
+                location[1]
+        )
     }
 
     override fun onSizeChanged(
@@ -352,7 +406,12 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             w > 0 &&
             h > 0
         ) {
-            ensureCamera()
+            if (initializedCamera) {
+                clampCamera()
+                notifyViewport()
+            } else {
+                ensureCamera()
+            }
         }
     }
 
@@ -377,7 +436,33 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         val snapshot =
             snapshotProvider()
 
+        val viewport =
+            viewportBounds()
+
+        viewportPaint.style =
+            Paint.Style.FILL
+        viewportPaint.color =
+            Color.rgb(
+                252,
+                252,
+                249
+            )
+
+        canvas.drawRect(
+            viewport.left,
+            viewport.top,
+            viewport.right,
+            viewport.bottom,
+            viewportPaint
+        )
+
         canvas.save()
+        canvas.clipRect(
+            viewport.left,
+            viewport.top,
+            viewport.right,
+            viewport.bottom
+        )
         canvas.translate(
             camera.offsetX,
             camera.offsetY
@@ -412,6 +497,25 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         )
 
         canvas.restore()
+
+        viewportPaint.style =
+            Paint.Style.STROKE
+        viewportPaint.strokeWidth =
+            dp(2.4f)
+        viewportPaint.color =
+            Color.rgb(
+                48,
+                48,
+                46
+            )
+
+        canvas.drawRect(
+            viewport.left,
+            viewport.top,
+            viewport.right,
+            viewport.bottom,
+            viewportPaint
+        )
     }
 
     private fun drawRegionsAndGrid(
@@ -535,9 +639,21 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             val center =
                 cellCenter(cell)
 
+            val pieceScale =
+                if (
+                    piece ==
+                        BeeGeckoPiece.BEE
+                ) {
+                    BeeGeckoVisualPolicy
+                        .BEE_SCALE
+                } else {
+                    1f
+                }
+
             val radius =
                 baseRadius *
-                    .61f
+                    .61f *
+                    pieceScale
 
             val target =
                 RectF(
@@ -929,6 +1045,17 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     override fun onTouchEvent(
         event: MotionEvent
     ): Boolean {
+        if (
+            event.actionMasked ==
+                MotionEvent.ACTION_DOWN &&
+            !viewportContains(
+                event.x,
+                event.y
+            )
+        ) {
+            return false
+        }
+
         scaleDetector
             .onTouchEvent(event)
 
@@ -1194,6 +1321,15 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         x: Float,
         y: Float
     ): HexCoord? {
+        if (
+            !viewportContains(
+                x,
+                y
+            )
+        ) {
+            return null
+        }
+
         val puzzle =
             puzzle
                 ?: return null
@@ -1263,11 +1399,9 @@ class BeeGeckoBoardView @JvmOverloads constructor(
 
         camera =
             BeeGeckoViewportPolicy
-                .centered(
-                    viewWidth =
-                        width.toFloat(),
-                    viewHeight =
-                        height.toFloat(),
+                .centeredInViewport(
+                    viewport =
+                        viewportBounds(),
                     content =
                         worldBounds,
                     preferredMinScale =
@@ -1283,33 +1417,62 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     private fun clampCamera() {
         camera =
             BeeGeckoViewportPolicy
-                .clamp(
+                .clampInViewport(
                     camera =
                         camera,
-                    viewWidth =
-                        width.toFloat(),
-                    viewHeight =
-                        height.toFloat(),
+                    viewport =
+                        viewportBounds(),
                     content =
                         worldBounds,
                     visibleMarginPx =
-                        dp(8f)
+                        dp(6f)
                 )
     }
 
     private fun minimumScale():
-        Float =
-        BeeGeckoViewportPolicy
-            .fitScale(
+        Float {
+        val viewport =
+            viewportBounds()
+
+        return BeeGeckoViewportPolicy
+            .fitScaleInViewport(
+                viewport =
+                    viewport,
+                content =
+                    worldBounds,
+                marginPx =
+                    dp(6f)
+            )
+    }
+
+    private fun viewportBounds():
+        BeeGeckoBounds =
+        BeeGeckoSquareViewportPolicy
+            .bounds(
                 viewWidth =
                     width.toFloat(),
                 viewHeight =
                     height.toFloat(),
-                content =
-                    worldBounds,
-                marginPx =
-                    dp(8f)
+                insetPx =
+                    viewportInset
             )
+
+    private fun viewportContains(
+        x: Float,
+        y: Float
+    ): Boolean {
+        val viewport =
+            viewportBounds()
+
+        return x >=
+            viewport.left &&
+            x <=
+                viewport.right &&
+            y >=
+                viewport.top &&
+            y <=
+                viewport.bottom
+    }
 
     private fun notifyViewport() {
         onViewportChanged

@@ -48,3 +48,12 @@ Hypothèse d'architecture privilégiée :
 - aucun rendu transformable ne doit sortir du carré.
 
 Ne pas rouvrir les sujets déjà validés tant qu'aucune régression n'est observée.
+## GECKO-045 — passe code 0.15.2
+
+Implémentation retenue après audit : ne pas créer un deuxième arbre de vues qui dupliquerait les conversions écran↔hexagone. Le carré est calculé et clippé directement dans `BeeGeckoBoardView`, ce qui garde une seule source de coordonnées.
+
+Le drag/zoom agit désormais par rapport au carré. Les événements ACTION_DOWN hors carré sont refusés, ce qui évite d'interagir avec une zone invisible du board.
+
+Le média Bee reste dans l'overlay global pour préserver l'architecture vidéo existante. Pour empêcher tout débordement, sa cible dynamique est réduite à 50 % puis désactivée si elle franchit le carré.
+
+État : code préparé, CI non encore exécutée.

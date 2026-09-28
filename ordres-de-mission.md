@@ -315,3 +315,23 @@ ON DÉPLACE LA GRILLE, PAS LA FENÊTRE.**
 Les Abeilles deviennent deux fois plus petites afin d'alléger le rendu.
 
 Tout le reste déjà validé reste au vert.
+---
+
+## GECKO-045 — implémentation lancée
+
+Version cible : **0.15.2-dev** / versionCode **37**.
+
+Choix d'architecture appliqué : **viewport carré interne réel dans `BeeGeckoBoardView`**.
+
+- carré fixe centré avec marge interne discrète ;
+- clipping du Canvas au carré avant tout rendu du plateau ;
+- caméra recentrée et clampée dans ce carré, et non dans toute la View ;
+- tap ignoré hors du carré ;
+- zoom autour du point visé conservé ;
+- contenu seulement transformable ;
+- bordure carrée dessinée au-dessus du contenu ;
+- Abeille statique ramenée à 50 % ;
+- cible vidéo Abeille ramenée à 50 % et masquée si elle sortirait du carré ;
+- keycolor VERT inchangé.
+
+Ne pas déclarer la mission terminée avant CI + validation téléphone Fab.

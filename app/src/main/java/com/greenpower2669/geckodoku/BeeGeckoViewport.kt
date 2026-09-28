@@ -65,6 +65,59 @@ data class BeeGeckoBounds(
                 2f
 }
 
+object BeeGeckoVisualPolicy {
+    const val BEE_SCALE =
+        .50f
+}
+
+object BeeGeckoSquareViewportPolicy {
+    fun bounds(
+        viewWidth: Float,
+        viewHeight: Float,
+        insetPx: Float
+    ): BeeGeckoBounds {
+        val inset =
+            insetPx
+                .coerceAtLeast(0f)
+
+        val side =
+            (
+                min(
+                    viewWidth,
+                    viewHeight
+                ) -
+                    inset *
+                        2f
+                )
+                .coerceAtLeast(1f)
+
+        val left =
+            (
+                viewWidth -
+                    side
+                ) /
+                2f
+
+        val top =
+            (
+                viewHeight -
+                    side
+                ) /
+                2f
+
+        return BeeGeckoBounds(
+            left = left,
+            top = top,
+            right =
+                left +
+                    side,
+            bottom =
+                top +
+                    side
+        )
+    }
+}
+
 object BeeGeckoViewportPolicy {
     const val MIN_SCALE = 0.42f
     const val MAX_SCALE = 2.8f
@@ -183,6 +236,91 @@ object BeeGeckoViewportPolicy {
                 MIN_SCALE,
                 MAX_SCALE
             )
+    }
+
+    fun fitScaleInViewport(
+        viewport: BeeGeckoBounds,
+        content: BeeGeckoBounds,
+        marginPx: Float = 0f
+    ): Float =
+        fitScale(
+            viewWidth =
+                viewport.width,
+            viewHeight =
+                viewport.height,
+            content =
+                content,
+            marginPx =
+                marginPx
+        )
+
+    fun centeredInViewport(
+        viewport: BeeGeckoBounds,
+        content: BeeGeckoBounds,
+        preferredMinScale:
+            Float = .72f
+    ): BeeGeckoCamera {
+        val local =
+            centered(
+                viewWidth =
+                    viewport.width,
+                viewHeight =
+                    viewport.height,
+                content =
+                    content,
+                preferredMinScale =
+                    preferredMinScale
+            )
+
+        return local.copy(
+            offsetX =
+                local.offsetX +
+                    viewport.left,
+            offsetY =
+                local.offsetY +
+                    viewport.top
+        )
+    }
+
+    fun clampInViewport(
+        camera: BeeGeckoCamera,
+        viewport: BeeGeckoBounds,
+        content: BeeGeckoBounds,
+        visibleMarginPx:
+            Float
+    ): BeeGeckoCamera {
+        val local =
+            camera.copy(
+                offsetX =
+                    camera.offsetX -
+                        viewport.left,
+                offsetY =
+                    camera.offsetY -
+                        viewport.top
+            )
+
+        val clamped =
+            clamp(
+                camera =
+                    local,
+                viewWidth =
+                    viewport.width,
+                viewHeight =
+                    viewport.height,
+                content =
+                    content,
+                visibleMarginPx =
+                    visibleMarginPx
+            )
+
+        return clamped.copy(
+            offsetX =
+                clamped.offsetX +
+                    viewport.left,
+            offsetY =
+                clamped.offsetY +
+                    viewport.top
+        )
     }
 
     fun centered(

@@ -14,6 +14,96 @@ class BeeGeckoViewportPolicyTest {
         )
 
     @Test
+    fun squareViewportUsesSmallerSideAndStaysCentered() {
+        val viewport =
+            BeeGeckoSquareViewportPolicy
+                .bounds(
+                    viewWidth = 800f,
+                    viewHeight = 600f,
+                    insetPx = 10f
+                )
+
+        assertEquals(
+            580f,
+            viewport.width,
+            .001f
+        )
+
+        assertEquals(
+            580f,
+            viewport.height,
+            .001f
+        )
+
+        assertEquals(
+            110f,
+            viewport.left,
+            .001f
+        )
+
+        assertEquals(
+            10f,
+            viewport.top,
+            .001f
+        )
+    }
+
+    @Test
+    fun centeredCameraTargetsSquareViewportCenter() {
+        val viewport =
+            BeeGeckoSquareViewportPolicy
+                .bounds(
+                    viewWidth = 800f,
+                    viewHeight = 600f,
+                    insetPx = 10f
+                )
+
+        val camera =
+            BeeGeckoViewportPolicy
+                .centeredInViewport(
+                    viewport =
+                        viewport,
+                    content =
+                        content,
+                    preferredMinScale =
+                        BeeGeckoViewportPolicy
+                            .MIN_SCALE
+                )
+
+        val contentCenterX =
+            content.centerX *
+                camera.scale +
+                camera.offsetX
+
+        val contentCenterY =
+            content.centerY *
+                camera.scale +
+                camera.offsetY
+
+        assertEquals(
+            viewport.centerX,
+            contentCenterX,
+            .001f
+        )
+
+        assertEquals(
+            viewport.centerY,
+            contentCenterY,
+            .001f
+        )
+    }
+
+    @Test
+    fun beeVisualScaleIsExactlyHalf() {
+        assertEquals(
+            .5f,
+            BeeGeckoVisualPolicy
+                .BEE_SCALE,
+            .001f
+        )
+    }
+
+    @Test
     fun boardRecentersWhenSmallerThanViewport() {
         val camera =
             BeeGeckoViewportPolicy
