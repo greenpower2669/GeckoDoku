@@ -63,3 +63,6 @@ Audit statique post-commit : `centered()` appliquait un fit à 92 % alors que la
 ### CI #223 GREEN
 
 Run `36401929872` terminé avec succès. Toutes les étapes tests/build/nommage/upload passent. `Publish phone prerelease` est volontairement skipped car le commit n'avait pas encore le marqueur `[phone-release]`.
+### CI #224 / release GECKO-045
+
+Run #224 terminé GREEN, y compris `Publish phone prerelease`. Release : `phone-0.15.2-dev-run-224`. APK 236668609 octets, SHA-256 `19394e87c34d0a14f074732ed43c3f96026db4cc9c2f9d24cff7368c155b79b2`.

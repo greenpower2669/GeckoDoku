@@ -54,3 +54,9 @@
 - [x] CI #223 GREEN après correction du premier pinch ;
 - [ ] publier prerelease téléphone 0.15.2 ;
 - [ ] Fab valide la fenêtre carrée, navigation et Abeilles 50 %.
+### GECKO-045 — candidate 0.15.2
+- [x] CI #224 GREEN ;
+- [x] prerelease téléphone publiée ;
+- [ ] Fab valide Abeilles 50 % ;
+- [ ] Fab valide fenêtre carrée fixe ;
+- [ ] Fab valide drag/pinch/recentrage dans la fenêtre.

@@ -72,3 +72,6 @@ Pour éviter qu'une vidéo Bee déborde du carré alors qu'elle vit dans `RichMe
 ### GECKO-045 — CI #223 GREEN
 
 La 0.15.2-dev passe les tests et le build téléphone avec viewport carré interne, clipping, Bee scale 0.50 et caméra cohérente ouverture/pinch. Prochaine porte : validation tactile/visuelle Fab.
+### GECKO-045 — candidate téléphone disponible
+
+CI #224 GREEN et prerelease 0.15.2-dev publiée. Digest APK : `sha256:19394e87c34d0a14f074732ed43c3f96026db4cc9c2f9d24cff7368c155b79b2`. La prochaine décision dépend du test réel Fab.

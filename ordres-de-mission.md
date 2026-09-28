@@ -341,3 +341,6 @@ Le scale initial doit utiliser le même `minimumScale()` que la borne de pinch a
 ### Jalon GECKO-045
 
 CI #222 GREEN sur l'implémentation initiale. CI #223 GREEN après alignement du scale initial avec le zoom minimum. Candidate 0.15.2-dev techniquement validée ; publication téléphone demandée.
+### Publication GECKO-045
+
+CI #224 GREEN. Prerelease téléphone publiée : `phone-0.15.2-dev-run-224`. APK direct : `GeckoDoku-v0.15.2-dev.apk`. Reste uniquement la validation téléphone Fab de la fenêtre carrée, du drag/pinch et de l'échelle Abeille.

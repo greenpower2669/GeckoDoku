@@ -105,3 +105,6 @@ Animation Bee
 ### Validation
 
 GECKO-045 code → CI #222 GREEN → ajustement scale → CI #223 GREEN → prerelease téléphone 0.15.2.
+### Livraison
+
+CI #224 GREEN → `phone-0.15.2-dev-run-224` → APK direct 0.15.2-dev → validation téléphone Fab.
