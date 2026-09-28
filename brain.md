@@ -2893,3 +2893,8 @@ Renforcement de la règle 1↔1 : `validateComplete`, les invariants du puzzle, 
 Calibration : l'échelle de score du solveur a été élargie pour que les déductions simples puissent réellement tomber en Découverte/Facile. `tuneGivens` accepte immédiatement une configuration lorsque **la difficulté calculée** correspond à la demande ; le nombre de givens est un guide, pas une étiquette artificielle.
 
 Les textes de trace Gomoku sont rendus neutres (« camp adverse », « camp conseillé ») afin que la même trace soit correcte quand Pierre conseille le joueur ou analyse un camp en humain-vs-humain.
+### GECKO-043 — jalon GREEN
+
+Run #219 (`36366990280`) GREEN après le durcissement final : exclusivité 1↔1 à travers les frontières de zones, génération/solveur alignés, calibration de difficulté et traces Gomoku neutres.
+
+État : version 0.15.0-dev candidate téléphone. Ne pas considérer l'ergonomie visuelle définitivement validée avant retour Fab sur appareil réel.

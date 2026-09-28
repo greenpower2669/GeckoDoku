@@ -565,3 +565,10 @@ Lors d'un tour automatique du Prof, aucune explication stratégique n'est récit
 L'exclusivité ne se limite pas au couple enregistré dans la zone : dans une solution valide, chaque Abeille doit toucher **exactement un** Gecko de toute la grille, et chaque Gecko doit toucher **exactement une** Abeille de toute la grille. Le générateur refuse donc aussi les contacts croisés entre zones qui créeraient un second partenaire adjacent. Le solveur et le compteur de solutions appliquent la même règle.
 
 Le réglage de difficulté Bee est piloté par la trace réelle du solveur. Le nombre de données visibles reste une cible de génération, mais il ne peut plus empêcher d'accepter une grille dès que la difficulté mesurée correspond exactement à celle demandée.
+### Jalon technique GECKO-043
+
+CI #217 : GREEN — refonte Abeilles & Geckos Classic-like + étoiles.
+CI #218 : GREEN — vraie difficulté Gomoku + projection pédagogique.
+CI #219 : GREEN — exclusivité globale Abeille↔Gecko + calibration de difficulté + texte Gomoku neutre.
+
+Le code est prêt pour la validation téléphone. Les critères visuels/ergonomiques restent soumis au test réel de Fab avant de déclarer la mission totalement close.

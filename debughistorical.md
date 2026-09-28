@@ -1747,3 +1747,8 @@ CI #217 a validé la refonte Abeilles & Geckos + pénalité étoiles. CI #218 a 
 Audit post-CI : le premier modèle 0.15 garantissait un couple voisin par zone mais pouvait encore autoriser une Abeille à toucher accidentellement un second Gecko d'une zone voisine. Cela violait l'exclusivité canonique. Correctif ajouté dans invariants, validation, génération, solveur et recherche d'unicité.
 
 Une deuxième correction de calibration évite que le nombre cible de givens empêche une grille déjà mesurée au bon niveau d'être acceptée.
+### CI #219 — GREEN
+
+Run `36366990280` terminé avec succès : tests unitaires, compilation et APK téléphone passent après le correctif d'exclusivité globale et la calibration Bee. Aucun contournement des règles n'a été nécessaire.
+
+Prochaine étape : commit documentaire `[phone-release]` pour produire la prerelease APK 0.15 directement téléchargeable, puis test sur téléphone.

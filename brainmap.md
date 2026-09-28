@@ -1465,3 +1465,6 @@ Résultats : `GameMode.BEES_GECKOS` → stats mode+difficulté → étoiles → 
 
 ### Calibration
 `rateDifficulty(trace)` reste la source de vérité ; `targetGivenCount` guide le retrait mais ne bloque plus une correspondance exacte.
+### GECKO-043 — validation CI
+
+`#217 Bee+stars GREEN` → `#218 Gomoku GREEN` → `#219 exclusivité/calibration GREEN` → candidate téléphone 0.15 → validation Fab.

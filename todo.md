@@ -112,3 +112,13 @@
 - [x] recalibrer l'acceptation de difficulté sur la mesure du solveur ;
 - [ ] CI suivante GREEN ;
 - [ ] publier prerelease téléphone 0.15 après GREEN final.
+### GECKO-043 — état après CI #219
+- [x] CI #219 GREEN ;
+- [x] moteur Bee Classic-like compilé/testé ;
+- [x] Gomoku difficulté/pédagogie compilé/testé ;
+- [x] pénalité −3 étoiles compilée/testée ;
+- [ ] publier prerelease APK 0.15 ;
+- [ ] Fab : valider visuellement zones, taille, gestes et lisibilité ;
+- [ ] Fab : tester Prof Bee et projection Gomoku ;
+- [ ] Fab : tester les écarts de force Gomoku, surtout Découverte vs niveaux hauts ;
+- [ ] ajuster ensuite uniquement les points révélés par le test téléphone.
