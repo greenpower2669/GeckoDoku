@@ -1,759 +1,459 @@
-# Brainmap — GeckoDoku v0.4
-
-PuzzleGenerator
-├── génère / ajuste la grille
-├── vérifie unicité
-├── DifficultyIndexer
-└── attachTrace()
-    └── HumanSolver.analyze().steps
-        └── Puzzle.solverTrace
-
-SolveStep
-├── technique
-├── cell / eliminated
-├── sourceCells
-├── sourceRegions
-├── axis
-├── beforeConfirmed
-└── beforeExcluded
-
-ProfessorGecko
-├── reçoit GameSnapshot
-├── cherche étape compatible dans Puzzle.solverTrace
-│   └── chemin rapide
-├── sinon HumanSolver.nextStep()
-│   └── chemin de secours depuis état courant
-└── ProfessorHint
-    ├── focusText
-    ├── explanationText
-    └── actionText
-
-MainActivity
-├── bouton Prof Gecko
-├── pression 1 = où regarder
-├── pression 2 = pourquoi
-├── pression 3 = action
-└── toute action joueur → reset hint
-
-GeckoBoardView
-├── sources ambre
-└── cibles rouges au niveau 3
-
-HumanSolver
-├── singles
-├── region locked
-├── projection
-└── Gecko X-Wing
-
-## Réutilisation de la trace
-génération → difficulté → professeur → debug → futur apprentissage IA.
-
-## Build
-push main → GitHub Actions → GeckoDoku-v0.4.0-dev.apk.
-
-
-MainActivity / WindowInsets
-├── systemBars top
-├── systemBars bottom
-├── systemBars left/right
-└── padding de base + insets
-    ├── titre hors barre d'état
-    └── Prof Gecko hors barre de navigation
-
-KnownIssue GECKO-012
-└── Facile 12×12 observé avec 2 X-Wing humains
-    └── audit DifficultyIndexer + solverTrace à venir
-
-
-PuzzleJournalStore
-├── SharedPreferences / JSON
-├── save(Puzzle)
-│   ├── définition de grille uniquement
-│   └── dédoublonnage par id
-├── list()
-├── load(id)
-│   └── HumanSolver.analyze() → solverTrace reconstruite
-├── delete(id)
-└── clear()
-
-MainActivity v0.5
-├── ↺ Rejouer
-│   └── même Puzzle → nouveau GameEngine
-├── ⭐ Sauver
-│   └── PuzzleJournalStore.save
-├── 📚 Journal
-│   ├── charger/rejouer
-│   ├── supprimer
-│   └── vider tout
-└── Stats
-    └── DifficultyStats par difficulté
-
-Stats tentative
-Nouvelle / Rejouer / Journal load
-→ recordStart(difficulté mesurée)
-→ fin réussie
-→ recordComplete
-→ taux = completed / started.
-
-
-HypothesisSolver
-├── HumanSolver FULL bloqué
-├── binaryChoices()
-│   ├── ligne = 2 candidats
-│   ├── colonne = 2 candidats
-│   └── zone = 2 candidats
-├── proveContradiction()
-│   ├── conflits de geckos
-│   ├── ligne sans candidat
-│   ├── colonne sans candidat
-│   └── zone sans candidat
-├── profondeur 1 → Mission Impossible
-└── profondeur/compte 2 → Infernal
-
-SolveStep v0.6
-├── hypothesisRejected
-└── hypothesisDepth
-
-DifficultyIndexer v0.6
-HumanSolver FULL
-├── solved → niveaux Découverte..Démentiel
-└── blocked
-    ├── HypothesisSolver(1,1) solved → Mission Impossible
-    ├── HypothesisSolver(2,2) solved → Infernal
-    └── sinon → hors contrat / rejet génération
-
-ProfessorGecko
-├── trace déterministe ou hypothèse
-├── ProfessorBubbleView
-└── surlignage GeckoBoardView
-
-Victoire
-completeGame()
-└── VictoryCelebrationView.start(difficulty)
-    ├── intensité croissante
-    ├── Mission accomplie
-    └── Infernal vaincu
-
-
-Prof Gecko v0.7
-bouton Prof
-├── étape déterministe
-│   ├── ProfessorGecko.nextHint()
-│   ├── GameEngine.applyProfessorStep()
-│   ├── croix / gecko réels
-│   ├── bulle explicative
-│   └── arrêt → attend pression suivante
-└── étape hypothèse
-    ├── pression 1
-    │   ├── professorGhosts = 2 candidats
-    │   └── aucune mutation
-    └── pression 2
-        ├── croix sur hypothesisRejected
-        ├── gecko solide sur cell
-        └── fantômes supprimés
-
-GameEngine.applyProfessorStep
-├── garde-fou solution unique
-├── eliminated → manualCrosses
-├── hypothesisRejected → manualCrosses
-└── cell → confirmed → autoCrosses
-
-Stats
-professorUsed pendant tentative
-└── victoire
-    └── completed_with_prof + completed_with_prof_diff.
-
-
-UI Prof v0.8
-screenRoot : FrameLayout
-├── contenu principal : LinearLayout
-│   ├── titre/info/status
-│   ├── grille
-│   ├── controlsPanel
-│   │   ├── taille/difficulté
-│   │   ├── nouvelle/stats/FX
-│   │   └── rejouer/sauver/journal
-│   └── bouton Prof
-├── ProfessorBubbleView overlay
-│   ├── position = juste au-dessus bouton Prof
-│   ├── × → closeProfessorBubble()
-│   └── ouverture → controlsPanel GONE
-└── VictoryCelebrationView overlay
-
-Célébration sonore
-VictoryCelebrationView
-└── onFireworkBurst(level,index,last)
-    └── FxFeedback.celebrationBurst()
-        ├── ton lancement
-        ├── ton explosion différé
-        └── accent final haut niveau
-
-Arrêt
-├── bouton FX OFF
-├── toucher célébration
-└── release
-→ FxFeedback.stopCelebration().
-
-
-Rich Media GECKO-022
-GameEngine / Solver / Stats
-└── NE DÉPENDENT JAMAIS des médias
-
-Rendu normal
-└── RichMediaOverlay (optionnel)
-    ├── Intro
-    │   └── assets/gecko/Gecko_Intro.mp4
-    ├── case gecko confirmée
-    │   └── Gecko_apparition.mp4 complet
-    ├── gecko retiré
-    │   └── Gecko_disparition.mp4 complet
-    ├── action mignonne occasionnelle
-    │   └── Gecko_actions_plusieurs.mp4 complet ~30 s
-    └── contexte Prof occasionnel
-        └── Prof_actions.mp4 complet ~30 s
-
-Assets
-assets/
-├── gecko/
-│   ├── Gecko_Intro.mp4
-│   ├── Gecko_apparition.mp4
-│   ├── Gecko_disparition.mp4
-│   └── Gecko_actions_plusieurs.mp4
-└── prof/
-    ├── Prof.png
-    ├── Prof_fb.png
-    └── Prof_actions.mp4
-
-Interrupteurs
-Habillage animé OFF
-└── rendu normal uniquement
-
-Habillage animé ON
-├── FX ON → vidéo + audio embarqué
-└── FX OFF → vidéo muette
-
-Règle actuelle
-vidéo longue
-→ t=0
-→ lecture entière
-→ EOF
-→ jamais de découpage / boucle
-
-
-## Keycolor runtime GECKO-022
-MainActivity
-├── RichMediaSettings (SharedPreferences)
-├── RichMediaScheduler (12 % test / cooldown partagé 180 s)
-├── RichMediaOverlayView
-│   └── ChromaKeyVideoView
-│       ├── MediaPlayer → SurfaceTexture OES
-│       ├── OpenGL ES 2 fragment shader
-│       │   ├── dominance bleue → alpha
-│       │   ├── bord smoothstep
-│       │   └── despill bleu
-│       └── erreur média/shader → overlay fermé, jeu inchangé
-├── intro 0→EOF + titre GeckoDoku + skip
-├── apparition/disparition → rectangle réel de la case
-├── Gecko_actions_plusieurs.mp4 → entier, rare, cooldown
-└── Prof_actions.mp4 → entier, rare, texte Prof prioritaire
-
-Gradle app
-└── sourceSets.main.assets = ../assets
-    └── aucun doublon des MP4/PNG dans app/src/main/assets
-
-Ordre visuel
-screenRoot
-├── jeu normal
-├── RichMediaOverlayView
-├── ProfessorBubbleView (texte logique au-dessus du média Prof)
-└── VictoryCelebrationView (priorité la plus haute)
-
-
-## Encouragement audio GECKO-023 — cible
-assets/audio/encouragements/master/Voix_encouragements.mp3 (master 14,441 s)
-└── découpage préparatoire, jamais au runtime
-    └── assets/audio/encouragements/clips/
-        └── 13 clips courts
-
-GameEngine
-└── confirme le coup joueur
-    └── MainActivity / événement gecko confirmé
-        └── EncouragementSelector
-            ├── cellule nouvelle dans la tentative
-            ├── hasard
-            ├── anti-répétition immédiate
-            └── « Tu y es presque » seulement à 1–2 restants
-                └── EncouragementPlayer
-                    ├── FX ON → lecture
-                    ├── FX OFF → silence
-                    └── erreur asset → ignore / jeu inchangé
-
-Dernier gecko
-├── voix courte
-└── célébration visuelle immédiate
-    └── futur audio victoire attend la fin de la voix
-
-Habillage animé
-└── sans effet sur les voix d'encouragement
-
-
-Audio autonomes
-assets/audio/
-├── intro/
-│   └── jungle intro GeckoD.mp3
-├── celebration/
-│   └── jungle cebration GeckoD.mp3
-└── encouragements/
-    ├── master/
-    │   └── Voix_encouragements.mp3
-    └── clips/
-        └── futur : 13 clips GECKO-023
-
-
-## GECKO-024 runtime
-GeckoBoardView
-├── Gecko_tr.png transparent
-└── fallback procédural
-
-Case immuable
-├── masque blanc exact
-└── ChromaKeyVideoView
-    └── UV canoniques + matrice SurfaceTexture
-
-ProfessorBubbleView
-├── Prof.png statique
-├── texte
-└── portraitRectOnScreen
-    └── Prof_actions.mp4 localisé
-        └── TTS français prioritaire
-
-AssetAudioPlayer
-├── musique Nouvelle
-├── musique victoire
-└── voix encouragements par timecodes du master
-
-
-Build v0.10
-└── run #28 vert
-    ├── tests unitaires
-    ├── APK
-    └── AAB
-        └── validation téléphone encore ouverte
-
-
-## GECKO-025
-GeckoBoardView
-└── AssetMediaCatalog.GECKO_PORTRAIT
-    └── assets/gecko/Gecko_tr.png (canonique)
-
-Intervention Prof
-├── texte immédiat
-├── TTS immédiat
-└── ProfessorAnimationPolicy
-    ├── Animations ON
-    ├── média libre
-    ├── pas d'hypothèse en attente
-    └── pas de célébration
-        └── Prof_actions.mp4 localisé dans le portrait
-            └── aucune probabilité / aucun cooldown
-
-
-Build GECKO-025
-└── run #33 vert
-    ├── AssetMediaCatalogTest
-    ├── ProfessorAnimationPolicyTest
-    ├── APK v0.10.1-dev
-    └── AAB v0.10.1-dev
-
-
-## GECKO-026
-LinearLayout racine (dimensions stables)
-├── titre / info / statut
-├── GeckoBoardView (weight=1, ne change jamais pendant Prof)
-├── controlsPanel (reste VISIBLE)
-└── professorButtonHost (hauteur fixe 58 dp)
-    ├── Button texte
-    └── Prof.png décoratif
-        ├── dépassement visuel 10 dp
-        └── micro-animation transform uniquement
-
-screenRoot overlay
-├── jeu normal
-├── RichMediaOverlayView
-├── ProfessorBubbleView flottante
-│   ├── titre
-│   ├── texte
-│   └── croix
-│   (aucun PNG/MP4 Prof)
-└── VictoryCelebrationView
-
-showProfessorBubble()
-├── ne touche jamais au flux de layout
-├── TTS immédiat
-└── positionProfessorBubble() seulement
-
-
-Build GECKO-026
-└── run #37 vert
-    ├── ProfessorUiPolicyTest
-    ├── suite existante
-    ├── APK v0.10.2-dev
-    └── AAB v0.10.2-dev
-
-
-## GECKO-027
-professorButtonHost
-├── Button
-│   ├── elevation = 0 dp
-│   ├── stateListAnimator = null
-│   └── surface tactile + texte
-└── Prof.png
-    ├── elevation = 18 dp
-    ├── bringToFront après ajout
-    └── bringToFront avant chaque micro-animation
-        └── scale/translationY uniquement
-
-Résultat attendu
-└── Button jamais devant Prof, même pendant press/animation
-
-
-Build GECKO-027
-└── run #41 vert
-    ├── ProfessorUiPolicyTest
-    ├── suite existante
-    ├── APK v0.10.3-dev
-    └── AAB v0.10.3-dev
-
-
-## GECKO-028
-GeckoBoardPalette
-├── couleur région utilisée par GeckoBoardView
-└── même couleur → masque animation cellule
-    ├── inset 4 %
-    └── vidéo = rectangle complet
-
-ProfessorSpeech
-└── ProfessorVoicePolicy
-    ├── voix FR explicitement masculine si identifiable
-    └── sinon voix FR locale + pitch 0,78
-
-Prof.png bouton
-├── clic → action aléatoire BOUNCE/TILT/NOD
-└── idle → timer 10–20 s
-    ├── action aléatoire
-    ├── replanification automatique
-    └── callbacks retirés pause/destroy/Anim OFF
-
-
-Build GECKO-028
-└── run #45 vert
-    ├── CellAnimationStyleTest
-    ├── ProfessorVoicePolicyTest
-    ├── ProfessorIdleAnimationPolicyTest
-    ├── APK v0.10.4-dev
-    └── AAB v0.10.4-dev
-
-
-## GECKO-029
-Prof.png idle
-└── délai 2–3 s
-    ├── bulle ouverte : autorisé
-    ├── clic : immédiat + replanification
-    └── pause / Anim OFF / victoire : bloqué
-
-RichMediaScheduler Gecko
-├── chance = 45 %
-└── cooldown = 45 s
-
-Victoire
-├── VictoryCelebrationView finit
-│   └── stop FX procéduraux
-└── MP3 celebration continue
-    └── fin naturelle MediaPlayer
-
-
-Build GECKO-029
-└── run #49 vert
-    ├── Prof idle 2–3 s
-    ├── Gecko scheduler 45 % / 45 s
-    ├── celebration audio policy
-    ├── APK v0.10.5-dev
-    └── AAB v0.10.5-dev
-
-
-## GECKO-030
-professorButtonHost (géométrie fixe)
-├── Button Prof (Z 0)
-├── Prof.png (repos/fallback)
-└── ChromaKeyVideoView dédié (premier plan)
-    └── assets/prof/Prof_actions.mp4
-        ├── t=0 → EOF ~30,070 s
-        ├── chroma bleu → transparent
-        └── audio embarqué muet
-
-Déclencheurs
-├── clic Prof
-└── idle 2–3 s
-    └── même si bulle ouverte
-
-Pendant playback
-├── PNG masqué après MediaPlayer prepared
-├── vidéo locale au bouton
-└── aucune mutation de layout/grille
-
-Fin / erreur / pause / Anim OFF
-└── stop vidéo → PNG restauré
-
-
-Build GECKO-030
-└── run #53 vert
-    ├── vraie vidéo Prof restaurée
-    ├── lecture complète dans le bouton
-    ├── PNG fallback
-    ├── APK v0.10.6-dev
-    └── AAB v0.10.6-dev
-
-
-## GECKO-031 — architecture prévue
-MainActivity
-└── bouton temporaire 🧪 Voix A/B
-    └── VoiceBenchmarkDialog
-        ├── VoiceBenchmarkEngine (contrat unique)
-        │   ├── AndroidTtsBenchmarkEngine
-        │   └── PiperVoiceBenchmarkEngine
-        │       ├── LOW fr_FR-siwis-low
-        │       └── MEDIUM fr_FR-siwis-medium
-        └── métriques
-
-PiperVoiceBenchmarkEngine
-└── PiperSingleModelSlot<OfflineTts>
-    ├── active = LOW ou MEDIUM ou null
-    ├── switch : release(active)
-    └── puis create(target)
-
-CI
-├── récupère les archives Piper officielles
-├── extrait dans assets/tts/piper/{low,medium}
-└── build APK/AAB contenant les deux modèles
-
-
-### GECKO-031 — implémentation
-row3 existante
-├── Rejouer
-├── Sauver
-├── Journal
-└── 🧪 Voix A/B
-    └── AlertDialog
-        ├── même phrase
-        ├── AndroidTtsBenchmarkEngine
-        ├── PiperVoiceBenchmarkEngine(LOW)
-        └── PiperVoiceBenchmarkEngine(MEDIUM)
-
-Piper partagé
-└── single-thread executor
-    └── PiperModelManager
-        └── PiperSingleModelSlot<OfflineTts>
-            ├── LOW
-            └── MEDIUM
-            switch = release ancien → create nouveau
-
-Audio
-├── Android → WAV cache + MediaPlayer
-└── Piper → GeneratedAudio + AudioTrack PCM float
-
-Lifecycle
-├── dismiss/pause → stop + release Piper programmé
-└── destroy → shutdown ressources benchmark
-
-
-GECKO-031 dependency path
-GitHub release v1.13.8
-└── sherpa-onnx-1.13.8.aar
-    ├── SHA-256 vérifié en CI
-    └── app/libs/sherpa-onnx-1.13.8.aar
-        └── Gradle implementation(files(...))
-
-Aucun sherpa-onnx-jvm.jar dans l'APK Android.
-
-
-Build GECKO-031
-└── branche gecko-031-voice-ab-experiment
-    └── run #58 SUCCESS
-        ├── AAR Sherpa SHA vérifié
-        ├── Piper LOW SHA vérifié
-        ├── Piper MEDIUM SHA vérifié
-        ├── tests
-        ├── APK
-        └── AAB
-main
-└── reste v0.10.6-dev stable pendant le test humain
-
-
-## GECKO-032
-ProfessorSpeech
-├── PierrePiperSpeechEngine
-│   ├── modèle unique fr_FR-upmc-medium
-│   ├── sid = 1
-│   └── OfflineTts singleton paresseux
-└── AndroidProfessorSpeech fallback
-
-Encouragement
-├── Recorded → AssetAudioPlayer segment
-└── Pierre → ProfessorSpeech phrase complémentaire
-
-Nouvelle grille
-├── recordStart
-├── musique LEVEL_START
-└── onCompletion
-    └── PlayerStatsNarration
-        └── ProfessorSpeech(Pierre)
-
-CI
-├── Sherpa AAR
-└── UPMC Medium seulement
-
-
-### GECKO-032 — implémentation
-Prof Gecko texte
-└── ProfessorSpeech
-    ├── PierrePiperSpeechEngine
-    │   └── UPMC Medium / sid 1
-    └── AndroidProfessorSpeech fallback
-
-Gecko confirmé
-└── EncouragementSourcePolicy 50/50
-    ├── RECORDED → master MP3 segment
-    └── PIERRE → phrase TTS locale
-
-Nouvelle grille
-└── LEVEL_START MediaPlayer
-    └── completion callback
-        └── PlayerStatsNarration
-            └── ProfessorSpeech/Pierre
-
-
-Build GECKO-032
-└── run #61 SUCCESS
-    ├── Sherpa AAR SHA OK
-    ├── UPMC Medium SHA OK
-    ├── Pierre sid 1 test
-    ├── encouragement source policy test
-    ├── stats narration test
-    ├── APK v0.10.8-dev
-    └── AAB v0.10.8-dev
-
-
-Main GECKO-032
-└── run #63 SUCCESS
-    ├── Pierre UPMC Medium sid 1
-    ├── encouragements enregistrés + Pierre
-    ├── stats après musique d'ouverture
-    ├── APK v0.10.8-dev
-    └── AAB v0.10.8-dev
-
-
-## GECKO-033 — cible future (non codée)
-Ouverture application
-├── IntroGeckoGD.mp4
-├── Gecko_Intro.mp4
-└── jeu déjà prêt derrière
-
-Titre haut écran
-├── IconGeckoGD.png
-└── texte GeckoDoku
-    └── aucun impact sur taille de grille
-
-ProfessorSpeech / Pierre sid 1
-└── avant parole → ProfParle.mp4
-    ├── déjà en cours ? réutiliser
-    ├── terminé ? relancer t=0
-    └── audio vidéo muet
-        └── voix = Piper Pierre
-
-Prof_actions.mp4
-└── reste réservé aux actions générales du Prof
-
-
-<!-- GECKO-033-ADDENDUM-FAB-2026-09-26 -->
-## GECKO-033 — cible enrichie (non codée)
-Identité
-├── assets/gecko/IconGeckoGD.png
-│   ├── launcher Android APK/AAB
-│   └── médaillon rond à gauche du titre
-│       ├── micro-animation locale
-│       ├── jamais IntroGeckoGD.mp4
-│       └── zéro reflow / grille immuable
-│
-Audio Gecko
-├── vidéos Gecko = volume 0 systématique
-└── musiques jeu/intro/victoire = flux séparés
-│
-Pierre / ProfessorSpeech sid=1
-├── parole utile / stats / encouragement
-│   └── ProfParle.mp4 juste avant audio
-│       ├── déjà actif → réutiliser
-│       ├── terminé → restart t=0
-│       ├── aucune seconde instance
-│       └── vidéo muette
-├── Prof_actions.mp4 = général/idle, séparé
-└── parole spontanée basse priorité
-    ├── idle long → proposer bouton Prof
-    ├── partie longue → proposer sauvegarde
-    ├── check-in joueur
-    └── banalités Gecko
-        ├── catalogue 100
-        ├── anti-répétition
-        └── cooldown variable
-│
-Intro
-└── IntroGeckoGD.mp4 → Gecko_Intro.mp4 → jeu déjà prêt
-
-
-<!-- GECKO-033-PROFPARLE-SPEECH-LIFECYCLE-2026-09-26 -->
-## GECKO-033 — ProfParle lifecycle
-ProfessorSpeech / Sherpa Pierre
-├── speechStart
-│   └── ProfParle inactive → play t=0
-├── speechContinues / phrase suivante sans silence
-│   └── ProfParle active → reuse current playback
-├── speechEnd / cancel / error
-│   └── stop ProfParle immediately
-│       └── restore Prof.png
-└── next speech after stop
-    └── play ProfParle from t=0
-
-
-## Vidéo Prof — chaîne corrigée
-`MainActivity.playProfessorButtonVideo()`
-→ `ChromaKeyVideoView.play()`
-→ MediaPlayer
-→ SurfaceTexture
-→ shader chroma key
-→ alpha transparent
-→ `GLSurfaceView` en media overlay, fond transparent.
-
-Erreur MediaPlayer
-→ release player
-→ portrait restauré
-→ pas de verrou permanent
-→ prochain clic autorisé.
-
-Erreur renderer
-→ log temporaire
-→ release ancienne vue
-→ nouvelle `ChromaKeyVideoView`
-→ prochain clic autorisé.
-
-Logs :
-`cacheDir/temp/log.txt`
-→ pointeur vers
-`cacheDir/temp/video-error-log.txt`.
-
-
-## État vérifié
-`530108ace8ce583e079d1ae113b26548e85a6006`
-→ tests unitaires Android PASS
-→ APK debug PASS
-→ AAB debug PASS
-→ artefact `GeckoDoku-v0.10.8-dev-Android`
-→ validation téléphone encore requise pour la composition Surface et le retry réel.
+# GeckoDoku — brainmap
+
+> Cartographie technique active : responsabilités, dépendances et flux.
+> Usage détaillé : docs/GECKODOKU-FONCTIONNEMENT.md.
+> Contrat fonctionnel : brain.md.
+> Archive froide : sauvegarde.md — ne pas lire par défaut.
+
+## 0 — Vue générale
+
+~~~mermaid
+flowchart TD
+    UI[MainActivity / UI commune] --> MODE{GameMode}
+    MODE --> C[GeckoDoku Classic]
+    MODE --> S[Sudoku]
+    MODE --> G[Gomoku]
+    MODE --> B[Abeilles & Geckos]
+
+    C --> CE[GameEngine]
+    C --> CS[PuzzleGenerator + HumanSolver + HypothesisSolver]
+    C --> CV[GeckoBoardView]
+
+    S --> SE[SudokuGameEngine]
+    S --> SS[SudokuGenerator + SudokuSolver + HintEngine]
+    S --> SV[SudokuBoardView + overlays]
+
+    G --> GE[GomokuGameEngine]
+    G --> GA[GomokuAi]
+    G --> GV[GomokuBoardView + Viewport]
+
+    B --> BE[BeeGeckoGameEngine]
+    B --> BS[BeeGecko generator / solver]
+    B --> BV[BeeGeckoBoardView + Viewport]
+
+    UI --> P[Prof Gecko]
+    P --> SP[ProfessorSpeech]
+    SP --> PP[PierrePiperSpeechEngine]
+    PP --> PR[PierrePronunciationPolicy]
+    PR --> VO[VoicePcmPlayer / Android audio]
+
+    UI --> RM[Rich media / ChromaKey overlays]
+    UI --> DATA[Stats / Hall / Journal / Backup]
+~~~
+
+MainActivity.kt orchestre mode, moteurs, gestes, Prof, overlays, statistiques et menus.
+Chaque moteur reste source de vérité de son mode.
+
+## 1 — Mode, préférences et navigation
+
+Fichiers :
+- GameMode.kt : GameMode, GomokuMatchMode, SudokuVisualStyle, GameModePreferences ;
+- SettingsMenuPolicy.kt ;
+- AppTitlePolicy.kt ;
+- MainActivity.kt.
+
+~~~mermaid
+flowchart LR
+    Settings[Réglages] --> Chooser[Mode de jeu]
+    Chooser --> Prefs[GameModePreferences]
+    Prefs --> Switch[MainActivity.setGameMode]
+    Switch --> Cleanup[nettoyage ancien mode / Prof / overlays]
+    Cleanup --> Start[démarrage ou restauration moteur cible]
+    Start --> Visibility[applyGameModeVisibility]
+    Visibility --> Layout[positionFloatingBoard]
+~~~
+
+Invariants :
+- titre toujours GeckoDoku 🦎 ;
+- changement de mode nettoie les états temporaires incompatibles ;
+- préférences persistées ;
+- overlays non participants à la géométrie logique du plateau.
+
+## 2 — GeckoDoku Classic
+
+Modèle / moteur :
+- GameModel.kt : Cell, GameDifficulty, Puzzle, GameSnapshot, hypothèses, repères ;
+- GameEngine.kt : confirmed, manualCrosses, autoCrosses, hypotheses, customMarkers, axisGuides, mistakes.
+
+Génération / résolution :
+- PuzzleGenerator.kt ;
+- HumanSolver.kt ;
+- HypothesisSolver.kt ;
+- DifficultyIndex.kt.
+
+~~~mermaid
+flowchart TD
+    Req[Nouvelle + taille + difficulté] --> Gen[PuzzleGenerator]
+    Gen --> Unique[unicité + contraintes]
+    Unique --> Human[HumanSolver]
+    Human -->|résolu| Rate[DifficultyIndexer]
+    Human -->|bloqué haut niveau| Hyp[HypothesisSolver borné]
+    Hyp --> Rate
+    Rate --> Exact{niveau demandé ?}
+    Exact -->|non| Gen
+    Exact -->|oui| Puzzle[Puzzle accepté + solverTrace]
+    Puzzle --> Engine[GameEngine]
+    Engine --> View[GeckoBoardView]
+    Engine --> Prof[ProfessorGecko]
+~~~
+
+GameEngine.toggleGecko :
+- given → refus ;
+- auto-cross → refus ;
+- Gecko déjà présent → retrait ;
+- faux Gecko → erreur + croix ;
+- Gecko valide → confirmation ;
+- dernier Gecko → complétion.
+
+computeAutoCrosses :
+Gecko confirmé → même ligne + même colonne + même région + voisinage 8 directions.
+
+Axes Classic :
+- AxisGuide.kt : AxisGuideColor, ClassicAxisGuideKind, ClassicAxisGuide ;
+- GeckoBoardView.kt : rendu + sélection/drag.
+
+~~~mermaid
+flowchart LR
+    D[Double-clic] --> LP[palette logique]
+    LP --> A[Axe]
+    A --> HV[Horizontal / Vertical]
+    HV --> C[Jaune / Vert / Rouge]
+    C --> E[GameEngine.toggleAxisGuide]
+    E --> V[GeckoBoardView]
+    V --> Drag[drag]
+    Drag -->|dedans| Move[moveAxisGuide avec couleur]
+    Drag -->|hors plateau| Delete[suppression]
+~~~
+
+ClassicProfessorAxisGuidePolicy produit les axes pédagogiques du Prof, séparés des couleurs joueur.
+
+## 3 — Sudoku
+
+Fichiers principaux :
+- SudokuModel.kt ;
+- SudokuGenerator.kt ;
+- SudokuGameEngine.kt ;
+- SudokuSolver.kt ;
+- SudokuHintEngine.kt ;
+- SudokuBoardView.kt ;
+- SudokuValueOverlayView.kt ;
+- SudokuQuickPaletteView.kt ;
+- SudokuCandidateLayout.kt ;
+- SudokuGesturePolicy.kt ;
+- SudokuProfessorInteractionPolicy.kt ;
+- SudokuProfessorCandidatePolicy.kt ;
+- SudokuReasoningTrace.kt.
+
+SudokuGameEngine maintient :
+values, notes, geckoMarkers, customMarkers, givenMask, undoStack, redoStack, mistakes, lastMoveOrigin.
+
+~~~mermaid
+flowchart TD
+    Touch[SudokuBoardView] --> GP[SudokuGesturePolicy]
+    GP -->|simple| Select[sélection / Gecko]
+    GP -->|double| Mark[repères personnels]
+    GP -->|long| Palette[SudokuQuickPaletteView]
+    Palette --> Digit[chiffre]
+    Palette --> Note[candidat]
+    Palette --> Gecko[marqueur Gecko]
+    Palette --> Erase[effacer]
+    Digit --> Engine[SudokuGameEngine]
+    Note --> Engine
+    Gecko --> Engine
+    Erase --> Engine
+    Engine --> View[Board + ValueOverlay]
+~~~
+
+Un chiffre accepté retire la même note des pairs ligne/colonne/bloc.
+
+Prof Sudoku :
+~~~mermaid
+flowchart LR
+    Prof[Prof Gecko] --> Policy[SudokuProfessorInteractionPolicy]
+    Policy --> Explain[Explain]
+    Policy --> Apply[Apply]
+    Explain --> Hint[Hint + reasoning + overlays]
+    Apply --> Engine[SudokuGameEngine]
+~~~
+
+Tap Prof = conseil/exposé.
+Appui long = demande directe.
+
+## 4 — Gomoku
+
+Fichiers :
+- GomokuModel.kt ;
+- GomokuGameEngine.kt ;
+- GomokuAi.kt ;
+- GomokuBoardView.kt ;
+- GomokuViewportPolicy.kt ;
+- GomokuUiPolicy.kt ;
+- GomokuMatchPolicy.kt ;
+- GomokuProfessorPersona.kt.
+
+GomokuGameEngine maintient stones, currentPlayer, winner, winningLine, draw.
+GomokuWinDetector teste quatre directions et gagne à partir de 5 alignés.
+
+~~~mermaid
+flowchart LR
+    Pointer[entrée tactile] --> Policy[GomokuGesturePolicy]
+    Policy -->|tap| Play[GomokuGameEngine.play]
+    Policy -->|drag| Pan[GomokuViewportPolicy.pan]
+    Policy -->|2 doigts / scale| Zoom[GomokuViewportPolicy.zoom]
+    Pan --> Board[GomokuBoardView]
+    Zoom --> Board
+    Play --> Board
+~~~
+
+Viewport :
+- initial ≈ 12 ;
+- minimum ≈ 5 ;
+- clamp dans le plateau ;
+- zoom centré sur le focus.
+
+Contre Prof :
+~~~mermaid
+flowchart TD
+    Human[coup humain vert] --> Engine[GomokuGameEngine]
+    Engine --> State{fin ?}
+    State -->|non| AI[GomokuAi + profil difficulté]
+    AI --> Decision[GomokuAiDecision + reasoning]
+    Decision --> Engine
+    Decision --> Overlay[lignes / menaces / projection]
+~~~
+
+GomokuMatchPolicy sépare :
+- tour contrôlé par Prof ;
+- conseil disponible ;
+- appui long pouvant appliquer un coup humain conseillé.
+
+HUMAN_VS_HUMAN : aucun camp contrôlé par IA.
+
+## 5 — Abeilles & Geckos
+
+Fichiers :
+- BeeGeckoModel.kt : HexCoord, HexAxis, BeeGeckoPiece, BeeGeckoPuzzle, BeeGeckoGameEngine, génération/solveur/difficulté ;
+- BeeGeckoBoardView.kt ;
+- BeeGeckoViewport.kt ;
+- BeeGeckoLogicalMarkers.kt ;
+- BeeGeckoSessionStore.kt.
+
+BeeGeckoPuzzle impose :
+- paire Gecko/Abeille par zone ;
+- voisinage de la paire ;
+- 1 Gecko + 1 Abeille par zone ;
+- exclusivité globale 1↔1 ;
+- au plus une pièce de chaque type par axe Q/R/S.
+
+~~~mermaid
+flowchart TD
+    Req[difficulté] --> Search[BeeGeckoGenerator.generateExact]
+    Search --> Candidate[puzzle candidat]
+    Candidate --> Rate[difficulty report]
+    Rate --> Exact{niveau exact ?}
+    Exact -->|non| Search
+    Exact -->|oui| Start[startBeeGeckoGame]
+    Start --> Engine[BeeGeckoGameEngine]
+    Start --> Session[BeeGeckoSessionStore]
+    Engine --> Board[BeeGeckoBoardView]
+~~~
+
+La recherche est hors thread UI et annulable par token.
+
+BeeGeckoLogicalMarks contient :
+- geckoCandidate ;
+- beeCandidate ;
+- excludedAxes ;
+- axisColors.
+
+~~~mermaid
+flowchart LR
+    Double[Double-clic] --> Piece[Gecko / Abeille / Axe]
+    Piece -->|Axe| QSR[Q / S / R]
+    QSR --> Color[Jaune / Vert / Rouge]
+    Color --> Marks[BeeGeckoLogicalMarks]
+    Marks --> Render[BeeGeckoBoardView]
+    Render --> Drag[drag axe]
+    Drag --> Session[session persistée]
+~~~
+
+Schema courant 4.
+Ancien axe sans couleur → rouge.
+
+## 6 — Prof Gecko / Pierre
+
+Blocs principaux :
+- ProfessorGecko.kt ;
+- ProfessorSpeech.kt ;
+- ProfessorBubbleView.kt ;
+- ProfessorLifeController.kt ;
+- ProfessorPlayerContext.kt ;
+- ProfessorPhraseCatalog.kt ;
+- ProfessorPhraseSelector.kt ;
+- ProfessorPhraseHistory.kt ;
+- politiques Professor...Policy ;
+- PierrePiperSpeechEngine.kt ;
+- PierrePronunciationPolicy.kt ;
+- VoicePcmPlayer.kt ;
+- AudioCapturePolicy.kt.
+
+~~~mermaid
+flowchart LR
+    Logic[texte pédagogique / ambiance] --> Speech[ProfessorSpeech]
+    Speech --> Piper[PierrePiperSpeechEngine]
+    Piper --> Pron[PierrePronunciationPolicy]
+    Pron --> Sherpa[Sherpa/Piper local]
+    Sherpa --> PCM[VoicePcmPlayer]
+    PCM --> Android[AudioTrack MEDIA + SPEECH]
+~~~
+
+Règles :
+- UI non mutée par la prononciation ;
+- parole pédagogique prioritaire ;
+- action joueur peut invalider un hint temporaire ;
+- le Prof n’applique que ce que le mode autorise ;
+- couleurs joueur ≠ rendu Prof.
+
+GECKO-048 :
+mot entier église, quelle que soit la casse détectée → eglize dans le flux vocal.
+
+## 7 — Rich media / rendu
+
+Fichiers :
+- RichMediaOverlayView.kt ;
+- ChromaKeyVideoView.kt ;
+- RichMediaPlaybackRegistry.kt ;
+- RichMediaScheduler.kt ;
+- RichMediaSettings.kt ;
+- AssetMediaCatalog.kt ;
+- GeckoMediaAudioPolicy.kt ;
+- MediaRenderGeometry.kt ;
+- PersistentMediaLog.kt ;
+- VictoryCelebrationView.kt ;
+- AssetAudioPlayer.kt.
+
+~~~mermaid
+flowchart TD
+    Event[événement jeu/Prof] --> Policy{animations ON ?}
+    Policy -->|non| Normal[rendu normal]
+    Policy -->|oui| Overlay[RichMediaOverlayView]
+    Overlay --> Video[ChromaKeyVideoView]
+    Video --> Frame[frame transparente]
+    Frame --> Compose[composition au-dessus du plateau]
+    Video -->|erreur| Fallback[rendu normal conservé]
+~~~
+
+Invariants :
+- aucune dépendance logique vers média ;
+- géométrie média dérivée de la cible réelle ;
+- pas de reflow ;
+- muted = piste audio désélectionnée ;
+- logs média séparés du gameplay.
+
+## 8 — Score / stats / profil / Hall
+
+Fichiers :
+- CompletionRating.kt ;
+- PlayerStats.kt ;
+- PlayerProfileStore.kt ;
+- HallOfFameStore.kt.
+
+~~~mermaid
+flowchart LR
+    Start[début] --> Stats[recordStart]
+    Help[aide] --> Assist[assistancePoints]
+    Error[erreur] --> Mistakes[mistakes]
+    End[victoire] --> Stars[CompletionRatingPolicy]
+    Assist --> Stars
+    Mistakes --> Stars
+    Stars --> Complete[recordComplete]
+    Complete --> Hall[Hall of Fame]
+~~~
+
+Score final borné 1..5.
+
+## 9 — Persistance / sauvegardes
+
+Stores :
+- GameModePreferences : mode, difficulté, taille, style, match ;
+- PuzzleJournalStore : grilles Classic ;
+- BeeGeckoSessionStore : puzzle/caméra/repères Bee ;
+- ProfessorPhraseHistory : anti-répétition ;
+- PlayerStatsStore : stats ;
+- PlayerProfileStore : nom ;
+- HallOfFameStore : résultats ;
+- RichMediaSettings : animations ;
+- UserDataBackup.kt : export/import transversal.
+
+~~~mermaid
+flowchart TD
+    Stores[stores locaux] --> Export[UserDataBackup.exportJson]
+    Export --> SAF[Android create document]
+    File[JSON choisi] --> Read[lecture]
+    Read --> Validate[validation]
+    Validate -->|OK| Apply[écriture stores]
+    Validate -->|échec| Keep[état précédent]
+    Apply -->|exception| Rollback[restauration snapshot]
+~~~
+
+## 10 — Géométrie / couches UI
+
+Composants :
+- BoardGeometryPolicy.kt ;
+- GameModeBoardGeometryPolicy.kt ;
+- vues de plateau ;
+- ProfessorBubbleView ;
+- RichMediaOverlayView ;
+- VictoryCelebrationView.
+
+Ordre conceptuel :
+jeu → médias décoratifs → bulle Prof → célébration/feedback selon contexte.
+
+Règle : le plateau est la référence géométrique ; les couches flottantes s’y adaptent, jamais l’inverse.
+
+## 11 — Propagation d’un changement
+
+~~~mermaid
+flowchart TD
+    Req[demande Fab] --> Contract[brain.md]
+    Contract --> Locate[brainmap.md]
+    Locate --> Code[code / policies / stores / views]
+    Code --> Tests[tests + CI]
+    Tests --> Human{validation appareil ?}
+    Human -->|oui| Todo[todo.md : à valider]
+    Human -->|non| Stable[fonction stable]
+    Bug[incident] --> Hist[debughistorical.md]
+    Hist --> Locate
+~~~
+
+Règles :
+- changement de logique → modèle + moteur + solveur + Prof + tests à vérifier ;
+- changement visuel → ne doit pas dériver dans la logique ;
+- changement de persistance → migration/compatibilité explicite.
+
+## 12 — GECKO-048 : delta actif
+
+Prononciation :
+ProfessorSpeech → PierrePiperSpeechEngine → PierrePronunciationPolicy → eglize → Sherpa/Piper.
+Affichage conservé.
+
+Axes Classic :
+palette axe → ClassicAxisGuide(kind,index,color) → GeckoBoardView → ACTION_DOWN → ACTION_MOVE/UP avec active.color.
+
+Axes Bee :
+Q/S/R + couleur → BeeGeckoLogicalMarks.excludedAxes + axisColors → BeeGeckoBoardView → BeeGeckoSessionStore schema 4.
+
+Ancien axe sans couleur → RED.
+
+CI : verte.
+Validation téléphone Fab encore requise avant de classer GECKO-048 stable.
+
+## 13 — Frontières documentaires
+
+- brain.md = vérité fonctionnelle compacte.
+- brainmap.md = carte technique active.
+- docs/GECKODOKU-FONCTIONNEMENT.md = usage et comportement détaillés.
+- debughistorical.md = incidents récents/pertinents.
+- todo.md = travail agent restant.
+- ordres-de-mission.md = objectifs explicites de Fab.
+- sauvegarde.md = archive froide avant restructuration ; ne pas lire par défaut.

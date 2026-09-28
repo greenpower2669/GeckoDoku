@@ -1,50 +1,106 @@
-# GeckoDoku — mission active — correction vidéo Prof
+# GECKODOKU — ORDRES DE MISSION ACTIFS
 
-## Validation Fab — 26 septembre 2026
+## GECKO-048 — PRONONCIATION PIERRE + COULEURS DES BARRES D’AXES
 
-Fab valide le diagnostic et le correctif minimal suivant.
+Date : 2026-09-28
+Branche : gecko-039-sudoku-tap-gecko-gomoku
 
-Le keycolor bleu fonctionne : si le chroma key était cassé, le bleu source resterait visible. Le rectangle noir doit donc être recherché dans la composition Android de la surface vidéo, pas dans le shader ni dans les seuils de keycolor.
+### État validé avant mission
+GECKO-047 est clos et validé par Fab :
+- grandes barres d’axes ;
+- drag / suppression hors plateau ;
+- Prof utilisant les axes ;
+- audio capturable ;
+- Pierre présent dans la capture ;
+- ancien routage audio corrigé.
 
-Deux causes distinctes sont traitées :
+Ne pas rouvrir GECKO-047 sauf régression.
 
-1. rectangle noir autour de la vidéo du Prof ;
-2. une erreur vidéo empêchait ensuite toute nouvelle lecture du Prof.
+### 1 — Prononciation Pierre : église → eglize
+Le texte affiché reste église.
+Juste avant Sherpa/Piper, Pierre reçoit eglize.
 
-## Correctif validé
+Contraintes :
+- correction uniquement dans le flux vocal ;
+- mot entier ;
+- détection insensible à la casse ;
+- aucune sous-chaîne accidentelle ;
+- policy extensible.
 
-- [x] Ne pas modifier le shader chroma key ni ses seuils.
-- [x] Conserver EGL RGBA 8/8/8/8, `PixelFormat.TRANSLUCENT`, alpha transparent et blending existants.
-- [x] Remplacer `setZOrderOnTop(true)` par `setZOrderMediaOverlay(true)`.
-- [x] Forcer le fond de `ChromaKeyVideoView` à `Color.TRANSPARENT`.
-- [x] Supprimer le verrou permanent `professorVideoFailed`.
-- [x] Après une erreur `MediaPlayer` : release du player, restauration du portrait et nouvelle tentative autorisée au prochain clic.
-- [x] Après une erreur renderer/shader/texture externe : recréer uniquement `ChromaKeyVideoView`, puis autoriser une nouvelle tentative.
-- [x] Écrire les erreurs dans `cacheDir/temp/video-error-log.txt`.
-- [x] Écrire aussi dans `cacheDir/temp/log.txt` une ligne `[VIDEO ERROR] Voir temp/video-error-log.txt`.
-- [x] Ajouter un test unitaire de classification erreur MediaPlayer vs erreur renderer.
-- [x] Exécuter les tests unitaires Android sur le commit de correction.
-- [x] Construire APK/AAB.
-- [ ] Test téléphone Fab : vérifier disparition du rectangle noir.
-- [ ] Test téléphone Fab : provoquer/observer une erreur vidéo puis vérifier que le Prof repart au clic suivant.
-- [ ] Si `setZOrderMediaOverlay(true)` laisse encore un rectangle noir sur Samsung, ne pas retoucher le shader : préparer alors une migration ciblée du Prof intégré vers `TextureView/EGL`.
+### 2 — Couleurs des barres
+Après le choix de l’axe : JAUNE / VERT / ROUGE.
 
-## Contraintes
+Classic :
+double clic → Axe → Horizontal/Vertical → couleur → pose.
 
-- Préserver les vidéos et assets existants.
-- Préserver le keycolor bleu actuel.
-- Ne pas interrompre la parole du Prof par une animation secondaire.
-- Ne pas introduire de verrou permanent après une erreur vidéo.
-- Pas de refonte du lecteur tant que le correctif de composition n'a pas été testé sur téléphone.
-- FAB Copilot : toute intervention de code synchronise `brain.md`, `brainmap.md`, `debughistorical.md` et `todo.md`.
+Abeilles & Geckos :
+double clic → Axe → Q/S/R → couleur → pose.
 
+Sémantique :
+- jaune = hypothèse / attention ;
+- vert = logique positive / validée ;
+- rouge = exclusion / impossibilité.
 
-## Vérification Sol
-- [x] Commit de code testé : `530108ace8ce583e079d1ae113b26548e85a6006`.
-- [x] Workflow GitHub Actions : https://github.com/greenpower2669/GeckoDoku/actions/runs/36254021447
-- [x] `:app:testDebugUnitTest` réussi.
-- [x] `:app:assembleDebug` réussi.
-- [x] `:app:bundleDebug` réussi.
-- [x] Artefact Android produit : https://github.com/greenpower2669/GeckoDoku/actions/runs/36254021447/artifacts/10909438639
-- [ ] Validation finale sur téléphone par Fab : rectangle noir disparu.
-- [ ] Validation finale sur téléphone par Fab : une erreur vidéo ne bloque plus les lectures suivantes du Prof.
+Conserver largeur, clipping, drag et suppression hors plateau.
+
+### 3 — Drag / persistance
+- type conservé ;
+- couleur conservée ;
+- seule position change ;
+- hors plateau → suppression.
+
+Bee :
+- couleur persistée ;
+- ancienne sauvegarde sans couleur → rouge ;
+- nouvelle sauvegarde → couleur restaurée.
+
+### 4 — Prof
+Les couleurs joueur n’altèrent pas le rendu pédagogique du Prof.
+
+### 5 — Critères téléphone
+- [ ] Pierre prononce correctement église ;
+- [ ] affichage reste église ;
+- [ ] jaune / vert / rouge visibles ;
+- [ ] couleur conservée pendant drag ;
+- [ ] couleur sauvegardée/restaurée Bee ;
+- [ ] audio toujours capturable ;
+- [ ] axes toujours aussi agréables qu’en 0.15.4.
+
+### Réalisation technique
+- [x] code intégré ;
+- [x] correctif compilation CI #229 ;
+- [x] CI branche verte ;
+- [x] artefact GeckoDoku-v0.15.5-dev-phone produit ;
+- [ ] validation téléphone Fab.
+
+---
+
+## GECKO-MEM-001 — RESTRUCTURATION DES MÉMOIRES
+
+Date : 2026-09-28
+
+### Demande de Fab
+- sauvegarder l’état courant avant restructuration ;
+- ne jamais supprimer brain.md ni brainmap.md ;
+- créer d’abord une documentation détaillée ;
+- redistiller cette documentation dans brain.md et brainmap.md ;
+- brain = fonctionnement/contrat compact ;
+- brainmap = architecture + organigrammes ;
+- conserver la documentation comme niveau intermédiaire ;
+- délester franchement debughistorical ;
+- ne pas charger l’archive froide par défaut.
+
+### État
+- [x] snapshot complet : sauvegarde.md ;
+- [x] documentation : docs/GECKODOKU-FONCTIONNEMENT.md ;
+- [x] brain.md restructuré ;
+- [x] brainmap.md restructuré ;
+- [x] debughistorical.md condensé ;
+- [x] todo.md nettoyé ;
+- [x] sauvegarde.md non modifié pendant la restructuration ;
+- [ ] Fab relit/valide la nouvelle structure.
+
+### Règle durable
+documentation détaillée ↔ brain fonctionnel compact ↔ brainmap technique.
+
+Si un niveau devient confus ou trop volumineux, il peut être reconstruit à partir des deux autres sans perdre l’archive froide ni mélanger les rôles.
