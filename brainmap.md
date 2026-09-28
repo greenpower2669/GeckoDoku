@@ -1,110 +1,65 @@
 # GeckoDoku — brainmap
 
-## Architecture validée
+## État stable
+Classic / Sudoku / Gomoku / GeckoBeeDoku
+→ logique validée
+→ stats / Hall / sauvegardes / export-import
 
-`MainActivity`
-→ Classic
-→ Sudoku
-→ Gomoku
-→ Abeilles & Geckos
+## GECKO-046
 
-### Abeilles & Geckos — logique
-`BeeGeckoPuzzle`
-→ zones
-→ axes Q/R/S
-→ Gecko
-→ Abeille
-→ voisinage local exclusif
-→ solveur / générateur
+### Repères
+`LogicalMarker`
+→ GeckoCandidate
+→ BeeCandidate
+→ AxisExclusion(Q/R/S)
+→ Cross(HYPOTHESIS / CONFIRMED / IMPOSSIBLE)
 
-### Abeilles & Geckos — rendu actuel
-`BeeGeckoBoardView`
-→ caméra / zoom / pan
-→ hexagones
-→ sprites
-→ Prof overlays
-→ targets média
+### Input
+double tap
+→ palette logique
+→ placement pièce OU repère
 
-`RichMediaOverlayView`
-→ `ChromaKeyVideoView`
-→ keycolor GREEN pour `BEE_APPEARANCE`
+single tap / action croix
+→ cycle 3 états
 
-## GECKO-045 — architecture cible
+### Solveur / Prof
+`BeeGeckoSolveStep`
+→ mêmes marqueurs
+→ texte
+→ rendu synchronisé
 
-`HUD FIXE`
-- titre
-- info
-- statut
-- boutons
-- Prof / bulle
+### Rendu
+Gecko marker
+→ vert + symbole
 
-`SQUARE VIEWPORT FIXE`
-→ clipRect / clipChildren
-→ contenu transformable
+Bee marker
+→ jaune + symbole
+→ léger offset
 
-`CONTENU TRANSFORMABLE`
-- BeeGeckoBoardView
-- hexagones
-- Geckos
-- Abeilles
-- croix / repères
-- aides Prof
-- animation Bee
+Axis exclusion
+→ barre orientée Q/R/S
 
-### Navigation
+Cross
+→ jaune / vert / rouge
+→ style différent en plus de la couleur
 
-Touch
-→ TAP si sous seuil
-→ PAN si 1 doigt + déplacement
-→ ZOOM si 2 doigts
+### Victoire
+completion GeckoBee
+→ musique Classic
+→ animation tous Geckos
+→ animation toutes Abeilles
+→ viewport clipping conservé
 
-Transformations
-→ appliquées au contenu
-→ jamais au viewport carré
+### Départage visuel
+Classic + GeckoBee
+→ ancien cercle noir supprimé
+→ `Mist/FogOverlay`
+→ transparent
+→ animé
+→ attaché à la zone / cellule logique
 
-### Taille Abeille
-
-Gecko = échelle actuelle  
-Abeille = environ 0,5 × échelle visuelle actuelle
-
-Animation Bee
-→ cible ≈ 0,5 × ancienne taille
-→ centrée sur la même case
-→ keycolor GREEN inchangé
-→ clip au viewport
-## GECKO-045 — implémentation
-
-`BeeGeckoSquareViewportPolicy.bounds(viewW, viewH, inset)`
-→ carré centré fixe
-
-`BeeGeckoBoardView.onDraw()`
-→ dessine fond de fenêtre
-→ `clipRect(square)`
-→ translate/scale caméra
-→ grille + pièces + aides
-→ restore
-→ dessine bordure carrée
-
-`BeeGeckoViewportPolicy`
-→ `centeredInViewport()`
-→ `clampInViewport()`
-→ `fitScaleInViewport()`
-
-`BeeGeckoVisualPolicy.BEE_SCALE = 0.5`
-→ sprite Bee 50 %
-→ target vidéo Bee 50 %
-
-`beeGeckoOverlayTarget()`
-→ rect case
-→ réduction 50 %
-→ vérification `viewport.contains(reducedRect)`
-→ sinon null / vidéo masquée.
-### Caméra
-
-`minimumScale(viewport)` → source commune pour centrage initial et limite zoom-out. Pas de seuil différent entre ouverture et pinch.
-### Validation
-
-GECKO-045 code → CI #222 GREEN → ajustement scale → CI #223 GREEN → prerelease téléphone 0.15.2.
-### Livraison
-
-CI #224 GREEN → `phone-0.15.2-dev-run-224` → APK direct 0.15.2-dev → validation téléphone Fab.
+### Persistance
+session + export/import
+→ markers
+→ axis exclusions
+→ cross state

@@ -1,62 +1,57 @@
 # GeckoDoku — TODO actif
 
-## GECKO-045 — finition Abeilles & Geckos
+## GECKO-045
+- [x] viewport carré ;
+- [x] navigation interne ;
+- [x] Abeilles 50 % ;
+- [x] keycolor vert ;
+- [x] CI / APK ;
+- [x] validation téléphone Fab.
 
-### Validation précédente
-- [x] plateau logique validé par Fab ;
-- [x] zones / axes / règles validés ;
-- [x] keycolor vert validé ;
-- [x] ailes bleues préservées ;
-- [x] candidate 0.15.1 globalement jugée très bonne.
+## GECKO-046 — mission active
 
-### Mission active
-- [ ] réduire le sprite Abeille à environ 50 % ;
-- [ ] réduire aussi la cible vidéo Abeille à environ 50 % ;
-- [ ] conserver le centrage exact sur l'hexagone ;
-- [ ] créer une fenêtre carrée fixe de visualisation ;
-- [ ] dimensionner le carré avec l'espace réellement disponible ;
-- [ ] clipper strictement le plateau dans ce carré ;
-- [ ] déplacer uniquement le contenu pendant le drag ;
-- [ ] zoomer uniquement le contenu pendant le pinch ;
-- [ ] conserver le point visé pendant le zoom ;
-- [ ] empêcher la grille de devenir irrécupérable ;
-- [ ] recentrer le contenu dans le carré ;
-- [ ] clipper les overlays Prof ;
-- [ ] clipper / borner l'animation Abeille ;
-- [ ] garantir que HUD / boutons / Prof restent hors du plan transformable ;
-- [ ] tests gestes / clipping / conversion coordonnées ;
+### Repères joueur
+- [ ] auditer la palette double clic actuelle ;
+- [ ] intégrer placement Gecko / Abeille + repères dans une palette commune ;
+- [ ] ajouter repère Gecko vert ;
+- [ ] ajouter repère Abeille jaune avec offset ;
+- [ ] ajouter barres d'exclusion Q/R/S ;
+- [ ] ajouter suppression / modification des repères.
+
+### Croix
+- [ ] définir structure cross state ;
+- [ ] jaune = hypothèse ;
+- [ ] vert = déduction confirmée ;
+- [ ] rouge = impossible ;
+- [ ] cycle ergonomique ;
+- [ ] rendu accessible hors couleur.
+
+### Prof / solveur
+- [ ] faire produire les repères par le solveur ;
+- [ ] rendre les mêmes structures côté Prof ;
+- [ ] synchroniser texte + graphisme.
+
+### Victoire
+- [ ] identifier musique de victoire Classic ;
+- [ ] réutiliser cette musique dans GeckoBeeDoku ;
+- [ ] animer tous les Geckos ;
+- [ ] animer toutes les Abeilles ;
+- [ ] préserver performance / clipping.
+
+### Brouillard
+- [ ] identifier précisément le cercle noir de départage Classic ;
+- [ ] identifier son équivalent GeckoBeeDoku ;
+- [ ] remplacer par brouillard transparent animé ;
+- [ ] partager le même composant / policy entre les deux modes.
+
+### Persistance
+- [ ] sauvegarder repères Gecko/Bee ;
+- [ ] sauvegarder exclusions axes ;
+- [ ] sauvegarder cross states ;
+- [ ] export/import.
+
+### Validation
+- [ ] tests unitaires ;
 - [ ] CI GREEN ;
-- [ ] publier APK téléphone direct ;
-- [ ] validation finale Fab sur navigation et taille des Abeilles.
-
-### Interdictions de cette passe
-- [ ] ne pas modifier solveur / générateur / règles ;
-- [ ] ne pas modifier Classic ;
-- [ ] ne pas modifier Sudoku ;
-- [ ] ne pas modifier Gomoku sauf code partagé strictement nécessaire ;
-- [ ] ne pas modifier le keycolor vert déjà validé.
-### GECKO-045 — code 0.15.2 préparé
-- [x] `BeeGeckoVisualPolicy.BEE_SCALE = 0.50` ;
-- [x] sprite Abeille réduit à 50 % ;
-- [x] cible vidéo Abeille réduite à 50 % ;
-- [x] viewport carré calculé par policy pure ;
-- [x] clipping Canvas du plateau et aides Prof ;
-- [x] caméra centrée / clampée dans le carré ;
-- [x] tap interdit hors fenêtre ;
-- [x] vidéo masquée si sa cible sortirait du carré ;
-- [x] tests policy : carré centré, caméra centrée, échelle Bee 50 % ;
-- [ ] CI GREEN ;
-- [ ] publier APK téléphone 0.15.2 ;
-- [ ] Fab valide taille Bee et navigation interne.
-- [x] aligner scale initial et zoom minimum pour supprimer le saut au premier pinch ;
-### GECKO-045 — après CI #223
-- [x] CI #222 GREEN ;
-- [x] CI #223 GREEN après correction du premier pinch ;
-- [ ] publier prerelease téléphone 0.15.2 ;
-- [ ] Fab valide la fenêtre carrée, navigation et Abeilles 50 %.
-### GECKO-045 — candidate 0.15.2
-- [x] CI #224 GREEN ;
-- [x] prerelease téléphone publiée ;
-- [ ] Fab valide Abeilles 50 % ;
-- [ ] Fab valide fenêtre carrée fixe ;
-- [ ] Fab valide drag/pinch/recentrage dans la fenêtre.
+- [ ] APK téléphone direct ;
+- [ ] validation Fab.

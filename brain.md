@@ -1,77 +1,43 @@
 # GeckoDoku — brain
 
-## État de référence au 2026-09-28
+## État validé au 2026-09-28
 
-Branche active : `gecko-039-sudoku-tap-gecko-gomoku`.
+Branche : `gecko-039-sudoku-tap-gecko-gomoku`
 
-Dernière candidate téléphone validée techniquement :
-- 0.15.1-dev ;
-- CI #221 GREEN ;
-- keycolor Abeille VERT fonctionnel ;
-- ailes bleues conservées.
+### GECKO-045
+Validé par Fab :
+- viewport carré Bee ;
+- navigation ;
+- zoom / drag ;
+- Bee scale 50 % ;
+- keycolor vert ;
+- plateau et logique.
 
-## Éléments désormais considérés comme acquis
+Considérer GECKO-045 comme acquis.
 
-### Classic
-- grille et ergonomie historiques conservées ;
-- difficulté exacte générée par solveur ;
-- statistiques / étoiles / Hall ;
-- sauvegardes et export/import.
+## Mission active — GECKO-046
 
-### Sudoku
-- mode fonctionnel ;
-- Prof et statistiques séparés ;
-- pas de mélange avec les autres modes.
+Axes :
 
-### Gomoku
-- zoom / drag de référence pour les gestes ;
-- difficulté IA réellement différenciée ;
-- pédagogie / projection sur demande ;
-- persona non agressive.
+1. Palette logique au double clic.
+2. Repère Gecko vert.
+3. Repère Abeille jaune, légèrement excentré.
+4. Barres d'exclusion orientées sur les 3 axes hex.
+5. Croix personnelles à 3 états :
+   - jaune = hypothèse ;
+   - vert = déduction sûre ;
+   - rouge = impossible.
+6. Prof / solveur utilisent ces mêmes structures graphiques.
+7. Victoire GeckoBeeDoku :
+   - musique de victoire Classic ;
+   - tous les Geckos animés ;
+   - toutes les Abeilles animées.
+8. Classic + GeckoBeeDoku :
+   - remplacer le cercle noir de départage par un brouillard transparent animé.
+9. Persister / exporter tous les nouveaux repères.
 
-### Abeilles & Geckos
-- conception Classic-like validée ;
-- grille hexagonale ;
-- zones colorées ;
-- exactement 1 Gecko + 1 Abeille par zone ;
-- trois familles d'axes logiques ;
-- voisinage Abeille ↔ Gecko local et exclusif ;
-- solveur / unicité / génération exacte ;
-- Prof visuel ;
-- keycolor vert de la vidéo Abeille ;
-- fond vert supprimé.
+### Invariant
 
-## Mission active GECKO-045
+Un seul langage graphique partagé entre joueur, solveur et Prof.
 
-Passe uniquement visuelle / ergonomique :
-
-1. Abeilles à environ 50 % de leur taille actuelle.
-2. Créer un viewport carré fixe pour Abeilles & Geckos.
-3. Le plateau se déplace et zoome à l'intérieur de ce carré.
-4. Tout dépassement du plateau / Prof / animation est clippé.
-5. HUD, boutons et Prof restent fixes hors du viewport.
-6. Ne toucher à aucune logique métier validée.
-
-### Invariant UX
-
-**Le carré est fixe ; le contenu bouge dedans.**
-
-La méthode Gomoku reste la référence de comportement tactile.
-## GECKO-045 — implémentation 0.15.2-dev
-
-Architecture choisie : viewport carré **interne** à `BeeGeckoBoardView`, plutôt qu'un nouveau ViewGroup externe. Cette solution conserve les coordonnées existantes, limite le risque sur les gestes et permet un vrai `canvas.clipRect()` commun aux hexagones, pièces, croix, repères et aides Prof.
-
-`BeeGeckoSquareViewportPolicy` calcule un carré centré à partir de la plus petite dimension disponible. `BeeGeckoViewportPolicy.centeredInViewport()` et `clampInViewport()` transforment la caméra dans ce repère carré.
-
-`BeeGeckoVisualPolicy.BEE_SCALE = 0.50f` devient la source unique de la réduction Abeille. Le sprite statique et la cible vidéo l'utilisent tous deux.
-
-Pour éviter qu'une vidéo Bee déborde du carré alors qu'elle vit dans `RichMediaOverlayView`, son target dynamique devient nul dès que le rectangle réduit n'est plus entièrement contenu dans le viewport : la vidéo est alors cachée au bord au lieu de déborder sur le HUD.
-### GECKO-045 — cohérence du scale initial
-
-`BeeGeckoBoardView.ensureCamera()` utilise désormais `minimumScale()` comme minimum du centrage initial. Le premier pinch ne doit donc plus provoquer de saut entre le scale de départ et la borne minimale.
-### GECKO-045 — CI #223 GREEN
-
-La 0.15.2-dev passe les tests et le build téléphone avec viewport carré interne, clipping, Bee scale 0.50 et caméra cohérente ouverture/pinch. Prochaine porte : validation tactile/visuelle Fab.
-### GECKO-045 — candidate téléphone disponible
-
-CI #224 GREEN et prerelease 0.15.2-dev publiée. Digest APK : `sha256:19394e87c34d0a14f074732ed43c3f96026db4cc9c2f9d24cff7368c155b79b2`. La prochaine décision dépend du test réel Fab.
+Ne pas refaire la logique du puzzle.

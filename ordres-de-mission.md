@@ -1,346 +1,357 @@
 # GECKODOKU — ORDRE DE MISSION ACTIF
 
-## GECKO-045 — FINITION ABEILLES & GECKOS : ÉCHELLE + FENÊTRE DE VISUALISATION
+## GECKO-046 — REPÈRES LOGIQUES, CROIX 3 ÉTATS, VICTOIRE VIVANTE ET BROUILLARD
 
 Date : 2026-09-28  
 Branche : `gecko-039-sudoku-tap-gecko-gomoku`
 
-## ÉTAT VALIDÉ PAR FAB
+## ÉTAT VALIDÉ / AU VERT
 
-La candidate téléphone 0.15.1-dev est globalement validée.
+GECKO-045 est considéré comme **validé par Fab**.
 
-Considérer comme **VERT / ACQUIS** et ne pas régresser :
+Ne pas régresser :
 
-- logique générale Abeilles & Geckos ;
-- plateau hexagonal ;
-- zones colorées ;
-- règles de zones / axes / voisinage ;
-- solveur et génération ;
-- keycolor VERT de l'animation Abeille ;
-- fond vert supprimé ;
+- fenêtre carrée Abeilles & Geckos ;
+- navigation interne ;
+- zoom / drag ;
+- Abeilles réduites à 50 % ;
+- keycolor VERT ;
 - ailes bleues conservées ;
-- fonctionnement général du mode ;
-- Prof, statistiques, étoiles, sauvegardes et export/import sauf régression révélée ultérieurement.
+- plateau hexagonal ;
+- zones / axes / solveur / générateur ;
+- pédagogie du Prof ;
+- Classic / Sudoku / Gomoku ;
+- sauvegardes / stats / Hall / export-import.
 
-Le nouveau travail est une **passe de finition visuelle et de navigation**.
+La nouvelle mission porte sur les **repères visuels**, la **victoire animée** et le remplacement du **cercle noir de départage**.
 
 ---
 
-## 1 — ABEILLES DEUX FOIS PLUS PETITES
+# A — DOUBLE CLIC : PALETTE DE REPÈRES LOGIQUES
 
-Les Abeilles sont actuellement trop grandes visuellement.
+## 1 — DOUBLE CLIC CONTEXTUEL
 
-### Objectif
+Dans GeckoBeeDoku / Abeilles & Geckos, le double clic doit ouvrir une palette logique plus riche.
 
-Réduire leur taille apparente d'environ **50 %**.
+Le double clic doit permettre de choisir :
+
+- placer / confirmer un Gecko ;
+- placer / confirmer une Abeille ;
+- poser un repère Gecko ;
+- poser un repère Abeille ;
+- poser une barre d'exclusion d'axe ;
+- choisir / modifier une croix logique ;
+- retirer un repère.
+
+Ne pas supprimer les fonctions déjà accessibles par double clic : les intégrer à cette palette.
+
+---
+
+## 2 — REPÈRE GECKO
+
+Créer un repère visuel Gecko :
+
+- couleur dominante **VERTE** ;
+- symbole Gecko ou marque claire ;
+- léger décalage par rapport au centre / axe de la case pour ne pas masquer la pièce ;
+- lisible même sans couleur grâce à une forme / symbole distinct.
+
+Ce repère signifie :
+
+> « ici je soupçonne / projette un Gecko »
+
+Il ne valide pas automatiquement la solution.
+
+---
+
+## 3 — REPÈRE ABEILLE
+
+Créer un repère visuel Abeille :
+
+- couleur dominante **JAUNE** ;
+- symbole Abeille ou marque claire ;
+- légèrement excentré de l'axe / centre pour rester lisible ;
+- distinct du repère Gecko même en vision dégradée.
+
+Ce repère signifie :
+
+> « ici je soupçonne / projette une Abeille »
+
+Il ne valide pas automatiquement la solution.
+
+---
+
+## 4 — BARRES D'EXCLUSION D'AXE
+
+Ajouter des **barres d'exclusion** utilisables comme repères.
+
+Pour une case hexagonale, elles doivent pouvoir représenter les familles d'axes logiques :
+
+- axe ↖↘ ;
+- axe ↑↓ ;
+- axe ↗↙.
+
+Une barre d'exclusion signifie :
+
+> « cet axe / cette direction est éliminé(e) pour ce raisonnement »
+
+Les barres doivent être légèrement décalées / superposées sans masquer la case.
+
+Prévoir une représentation visuelle distincte :
+
+- trait / barre ;
+- orientation correspondant réellement à l'axe ;
+- contraste suffisant ;
+- pas uniquement la couleur.
+
+---
+
+# B — CROIX À 3 ÉTATS
+
+## 5 — TROIS ÉTATS DE CROIX
+
+Les croix personnelles ne doivent plus être un simple état binaire.
+
+Créer trois états :
+
+### JAUNE
+Hypothèse / doute / piste en cours.
+
+### VERT
+Déduction validée / exclusion confirmée par le raisonnement.
+
+### ROUGE
+Impossible / contradiction / exclusion forte.
+
+Le joueur doit pouvoir faire évoluer une croix entre ces états.
+
+Exemple de cycle possible :
+
+`aucune → jaune → vert → rouge → aucune`
+
+Le cycle exact peut être ajusté pour rester ergonomique.
+
+---
+
+## 6 — ACCESSIBILITÉ DES CROIX
+
+Ne pas dépendre uniquement de la couleur.
+
+Chaque état doit aussi avoir une différence perceptible par :
+
+- épaisseur ;
+- motif ;
+- petit symbole ;
+- style de trait ;
+- animation légère éventuelle.
+
+---
+
+# C — PROF GECKO ET SOLVEUR : UTILISER LES MÊMES REPÈRES
+
+## 7 — SOURCE UNIQUE DE LANGAGE VISUEL
+
+Le Prof et le joueur doivent partager le même vocabulaire graphique.
+
+Quand le Prof explique :
+
+- un Gecko possible → repère Gecko vert ;
+- une Abeille possible → repère Abeille jaune ;
+- un axe impossible → barre d'exclusion orientée ;
+- une hypothèse → croix jaune / marque hypothèse ;
+- une déduction sûre → croix / contour vert ;
+- une contradiction → croix rouge.
+
+Le solveur doit produire les informations nécessaires au rendu.
+
+Ne pas créer un système graphique séparé pour le Prof.
+
+---
+
+## 8 — EXPLICATION SYNCHRONISÉE
+
+Quand le Prof dit par exemple :
+
+> « Cet axe contient déjà un Gecko »
+
+le plateau doit afficher en même temps :
+
+- l'axe concerné ;
+- la barre d'exclusion correspondante ;
+- le Gecko déjà responsable de l'exclusion.
+
+Quand il dit :
+
+> « Il ne reste que cette Abeille »
+
+afficher :
+
+- candidats précédents ;
+- exclusions ;
+- repère Abeille jaune sur la conclusion ;
+- éventuellement repère Gecko vert si le couple est déduit.
+
+Le texte et les repères doivent raconter exactement le même raisonnement.
+
+---
+
+# D — VICTOIRE : MUSIQUE CLASSIC + TOUT LE MONDE S'ANIME
+
+## 9 — MUSIQUE DE VICTOIRE
+
+À la résolution d'une grille GeckoBeeDoku / Abeilles & Geckos :
+
+- utiliser **la même musique de victoire que le mode Classic** ;
+- ne pas créer une musique concurrente si celle du Classic existe déjà ;
+- conserver le comportement audio déjà validé.
+
+---
+
+## 10 — ANIMATION DE TOUS LES GECKOS ET ABEILLES
+
+À la victoire :
+
+- activer / animer **tous les Geckos** de la grille ;
+- activer / animer **toutes les Abeilles** de la grille ;
+- pas uniquement la dernière pièce posée.
+
+L'effet doit donner une vraie sensation de plateau vivant.
 
 ### Contraintes
 
-- conserver le centre de l'Abeille sur sa case ;
-- conserver le Gecko à sa taille actuelle ;
-- ne pas changer la taille logique des hexagones ;
-- ne pas réduire la zone tactile du plateau ;
-- conserver une bonne lisibilité ;
-- l'Abeille doit rester immédiatement identifiable ;
-- le rendu doit être plus léger et plus esthétique.
+- rester dans le viewport carré ;
+- respecter le clipping ;
+- conserver les positions logiques ;
+- éviter de masquer tout le plateau ;
+- ne pas lancer des dizaines de vidéos lourdes simultanément si cela détruit les performances.
 
-La réduction concerne :
+Si nécessaire, utiliser :
 
-- le sprite statique `AbeilleTr.png` ;
-- l'animation Abeille quand elle est affichée sur le plateau ;
-- toute représentation Abeille dérivée utilisant la même géométrie de cible.
+- une animation légère par sprite ;
+- des décalages de phase ;
+- une vague / séquence rapide ;
+- ou un système de batch.
 
-L'animation ne doit plus donner l'impression de recouvrir plusieurs hexagones.
-
----
-
-## 2 — FENÊTRE CARRÉE DE VISUALISATION
-
-La grille elle-même est validée.
-
-Le défaut restant est la manière dont elle se déplace / se présente pendant la navigation.
-
-### Principe recherché
-
-Créer une **fenêtre carrée fixe de visualisation**.
-
-Le joueur doit avoir l'impression de regarder le plateau à travers un carré stable :
-
-- le carré reste fixe dans l'interface ;
-- la grille se déplace **à l'intérieur** ;
-- ce qui dépasse du carré est **clippé / masqué** ;
-- le plateau ne doit jamais déborder visuellement sur le HUD, le Prof ou les boutons.
-
-L'idée est celle d'une **fenêtre dans la fenêtre**.
+L'objectif visuel prime, mais l'APK doit rester fluide.
 
 ---
 
-## 3 — DEUX ARCHITECTURES ACCEPTABLES
+# E — CLASSIC + GECKOBEEDOKU : REMPLACER LE CERCLE NOIR PAR DU BROUILLARD
 
-Choisir l'implémentation la plus propre après audit du code.
+## 11 — CERCLE NOIR DE DÉPARTAGE
 
-### Option A — Viewport / clipping réel
+Dans Classic et GeckoBeeDoku, le système actuel utilise un **cercle noir** pour signaler le choix / départage de la grille.
 
-Créer un conteneur carré fixe :
+Fab préfère une représentation plus organique.
 
-`SquareViewport`
-→ clip du contenu
-→ `BeeGeckoBoardView` transformable à l'intérieur.
+Le cercle noir doit être remplacé par :
 
-Le plateau peut alors être :
+### un nuage de fumée / brouillard
 
-- translaté ;
-- zoomé ;
-- recentré ;
+Caractéristiques :
 
-sans jamais dessiner hors du carré.
-
-### Option B — Recalcul de la zone visible
-
-Garder la vue actuelle mais calculer explicitement la partie de grille visible à l'intérieur d'un carré logique fixe.
-
-Le rendu et les interactions sont convertis dans ce viewport.
-
-### Critère de choix
-
-Préférer la solution :
-
-- la plus simple ;
-- la plus robuste ;
-- la moins risquée pour les gestes ;
-- la plus proche de la méthode éprouvée du Gomoku ;
-- qui évite les coordonnées dupliquées ou les hacks de translation.
+- transparent ;
+- doux ;
+- animé ;
+- diffus ;
+- pas opaque ;
+- pas agressif ;
+- évoque un petit brouillard qui flotte sur la zone concernée.
 
 ---
 
-## 4 — DIMENSION ET POSITION DU CARRÉ
+## 12 — BROUILLARD = INDICATEUR, PAS MASQUE
 
-La fenêtre doit être **carrée**, centrée horizontalement et utiliser le maximum de place disponible sans recouvrir :
+Le brouillard ne doit jamais empêcher la lecture de la grille.
 
-- le titre ;
-- les informations ;
-- le statut ;
-- les boutons ;
-- la zone Prof Gecko.
+Il doit :
 
-Sa taille doit être calculée à partir de l'espace réellement disponible.
-
-Conceptuellement :
-
-`side = min(availableWidth, availableHeight)`
-
-Le plateau est ensuite rendu et manipulé uniquement dans ce carré.
+- rester semi-transparent ;
+- laisser visibles couleurs, chiffres / pièces et contours ;
+- avoir un mouvement lent / vivant ;
+- être attaché à la zone logique concernée ;
+- suivre correctement zoom / déplacement quand le mode est zoomable.
 
 ---
 
-## 5 — NAVIGATION INTERNE
+## 13 — MÊME MÉTAPHORE DANS CLASSIC ET GECKOBEEDOKU
 
-Le comportement recherché est celui d'un viewport de carte.
+Le même concept visuel doit être utilisé dans les deux modes :
 
-### Drag
-
-- un doigt déplace la grille à l'intérieur du carré ;
-- aucun faux tap après un drag ;
-- mouvement fluide ;
-- le déplacement ne doit jamais déplacer le carré lui-même ;
-- les bords du plateau doivent rester récupérables.
-
-### Pinch / zoom
-
-- deux doigts zooment la grille dans le carré ;
-- le point visé reste stable autant que possible ;
-- aucun conflit avec le drag ;
-- ne jamais laisser le plateau disparaître entièrement ;
-- le zoom minimum doit permettre une lecture globale utile.
-
-### Recentrage
-
-Le recentrage doit agir sur **le contenu interne**, pas sur le carré.
-
----
-
-## 6 — CLIPPING ABSOLU
-
-Règle importante :
-
-**RIEN appartenant au plateau transformable ne doit être dessiné hors de la fenêtre carrée.**
-
-Cela inclut :
-
-- hexagones ;
-- Geckos ;
-- Abeilles ;
-- croix ;
-- repères ;
-- surbrillances ;
-- lignes du Prof ;
-- projections ;
-- animation Abeille ciblée sur une case.
-
-Si une animation ou une aide sort du carré, elle doit être clipée proprement.
-
----
-
-## 7 — HUD ET PROF TOUJOURS AU-DESSUS
-
-La fenêtre de jeu et son contenu ne doivent jamais passer devant :
-
-- le titre ;
-- le texte d'information ;
-- le statut ;
-- la difficulté ;
-- Nouvelle / Rejouer ;
-- réglages ;
-- Prof Gecko ;
-- bulle du Prof.
-
-Séparer clairement :
-
-### Interface fixe
-HUD / boutons / Prof
-
-### Interface transformable
-contenu du carré de visualisation
-
----
-
-## 8 — AIDES DU PROF
-
-Les aides du Prof doivent utiliser les mêmes transformations que le plateau.
-
-Quand le joueur :
-
-- zoome ;
-- dézoome ;
-- déplace la vue ;
-
-les aides restent collées à leur case logique.
-
-Dans le carré :
-
-- bleu = analysé ;
-- orange = hypothèse ;
-- rouge = éliminé ;
-- vert = certain.
-
-Hors du carré :
-
-- rien ne doit être visible.
-
----
-
-## 9 — ANIMATION ABEILLE
-
-Le keycolor VERT est validé et ne doit pas être modifié.
-
-Nouvelle contrainte :
-
-- réduire la cible visuelle de l'animation Abeille à environ **50 %** ;
-- garder l'animation centrée sur la case Abeille ;
-- la cible vidéo doit suivre la transformation du plateau ;
-- elle doit respecter le clipping du carré ;
-- les ailes bleues restent intactes.
-
----
-
-## 10 — NON-RÉGRESSION
-
-Ne pas modifier la logique métier de cette passe.
-
-Ne pas changer :
-
-- règles Abeilles & Geckos ;
-- solveur ;
-- générateur ;
-- règle 1 Gecko + 1 Abeille par zone ;
-- axes hexagonaux ;
-- voisinage exclusif ;
-- difficulté ;
-- statistiques ;
-- Hall of Fame ;
-- étoiles ;
-- sauvegardes ;
-- export/import ;
-- Gomoku ;
 - Classic ;
-- Sudoku.
+- GeckoBeeDoku / Abeilles & Geckos.
 
-Cette mission est **visuelle / ergonomique**, pas une refonte logique.
-
----
-
-## 11 — TESTS OBLIGATOIRES
-
-Ajouter / maintenir des tests pour :
-
-- carré calculé avec `min(width,height)` de la zone disponible ;
-- plateau centré dans le carré au démarrage ;
-- drag ne déplace que le contenu ;
-- pinch ne déplace pas le HUD ;
-- coordonnées tap correctes après pan ;
-- coordonnées tap correctes après zoom ;
-- clip des aides Prof ;
-- clip de l'animation Abeille ;
-- recentrage interne ;
-- taille Abeille ≈ 50 % de l'ancienne ;
-- keycolor vert inchangé ;
-- non-régression Classic / Sudoku / Gomoku.
+Éviter deux systèmes différents pour la même notion de départage.
 
 ---
 
-## 12 — CRITÈRES DE VALIDATION TÉLÉPHONE
+# F — PERSISTANCE
+
+## 14 — REPÈRES JOUEUR
+
+Les nouveaux repères doivent être sauvegardés avec la partie :
+
+- repère Gecko ;
+- repère Abeille ;
+- barres d'axe ;
+- croix jaune / verte / rouge.
+
+Fermer / rouvrir l'application doit les restaurer.
+
+L'export / import doit aussi les conserver.
+
+---
+
+# G — TESTS
+
+## 15 — TESTS OBLIGATOIRES
+
+Ajouter des tests pour :
+
+- cycle croix 3 états ;
+- persistance des trois états ;
+- repère Gecko ;
+- repère Abeille ;
+- barres d'axe ;
+- orientation correcte des trois axes ;
+- Prof utilisant les mêmes structures de repères ;
+- sauvegarde / reprise ;
+- victoire : déclenchement musique Classic ;
+- victoire : animation de tous les Geckos ;
+- victoire : animation de toutes les Abeilles ;
+- brouillard présent à la place du cercle noir ;
+- brouillard semi-transparent ;
+- non-régression Classic / Sudoku / Gomoku / GeckoBeeDoku.
+
+---
+
+# H — CRITÈRES DE VALIDATION TÉLÉPHONE
 
 La mission est terminée seulement si Fab valide :
 
-- [ ] Abeilles environ deux fois plus petites ;
-- [ ] esthétique améliorée ;
-- [ ] fenêtre de jeu clairement carrée ;
-- [ ] carré fixe pendant le drag ;
-- [ ] grille déplaçable à l'intérieur du carré ;
-- [ ] grille correctement zoomable dans le carré ;
-- [ ] aucun débordement sur les boutons / Prof / HUD ;
-- [ ] animation Abeille clipée et centrée ;
-- [ ] aides Prof parfaitement alignées ;
-- [ ] navigation nettement plus agréable que la 0.15.1 ;
-- [ ] aucun élément déjà validé n'a régressé.
+- [ ] double clic ouvre la palette logique complète ;
+- [ ] repère Gecko vert lisible ;
+- [ ] repère Abeille jaune lisible et légèrement excentré ;
+- [ ] barres d'exclusion d'axe faciles à comprendre ;
+- [ ] croix jaune / verte / rouge pratiques ;
+- [ ] Prof utilise réellement ces repères dans ses explications ;
+- [ ] musique de victoire Classic dans GeckoBeeDoku ;
+- [ ] tous les Geckos s'animent à la victoire ;
+- [ ] toutes les Abeilles s'animent à la victoire ;
+- [ ] le cercle noir a disparu ;
+- [ ] brouillard transparent animé agréable ;
+- [ ] brouillard utilisé dans Classic ET GeckoBeeDoku ;
+- [ ] repères sauvegardés ;
+- [ ] aucune régression.
 
 ---
 
-## PRINCIPE DIRECTEUR
+# PRINCIPE DIRECTEUR
 
-**LE CARRÉ EST LA FENÊTRE.  
-LA GRILLE EST LE CONTENU.  
-ON DÉPLACE LA GRILLE, PAS LA FENÊTRE.**
+Les repères du joueur et ceux du Prof doivent parler **le même langage visuel**.
 
-Les Abeilles deviennent deux fois plus petites afin d'alléger le rendu.
+Le joueur doit pouvoir poser exactement les mêmes types d'indices que ceux qu'il voit dans une démonstration du Prof.
 
-Tout le reste déjà validé reste au vert.
----
+Et lors de la victoire :
 
-## GECKO-045 — implémentation lancée
-
-Version cible : **0.15.2-dev** / versionCode **37**.
-
-Choix d'architecture appliqué : **viewport carré interne réel dans `BeeGeckoBoardView`**.
-
-- carré fixe centré avec marge interne discrète ;
-- clipping du Canvas au carré avant tout rendu du plateau ;
-- caméra recentrée et clampée dans ce carré, et non dans toute la View ;
-- tap ignoré hors du carré ;
-- zoom autour du point visé conservé ;
-- contenu seulement transformable ;
-- bordure carrée dessinée au-dessus du contenu ;
-- Abeille statique ramenée à 50 % ;
-- cible vidéo Abeille ramenée à 50 % et masquée si elle sortirait du carré ;
-- keycolor VERT inchangé.
-
-Ne pas déclarer la mission terminée avant CI + validation téléphone Fab.
-### Ajustement caméra GECKO-045
-
-Le scale initial doit utiliser le même `minimumScale()` que la borne de pinch afin d'éviter tout saut de zoom au premier geste. Cette règle fait partie du critère « navigation fluide ».
-### Jalon GECKO-045
-
-CI #222 GREEN sur l'implémentation initiale. CI #223 GREEN après alignement du scale initial avec le zoom minimum. Candidate 0.15.2-dev techniquement validée ; publication téléphone demandée.
-### Publication GECKO-045
-
-CI #224 GREEN. Prerelease téléphone publiée : `phone-0.15.2-dev-run-224`. APK direct : `GeckoDoku-v0.15.2-dev.apk`. Reste uniquement la validation téléphone Fab de la fenêtre carrée, du drag/pinch et de l'échelle Abeille.
+**tout le plateau prend vie.**
