@@ -95,3 +95,16 @@ Prof :
 - X-Wing : policy vérifie la structure 2×2 des sourceCells avant de produire deux bandes réservées.
 
 État : code préparé, CI non encore exécutée.
+## GECKO-047 — CI #227 GREEN / audit final
+
+Run #227 (`36418175495`) GREEN sur le commit `5ea050d2a9f87c813fa9ceb6f6a95c35f643ffa1`.
+
+Le contrôle final du gameplay actuel montre que les encouragements passent par `speakLivingProfessor()` et donc Pierre, pas par les anciens segments MP3.
+Le chemin legacy `playVoiceSegment` existe dans `AssetAudioPlayer`, mais aucun appel actif n’a été retrouvé dans MainActivity.
+
+Le point le plus important pour le « son fantôme » reste le lecteur vidéo :
+avant 0.15.4, mute = volume 0 ;
+maintenant, les pistes audio des vidéos hard-muted sont explicitement désélectionnées avant lecture.
+
+Dernier nettoyage avant release :
+la légende Bee du Prof ne parle plus de grosses croix rouges et décrit les barres d’axes globales.

@@ -640,3 +640,27 @@ Tests ajoutés :
 - vidéos Gecko/Bee restent hard-muted.
 
 Ne pas déclarer la correction audio téléphone validée avant test Samsung réel.
+---
+
+## GECKO-047 — JALON TECHNIQUE 0.15.4-dev
+
+CI #227 GREEN sur le commit fonctionnel `5ea050d2a9f87c813fa9ceb6f6a95c35f643ffa1`.
+
+Validation technique obtenue :
+- double clic simplifié ;
+- grandes barres d’axes draggable Classic + GeckoBeeDoku ;
+- suppression hors plateau ;
+- Prof sans grosses croix comme langage principal ;
+- pédagogie X-Wing/projection clarifiée ;
+- manifest AudioPlaybackCapture ;
+- policy globale ALLOW_CAPTURE_BY_ALL API 29+ ;
+- vrai chemin Pierre PCM corrigé de ACCESSIBILITY vers MEDIA/SPEECH ;
+- fallback Android TTS corrigé ;
+- musique / vidéo avec AudioAttributes capturables ;
+- vidéos muettes : piste audio désélectionnée, pas seulement volume 0 ;
+- logs START/STOP/RELEASE.
+
+Le dernier nettoyage retire de l’interface Bee la légende obsolète « rouge × » du Prof et décrit désormais les grandes barres d’axes.
+
+La correction AUDIO reste à valider sur téléphone Samsung réel :
+Pierre doit apparaître dans l’enregistrement « Sons multimédia » et l’ancien son fantôme doit avoir disparu.

@@ -112,3 +112,37 @@
 - [ ] Fab teste capture Samsung : Pierre présent ;
 - [ ] Fab vérifie disparition ancien son fantôme ;
 - [ ] Fab valide drag des barres.
+## GECKO-047 — après CI #227
+
+### Repères
+- [x] double clic 3 choix Classic ;
+- [x] double clic 3 choix GeckoBeeDoku ;
+- [x] seconde popup axe ;
+- [x] barres globales semi-transparentes ;
+- [x] drag des barres ;
+- [x] sortie plateau = suppression ;
+- [x] priorité drag barre sur caméra ;
+- [x] Prof Classic utilise bandes ;
+- [x] Prof Bee utilise bandes ;
+- [x] grosses croix Prof retirées comme langage principal ;
+- [x] légende Prof Bee nettoyée ;
+- [x] texte X-Wing / projection clarifié.
+
+### Audio
+- [x] allowAudioPlaybackCapture=true ;
+- [x] policy globale ALLOW_CAPTURE_BY_ALL ;
+- [x] Pierre PCM MEDIA/SPEECH/ALLOW_ALL ;
+- [x] fallback Android TTS capturable ;
+- [x] musique MediaPlayer capturable ;
+- [x] vidéo MediaPlayer capturable ;
+- [x] hard-mute vidéo = désélection piste audio ;
+- [x] STOP/RELEASE instrumentés ;
+- [x] pas de RECORD_AUDIO ;
+- [x] CI #227 GREEN.
+
+### Livraison / validation téléphone
+- [ ] publier prerelease 0.15.4-dev ;
+- [ ] Fab teste Pierre avec Samsung « Sons multimédia » ;
+- [ ] Fab vérifie disparition du son fantôme ;
+- [ ] Fab valide drag / suppression des barres ;
+- [ ] ne clore GECKO-047 qu’après ces tests.

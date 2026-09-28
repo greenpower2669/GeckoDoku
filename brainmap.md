@@ -141,3 +141,29 @@ Video
 
 Logs
 → [AUDIO] source=...
+## GECKO-047 — état CI
+
+0.15.4-dev
+→ commit fonctionnel 5ea050d
+→ CI #227 GREEN
+→ nettoyage légende Prof
+→ commit phone-release
+→ CI publication
+→ test Samsung Fab.
+
+Audio final :
+Pierre PCM
+→ AudioTrack MEDIA/SPEECH/ALLOW_ALL
+
+Muted video
+→ deselectTrack(audio)
+→ volume 0 sécurité
+→ STOP/RELEASE.
+
+Repères :
+double tap
+→ 3 choix
+→ axe si rouge
+→ grande bande
+→ drag
+→ dehors = suppression.

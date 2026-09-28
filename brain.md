@@ -145,3 +145,20 @@ Leur cellule origine ne sert qu'à identifier la valeur Q/R/S.
 Drag = déplacement de cette origine vers une cellule du nouvel axe.
 
 Le Prof Bee ne dessine plus ses grosses croix.
+## GECKO-047 — CI #227 GREEN
+
+Le commit fonctionnel 0.15.4-dev passe la CI complète.
+
+Cause Pierre confirmée dans le code :
+`VoicePcmPlayer` utilisait `USAGE_ASSISTANCE_ACCESSIBILITY`.
+Le chemin réel est Sherpa/Piper → PCM → AudioTrack ; il est maintenant MEDIA + SPEECH + ALLOW_CAPTURE_BY_ALL.
+
+Cause plausible du son vidéo fantôme :
+les vidéos forcées muettes restaient décodées et étaient seulement à volume 0.
+La 0.15.4 désélectionne explicitement leurs pistes audio, tout en gardant volume 0 en sécurité.
+
+Aucun appel actif aux anciens encouragements segmentés n’a été retrouvé dans le gameplay courant ; `playEncouragement()` appelle Pierre via `ProfessorSpeech`.
+Le chemin legacy `AssetAudioPlayer.playVoiceSegment` reste instrumenté et correctement stoppé/released s’il est réutilisé.
+
+UI Prof Bee :
+l’ancienne légende de croix est supprimée ; les axes exclus sont décrits par les bandes semi-transparentes.

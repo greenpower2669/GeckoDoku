@@ -2374,9 +2374,9 @@ class MainActivity : Activity() {
                 ) {
                     puzzle.givens.size
                         .toString() +
-                        " gecko(s) donné(s). Simple = ✕, double = 🦎."
+                        " gecko(s) donné(s). Simple = ✕, double = repères logiques."
                 } else {
-                    "Simple = ✕, vrai double-clic = 🦎, appui long = hypothèse."
+                    "Simple = ✕, vrai double-clic = repères logiques, appui long = hypothèse."
                 }
         }
     }
