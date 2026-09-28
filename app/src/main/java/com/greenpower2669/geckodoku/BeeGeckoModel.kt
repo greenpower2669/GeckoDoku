@@ -1022,20 +1022,21 @@ object BeeGeckoRules {
     fun axisLabel(
         first: HexCoord,
         second: HexCoord
-    ): String =
-        when {
-            first.q == second.q ->
-                "l'axe ↖↘"
+    ): String {
+        val axis =
+            BeeGeckoAxisGeometry
+                .sharedAxis(
+                    first,
+                    second
+                )
 
-            first.r == second.r ->
-                "l'axe ↗↙"
-
-            first.s == second.s ->
-                "l'axe ↑↓"
-
-            else ->
-                "un autre axe"
-        }
+        return axis
+            ?.let {
+                BeeGeckoAxisGeometry
+                    .spokenLabel(it)
+            }
+            ?: "un autre axe"
+    }
 
     fun validateComplete(
         puzzle: BeeGeckoPuzzle,

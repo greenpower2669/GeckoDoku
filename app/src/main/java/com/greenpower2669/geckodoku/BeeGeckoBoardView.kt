@@ -2268,21 +2268,15 @@ class BeeGeckoBoardView @JvmOverloads constructor(
 
     private fun cellCenter(
         cell: HexCoord
-    ): Pair<Float, Float> {
-        val x =
-            horizontalStep *
-                (
-                    cell.q +
-                        cell.r /
-                            2f
-                    )
-
-        val y =
-            verticalStep *
-                cell.r
-
-        return x to y
-    }
+    ): Pair<Float, Float> =
+        BeeGeckoAxisGeometry
+            .center(
+                cell = cell,
+                horizontalStep =
+                    horizontalStep,
+                verticalStep =
+                    verticalStep
+            )
 
     private fun hexPath(
         cell: HexCoord

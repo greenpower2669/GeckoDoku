@@ -6060,7 +6060,10 @@ class MainActivity : Activity() {
                 puzzle.regionCount +
                 " couples confirmés • " +
                 puzzle.difficulty.label +
-                "\nAxes : ↖↘  ↑↓  ↗↙ • tap = croix • double tap = pièce"
+                "\nAxes : " +
+                BeeGeckoAxisGeometry
+                    .legend() +
+                " • tap = croix • double tap = pièce"
     }
 
     private fun handleBeeGeckoSingleTap(
@@ -6204,19 +6207,18 @@ class MainActivity : Activity() {
             beeGeckoEngine
                 ?: return
 
-        val labels =
-            arrayOf(
-                "↖↘  Axe Q",
-                "↑↓  Axe S",
-                "↗↙  Axe R"
-            )
-
         val axes =
-            arrayOf(
-                HexAxis.Q,
-                HexAxis.S,
-                HexAxis.R
-            )
+            BeeGeckoAxisGeometry
+                .paletteOrder
+                .toTypedArray()
+
+        val labels =
+            axes
+                .map {
+                    BeeGeckoAxisGeometry
+                        .menuLabel(it)
+                }
+                .toTypedArray()
 
         AlertDialog.Builder(this)
             .setTitle(
