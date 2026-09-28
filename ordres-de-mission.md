@@ -1,5 +1,55 @@
 # GECKODOKU — ORDRES DE MISSION ACTIFS
 
+## GECKO-049 — GÉOMÉTRIE RÉELLE DES AXES ABEILLES & GECKOS
+
+Date : 2026-09-28
+Branche : gecko-039-sudoku-tap-gecko-gomoku
+
+### Constat téléphone de Fab
+Dans Abeilles & Geckos, les grandes barres réelles suivent correctement la grille hexagonale, mais les repères affichés ne correspondent pas à leurs angles :
+- l’interface annonçait S comme ↑↓ alors qu’aucun axe réel du plateau n’est vertical ;
+- l’interface annonçait R comme ↗↙ alors que R est horizontal ;
+- le même décalage apparaît dans le choix d’axe après double-clic ;
+- les textes du Prof pouvaient reprendre ces symboles faux.
+
+### Géométrie canonique pointy-top
+Coordonnées écran : Y positif vers le bas.
+- Q constant = +60° = ↖↘ ;
+- R constant = 0° = ←→ ;
+- S constant = -60° = ↙↗.
+
+### Mission
+Créer une source de vérité géométrique unique et l’utiliser pour :
+- la projection des centres hexagonaux du plateau ;
+- la légende visible en haut du mode ;
+- la popup Axe du double-clic ;
+- les libellés d’axes utilisés par le raisonnement du Prof.
+
+Ne pas modifier :
+- les règles Bee/Gecko ;
+- le solveur ;
+- la persistance schema 4 ;
+- la couleur, le drag ou la suppression des barres validées précédemment.
+
+### Critères téléphone
+- [ ] légende : Q ↖↘, S ↙↗, R ←→ ;
+- [ ] double-clic → Axe montre exactement les mêmes trois orientations ;
+- [ ] la barre choisie suit l’orientation annoncée ;
+- [ ] le Prof nomme le même axe que celui réellement projeté ;
+- [ ] couleurs et drag GECKO-048 sans régression.
+
+### Réalisation technique
+- [x] BeeGeckoAxisGeometry devient la source canonique ;
+- [x] BeeGeckoBoardView délègue sa projection des centres ;
+- [x] MainActivity dérive légende + popup de cette géométrie ;
+- [x] BeeGeckoRules.axisLabel dérive les textes Prof de cette géométrie ;
+- [x] tests unitaires dédiés ajoutés ;
+- [x] code : 8ccc0385c8314239976368811dab93808970e35a ;
+- [ ] CI branche ;
+- [ ] validation téléphone Fab.
+
+---
+
 ## GECKO-048 — PRONONCIATION PIERRE + COULEURS DES BARRES D’AXES
 
 Date : 2026-09-28

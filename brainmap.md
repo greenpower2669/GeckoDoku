@@ -233,6 +233,7 @@ HUMAN_VS_HUMAN : aucun camp contrôlé par IA.
 
 Fichiers :
 - BeeGeckoModel.kt : HexCoord, HexAxis, BeeGeckoPiece, BeeGeckoPuzzle, BeeGeckoGameEngine, génération/solveur/difficulté ;
+- BeeGeckoAxisGeometry.kt : projection pointy-top et présentation canonique Q/R/S ;
 - BeeGeckoBoardView.kt ;
 - BeeGeckoViewport.kt ;
 - BeeGeckoLogicalMarkers.kt ;
@@ -265,6 +266,13 @@ BeeGeckoLogicalMarks contient :
 - beeCandidate ;
 - excludedAxes ;
 - axisColors.
+
+Géométrie canonique écran :
+- Q constant → +60° → ↖↘ ;
+- R constant → 0° → ←→ ;
+- S constant → -60° → ↙↗.
+
+BeeGeckoAxisGeometry est la source commune de BeeGeckoBoardView, de la légende UI, de la popup du double-clic et des libellés du Prof.
 
 ~~~mermaid
 flowchart LR
@@ -457,3 +465,21 @@ Validation téléphone Fab encore requise avant de classer GECKO-048 stable.
 - todo.md = travail agent restant.
 - ordres-de-mission.md = objectifs explicites de Fab.
 - sauvegarde.md = archive froide avant restructuration ; ne pas lire par défaut.
+
+
+## 14 — GECKO-049 : axes Bee synchronisés
+
+~~~mermaid
+flowchart LR
+    Geo[BeeGeckoAxisGeometry] --> Center[cellCenter / plateau réel]
+    Geo --> Legend[légende Q/S/R]
+    Geo --> Popup[double-clic → Axe]
+    Geo --> Prof[BeeGeckoRules.axisLabel]
+    Center --> Bars[barres globales + drag]
+~~~
+
+Invariants :
+- Q = ↖↘, R = ←→, S = ↙↗ ;
+- aucune seconde table de symboles d’axe dans MainActivity ;
+- drag/persistance continuent d’utiliser HexAxis + axisValue ;
+- changer un symbole n’altère jamais les règles du solveur.

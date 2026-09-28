@@ -50,3 +50,24 @@ Ce n’est pas un bug confirmé.
 - non-régression capture audio.
 
 Le reste vit dans todo.md.
+
+
+## GECKO-049 — symboles d’axes Bee décalés — CORRECTION INTÉGRÉE
+
+Symptôme confirmé par capture téléphone :
+les barres réelles du plateau hexagonal ne suivent pas les orientations annoncées par la légende et la popup du double-clic.
+
+Cause :
+la projection pointy-top réelle est Q +60°, R 0°, S -60°, tandis que l’UI avait une table héritée Q ↖↘ / S ↑↓ / R ↗↙.
+
+Correction :
+BeeGeckoAxisGeometry devient la source unique pour la projection des centres, les symboles UI et les libellés du Prof :
+Q ↖↘, R ←→, S ↙↗.
+
+Commit code :
+8ccc0385c8314239976368811dab93808970e35a
+
+Règles, solveur, schema 4, couleurs et drag ne sont pas modifiés.
+
+Preuve attendue :
+tests + CI, puis validation téléphone Fab.

@@ -2,6 +2,27 @@
 
 > Seulement le travail encore utile. Les commandes de Fab restent dans ordres-de-mission.md.
 
+## GECKO-049 — axes hexagonaux cohérents avec le plateau
+
+### Réalisé
+- [x] diagnostic : barres réelles correctes, symboles S/R faux ;
+- [x] BeeGeckoAxisGeometry centralise projection, angle et symboles ;
+- [x] Q = ↖↘ / +60° ;
+- [x] R = ←→ / 0° ;
+- [x] S = ↙↗ / -60° ;
+- [x] légende mode dérivée de la géométrie ;
+- [x] popup du double-clic dérivée de la géométrie ;
+- [x] libellés du Prof dérivés de la géométrie ;
+- [x] tests unitaires de projection / symboles / Prof ;
+- [x] version préparée : 0.15.6-dev / versionCode 41 ;
+- [x] commit code : 8ccc0385c8314239976368811dab93808970e35a.
+
+### Reste
+- [ ] CI branche verte ;
+- [ ] APK téléphone ;
+- [ ] validation téléphone Fab des trois axes, y compris double-clic ;
+- [ ] vérifier absence de régression couleur + drag.
+
 ## GECKO-048 — prononciation Pierre + couleurs d’axes
 
 ### Réalisé

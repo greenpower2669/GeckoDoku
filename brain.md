@@ -8,9 +8,10 @@
 ## État de référence
 
 - Branche : gecko-039-sudoku-tap-gecko-gomoku
-- Version : 0.15.5-dev / versionCode 40
+- Version : 0.15.6-dev / versionCode 41
 - GECKO-047 : VALIDÉ FAB — grandes barres d’axes, drag/suppression hors plateau, Prof utilisant les axes, audio Android/Pierre capturable.
 - GECKO-048 : CODE + CI VERTE, validation téléphone encore attendue — prononciation Pierre et couleurs d’axes.
+- GECKO-049 : CODE INTÉGRÉ, CI à valider — géométrie canonique des axes Abeilles & Geckos et cohérence légende/double-clic/Prof.
 - Titre visible dans tous les modes : GeckoDoku 🦎.
 
 ## 1 — Contrat transversal
@@ -148,10 +149,12 @@ Pédagogie :
 
 ## 6 — Abeilles & Geckos
 
-Plateau hexagonal :
-- Q ↖↘
-- S ↑↓
-- R ↗↙
+Plateau hexagonal pointy-top, source canonique BeeGeckoAxisGeometry :
+- Q = +60° = ↖↘
+- S = -60° = ↙↗
+- R = 0° = ←→
+
+La légende, le double-clic Axe, la projection réelle et les libellés du Prof doivent tous dériver de cette même géométrie.
 
 Carte panoramique/zoomable et recentrable.
 
@@ -292,3 +295,19 @@ Présent dans le code et couvert par CI :
 
 Reste à Fab :
 validation téléphone de la prononciation, du rendu des couleurs, du drag/persistance et des non-régressions audio/axes.
+
+
+## 13 — Delta actif GECKO-049
+
+Cause confirmée sur téléphone :
+les barres Bee suivaient la bonne géométrie du plateau, mais les symboles UI hérités annonçaient S vertical et R diagonal.
+
+Correction commit 8ccc0385c8314239976368811dab93808970e35a :
+- BeeGeckoAxisGeometry centralise centre écran, angle et symbole ;
+- Q ↖↘ / +60°, S ↙↗ / -60°, R ←→ / 0° ;
+- MainActivity ne possède plus sa propre table Q/S/R ;
+- BeeGeckoRules.axisLabel utilise la même source pour le Prof ;
+- aucun changement de règles, solveur ou persistance.
+
+Reste :
+CI puis validation téléphone Fab, notamment la popup du double-clic.

@@ -2,9 +2,9 @@
 
 > Documentation vivante de l'application telle qu'elle existe au 28 septembre 2026.
 >
-> **Version applicative observée :** `0.15.5-dev` — `versionCode 40`  
+> **Version applicative observée :** `0.15.6-dev` — `versionCode 41`  
 > **Branche :** `gecko-039-sudoku-tap-gecko-gomoku`  
-> **Référence code fonctionnel :** `81675c42a1f73108daf2c64e667ea3088f847608`  
+> **Référence code fonctionnel :** `8ccc0385c8314239976368811dab93808970e35a`  
 > Cette documentation décrit le comportement présent. Elle peut évoluer avec le logiciel. Elle n'est ni un historique de debug ni un ordre de mission.
 
 ## 1. But général
@@ -218,11 +218,13 @@ Le raisonnement Gomoku peut exposer :
 
 ### Géométrie
 
-Le plateau est hexagonal et utilise les trois axes :
+Le plateau est hexagonal pointy-top et utilise les trois axes réels de l’écran :
 
-- **Q** ↖↘
-- **S** ↑↓
-- **R** ↗↙
+- **Q** = **+60°** = ↖↘
+- **S** = **-60°** = ↙↗
+- **R** = **0°** = ←→
+
+Ces orientations sont centralisées dans `BeeGeckoAxisGeometry`. La projection du plateau, la légende, la popup Axe du double-clic et les libellés du Prof utilisent cette même source afin qu’un axe annoncé corresponde toujours à la barre réellement dessinée.
 
 La carte peut être déplacée et zoomée. Les réglages offrent également **Recentrer la carte** et **Prochaine zone non résolue**.
 
@@ -515,3 +517,10 @@ Le code de la mission GECKO-048 contient actuellement :
 - persistance Bee schema 4.
 
 La validation finale sur téléphone de ces éléments reste distincte de leur présence dans le code.
+
+
+### Delta GECKO-049 — cohérence des axes hexagonaux
+
+La version 0.15.6-dev corrige un décalage purement géométrique d’affichage : les barres réelles étaient alignées sur les cellules, mais les symboles de S et R ne correspondaient pas aux angles du plateau pointy-top.
+
+La correction ne change ni les règles Abeilles & Geckos, ni le solveur, ni le format de session. Elle unifie uniquement la source géométrique utilisée par le rendu, l’interface et le Prof.
