@@ -1373,3 +1373,6 @@ Résultats : `GameMode.BEES_GECKOS` → stats mode+difficulté → étoiles → 
 `BeeGeckoGameEngine.markers` → `BeeGeckoSnapshot.markers` → `BeeGeckoBoardView.drawMarkers()`.
 `BeeGeckoSessionStore` sérialise les repères avec q/r + nom de `CustomMarker`.
 `SettingsEntry.NEXT_UNRESOLVED` centre la caméra sur la première pièce encore hors couple ; `RECENTER` reste le retour global.
+### Appui long hexagonal
+
+`BeeGeckoBoardView.scheduleLongPress()` annule désormais via `cancelPendingLongPress()` ; pas de collision avec l'API `View`.

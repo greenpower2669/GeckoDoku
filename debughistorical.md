@@ -1706,3 +1706,6 @@ Run `36362012284` : compilation réussie, 143 tests exécutés, 1 échec. Échec
 Run `36362173182` : tests + APK + AAB GREEN, artefact `GeckoDoku-v0.14.0-dev-Android` id `10945968074`, digest `sha256:939e07bbf12618095ce6c1e395a793271a8d4aaa8a429996028ba79a5027622a`.
 
 Après ce jalon, ajout des repères personnels sur appui long, persistance de ces repères, commande « Prochaine zone non résolue » et fallback G/B non dépendant de la couleur. Une nouvelle CI est requise avant validation.
+### CI #214 — erreur de nom Android
+
+Run `36362591311` : échec compilation Kotlin dans `BeeGeckoBoardView.kt:949` — le helper `cancelLongPress` masquait un membre de `View`. Correction : renommage en `cancelPendingLongPress()` sur tous les appels.

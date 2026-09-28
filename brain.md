@@ -2850,3 +2850,6 @@ Le premier run 0.14 a compilé les sources. Échec uniquement sur un invariant d
 ### GECKO-042 — passe navigation / repères
 
 Après CI #213 GREEN, le mode reçoit les repères personnels hexagonaux persistants et un accès discret à la prochaine pièce non appariée. Un appui long sur un hexagone ouvre la palette `CustomMarker`; les marqueurs sont stockés dans `BeeGeckoSnapshot` et `BeeGeckoSessionStore`. La carte distingue aussi Gecko/Abeille par lettre de secours G/B si un sprite manque, afin de ne pas dépendre uniquement de la couleur.
+### GECKO-042 — CI #214
+
+Le helper local de gestion d'appui long a été renommé `cancelPendingLongPress()` pour ne pas masquer `android.view.View.cancelLongPress()`. Aucun changement fonctionnel.

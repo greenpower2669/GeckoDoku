@@ -123,7 +123,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                         ScaleGestureDetector
                 ): Boolean {
                     scaledGesture = true
-                    cancelLongPress()
+                    cancelPendingLongPress()
                     return true
                 }
 
@@ -851,7 +851,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                         dragThreshold
                 ) {
                     dragging = true
-                    cancelLongPress()
+                    cancelPendingLongPress()
                 }
 
                 if (dragging) {
@@ -881,7 +881,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                         false
                     )
 
-                cancelLongPress()
+                cancelPendingLongPress()
 
                 if (
                     !dragging &&
@@ -909,7 +909,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     ?.requestDisallowInterceptTouchEvent(
                         false
                     )
-                cancelLongPress()
+                cancelPendingLongPress()
                 downCell = null
                 return true
             }
@@ -919,7 +919,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     }
 
     private fun scheduleLongPress() {
-        cancelLongPress()
+        cancelPendingLongPress()
 
         val cell =
             downCell
@@ -946,7 +946,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         )
     }
 
-    private fun cancelLongPress() {
+    private fun cancelPendingLongPress() {
         longPressRunnable
             ?.let {
                 removeCallbacks(it)

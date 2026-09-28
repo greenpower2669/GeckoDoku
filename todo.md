@@ -48,3 +48,6 @@
 - [x] navigation vers prochaine zone non résolue ajoutée ;
 - [ ] revalider ces ajouts sur la CI suivante ;
 - [ ] validation téléphone.
+- [x] CI #214 : diagnostiquer la collision `View.cancelLongPress()` ;
+- [x] renommer le helper en `cancelPendingLongPress()` ;
+- [ ] revalider sur CI suivante.
