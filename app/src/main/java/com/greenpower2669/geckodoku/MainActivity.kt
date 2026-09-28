@@ -2850,6 +2850,14 @@ class MainActivity : Activity() {
         }
 
         if (
+            ::gomokuBoard
+                .isInitialized
+        ) {
+            gomokuBoard
+                .clearProfessorReasoning()
+        }
+
+        if (
             ::professorButton.isInitialized
         ) {
             professorButton.text =
@@ -6672,7 +6680,7 @@ class MainActivity : Activity() {
         professorButton.text =
             "🧑‍🏫 Prof Gecko réfléchit…"
         status.text =
-            "Prof Gecko projette les suites possibles…"
+            "Prof Gecko réfléchit…"
 
         val difficulty =
             selectedDifficulty
@@ -6769,19 +6777,6 @@ class MainActivity : Activity() {
                                     selectedDifficulty
                                 )
 
-                        if (
-                            shouldCommentGomokuDecision(
-                                decision
-                            )
-                        ) {
-                            showProfessorBubble(
-                                GomokuProfessorPersona
-                                    .decorateDecision(
-                                        decision.reason,
-                                        selectedDifficulty
-                                    )
-                            )
-                        }
                     }
 
                     GomokuMoveResult.WIN -> {
@@ -6808,9 +6803,7 @@ class MainActivity : Activity() {
                         completeGomokuGame(
                             winner =
                                 GomokuPlayer
-                                    .PROFESSOR,
-                            professorReason =
-                                decision.reason
+                                    .PROFESSOR
                         )
                     }
 
@@ -6960,23 +6953,44 @@ class MainActivity : Activity() {
                         advisedPlayer
                     )
 
+                gomokuBoard
+                    .showProfessorReasoning(
+                        decision.reasoning
+                    )
+
                 val explanation =
-                    if (shouldApply) {
-                        "Pour toi, camp " +
-                            camp +
-                            " : " +
-                            decision.reason +
-                            "\n\nJe joue cette intersection pour toi."
-                    } else {
-                        "Conseil pour le camp " +
-                            camp +
-                            " : " +
-                            decision.reason +
-                            "\n\nIntersection conseillée : ligne " +
-                            (decision.cell.row + 1) +
-                            ", colonne " +
-                            (decision.cell.col + 1) +
-                            "."
+                    buildString {
+                        append(
+                            "Conseil pour le camp "
+                        )
+                        append(camp)
+                        append(
+                            " :\n\n"
+                        )
+                        append(
+                            decision.reason
+                        )
+                        append(
+                            "\n\nIntersection conseillée : ligne "
+                        )
+                        append(
+                            decision.cell.row +
+                                1
+                        )
+                        append(
+                            ", colonne "
+                        )
+                        append(
+                            decision.cell.col +
+                                1
+                        )
+                        append(".")
+
+                        if (shouldApply) {
+                            append(
+                                "\n\nJe joue maintenant cette intersection pour toi."
+                            )
+                        }
                     }
 
                 showProfessorBubble(
@@ -7065,29 +7079,6 @@ class MainActivity : Activity() {
                 refreshGomokuUi()
             }
         }.start()
-    }
-
-    private fun shouldCommentGomokuDecision(
-        decision: GomokuAiDecision
-    ): Boolean {
-        val text =
-            decision.reason
-                .lowercase(
-                    Locale.FRANCE
-                )
-
-        return text.contains(
-            "gagner"
-        ) ||
-            text.contains(
-                "bloqu"
-            ) ||
-            text.contains(
-                "piège"
-            ) ||
-            text.contains(
-                "quatre"
-            )
     }
 
     private fun completeGomokuGame(

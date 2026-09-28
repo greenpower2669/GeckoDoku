@@ -22,14 +22,16 @@ object GomokuAi {
     ): GomokuAiDecision? {
         if (
             snapshot.gameOver ||
-            snapshot.currentPlayer != player
+            snapshot.currentPlayer !=
+                player
         ) {
             return null
         }
 
         if (
             player ==
-                GomokuPlayer.PROFESSOR
+                GomokuPlayer
+                    .PROFESSOR
         ) {
             return chooseMove(
                 snapshot,
@@ -46,16 +48,21 @@ object GomokuAi {
                             value.other()
                         },
                 currentPlayer =
-                    GomokuPlayer.PROFESSOR,
+                    GomokuPlayer
+                        .PROFESSOR,
                 winner =
                     snapshot.winner
                         ?.other()
             )
 
-        return chooseMove(
-            swapped,
-            difficulty
-        )
+        val decision =
+            chooseMove(
+                swapped,
+                difficulty
+            )
+                ?: return null
+
+        return decision
     }
 
     fun chooseMove(
@@ -65,7 +72,8 @@ object GomokuAi {
         if (
             snapshot.gameOver ||
             snapshot.currentPlayer !=
-                GomokuPlayer.PROFESSOR
+                GomokuPlayer
+                    .PROFESSOR
         ) {
             return null
         }
@@ -85,29 +93,20 @@ object GomokuAi {
             return null
         }
 
-        candidates
-            .filter {
-                GomokuWinDetector
-                    .wouldWin(
-                        snapshot,
-                        it,
-                        GomokuPlayer
-                            .PROFESSOR
-                    )
-            }
-            .sortedWith(
-                cellComparator()
-            )
-            .firstOrNull()
-            ?.let {
-                return GomokuAiDecision(
-                    cell = it,
-                    reason =
-                        "Ce coup permet de gagner tout de suite en complétant cette ligne.",
-                    score =
-                        WIN_SCORE
+        val immediateWins =
+            candidates
+                .filter {
+                    GomokuWinDetector
+                        .wouldWin(
+                            snapshot,
+                            it,
+                            GomokuPlayer
+                                .PROFESSOR
+                        )
+                }
+                .sortedWith(
+                    cellComparator()
                 )
-            }
 
         val forcedBlocks =
             candidates
@@ -125,7 +124,8 @@ object GomokuAi {
                         staticMoveScore(
                             snapshot,
                             it,
-                            GomokuPlayer.PROFESSOR,
+                            GomokuPlayer
+                                .PROFESSOR,
                             profile
                         )
                     }.then(
@@ -133,19 +133,87 @@ object GomokuAi {
                     )
                 )
 
-        forcedBlocks
-            .firstOrNull()
-            ?.let {
-                return GomokuAiDecision(
-                    cell = it,
-                    reason =
-                        "Ce coup bloque une victoire adverse au prochain tour.",
-                    score =
-                        WIN_SCORE / 2
-                )
+        val seesWin =
+            seesTactic(
+                snapshot =
+                    snapshot,
+                profile =
+                    profile,
+                salt = 11
+            )
+
+        val seesBlock =
+            seesTactic(
+                snapshot =
+                    snapshot,
+                profile =
+                    profile,
+                salt = 29
+            )
+
+        if (
+            seesWin &&
+            immediateWins
+                .isNotEmpty()
+        ) {
+            val chosen =
+                immediateWins.first()
+
+            return decisionFor(
+                snapshot =
+                    snapshot,
+                chosen =
+                    chosen,
+                score =
+                    WIN_SCORE,
+                profile =
+                    profile,
+                forcedKind =
+                    GomokuReasonKind
+                        .WIN
+            )
+        }
+
+        if (
+            seesBlock &&
+            forcedBlocks
+                .isNotEmpty()
+        ) {
+            val chosen =
+                forcedBlocks.first()
+
+            return decisionFor(
+                snapshot =
+                    snapshot,
+                chosen =
+                    chosen,
+                score =
+                    WIN_SCORE /
+                        2,
+                profile =
+                    profile,
+                forcedKind =
+                    GomokuReasonKind
+                        .DEFENSE
+            )
+        }
+
+        val temporarilyUnseen =
+            buildSet {
+                if (!seesWin) {
+                    addAll(
+                        immediateWins
+                    )
+                }
+
+                if (!seesBlock) {
+                    addAll(
+                        forcedBlocks
+                    )
+                }
             }
 
-        val ordered =
+        val scored =
             candidates
                 .map {
                     cell ->
@@ -153,12 +221,15 @@ object GomokuAi {
                         staticMoveScore(
                             snapshot,
                             cell,
-                            GomokuPlayer.PROFESSOR,
+                            GomokuPlayer
+                                .PROFESSOR,
                             profile
                         )
                 }
                 .sortedWith(
-                    compareByDescending<Pair<Cell, Int>> {
+                    compareByDescending<
+                        Pair<Cell, Int>
+                        > {
                         it.second
                     }.thenBy {
                         it.first.row
@@ -166,36 +237,66 @@ object GomokuAi {
                         it.first.col
                     }
                 )
+
+        val visibleScored =
+            if (
+                temporarilyUnseen
+                    .isNotEmpty()
+            ) {
+                val filtered =
+                    scored.filter {
+                        it.first !in
+                            temporarilyUnseen
+                    }
+
+                if (filtered.isNotEmpty()) {
+                    filtered
+                } else {
+                    scored
+                }
+            } else {
+                scored
+            }
+
+        val ordered =
+            visibleScored
                 .take(
                     profile.beamWidth
                 )
 
-        var bestCell:
-            Cell? = null
+        val evaluated =
+            mutableListOf<
+                Pair<Cell, Int>
+                >()
 
-        var bestScore =
-            Int.MIN_VALUE
-
-        for ((cell, staticScore) in ordered) {
+        for (
+            (cell, staticScore) in
+            ordered
+        ) {
             val next =
                 place(
                     snapshot,
                     cell,
-                    GomokuPlayer.PROFESSOR
+                    GomokuPlayer
+                        .PROFESSOR
                 )
 
             val future =
                 if (
-                    profile.searchDepth <= 1
+                    profile.searchDepth <=
+                        1
                 ) {
                     0
                 } else {
                     minimax(
-                        snapshot = next,
+                        snapshot =
+                            next,
                         player =
-                            GomokuPlayer.PLAYER,
+                            GomokuPlayer
+                                .PLAYER,
                         depth =
-                            profile.searchDepth -
+                            profile
+                                .searchDepth -
                                 1,
                         alpha =
                             -WIN_SCORE,
@@ -206,64 +307,470 @@ object GomokuAi {
                     )
                 }
 
-            val score =
-                staticScore +
-                    future
-
-            if (
-                score > bestScore ||
-                (
-                    score == bestScore &&
+            evaluated.add(
+                cell to
                     (
-                        bestCell == null ||
-                            cellComparator()
-                                .compare(
-                                    cell,
-                                    bestCell
-                                ) < 0
+                        staticScore +
+                            future
                         )
-                    )
-            ) {
-                bestScore = score
-                bestCell = cell
-            }
+            )
         }
 
+        val ranked =
+            evaluated
+                .sortedWith(
+                    compareByDescending<
+                        Pair<Cell, Int>
+                        > {
+                        it.second
+                    }.thenBy {
+                        it.first.row
+                    }.thenBy {
+                        it.first.col
+                    }
+                )
+
+        if (ranked.isEmpty()) {
+            return null
+        }
+
+        val rank =
+            deterministicChoiceRank(
+                snapshot =
+                    snapshot,
+                window =
+                    profile
+                        .choiceWindow,
+                available =
+                    ranked.size
+            )
+
         val chosen =
-            bestCell
-                ?: return null
+            ranked[rank]
+
+        return decisionFor(
+            snapshot =
+                snapshot,
+            chosen =
+                chosen.first,
+            score =
+                chosen.second,
+            profile =
+                profile,
+            forcedKind =
+                null
+        )
+    }
+
+    private fun decisionFor(
+        snapshot: GomokuSnapshot,
+        chosen: Cell,
+        score: Int,
+        profile:
+            GomokuDifficultyProfile,
+        forcedKind:
+            GomokuReasonKind?
+    ): GomokuAiDecision {
+        val reasoning =
+            buildReasoning(
+                snapshot =
+                    snapshot,
+                chosen =
+                    chosen,
+                profile =
+                    profile,
+                forcedKind =
+                    forcedKind
+            )
+
+        return GomokuAiDecision(
+            cell =
+                chosen,
+            reason =
+                reasoning.steps
+                    .joinToString(
+                        separator =
+                            "\n\n"
+                    ),
+            score =
+                score,
+            reasoning =
+                reasoning
+        )
+    }
+
+    private fun buildReasoning(
+        snapshot: GomokuSnapshot,
+        chosen: Cell,
+        profile:
+            GomokuDifficultyProfile,
+        forcedKind:
+            GomokuReasonKind?
+    ): GomokuReasoningTrace {
+        val own =
+            strongestLine(
+                snapshot =
+                    snapshot,
+                cell =
+                    chosen,
+                player =
+                    GomokuPlayer
+                        .PROFESSOR
+            )
+
+        val opponent =
+            strongestLine(
+                snapshot =
+                    snapshot,
+                cell =
+                    chosen,
+                player =
+                    GomokuPlayer
+                        .PLAYER
+            )
 
         val threats =
             threatCountAfter(
-                snapshot,
-                chosen,
-                GomokuPlayer.PROFESSOR
+                snapshot =
+                    snapshot,
+                cell =
+                    chosen,
+                player =
+                    GomokuPlayer
+                        .PROFESSOR
             )
 
-        val reason =
-            when {
-                profile.trapAware &&
-                    threats >= 2 ->
-                    "Ce coup prépare un piège en créant plusieurs menaces à surveiller."
+        val kind =
+            forcedKind
+                ?: when {
+                    opponent.length >= 4 &&
+                        opponent.length >
+                            own.length ->
+                        GomokuReasonKind
+                            .DEFENSE
 
-                profile.searchDepth >= 3 ->
-                    "Ce coup prépare la suite sur plusieurs coups plutôt que de répondre seulement au dernier."
+                    profile.trapAware &&
+                        threats >= 2 ->
+                        GomokuReasonKind
+                            .TRAP
 
-                linePotential(
-                    snapshot,
-                    chosen,
-                    GomokuPlayer.PROFESSOR
-                ) >= 4 ->
-                    "Ce coup construit une ligne de quatre qui force une réaction."
+                    own.length >= 3 ->
+                        GomokuReasonKind
+                            .ATTACK
 
-                else ->
-                    "Ce coup renforce une zone active tout en gardant plusieurs suites possibles."
+                    else ->
+                        GomokuReasonKind
+                            .POSITIONAL
+                }
+
+        val relevant =
+            if (
+                kind ==
+                    GomokuReasonKind
+                        .DEFENSE
+            ) {
+                opponent
+            } else {
+                own
             }
 
-        return GomokuAiDecision(
-            cell = chosen,
-            reason = reason,
-            score = bestScore
+        val steps =
+            mutableListOf<String>()
+
+        when (kind) {
+            GomokuReasonKind.WIN -> {
+                steps.add(
+                    "Je regarde " +
+                        relevant.label +
+                        ". J'ai déjà " +
+                        (relevant.length - 1)
+                            .coerceAtLeast(1) +
+                        " Gecko(s) alignés autour de " +
+                        coord(chosen) +
+                        ". En jouant ici, la ligne atteint cinq : c'est une victoire immédiate."
+                )
+            }
+
+            GomokuReasonKind.DEFENSE -> {
+                steps.add(
+                    "Je regarde " +
+                        opponent.label +
+                        ". Tu as " +
+                        (opponent.length - 1)
+                            .coerceAtLeast(1) +
+                        " Gecko(s) qui convergent vers " +
+                        coord(chosen) +
+                        "."
+                )
+
+                steps.add(
+                    "Si je laisse cette intersection libre, ta ligne peut devenir une menace directe. Je bloque donc " +
+                        coord(chosen) +
+                        "."
+                )
+
+                if (
+                    opponent.openEnds
+                        .isNotEmpty()
+                ) {
+                    steps.add(
+                        "Les extrémités encore ouvertes de cette ligne sont " +
+                            opponent.openEnds
+                                .joinToString {
+                                    coord(it)
+                                } +
+                            ". Ce sont elles que je surveille."
+                    )
+                }
+            }
+
+            GomokuReasonKind.TRAP -> {
+                steps.add(
+                    "Je joue " +
+                        coord(chosen) +
+                        " parce que cette intersection agit sur plusieurs directions à la fois."
+                )
+
+                steps.add(
+                    "Après ce coup, je crée " +
+                        threats +
+                        " menaces actives. Si tu réponds à une seule, l'autre peut rester ouverte."
+                )
+            }
+
+            GomokuReasonKind.ATTACK -> {
+                steps.add(
+                    "Je prolonge " +
+                        own.label +
+                        " en " +
+                        coord(chosen) +
+                        ". Cette ligne atteindra " +
+                        own.length +
+                        " Gecko(s) avec " +
+                        own.openEnds.size +
+                        " extrémité(s) encore ouverte(s)."
+                )
+            }
+
+            GomokuReasonKind.POSITIONAL -> {
+                steps.add(
+                    "Il n'y a pas encore de combinaison forcée. Je choisis " +
+                        coord(chosen) +
+                        " parce que cette intersection garde plusieurs directions actives sans fermer ma propre construction."
+                )
+            }
+        }
+
+        val projection =
+            projectionSequence(
+                snapshot =
+                    snapshot,
+                first =
+                    chosen,
+                profile =
+                    profile
+            )
+
+        projection
+            .forEachIndexed {
+                index,
+                cell ->
+
+                val actor =
+                    if (
+                        index % 2 ==
+                            0
+                    ) {
+                        "Ta réponse plausible"
+                    } else {
+                        "Ma suite prévue"
+                    }
+
+                steps.add(
+                    actor +
+                        " : " +
+                        coord(cell) +
+                        "."
+                )
+            }
+
+        return GomokuReasoningTrace(
+            kind =
+                kind,
+            focusCell =
+                chosen,
+            lineCells =
+                relevant.cells,
+            threatCells =
+                relevant.openEnds,
+            projectedCells =
+                projection,
+            steps =
+                steps
+        )
+    }
+
+    private fun projectionSequence(
+        snapshot: GomokuSnapshot,
+        first: Cell,
+        profile:
+            GomokuDifficultyProfile
+    ): List<Cell> {
+        val remaining =
+            (
+                profile
+                    .explanationHorizon -
+                    1
+                )
+                .coerceAtLeast(0)
+
+        if (remaining == 0) {
+            return emptyList()
+        }
+
+        var state =
+            place(
+                snapshot,
+                first,
+                GomokuPlayer
+                    .PROFESSOR
+            )
+
+        var player =
+            GomokuPlayer.PLAYER
+
+        val result =
+            mutableListOf<Cell>()
+
+        repeat(remaining) {
+            val next =
+                candidateMoves(
+                    state,
+                    profile
+                        .neighborhoodRadius
+                )
+                    .maxWithOrNull(
+                        compareBy<Cell> {
+                            staticMoveScore(
+                                state,
+                                it,
+                                player,
+                                profile
+                            )
+                        }.thenByDescending {
+                            -it.row
+                        }.thenByDescending {
+                            -it.col
+                        }
+                    )
+                    ?: return@repeat
+
+            result.add(next)
+
+            state =
+                place(
+                    state,
+                    next,
+                    player
+                )
+
+            player =
+                player.other()
+        }
+
+        return result
+    }
+
+    private fun seesTactic(
+        snapshot: GomokuSnapshot,
+        profile:
+            GomokuDifficultyProfile,
+        salt: Int
+    ): Boolean {
+        if (
+            profile
+                .tacticalReliabilityPercent >=
+                100
+        ) {
+            return true
+        }
+
+        val signature =
+            snapshot.stones
+                .entries
+                .fold(
+                    snapshot.moveCount *
+                        37 +
+                        salt *
+                            17
+                ) {
+                    acc,
+                    entry ->
+
+                    acc +
+                        entry.key.row *
+                            11 +
+                        entry.key.col *
+                            7 +
+                        if (
+                            entry.value ==
+                                GomokuPlayer
+                                    .PROFESSOR
+                        ) {
+                            3
+                        } else {
+                            5
+                        }
+                }
+
+        val roll =
+            Math.floorMod(
+                signature,
+                100
+            )
+
+        return roll <
+            profile
+                .tacticalReliabilityPercent
+    }
+
+    private fun deterministicChoiceRank(
+        snapshot: GomokuSnapshot,
+        window: Int,
+        available: Int
+    ): Int {
+        val effective =
+            minOf(
+                window
+                    .coerceAtLeast(1),
+                available
+            )
+
+        if (effective <= 1) {
+            return 0
+        }
+
+        val signature =
+            snapshot.stones
+                .entries
+                .fold(
+                    snapshot.moveCount *
+                        19 +
+                        7
+                ) {
+                    acc,
+                    entry ->
+
+                    acc +
+                        entry.key.row *
+                            5 +
+                        entry.key.col *
+                            13
+                }
+
+        return Math.floorMod(
+            signature,
+            effective
         )
     }
 
@@ -273,7 +780,8 @@ object GomokuAi {
         depth: Int,
         alpha: Int,
         beta: Int,
-        profile: GomokuDifficultyProfile
+        profile:
+            GomokuDifficultyProfile
     ): Int {
         if (depth <= 0) {
             return evaluate(
@@ -298,7 +806,9 @@ object GomokuAi {
                         )
                 }
                 .sortedWith(
-                    compareByDescending<Pair<Cell, Int>> {
+                    compareByDescending<
+                        Pair<Cell, Int>
+                        > {
                         it.second
                     }.thenBy {
                         it.first.row
@@ -329,7 +839,8 @@ object GomokuAi {
 
         if (
             player ==
-                GomokuPlayer.PROFESSOR
+                GomokuPlayer
+                    .PROFESSOR
         ) {
             var best =
                 -WIN_SCORE
@@ -369,9 +880,15 @@ object GomokuAi {
                     )
 
                 best =
-                    max(best, score)
+                    max(
+                        best,
+                        score
+                    )
                 a =
-                    max(a, best)
+                    max(
+                        a,
+                        best
+                    )
 
                 if (b <= a) {
                     break
@@ -482,8 +999,9 @@ object GomokuAi {
         return professorBest -
             (
                 playerBest *
-                    11 /
-                    10
+                    profile
+                        .defenseWeightPercent /
+                    100
                 )
     }
 
@@ -495,7 +1013,8 @@ object GomokuAi {
             GomokuDifficultyProfile
     ): Int {
         if (!snapshot.isFree(cell)) {
-            return Int.MIN_VALUE / 4
+            return Int.MIN_VALUE /
+                4
         }
 
         if (
@@ -524,7 +1043,10 @@ object GomokuAi {
                 snapshot,
                 cell,
                 opponent
-            ) * 9 / 10
+            ) *
+                profile
+                    .defenseWeightPercent /
+                100
 
         val trapBonus =
             if (profile.trapAware) {
@@ -542,21 +1064,32 @@ object GomokuAi {
                     threats == 2 ->
                         75_000
 
-                    else -> 0
+                    else ->
+                        0
                 }
             } else {
                 0
             }
 
         val center =
-            (snapshot.size - 1) /
+            (
+                snapshot.size -
+                    1
+                ) /
                 2f
 
         val centerPenalty =
             (
-                abs(cell.row - center) +
-                    abs(cell.col - center)
-                ).toInt() *
+                abs(
+                    cell.row -
+                        center
+                ) +
+                    abs(
+                        cell.col -
+                            center
+                    )
+                )
+                .toInt() *
                 2
 
         return ownPotential +
@@ -588,21 +1121,24 @@ object GomokuAi {
                         WIN_SCORE
 
                     pattern.length == 4 &&
-                        pattern.openEnds == 2 ->
+                        pattern.openEnds ==
+                            2 ->
                         160_000
 
                     pattern.length == 4 ->
                         80_000
 
                     pattern.length == 3 &&
-                        pattern.openEnds == 2 ->
+                        pattern.openEnds ==
+                            2 ->
                         28_000
 
                     pattern.length == 3 ->
                         9_000
 
                     pattern.length == 2 &&
-                        pattern.openEnds == 2 ->
+                        pattern.openEnds ==
+                            2 ->
                         2_500
 
                     pattern.length == 2 ->
@@ -616,22 +1152,6 @@ object GomokuAi {
 
         return total
     }
-
-    private fun linePotential(
-        snapshot: GomokuSnapshot,
-        cell: Cell,
-        player: GomokuPlayer
-    ): Int =
-        directions
-            .maxOf {
-                linePattern(
-                    snapshot,
-                    cell,
-                    player,
-                    it[0],
-                    it[1]
-                ).length
-            }
 
     private fun threatCountAfter(
         snapshot: GomokuSnapshot,
@@ -653,7 +1173,8 @@ object GomokuAi {
                 )
 
             pattern.length >= 3 &&
-                pattern.openEnds >= 1
+                pattern.openEnds >=
+                    1
         }
     }
 
@@ -662,6 +1183,191 @@ object GomokuAi {
         val openEnds: Int
     )
 
+    private data class LineAnalysis(
+        val label: String,
+        val length: Int,
+        val cells: List<Cell>,
+        val openEnds: List<Cell>
+    )
+
+    private fun strongestLine(
+        snapshot: GomokuSnapshot,
+        cell: Cell,
+        player: GomokuPlayer
+    ): LineAnalysis =
+        directions
+            .map {
+                direction ->
+                lineAnalysis(
+                    snapshot =
+                        snapshot,
+                    cell =
+                        cell,
+                    player =
+                        player,
+                    dr =
+                        direction[0],
+                    dc =
+                        direction[1]
+                )
+            }
+            .maxWithOrNull(
+                compareBy<
+                    LineAnalysis
+                    > {
+                    it.length
+                }.thenBy {
+                    it.openEnds
+                        .size
+                }
+            )
+            ?: LineAnalysis(
+                label =
+                    "cette zone",
+                length = 1,
+                cells =
+                    listOf(cell),
+                openEnds =
+                    emptyList()
+            )
+
+    private fun lineAnalysis(
+        snapshot: GomokuSnapshot,
+        cell: Cell,
+        player: GomokuPlayer,
+        dr: Int,
+        dc: Int
+    ): LineAnalysis {
+        val before =
+            mutableListOf<Cell>()
+
+        var row =
+            cell.row - dr
+        var col =
+            cell.col - dc
+
+        while (
+            row in
+                0 until snapshot.size &&
+            col in
+                0 until snapshot.size &&
+            snapshot.stones[
+                Cell(
+                    row,
+                    col
+                )
+            ] ==
+                player
+        ) {
+            before.add(
+                Cell(
+                    row,
+                    col
+                )
+            )
+            row -= dr
+            col -= dc
+        }
+
+        val openBefore =
+            if (
+                row in
+                    0 until snapshot.size &&
+                col in
+                    0 until snapshot.size &&
+                snapshot.stones[
+                    Cell(
+                        row,
+                        col
+                    )
+                ] ==
+                    null
+            ) {
+                Cell(
+                    row,
+                    col
+                )
+            } else {
+                null
+            }
+
+        val after =
+            mutableListOf<Cell>()
+
+        row =
+            cell.row + dr
+        col =
+            cell.col + dc
+
+        while (
+            row in
+                0 until snapshot.size &&
+            col in
+                0 until snapshot.size &&
+            snapshot.stones[
+                Cell(
+                    row,
+                    col
+                )
+            ] ==
+                player
+        ) {
+            after.add(
+                Cell(
+                    row,
+                    col
+                )
+            )
+            row += dr
+            col += dc
+        }
+
+        val openAfter =
+            if (
+                row in
+                    0 until snapshot.size &&
+                col in
+                    0 until snapshot.size &&
+                snapshot.stones[
+                    Cell(
+                        row,
+                        col
+                    )
+                ] ==
+                    null
+            ) {
+                Cell(
+                    row,
+                    col
+                )
+            } else {
+                null
+            }
+
+        val cells =
+            before
+                .asReversed() +
+                cell +
+                after
+
+        return LineAnalysis(
+            label =
+                directionLabel(
+                    dr,
+                    dc
+                ),
+            length =
+                cells.size,
+            cells =
+                cells,
+            openEnds =
+                listOfNotNull(
+                    openBefore,
+                    openAfter
+                )
+        )
+    }
+
     private fun linePattern(
         snapshot: GomokuSnapshot,
         cell: Cell,
@@ -669,69 +1375,55 @@ object GomokuAi {
         dr: Int,
         dc: Int
     ): LinePattern {
-        var length = 1
-        var openEnds = 0
-
-        var row =
-            cell.row + dr
-
-        var col =
-            cell.col + dc
-
-        while (
-            row in 0 until snapshot.size &&
-            col in 0 until snapshot.size &&
-            snapshot.stones[
-                Cell(row, col)
-            ] == player
-        ) {
-            length += 1
-            row += dr
-            col += dc
-        }
-
-        if (
-            row in 0 until snapshot.size &&
-            col in 0 until snapshot.size &&
-            snapshot.stones[
-                Cell(row, col)
-            ] == null
-        ) {
-            openEnds += 1
-        }
-
-        row =
-            cell.row - dr
-        col =
-            cell.col - dc
-
-        while (
-            row in 0 until snapshot.size &&
-            col in 0 until snapshot.size &&
-            snapshot.stones[
-                Cell(row, col)
-            ] == player
-        ) {
-            length += 1
-            row -= dr
-            col -= dc
-        }
-
-        if (
-            row in 0 until snapshot.size &&
-            col in 0 until snapshot.size &&
-            snapshot.stones[
-                Cell(row, col)
-            ] == null
-        ) {
-            openEnds += 1
-        }
+        val analysis =
+            lineAnalysis(
+                snapshot =
+                    snapshot,
+                cell =
+                    cell,
+                player =
+                    player,
+                dr =
+                    dr,
+                dc =
+                    dc
+            )
 
         return LinePattern(
-            length = length,
-            openEnds = openEnds
+            length =
+                analysis.length,
+            openEnds =
+                analysis
+                    .openEnds
+                    .size
         )
     }
+
+    private fun directionLabel(
+        dr: Int,
+        dc: Int
+    ): String =
+        when {
+            dr == 0 ->
+                "la ligne horizontale"
+
+            dc == 0 ->
+                "la ligne verticale"
+
+            dr == dc ->
+                "la diagonale descendante"
+
+            else ->
+                "la diagonale montante"
+        }
+
+    private fun coord(
+        cell: Cell
+    ): String =
+        "ligne " +
+            (cell.row + 1) +
+            ", colonne " +
+            (cell.col + 1)
 
     private fun candidateMoves(
         snapshot: GomokuSnapshot,
@@ -739,10 +1431,14 @@ object GomokuAi {
     ): List<Cell> {
         if (snapshot.stones.isEmpty()) {
             val center =
-                snapshot.size / 2
+                snapshot.size /
+                    2
 
             return listOf(
-                Cell(center, center)
+                Cell(
+                    center,
+                    center
+                )
             )
         }
 
@@ -750,8 +1446,14 @@ object GomokuAi {
             linkedSetOf<Cell>()
 
         for (stone in snapshot.stones.keys) {
-            for (dr in -radius..radius) {
-                for (dc in -radius..radius) {
+            for (
+                dr in
+                -radius..radius
+            ) {
+                for (
+                    dc in
+                    -radius..radius
+                ) {
                     if (
                         dr == 0 &&
                         dc == 0
@@ -760,28 +1462,39 @@ object GomokuAi {
                     }
 
                     val row =
-                        stone.row + dr
+                        stone.row +
+                            dr
 
                     val col =
-                        stone.col + dc
+                        stone.col +
+                            dc
 
                     if (
-                        row !in 0 until
-                            snapshot.size ||
-                        col !in 0 until
-                            snapshot.size
+                        row !in
+                            0 until
+                                snapshot.size ||
+                        col !in
+                            0 until
+                                snapshot.size
                     ) {
                         continue
                     }
 
                     val cell =
-                        Cell(row, col)
+                        Cell(
+                            row,
+                            col
+                        )
 
                     if (
                         !snapshot.stones
-                            .containsKey(cell)
+                            .containsKey(
+                                cell
+                            )
                     ) {
-                        result.add(cell)
+                        result.add(
+                            cell
+                        )
                     }
                 }
             }
@@ -801,7 +1514,10 @@ object GomokuAi {
         snapshot.copy(
             stones =
                 snapshot.stones +
-                    (cell to player),
+                    (
+                        cell to
+                            player
+                        ),
             currentPlayer =
                 player.other()
         )

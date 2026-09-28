@@ -85,10 +85,47 @@ class GomokuSnapshotBuilder(
         )
 }
 
+enum class GomokuReasonKind {
+    WIN,
+    DEFENSE,
+    ATTACK,
+    TRAP,
+    POSITIONAL
+}
+
+data class GomokuReasoningTrace(
+    val kind:
+        GomokuReasonKind,
+    val focusCell: Cell,
+    val lineCells:
+        List<Cell> =
+        emptyList(),
+    val threatCells:
+        List<Cell> =
+        emptyList(),
+    val projectedCells:
+        List<Cell> =
+        emptyList(),
+    val steps:
+        List<String> =
+        emptyList()
+)
+
 data class GomokuAiDecision(
     val cell: Cell,
     val reason: String,
-    val score: Int
+    val score: Int,
+    val reasoning:
+        GomokuReasoningTrace =
+        GomokuReasoningTrace(
+            kind =
+                GomokuReasonKind
+                    .POSITIONAL,
+            focusCell =
+                cell,
+            steps =
+                listOf(reason)
+        )
 )
 
 data class GomokuDifficultyProfile(
@@ -96,7 +133,10 @@ data class GomokuDifficultyProfile(
     val beamWidth: Int,
     val trapAware: Boolean,
     val neighborhoodRadius: Int,
-    val explanationHorizon: Int
+    val explanationHorizon: Int,
+    val tacticalReliabilityPercent: Int,
+    val choiceWindow: Int,
+    val defenseWeightPercent: Int
 )
 
 object GomokuDifficultyPolicy {
@@ -110,7 +150,10 @@ object GomokuDifficultyPolicy {
                     beamWidth = 5,
                     trapAware = false,
                     neighborhoodRadius = 1,
-                    explanationHorizon = 1
+                    explanationHorizon = 1,
+                    tacticalReliabilityPercent = 35,
+                    choiceWindow = 4,
+                    defenseWeightPercent = 65
                 )
 
             GameDifficulty.EASY ->
@@ -119,7 +162,10 @@ object GomokuDifficultyPolicy {
                     beamWidth = 6,
                     trapAware = false,
                     neighborhoodRadius = 2,
-                    explanationHorizon = 1
+                    explanationHorizon = 1,
+                    tacticalReliabilityPercent = 60,
+                    choiceWindow = 3,
+                    defenseWeightPercent = 78
                 )
 
             GameDifficulty.THINKING ->
@@ -128,7 +174,10 @@ object GomokuDifficultyPolicy {
                     beamWidth = 7,
                     trapAware = false,
                     neighborhoodRadius = 2,
-                    explanationHorizon = 2
+                    explanationHorizon = 2,
+                    tacticalReliabilityPercent = 82,
+                    choiceWindow = 2,
+                    defenseWeightPercent = 92
                 )
 
             GameDifficulty.HARD ->
@@ -137,7 +186,10 @@ object GomokuDifficultyPolicy {
                     beamWidth = 8,
                     trapAware = true,
                     neighborhoodRadius = 2,
-                    explanationHorizon = 2
+                    explanationHorizon = 2,
+                    tacticalReliabilityPercent = 100,
+                    choiceWindow = 1,
+                    defenseWeightPercent = 100
                 )
 
             GameDifficulty.EXPERT ->
@@ -146,7 +198,10 @@ object GomokuDifficultyPolicy {
                     beamWidth = 8,
                     trapAware = true,
                     neighborhoodRadius = 2,
-                    explanationHorizon = 3
+                    explanationHorizon = 3,
+                    tacticalReliabilityPercent = 100,
+                    choiceWindow = 1,
+                    defenseWeightPercent = 105
                 )
 
             GameDifficulty.DEMENTIAL ->
@@ -155,7 +210,10 @@ object GomokuDifficultyPolicy {
                     beamWidth = 10,
                     trapAware = true,
                     neighborhoodRadius = 2,
-                    explanationHorizon = 4
+                    explanationHorizon = 4,
+                    tacticalReliabilityPercent = 100,
+                    choiceWindow = 1,
+                    defenseWeightPercent = 108
                 )
 
             GameDifficulty.MISSION_IMPOSSIBLE ->
@@ -164,7 +222,10 @@ object GomokuDifficultyPolicy {
                     beamWidth = 9,
                     trapAware = true,
                     neighborhoodRadius = 2,
-                    explanationHorizon = 5
+                    explanationHorizon = 5,
+                    tacticalReliabilityPercent = 100,
+                    choiceWindow = 1,
+                    defenseWeightPercent = 112
                 )
 
             GameDifficulty.INFERNAL ->
@@ -173,7 +234,10 @@ object GomokuDifficultyPolicy {
                     beamWidth = 11,
                     trapAware = true,
                     neighborhoodRadius = 2,
-                    explanationHorizon = 6
+                    explanationHorizon = 6,
+                    tacticalReliabilityPercent = 100,
+                    choiceWindow = 1,
+                    defenseWeightPercent = 115
                 )
         }
 }

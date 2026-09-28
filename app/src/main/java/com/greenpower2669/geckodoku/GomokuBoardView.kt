@@ -100,6 +100,9 @@ class GomokuBoardView @JvmOverloads constructor(
     private val mediaSuppressedCells =
         linkedSetOf<Cell>()
 
+    private var professorReasoning:
+        GomokuReasoningTrace? = null
+
     private val scaleDetector =
         ScaleGestureDetector(
             context,
@@ -200,6 +203,7 @@ class GomokuBoardView @JvmOverloads constructor(
         animatedCell = null
         animatedPlayer = null
         mediaSuppressedCells.clear()
+        professorReasoning = null
 
         invalidate()
     }
@@ -220,6 +224,39 @@ class GomokuBoardView @JvmOverloads constructor(
         onViewportChanged
             ?.invoke(viewport)
 
+        invalidate()
+    }
+
+    fun showProfessorReasoning(
+        reasoning:
+            GomokuReasoningTrace
+    ) {
+        professorReasoning =
+            reasoning
+
+        if (
+            cellRectLocal(
+                reasoning.focusCell
+            ) == null
+        ) {
+            centerOn(
+                reasoning.focusCell
+            )
+        }
+
+        invalidate()
+    }
+
+    fun clearProfessorReasoning() {
+        if (
+            professorReasoning ==
+                null
+        ) {
+            return
+        }
+
+        professorReasoning =
+            null
         invalidate()
     }
 
@@ -522,6 +559,9 @@ class GomokuBoardView @JvmOverloads constructor(
             canvas,
             snapshot
         )
+        drawProfessorReasoning(
+            canvas
+        )
         drawWinningLine(
             canvas,
             snapshot
@@ -737,6 +777,202 @@ class GomokuBoardView @JvmOverloads constructor(
                     entry.value
             )
         }
+    }
+
+    private fun drawProfessorReasoning(
+        canvas: Canvas
+    ) {
+        val reasoning =
+            professorReasoning
+                ?: return
+
+        val lineRects =
+            reasoning.lineCells
+                .mapNotNull {
+                    cell ->
+                    cellRectLocal(
+                        cell
+                    )
+                        ?.let {
+                            cell to
+                                it
+                        }
+                }
+
+        if (lineRects.size >= 2) {
+            paint.style =
+                Paint.Style.STROKE
+            paint.strokeCap =
+                Paint.Cap.ROUND
+            paint.strokeWidth =
+                dp(4f)
+            paint.color =
+                Color.rgb(
+                    45,
+                    105,
+                    190
+                )
+
+            val first =
+                lineRects.first()
+                    .second
+
+            val last =
+                lineRects.last()
+                    .second
+
+            canvas.drawLine(
+                first.centerX(),
+                first.centerY(),
+                last.centerX(),
+                last.centerY(),
+                paint
+            )
+        }
+
+        reasoning.lineCells
+            .forEach {
+                cell ->
+                val rect =
+                    cellRectLocal(
+                        cell
+                    )
+                        ?: return@forEach
+
+                paint.style =
+                    Paint.Style.STROKE
+                paint.strokeWidth =
+                    dp(2.8f)
+                paint.color =
+                    Color.rgb(
+                        45,
+                        105,
+                        190
+                    )
+
+                canvas.drawOval(
+                    RectF(rect).apply {
+                        inset(
+                            rect.width() *
+                                .18f,
+                            rect.height() *
+                                .18f
+                        )
+                    },
+                    paint
+                )
+            }
+
+        reasoning.threatCells
+            .forEach {
+                cell ->
+                val rect =
+                    cellRectLocal(
+                        cell
+                    )
+                        ?: return@forEach
+
+                paint.style =
+                    Paint.Style.STROKE
+                paint.strokeWidth =
+                    dp(4f)
+                paint.color =
+                    Color.rgb(
+                        190,
+                        45,
+                        45
+                    )
+
+                canvas.drawRoundRect(
+                    RectF(rect).apply {
+                        inset(
+                            rect.width() *
+                                .16f,
+                            rect.height() *
+                                .16f
+                        )
+                    },
+                    dp(7f),
+                    dp(7f),
+                    paint
+                )
+            }
+
+        cellRectLocal(
+            reasoning.focusCell
+        )
+            ?.let {
+                rect ->
+
+                paint.style =
+                    Paint.Style.STROKE
+                paint.strokeWidth =
+                    dp(5f)
+                paint.color =
+                    Color.rgb(
+                        35,
+                        150,
+                        65
+                    )
+
+                canvas.drawOval(
+                    RectF(rect).apply {
+                        inset(
+                            rect.width() *
+                                .08f,
+                            rect.height() *
+                                .08f
+                        )
+                    },
+                    paint
+                )
+            }
+
+        reasoning.projectedCells
+            .forEachIndexed {
+                index,
+                cell ->
+
+                val rect =
+                    cellRectLocal(
+                        cell
+                    )
+                        ?: return@forEachIndexed
+
+                paint.style =
+                    Paint.Style.FILL
+                paint.color =
+                    Color.rgb(
+                        224,
+                        145,
+                        20
+                    )
+                paint.textAlign =
+                    Paint.Align.CENTER
+                paint.textSize =
+                    (
+                        rect.width() *
+                            .34f
+                        )
+                        .coerceAtLeast(
+                            dp(13f)
+                        )
+                paint.isFakeBoldText =
+                    true
+
+                canvas.drawText(
+                    (index + 1)
+                        .toString(),
+                    rect.centerX(),
+                    rect.centerY() +
+                        paint.textSize *
+                            .34f,
+                    paint
+                )
+
+                paint.isFakeBoldText =
+                    false
+            }
     }
 
     private fun drawWinningLine(

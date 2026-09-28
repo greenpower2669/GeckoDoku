@@ -1731,3 +1731,12 @@ Correction structurelle préparée :
 Point géométrique important : exiger exactement une pièce sur **chaque** ligne des trois familles d'un hexagone fini rend certaines petites tailles incompatibles avec le nombre de zones. La règle utilisée est donc « au plus une pièce par ligne » et « exactement une de chaque type par zone ». C'est cohérent avec les déductions demandées et évite un faux modèle mathématique.
 
 État : code de refonte créé mais pas encore validé par CI au moment de cette entrée. Ne pas publier de candidate avant GREEN.
+### GECKO-043 — correction Gomoku après audit
+
+Cause de la force quasi identique : avant le profil/minimax, l'IA prenait **toujours** un gain immédiat et bloquait **toujours** une victoire adverse, même en Découverte. Puis le score statique choisissait encore systématiquement le meilleur candidat.
+
+Correction : les niveaux faibles possèdent une fiabilité tactique et une fenêtre de choix explicites. Lorsqu'une tactique n'est pas perçue à faible niveau, les cases de win/block correspondantes sont temporairement sorties du choix visible afin que le `WIN_SCORE` statique ne contourne pas la faiblesse voulue. Hard+ conserve 100 % de perception tactique.
+
+Ancienne persona agressive (`je ne fais pas de cadeaux`, `dignité`, etc.) supprimée : elle venait d'un contresens sur « Prof méchant », qui signifiait en réalité « trop fort ».
+
+Tests préparés : Infernal prend le gain immédiat ; un cas déterministe montre Découverte manquer un blocage que Infernal voit ; la trace contient coordonnées/lignes ; persona Découverte est pédagogique.

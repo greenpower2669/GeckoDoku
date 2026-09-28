@@ -93,3 +93,14 @@
 ### Livraison
 - [ ] CI complète GREEN ;
 - [ ] GitHub prerelease téléphone APK direct 0.15.
+### GECKO-043 — Gomoku implémenté, à valider CI
+- [x] vraie politique de force par niveau ;
+- [x] Découverte/Facile cohérents mais parfois non optimaux ;
+- [x] Hard+ garde win/block et pièges ;
+- [x] trace de raisonnement concrète ;
+- [x] overlay graphique ligne / menace / coup / projection ;
+- [x] explication stratégique uniquement sur demande ;
+- [x] persona agressive supprimée ;
+- [x] tests de différenciation IA et pédagogie réécrits ;
+- [ ] CI GREEN de l'ensemble GECKO-043 ;
+- [ ] validation téléphone des niveaux et projections.

@@ -1431,3 +1431,27 @@ Résultats : `GameMode.BEES_GECKOS` → stats mode+difficulté → étoiles → 
 → aide progressive
 → puis mistakes × 3 étoiles de pénalité
 → plancher 1.
+### GECKO-043 — Gomoku
+
+`GameDifficulty`
+→ `GomokuDifficultyProfile`
+  → searchDepth / beamWidth
+  → tacticalReliabilityPercent
+  → choiceWindow
+  → defenseWeightPercent
+  → trapAware / explanationHorizon
+
+`GomokuAi.chooseMove`
+→ perception tactique dépendante du niveau
+→ scoring réel
+→ minimax selon profondeur
+→ choix déterministe parmi top-N aux niveaux faibles
+→ `GomokuReasoningTrace`
+
+`showGomokuProfessorAdvice()`
+→ `gomokuBoard.showProfessorReasoning(trace)`
+→ bulle multi-étapes
+
+`playGomokuProfessorTurn()`
+→ joue uniquement
+→ pas de commentaire stratégique automatique.

@@ -1,59 +1,89 @@
 package com.greenpower2669.geckodoku
 
-import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class GomokuProfessorPersonaTest {
     @Test
-    fun discoveryNeverSoftensProfessorPersona() {
-        for (
-            event in
-            ProfessorPlayerEvent.entries
-        ) {
-            assertEquals(
-                GomokuProfessorPersona
-                    .livingLine(
-                        event,
-                        GameDifficulty.DISCOVERY
-                    ),
-                GomokuProfessorPersona
-                    .livingLine(
-                        event,
-                        GameDifficulty.INFERNAL
-                    )
-            )
-        }
+    fun discoveryAndInfernalDescribeDifferentLearningContext() {
+        assertNotEquals(
+            GomokuProfessorPersona
+                .livingLine(
+                    ProfessorPlayerEvent
+                        .GAME_STARTED,
+                    GameDifficulty
+                        .DISCOVERY
+                ),
+            GomokuProfessorPersona
+                .livingLine(
+                    ProfessorPlayerEvent
+                        .GAME_STARTED,
+                    GameDifficulty
+                        .INFERNAL
+                )
+        )
     }
 
     @Test
-    fun discoveryAdviceAndVictoryStayTeasing() {
+    fun discoveryAdviceIsPedagogicalNotHostile() {
         val advice =
             GomokuProfessorPersona
                 .decorateAdvice(
-                    "Joue au centre.",
-                    GameDifficulty.DISCOVERY
-                )
-
-        val win =
-            GomokuProfessorPersona
-                .decorateResult(
-                    winner =
-                        GomokuPlayer.PROFESSOR,
-                    base =
-                        "Cinq Geckos.",
-                    difficulty =
-                        GameDifficulty.DISCOVERY
+                    "La ligne 8 doit être surveillée.",
+                    GameDifficulty
+                        .DISCOVERY
                 )
 
         assertTrue(
             advice.contains(
-                "pas ça pour de la bonté"
+                "pas à pas",
+                ignoreCase = true
             )
         )
+
+        assertFalse(
+            advice.contains(
+                "dignité",
+                ignoreCase = true
+            )
+        )
+
+        assertFalse(
+            advice.contains(
+                "pas de cadeaux",
+                ignoreCase = true
+            )
+        )
+    }
+
+    @Test
+    fun lossMessageDoesNotPretendDiscoveryIsRuthless() {
+        val message =
+            GomokuProfessorPersona
+                .decorateResult(
+                    winner =
+                        GomokuPlayer
+                            .PROFESSOR,
+                    base =
+                        "Cinq Geckos.",
+                    difficulty =
+                        GameDifficulty
+                            .DISCOVERY
+                )
+
         assertTrue(
-            win.contains(
-                "je ne fais pas de cadeaux"
+            message.contains(
+                "ouverture",
+                ignoreCase = true
+            )
+        )
+
+        assertFalse(
+            message.contains(
+                "pas de cadeaux",
+                ignoreCase = true
             )
         )
     }

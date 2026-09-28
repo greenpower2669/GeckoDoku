@@ -2877,3 +2877,12 @@ Nouvelle architecture 0.15 :
 Notation : `CompletionRatingPolicy.starsFor(assistancePoints, mistakes)` applique **−3 étoiles par erreur** après le coût des aides, plancher 1.
 
 Gomoku reste la seconde partie du même ordre : corriger force par niveau et trace pédagogique graphique sur demande dans la passe suivante.
+### GECKO-043 — Gomoku corrigé
+
+`GomokuDifficultyProfile` pilote désormais réellement la force via profondeur, beam, pièges, rayon, fiabilité tactique, fenêtre de choix et poids défensif. Hard+ voit toujours les win/block immédiats ; Discovery/Easy peuvent en manquer de façon déterministe et choisissent parmi plusieurs coups bien évalués.
+
+`GomokuAiDecision` transporte `GomokuReasoningTrace`. Cette trace décrit la direction réelle, la ligne, les extrémités ouvertes, la menace/blocage, le coup focal et une projection multi-coups limitée par `explanationHorizon`.
+
+`GomokuBoardView` sait rendre la trace uniquement lorsque MainActivity la demande : bleu ligne analysée, rouge menace, vert coup conseillé, orange projection numérotée. Les tours automatiques de Pierre ne déclenchent plus de bulle de stratégie. Fermer/changer la session Prof nettoie l'overlay.
+
+`GomokuProfessorPersona` n'est plus agressive : ton professeur/taquin, et les phrases de démarrage expliquent le niveau sans prétendre que Découverte est impitoyable.

@@ -1,39 +1,56 @@
 package com.greenpower2669.geckodoku
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class GomokuAiDifficultyTest {
     @Test
-    fun harderDifficultyLooksFurtherAndUsesTraps() {
-        val easy =
+    fun harderDifficultyLooksFurtherAndIsMoreReliable() {
+        val discovery =
             GomokuDifficultyPolicy
                 .profile(
-                    GameDifficulty.EASY
+                    GameDifficulty
+                        .DISCOVERY
                 )
 
         val infernal =
             GomokuDifficultyPolicy
                 .profile(
-                    GameDifficulty.INFERNAL
+                    GameDifficulty
+                        .INFERNAL
                 )
 
         assertTrue(
             infernal.searchDepth >
-                easy.searchDepth
+                discovery.searchDepth
         )
         assertTrue(
             infernal.beamWidth >=
-                easy.beamWidth
+                discovery.beamWidth
         )
         assertTrue(
             infernal.trapAware
         )
+        assertTrue(
+            infernal
+                .tacticalReliabilityPercent >
+                discovery
+                    .tacticalReliabilityPercent
+        )
+        assertEquals(
+            1,
+            infernal.choiceWindow
+        )
+        assertTrue(
+            discovery.choiceWindow >
+                infernal.choiceWindow
+        )
     }
 
     @Test
-    fun professorTakesImmediateWinBeforeLongPlan() {
+    fun infernalTakesImmediateWinBeforeLongPlan() {
         val state =
             GomokuSnapshotBuilder(
                 size = 15
@@ -65,12 +82,128 @@ class GomokuAiDifficultyTest {
             Cell(7, 2),
             decision?.cell
         )
+        assertEquals(
+            GomokuReasonKind.WIN,
+            decision
+                ?.reasoning
+                ?.kind
+        )
         assertTrue(
             decision?.reason
                 ?.contains(
-                    "gagner",
+                    "victoire",
                     ignoreCase = true
-                ) == true
+                ) ==
+                true
+        )
+    }
+
+    @Test
+    fun discoveryCanMissImmediateThreatWhileInfernalBlocksIt() {
+        val state =
+            GomokuSnapshotBuilder(
+                size = 15
+            )
+                .put(
+                    GomokuPlayer.PLAYER,
+                    Cell(7, 3),
+                    Cell(7, 4),
+                    Cell(7, 5),
+                    Cell(7, 6)
+                )
+                .build(
+                    currentPlayer =
+                        GomokuPlayer.PROFESSOR
+                )
+
+        val discovery =
+            GomokuAi.chooseMove(
+                state,
+                GameDifficulty.DISCOVERY
+            )
+
+        val infernal =
+            GomokuAi.chooseMove(
+                state,
+                GameDifficulty.INFERNAL
+            )
+
+        val forcedBlocks =
+            setOf(
+                Cell(7, 2),
+                Cell(7, 7)
+            )
+
+        assertFalse(
+            discovery?.cell in
+                forcedBlocks
+        )
+
+        assertTrue(
+            infernal?.cell in
+                forcedBlocks
+        )
+
+        assertEquals(
+            GomokuReasonKind.DEFENSE,
+            infernal
+                ?.reasoning
+                ?.kind
+        )
+    }
+
+    @Test
+    fun requestedReasoningNamesConcreteBoardFeatures() {
+        val state =
+            GomokuSnapshotBuilder(
+                size = 15
+            )
+                .put(
+                    GomokuPlayer.PLAYER,
+                    Cell(7, 3),
+                    Cell(7, 4),
+                    Cell(7, 5),
+                    Cell(7, 6)
+                )
+                .build(
+                    currentPlayer =
+                        GomokuPlayer.PROFESSOR
+                )
+
+        val decision =
+            requireNotNull(
+                GomokuAi.chooseMove(
+                    state,
+                    GameDifficulty.EXPERT
+                )
+            )
+
+        assertTrue(
+            decision.reason
+                .contains(
+                    "ligne",
+                    ignoreCase = true
+                )
+        )
+
+        assertTrue(
+            decision.reason
+                .contains(
+                    "colonne",
+                    ignoreCase = true
+                )
+        )
+
+        assertTrue(
+            decision.reasoning
+                .lineCells
+                .isNotEmpty()
+        )
+
+        assertTrue(
+            decision.reasoning
+                .steps
+                .isNotEmpty()
         )
     }
 }

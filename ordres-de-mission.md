@@ -548,3 +548,15 @@ Règle globale : **1 erreur joueur = −3 étoiles**. Une aide coûte moins qu'u
 - HUD / Prof / boutons jamais recouverts ;
 - Gomoku réellement différencié par niveau + explications projetées sur demande ;
 - une erreur enlève exactement 3 étoiles.
+### GECKO-043 — implémentation Gomoku
+
+Politique de force retenue :
+- Découverte : profondeur 1, fenêtre de choix parmi plusieurs bons coups, défense pondérée et perception tactique limitée de façon déterministe ;
+- Facile : même cohérence mais meilleure perception ;
+- Réflexion : profondeur 2, choix resserré ;
+- Difficile et au-delà : victoires/blocages immédiats toujours vus, pièges activés et choix optimal dans la fenêtre calculée ;
+- Expert et niveaux supérieurs augmentent profondeur, largeur et poids défensif.
+
+Le niveau faible n'est pas aléatoire ni absurde : il évalue de vrais coups mais peut ne pas voir une tactique immédiate ou choisir le 2e/3e bon candidat. Le comportement est déterministe pour rendre les tests reproductibles.
+
+Lors d'un tour automatique du Prof, aucune explication stratégique n'est récitée. Lorsqu'une aide est demandée, la même décision produit une `GomokuReasoningTrace` contenant : type attaque/défense/piège, ligne concernée, extrémités menacées, case choisie et suite projetée. Le plateau affiche alors ligne bleue, menaces rouges, coup certain vert et projections orange numérotées.
