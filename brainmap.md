@@ -1365,3 +1365,6 @@ Rendu : logique axiale indépendante des pixels ; `BeeGeckoBoardView` transforme
 
 Persistance : `BeeGeckoSessionStore` → SharedPreferences → `UserDataBackup.preferenceNames`.
 Résultats : `GameMode.BEES_GECKOS` → stats mode+difficulté → étoiles → Hall of Fame.
+### CI #212 — impact transversal
+
+`GameMode.entries` contient désormais 4 valeurs. Les tests structurels qui comptaient les modes doivent évoluer sans toucher aux trois styles visuels Sudoku, qui restent exactement 3.

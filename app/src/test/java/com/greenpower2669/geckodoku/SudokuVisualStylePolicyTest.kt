@@ -45,7 +45,7 @@ class SudokuVisualStylePolicyTest {
 
     @Test
     fun gameModeAndVisualStyleRemainSeparateConcepts() {
-        assertEquals(3, GameMode.entries.size)
+        assertEquals(4, GameMode.entries.size)
         assertEquals(3, SudokuVisualStyle.entries.size)
     }
 }

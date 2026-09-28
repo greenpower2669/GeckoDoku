@@ -38,3 +38,6 @@
 
 ## Packaging téléphone
 - [ ] après candidate validée par CI, fournir une GitHub Release avec APK directement téléchargeable plutôt qu'un ZIP d'artefact.
+- [x] CI #212 a confirmé la compilation des nouvelles sources ;
+- [x] corriger l'ancien test qui attendait seulement 3 GameMode ;
+- [ ] relancer CI après correction du test de cardinalité.

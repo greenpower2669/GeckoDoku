@@ -2844,3 +2844,6 @@ Assets de `main` intégrés sous `assets/abeille/` :
 Attention : l'ancien texte disant « Prof Gomoku toujours teigneux en Découverte » était un contresens. Fab parlait de sa **force excessive** : Découverte doit être réellement plus faible, et l'explication stratégique ne doit apparaître que sur demande. Ce correctif Gomoku reste à traiter séparément.
 
 La première 0.14 est une fondation de puzzle de couples. Les raffinements non encore fermés (notes personnelles, régions avancées, difficulté plus riche, etc.) restent explicitement dans `todo.md`.
+### GECKO-042 — CI #212
+
+Le premier run 0.14 a compilé les sources. Échec uniquement sur un invariant de test historique : `SudokuVisualStylePolicyTest` attendait encore 3 `GameMode`. Avec `BEES_GECKOS`, la cardinalité canonique est désormais 4. Le test est mis à jour ; aucun contournement du nouveau mode.

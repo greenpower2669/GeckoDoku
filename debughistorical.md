@@ -1698,3 +1698,6 @@ Décisions techniques :
 Tests ajoutés autour de : six voisins, invalidité zéro partenaire, partage Gecko/Abeille interdit, paire forcée, réservation/propagation, validation complète, unicité des puzzles générés, stabilité du point de zoom et clamp caméra.
 
 État au moment de cette entrée : implémentation en cours, **CI non encore exécutée**. Ne pas marquer GREEN avant le run réel.
+### CI #212 — échec test historique
+
+Run `36362012284` : compilation réussie, 143 tests exécutés, 1 échec. Échec exact : `SudokuVisualStylePolicyTest > gameModeAndVisualStyleRemainSeparateConcepts`, assertion ligne 48. Cause : le test codait `GameMode.entries.size == 3`. Correction : attendre 4 modes, tout en conservant `SudokuVisualStyle.entries.size == 3`.
