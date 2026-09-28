@@ -42,3 +42,10 @@ schema 3 axes = string
 
 schema 4 axes = object(axis,color)
 → couleur restaurée.
+### Correctif CI #229
+
+Classic Axis drag
+→ ACTION_DOWN : sélection guide
+→ ACTION_MOVE : guideAtPointer(..., active.color)
+→ ACTION_UP : guideAtPointer(..., active.color)
+→ couleur conservée.

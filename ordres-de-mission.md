@@ -158,3 +158,15 @@ Tester :
 - [ ] couleur sauvegardée dans GeckoBeeDoku ;
 - [ ] audio toujours capturable ;
 - [ ] axes toujours aussi agréables qu’en 0.15.4.
+---
+
+## Correctif CI GECKO-048
+
+CI #229 a échoué sur une erreur de compilation unique dans `GeckoBoardView` :
+le drag ACTION_MOVE appelait `guideAtPointer()` sans transmettre la nouvelle couleur de barre.
+
+Correction :
+- transmettre `active.color` pendant le drag Classic ;
+- conserver la couleur du guide pendant MOVE et UP.
+
+Aucune logique de jeu modifiée.

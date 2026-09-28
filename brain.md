@@ -49,3 +49,10 @@ Bee session :
 schema 4 ;
 anciennes données axes string → RED ;
 nouvelles données axes objet {axis,color}.
+## GECKO-048 — correctif compilation
+
+CI #229 : échec Kotlin localisé à `GeckoBoardView.kt`.
+Cause : signature `guideAtPointer(kind,x,y,color)` mise à jour, mais l'appel ACTION_MOVE utilisait encore l'ancienne signature.
+
+Correctif : ACTION_MOVE transmet `active.color`.
+La couleur reste donc stable pendant tout le drag.

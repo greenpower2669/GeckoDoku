@@ -34,3 +34,9 @@
 - [ ] CI GREEN ;
 - [ ] APK téléphone 0.15.5-dev ;
 - [ ] validation Fab prononciation + couleurs.
+### GECKO-048 — correctif CI
+- [x] identifier échec CI #229 ;
+- [x] corriger argument couleur manquant pendant drag Classic ;
+- [ ] CI suivante GREEN ;
+- [ ] APK téléphone 0.15.5-dev ;
+- [ ] validation Fab prononciation « église » et couleurs d'axes.

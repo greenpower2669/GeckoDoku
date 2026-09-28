@@ -306,7 +306,8 @@ class GeckoBoardView @JvmOverloads constructor(
                         guideAtPointer(
                             active.kind,
                             event.x,
-                            event.y
+                            event.y,
+                            active.color
                         )
 
                     if (

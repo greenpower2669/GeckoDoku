@@ -28,3 +28,13 @@ Choix d’architecture :
 
 Version cible :
 0.15.5-dev / versionCode 40.
+## GECKO-048 — CI #229
+
+Échec de compilation, pas un défaut fonctionnel :
+`GeckoBoardView.kt:309` → argument `color` manquant.
+
+Origine :
+migration de `ClassicAxisGuide` vers un guide coloré, un appel ACTION_MOVE resté sur l'ancienne signature.
+
+Correction appliquée :
+`active.color` transmis dans ACTION_MOVE.
