@@ -1701,3 +1701,8 @@ Tests ajoutés autour de : six voisins, invalidité zéro partenaire, partage Ge
 ### CI #212 — échec test historique
 
 Run `36362012284` : compilation réussie, 143 tests exécutés, 1 échec. Échec exact : `SudokuVisualStylePolicyTest > gameModeAndVisualStyleRemainSeparateConcepts`, assertion ligne 48. Cause : le test codait `GameMode.entries.size == 3`. Correction : attendre 4 modes, tout en conservant `SudokuVisualStyle.entries.size == 3`.
+### CI #213 GREEN puis enrichissement GECKO-042
+
+Run `36362173182` : tests + APK + AAB GREEN, artefact `GeckoDoku-v0.14.0-dev-Android` id `10945968074`, digest `sha256:939e07bbf12618095ce6c1e395a793271a8d4aaa8a429996028ba79a5027622a`.
+
+Après ce jalon, ajout des repères personnels sur appui long, persistance de ces repères, commande « Prochaine zone non résolue » et fallback G/B non dépendant de la couleur. Une nouvelle CI est requise avant validation.

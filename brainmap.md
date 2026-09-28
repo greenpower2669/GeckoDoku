@@ -1368,3 +1368,8 @@ Résultats : `GameMode.BEES_GECKOS` → stats mode+difficulté → étoiles → 
 ### CI #212 — impact transversal
 
 `GameMode.entries` contient désormais 4 valeurs. Les tests structurels qui comptaient les modes doivent évoluer sans toucher aux trois styles visuels Sudoku, qui restent exactement 3.
+### Extension repères/navigation
+
+`BeeGeckoGameEngine.markers` → `BeeGeckoSnapshot.markers` → `BeeGeckoBoardView.drawMarkers()`.
+`BeeGeckoSessionStore` sérialise les repères avec q/r + nom de `CustomMarker`.
+`SettingsEntry.NEXT_UNRESOLVED` centre la caméra sur la première pièce encore hors couple ; `RECENTER` reste le retour global.

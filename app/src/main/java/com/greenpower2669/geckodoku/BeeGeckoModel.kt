@@ -74,7 +74,10 @@ data class BeeGeckoPuzzle(
 data class BeeGeckoSnapshot(
     val puzzle: BeeGeckoPuzzle,
     val pairs: Set<BeeGeckoPair>,
-    val selected: HexCoord?
+    val selected: HexCoord?,
+    val markers:
+        Map<HexCoord, CustomMarker> =
+        emptyMap()
 ) {
     val complete: Boolean
         get() =
@@ -260,7 +263,10 @@ class BeeGeckoGameEngine(
         Set<BeeGeckoPair> =
         emptySet(),
     initialSelected:
-        HexCoord? = null
+        HexCoord? = null,
+    initialMarkers:
+        Map<HexCoord, CustomMarker> =
+        emptyMap()
 ) {
     private val pairs =
         linkedSetOf<BeeGeckoPair>()
@@ -280,8 +286,26 @@ class BeeGeckoGameEngine(
         HexCoord? =
         initialSelected
             ?.takeIf {
-                puzzle.pieceAt(it) !=
-                    null
+                puzzle.contains(it)
+            }
+
+    private val markers =
+        linkedMapOf<
+            HexCoord,
+            CustomMarker
+            >()
+            .apply {
+                initialMarkers
+                    .filterKeys {
+                        puzzle.contains(it)
+                    }
+                    .forEach {
+                        (cell, marker) ->
+                        put(
+                            cell,
+                            marker
+                        )
+                    }
             }
 
     fun snapshot():
@@ -289,8 +313,28 @@ class BeeGeckoGameEngine(
         BeeGeckoSnapshot(
             puzzle = puzzle,
             pairs = pairs.toSet(),
-            selected = selected
+            selected = selected,
+            markers =
+                markers.toMap()
         )
+
+    fun setMarker(
+        cell: HexCoord,
+        marker: CustomMarker?
+    ): Boolean {
+        if (!puzzle.contains(cell)) {
+            return false
+        }
+
+        if (marker == null) {
+            markers.remove(cell)
+        } else {
+            markers[cell] =
+                marker
+        }
+
+        return true
+    }
 
     fun tap(
         cell: HexCoord

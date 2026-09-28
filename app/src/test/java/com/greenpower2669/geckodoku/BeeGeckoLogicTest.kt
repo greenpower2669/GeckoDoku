@@ -365,6 +365,49 @@ class BeeGeckoLogicTest {
     }
 
     @Test
+    fun personalMarkerStaysAttachedToHexCell() {
+        val puzzle =
+            simplePuzzle()
+
+        val engine =
+            BeeGeckoGameEngine(
+                puzzle
+            )
+
+        val cell =
+            HexCoord(
+                0,
+                0
+            )
+
+        assertTrue(
+            engine.setMarker(
+                cell,
+                CustomMarker.STAR
+            )
+        )
+
+        assertEquals(
+            CustomMarker.STAR,
+            engine
+                .snapshot()
+                .markers[cell]
+        )
+
+        engine.setMarker(
+            cell,
+            null
+        )
+
+        assertFalse(
+            engine
+                .snapshot()
+                .markers
+                .containsKey(cell)
+        )
+    }
+
+    @Test
     fun generatedPuzzleHasUniqueMatching() {
         for (
             difficulty in

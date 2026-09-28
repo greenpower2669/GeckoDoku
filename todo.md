@@ -41,3 +41,10 @@
 - [x] CI #212 a confirmé la compilation des nouvelles sources ;
 - [x] corriger l'ancien test qui attendait seulement 3 GameMode ;
 - [ ] relancer CI après correction du test de cardinalité.
+### Jalon CI #213
+- [x] CI #213 GREEN ;
+- [x] APK/AAB 0.14.0-dev produits ;
+- [x] repères personnels hexagonaux ajoutés après ce jalon ;
+- [x] navigation vers prochaine zone non résolue ajoutée ;
+- [ ] revalider ces ajouts sur la CI suivante ;
+- [ ] validation téléphone.

@@ -836,6 +836,14 @@ class MainActivity : Activity() {
                     )
                 }
 
+                onLongPressCell = {
+                        cell ->
+
+                    showBeeGeckoMarkerPalette(
+                        cell
+                    )
+                }
+
                 onViewportChanged = {
                         camera ->
 
@@ -4984,6 +4992,15 @@ class MainActivity : Activity() {
 
         if (
             selectedGameMode ==
+                GameMode.BEES_GECKOS &&
+            mode !=
+                GameMode.BEES_GECKOS
+        ) {
+            persistBeeGeckoSession()
+        }
+
+        if (
+            selectedGameMode ==
                 GameMode.GECKODOKU &&
             mode !=
                 GameMode.GECKODOKU
@@ -5326,12 +5343,26 @@ class MainActivity : Activity() {
                 emptySet()
             }
 
+        val restoredMarkers =
+            if (
+                restored
+                    ?.puzzle
+                    ?.id ==
+                    nextPuzzle.id
+            ) {
+                restored.markers
+            } else {
+                emptyMap()
+            }
+
         beeGeckoEngine =
             BeeGeckoGameEngine(
                 puzzle =
                     nextPuzzle,
                 initialPairs =
-                    restoredPairs
+                    restoredPairs,
+                initialMarkers =
+                    restoredMarkers
             )
 
         beeGeckoCamera =
@@ -5496,6 +5527,10 @@ class MainActivity : Activity() {
                     engine
                         .snapshot()
                         .pairs,
+                markers =
+                    engine
+                        .snapshot()
+                        .markers,
                 camera =
                     beeGeckoCamera,
                 elapsedSeconds =
@@ -5664,6 +5699,130 @@ class MainActivity : Activity() {
         beeGeckoBoard.invalidate()
         refreshBeeGeckoInfo()
         persistBeeGeckoSession()
+    }
+
+    private fun showBeeGeckoMarkerPalette(
+        cell: HexCoord
+    ) {
+        val engine =
+            beeGeckoEngine
+                ?: return
+
+        val markers =
+            CustomMarker.entries
+
+        val labels =
+            markers.map {
+                it.symbol +
+                    "  " +
+                    it.label
+            }
+                .toMutableList()
+
+        labels.add(
+            "⌫  Effacer le repère"
+        )
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Repère personnel • hexagone"
+            )
+            .setItems(
+                labels.toTypedArray()
+            ) {
+                    _,
+                    which ->
+
+                clearProfessorSession()
+
+                val marker =
+                    if (
+                        which ==
+                            markers.size
+                    ) {
+                        null
+                    } else {
+                        markers[which]
+                    }
+
+                if (
+                    engine.setMarker(
+                        cell,
+                        marker
+                    )
+                ) {
+                    fx.marker()
+
+                    status.text =
+                        if (marker == null) {
+                            "Repère personnel retiré."
+                        } else {
+                            "Repère personnel posé : " +
+                                marker.label +
+                                "."
+                        }
+
+                    beeGeckoBoard.invalidate()
+                    persistBeeGeckoSession()
+                }
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
+    }
+
+    private fun focusNextBeeGeckoUnresolved() {
+        val engine =
+            beeGeckoEngine
+                ?: return
+
+        val snapshot =
+            engine.snapshot()
+
+        val paired =
+            snapshot.pairs
+                .flatMap {
+                    listOf(
+                        it.gecko,
+                        it.bee
+                    )
+                }
+                .toSet()
+
+        val target =
+            snapshot.puzzle
+                .pieces
+                .keys
+                .sortedWith(
+                    compareBy<HexCoord> {
+                        it.r
+                    }.thenBy {
+                        it.q
+                    }
+                )
+                .firstOrNull {
+                    it !in paired
+                }
+
+        if (target == null) {
+            status.text =
+                "Toutes les pièces sont déjà appariées."
+            return
+        }
+
+        beeGeckoBoard
+            .centerOn(target)
+
+        beeGeckoCamera =
+            beeGeckoBoard
+                .currentCamera()
+
+        persistBeeGeckoSession()
+
+        status.text =
+            "Zone non résolue centrée."
     }
 
     private fun showBeeGeckoProfessorHint(
@@ -8426,6 +8585,9 @@ class MainActivity : Activity() {
                     SettingsEntry.RECENTER ->
                         "🎯 Recentrer la carte"
 
+                    SettingsEntry.NEXT_UNRESOLVED ->
+                        "🔎 Prochaine zone non résolue"
+
                     SettingsEntry.SAVE_GRID ->
                         if (
                             selectedGameMode ==
@@ -8517,6 +8679,11 @@ class MainActivity : Activity() {
                             status.text =
                                 "Carte Abeilles & Geckos recentrée."
                         }
+                    }
+
+                    SettingsEntry.NEXT_UNRESOLVED -> {
+                        dialog.dismiss()
+                        focusNextBeeGeckoUnresolved()
                     }
 
                     SettingsEntry.SAVE_GRID -> {

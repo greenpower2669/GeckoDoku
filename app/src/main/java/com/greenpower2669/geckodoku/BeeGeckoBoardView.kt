@@ -28,6 +28,9 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     var onTapPiece:
         ((HexCoord) -> Unit)? = null
 
+    var onLongPressCell:
+        ((HexCoord) -> Unit)? = null
+
     var onViewportChanged:
         ((BeeGeckoCamera) -> Unit)? = null
 
@@ -91,8 +94,20 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     private var scaledGesture =
         false
 
+    private var longPressTriggered =
+        false
+
+    private var downCell:
+        HexCoord? = null
+
+    private var longPressRunnable:
+        Runnable? = null
+
     private val dragThreshold =
         dp(10f)
+
+    private val longPressDelayMs =
+        520L
 
     private var professorHint:
         BeeGeckoHint? = null
@@ -108,6 +123,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                         ScaleGestureDetector
                 ): Boolean {
                     scaledGesture = true
+                    cancelLongPress()
                     return true
                 }
 
@@ -363,6 +379,11 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             snapshot
         )
 
+        drawMarkers(
+            canvas,
+            snapshot
+        )
+
         drawProfessorProjection(
             canvas
         )
@@ -590,8 +611,81 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                         .55f,
                     paint
                 )
+
+                paint.color =
+                    Color.BLACK
+                paint.textAlign =
+                    Paint.Align.CENTER
+                paint.textSize =
+                    radius *
+                        .72f
+                paint.isFakeBoldText =
+                    true
+
+                canvas.drawText(
+                    if (
+                        piece ==
+                            BeeGeckoPiece.GECKO
+                    ) {
+                        "G"
+                    } else {
+                        "B"
+                    },
+                    center.first,
+                    center.second +
+                        paint.textSize *
+                            .34f,
+                    paint
+                )
+
+                paint.isFakeBoldText =
+                    false
             }
         }
+    }
+
+    private fun drawMarkers(
+        canvas: Canvas,
+        snapshot: BeeGeckoSnapshot
+    ) {
+        paint.style =
+            Paint.Style.FILL
+        paint.color =
+            Color.rgb(
+                54,
+                48,
+                72
+            )
+        paint.textAlign =
+            Paint.Align.CENTER
+        paint.textSize =
+            baseRadius *
+                .48f
+        paint.isFakeBoldText =
+            true
+
+        snapshot.markers
+            .forEach {
+                (cell, marker) ->
+                val center =
+                    cellCenter(
+                        cell
+                    )
+
+                canvas.drawText(
+                    marker.symbol,
+                    center.first +
+                        baseRadius *
+                            .52f,
+                    center.second -
+                        baseRadius *
+                            .42f,
+                    paint
+                )
+            }
+
+        paint.isFakeBoldText =
+            false
     }
 
     private fun drawProfessorProjection(
@@ -724,6 +818,13 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 lastY = event.y
                 dragging = false
                 scaledGesture = false
+                longPressTriggered = false
+                downCell =
+                    screenToCell(
+                        event.x,
+                        event.y
+                    )
+                scheduleLongPress()
                 return true
             }
 
@@ -750,6 +851,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                         dragThreshold
                 ) {
                     dragging = true
+                    cancelLongPress()
                 }
 
                 if (dragging) {
@@ -779,9 +881,12 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                         false
                     )
 
+                cancelLongPress()
+
                 if (
                     !dragging &&
-                    !scaledGesture
+                    !scaledGesture &&
+                    !longPressTriggered
                 ) {
                     performClick()
 
@@ -795,6 +900,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                         }
                 }
 
+                downCell = null
                 return true
             }
 
@@ -803,11 +909,50 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     ?.requestDisallowInterceptTouchEvent(
                         false
                     )
+                cancelLongPress()
+                downCell = null
                 return true
             }
         }
 
         return true
+    }
+
+    private fun scheduleLongPress() {
+        cancelLongPress()
+
+        val cell =
+            downCell
+                ?: return
+
+        val runnable =
+            Runnable {
+                if (
+                    !dragging &&
+                    !scaledGesture
+                ) {
+                    longPressTriggered = true
+                    onLongPressCell
+                        ?.invoke(cell)
+                }
+            }
+
+        longPressRunnable =
+            runnable
+
+        postDelayed(
+            runnable,
+            longPressDelayMs
+        )
+    }
+
+    private fun cancelLongPress() {
+        longPressRunnable
+            ?.let {
+                removeCallbacks(it)
+            }
+
+        longPressRunnable = null
     }
 
     private fun screenToCell(

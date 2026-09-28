@@ -7,6 +7,8 @@ import org.json.JSONObject
 data class BeeGeckoSession(
     val puzzle: BeeGeckoPuzzle,
     val pairs: Set<BeeGeckoPair>,
+    val markers:
+        Map<HexCoord, CustomMarker>,
     val camera: BeeGeckoCamera,
     val elapsedSeconds: Long,
     val assistancePoints: Int
@@ -137,6 +139,41 @@ class BeeGeckoSessionStore(
         root.put(
             "pairs",
             pairs
+        )
+
+        val markers =
+            JSONArray()
+
+        session.markers
+            .toSortedMap(
+                compareBy<HexCoord> {
+                    it.r
+                }.thenBy {
+                    it.q
+                }
+            )
+            .forEach {
+                (cell, marker) ->
+                markers.put(
+                    JSONObject()
+                        .put(
+                            "q",
+                            cell.q
+                        )
+                        .put(
+                            "r",
+                            cell.r
+                        )
+                        .put(
+                            "marker",
+                            marker.name
+                        )
+                )
+            }
+
+        root.put(
+            "markers",
+            markers
         )
 
         prefs.edit()
@@ -283,6 +320,44 @@ class BeeGeckoSessionStore(
                 return null
             }
 
+            val markers =
+                linkedMapOf<
+                    HexCoord,
+                    CustomMarker
+                    >()
+
+            val markerArray =
+                root.optJSONArray(
+                    "markers"
+                )
+                    ?: JSONArray()
+
+            for (
+                i in
+                0 until markerArray.length()
+            ) {
+                val item =
+                    markerArray
+                        .getJSONObject(i)
+
+                val cell =
+                    HexCoord(
+                        item.getInt("q"),
+                        item.getInt("r")
+                    )
+
+                if (puzzle.contains(cell)) {
+                    markers[cell] =
+                        enumValueOf<
+                            CustomMarker
+                            >(
+                            item.getString(
+                                "marker"
+                            )
+                        )
+                }
+            }
+
             val cameraJson =
                 root.optJSONObject(
                     "camera"
@@ -320,6 +395,8 @@ class BeeGeckoSessionStore(
             BeeGeckoSession(
                 puzzle = puzzle,
                 pairs = pairs,
+                markers =
+                    markers.toMap(),
                 camera = camera,
                 elapsedSeconds =
                     root.optLong(

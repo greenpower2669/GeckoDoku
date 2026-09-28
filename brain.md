@@ -2847,3 +2847,6 @@ La première 0.14 est une fondation de puzzle de couples. Les raffinements non e
 ### GECKO-042 — CI #212
 
 Le premier run 0.14 a compilé les sources. Échec uniquement sur un invariant de test historique : `SudokuVisualStylePolicyTest` attendait encore 3 `GameMode`. Avec `BEES_GECKOS`, la cardinalité canonique est désormais 4. Le test est mis à jour ; aucun contournement du nouveau mode.
+### GECKO-042 — passe navigation / repères
+
+Après CI #213 GREEN, le mode reçoit les repères personnels hexagonaux persistants et un accès discret à la prochaine pièce non appariée. Un appui long sur un hexagone ouvre la palette `CustomMarker`; les marqueurs sont stockés dans `BeeGeckoSnapshot` et `BeeGeckoSessionStore`. La carte distingue aussi Gecko/Abeille par lettre de secours G/B si un sprite manque, afin de ne pas dépendre uniquement de la couleur.

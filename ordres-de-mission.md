@@ -475,3 +475,10 @@ Dans l'application, les copies runtime sont rangées sous `assets/abeille/` afin
 La 0.14 démarre par une **fondation jouable de matching hexagonal** : les Geckos et Abeilles sont placés par le puzzle, et le joueur confirme les couples adjacents exclusifs. Cette représentation permet de valider proprement le cœur 1↔1 avant d'ajouter les raffinements de saisie/notes.
 
 Ne pas déclarer les 45 points terminés avant tests CI + validation téléphone.
+### Avancement GECKO-042 — après CI #213
+
+- moteur hexagonal, matching 1↔1, solveur, générateur, caméra, Prof, sauvegarde, stats/Hall/export-import : intégrés ;
+- repères personnels hexagonaux : ajoutés et persistants ;
+- recentrage global + accès à la prochaine zone non résolue : intégrés dans ⚙️ ;
+- différenciation de secours Gecko/Abeille par forme/lettre si sprite indisponible ;
+- CI #213 a validé la première fondation ; les ajouts postérieurs exigent une nouvelle CI.
