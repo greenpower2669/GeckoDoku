@@ -90,3 +90,12 @@
 - [ ] CI GREEN ;
 - [ ] APK téléphone ;
 - [ ] validation Fab.
+### GECKO-046 — après CI #225
+- [x] tests GREEN ;
+- [x] build phone GREEN ;
+- [x] code repères / croix / Prof / victoire / brouillard validé CI ;
+- [ ] publier prerelease téléphone 0.15.3 ;
+- [ ] Fab valide double clic / repères ;
+- [ ] Fab valide croix 3 états ;
+- [ ] Fab valide victoire vivante ;
+- [ ] Fab valide brouillard Classic + GeckoBeeDoku.

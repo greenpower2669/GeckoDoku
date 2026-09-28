@@ -102,3 +102,9 @@ Classic :
 Givens Classic + Bee :
 → fog animation partagée par BeeGeckoFogPolicy
 → plus d'anneau sombre.
+### Validation GECKO-046
+
+code 0.15.3
+→ CI #225 GREEN
+→ prerelease téléphone 0.15.3
+→ validation Fab.

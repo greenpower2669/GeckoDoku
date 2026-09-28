@@ -378,3 +378,13 @@ Implémenté dans la passe en cours :
 - tests unitaires des nouveaux marqueurs / croix / brouillard.
 
 Ne pas déclarer la mission terminée avant CI GREEN et test téléphone Fab.
+### Jalon GECKO-046
+
+CI #225 GREEN sur la 0.15.3-dev :
+- tests unitaires GREEN ;
+- build phone APK GREEN ;
+- nouveaux repères / cross states compilés ;
+- victoire vivante compilée ;
+- brouillard Classic + GeckoBeeDoku compilé.
+
+Publication téléphone directe demandée via commit [phone-release].

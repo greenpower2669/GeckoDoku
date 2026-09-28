@@ -49,3 +49,6 @@ Cela évite qu'une simple hypothèse du joueur modifie silencieusement le raison
 Le brouillard est rendu procéduralement dans le Canvas afin d'éviter un nouvel asset lourd et de partager la métaphore entre Classic et GeckoBeeDoku.
 
 État : code prêt à commit, CI pas encore exécutée.
+### CI #225 GREEN
+
+Run `36409465578` terminé avec succès. Étapes tests + build APK + upload artefact toutes GREEN. La publication prerelease était skipped car le commit fonctionnel ne portait pas encore `[phone-release]`.

@@ -69,3 +69,16 @@ Victoire :
 
 Départage :
 - ancien anneau autour des givens remplacé par un brouillard animé semi-transparent dans Classic et GeckoBeeDoku.
+## GECKO-046 — CI #225 GREEN
+
+La 0.15.3-dev passe la CI complète. Les changements sont maintenant techniquement validés :
+- palette logique ;
+- repères Gecko/Bee ;
+- barres axes ;
+- croix 3 états ;
+- Prof utilisant le même langage visuel ;
+- persistance schema 3 ;
+- musique Classic + animation globale à la victoire ;
+- brouillard à la place de l'anneau donné.
+
+Prochaine porte : validation téléphone Fab.
