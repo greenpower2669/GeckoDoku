@@ -170,3 +170,27 @@ Correction :
 - conserver la couleur du guide pendant MOVE et UP.
 
 Aucune logique de jeu modifiée.
+
+
+---
+
+# GECKO-MEM-001 — DOCUMENTATION AVANT RESTRUCTURATION DES MÉMOIRES
+
+Date : 2026-09-28
+
+Demande de Fab :
+- sauvegarder l'état actuel avant toute restructuration ;
+- ne jamais supprimer `brain.md` ni `brainmap.md` ;
+- créer d'abord une documentation détaillée décrivant le fonctionnement actuel du programme, l'usage des boutons, gestes, modes et fonctions ;
+- utiliser cette documentation comme filet de compréhension avant de restructurer `brain.md` et `brainmap.md` ;
+- `debughistorical.md` pourra ensuite être délesté franchement : conserver le récent/utile dans le fichier actif et déplacer l'ancien dans `sauvegarde.md`.
+
+État :
+- [x] snapshot froid créé dans `sauvegarde.md` ;
+- [x] documentation fonctionnelle créée dans `docs/GECKODOKU-FONCTIONNEMENT.md` ;
+- [ ] structure future de `brain.md` à discuter avec Fab ;
+- [ ] structure future de `brainmap.md` à discuter avec Fab ;
+- [ ] aucune restructuration des deux fichiers avant cette discussion.
+
+Règle de sécurité :
+`sauvegarde.md` est une archive froide. Ne pas la lire par défaut.

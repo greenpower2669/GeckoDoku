@@ -40,3 +40,13 @@
 - [ ] CI suivante GREEN ;
 - [ ] APK téléphone 0.15.5-dev ;
 - [ ] validation Fab prononciation « église » et couleurs d'axes.
+
+
+## GECKO-MEM-001 — Préparation restructuration des mémoires
+- [x] créer `sauvegarde.md` comme snapshot froid avant restructuration — commit `fd230d996adc0f3083ab25d1dbc4e583aaebd6de` ;
+- [x] ne pas modifier `brain.md` ni `brainmap.md` pendant le snapshot ;
+- [x] créer une documentation fonctionnelle détaillée de l'état actuel avant restructuration ;
+- [ ] relire avec Fab la structure cible de `brain.md` ;
+- [ ] relire avec Fab la structure cible de `brainmap.md` ;
+- [ ] seulement après validation de Fab : restructurer les mémoires actives ;
+- [ ] délester l'ancien `debughistorical.md` vers `sauvegarde.md` en gardant le récent/utile.
