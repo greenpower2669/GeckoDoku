@@ -1759,3 +1759,9 @@ Capture Fab : le sprite/plateau statique est bon. La vidéo `Abeillefondvert.mp4
 Second constat : Bee utilisait une caméra offset/scale avec clamp permissif à 54dp, permettant une sensation de carte flottante. Gomoku utilise un état de geste plus strict et un viewport toujours borné. La passe GECKO-044 reprend cette sémantique sans toucher au rendu logique.
 
 État au moment de cette entrée : correctifs codés en blobs, CI pas encore lancée. Ne pas marquer GREEN avant le run réel.
+### CI #221 GREEN
+
+Run `36390923274` : tests + build phone APK + publication prerelease réussis.
+Release : `phone-0.15.1-dev-run-221`.
+APK : `GeckoDoku-v0.15.1-dev.apk`.
+SHA-256 : `e8f0443d71f2f579eaaa63113c4074a4b587a838e89d07b9eaa0422698b1b7a5`.

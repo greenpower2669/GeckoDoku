@@ -135,3 +135,8 @@
 - [ ] CI GREEN ;
 - [ ] publier prerelease téléphone directe 0.15.1 ;
 - [ ] Fab valide : fond vert disparu + drag/pinch satisfaisants.
+### GECKO-044 — état après CI #221
+- [x] CI #221 GREEN ;
+- [x] prerelease téléphone 0.15.1 publiée ;
+- [ ] Fab valide que le fond vert a disparu sans abîmer les ailes bleues ;
+- [ ] Fab valide zoom/pinch/drag façon Gomoku.

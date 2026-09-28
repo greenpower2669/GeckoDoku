@@ -2909,3 +2909,8 @@ Correctifs retenus :
 - caméra Bee garde sa représentation existante mais adopte la sémantique Gomoku : policy de geste TAP/PAN/ZOOM, seuil 10dp, pinch exclusif, clamp strict, recentrage automatique si la grille tient entièrement, minimum de zoom égal au fit complet.
 
 Le moteur logique 0.15 n'est pas touché.
+### GECKO-044 — CI #221 GREEN / candidate téléphone
+
+Run #221 GREEN. La 0.15.1-dev compile et les tests passent avec le keycolor vert spécifique Abeille et la navigation Bee alignée sur la sémantique Gomoku.
+
+Release téléphone publiée : `phone-0.15.1-dev-run-221`, APK `GeckoDoku-v0.15.1-dev.apk`, commit `b844edff435eec403e396d4e9413c700678ba5d3`.

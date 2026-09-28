@@ -582,3 +582,6 @@ Observation réelle sur la 0.15.0-dev : logique et plateau Abeilles & Geckos val
 Le plateau, les couleurs, les règles et le solveur ne doivent pas être modifiés par cette passe.
 
 Version cible : **0.15.1-dev** / versionCode **36**.
+### Jalon GECKO-044
+
+CI #221 GREEN et APK téléphone 0.15.1 publié. La correction est techniquement validée ; reste la validation visuelle/tactile réelle de Fab.

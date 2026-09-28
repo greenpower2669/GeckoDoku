@@ -1486,3 +1486,7 @@ Résultats : `GameMode.BEES_GECKOS` → stats mode+difficulté → étoiles → 
 → ZOOM si pinch / 2 doigts
 → `BeeGeckoViewportPolicy.fitScale()` comme zoom minimum
 → `clamp()` : recentre si plus petit, borne aux bords si plus grand.
+### Jalon GECKO-044
+
+CI #221 → GREEN → prerelease téléphone 0.15.1-dev.
+Validation Fab restante : fond vert réellement supprimé sur appareil + sensation pinch/drag conforme au Gomoku.
