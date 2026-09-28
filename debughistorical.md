@@ -1,54 +1,54 @@
 # GeckoDoku — debug historical condensé
 
-## Jalons conservés
+## Jalons
 
 ### 0.15
-Abeilles & Geckos reconstruit selon l'esprit Classic :
-zones + axes + Gecko + Abeille + voisinage local.
+GeckoBeeDoku reconstruit selon logique Classic + hexagones.
 
 ### 0.15.1
-Keycolor vert corrigé ; ailes bleues conservées.
+Keycolor Bee vert corrigé.
 
-### 0.15.2 / GECKO-045
-- Abeilles réduites à 50 % ;
-- viewport carré ;
-- navigation interne ;
-- clipping ;
-- CI #224 GREEN ;
-- validation téléphone Fab : **parfait / all clear**.
+### 0.15.2
+Viewport carré + Bee scale 50 % validés par Fab.
 
-GECKO-045 est clos fonctionnellement.
+### 0.15.3 / GECKO-046
+Repères logiques, croix 3 états, victoire vivante et brouillard introduits.
+CI GREEN.
 
-## GECKO-046 — nouvelle mission
+## Retour Fab après 0.15.3
 
-Retour Fab :
-- apprécie particulièrement les repères graphiques du Prof ;
-- veut pouvoir utiliser des repères comparables lui-même via double clic ;
-- demande repère Gecko vert, Abeille jaune légèrement excentrée et barres d'exclusion d'axe ;
-- veut que le solveur / Prof exploite ces repères dans les explications ;
-- veut trois états de croix : jaune / vert / rouge ;
-- victoire GeckoBeeDoku avec musique du Classic + animation de tous les Geckos et Abeilles ;
-- remplacer dans Classic et GeckoBeeDoku le cercle noir de départage par un nuage de fumée / brouillard transparent animé.
+Deux corrections de direction importantes.
 
-État : mission documentée avant code, conformément à la demande Fab.
-## GECKO-046 — code préparé
+### 1 — Repères / Prof
+La palette double-clic est trop chargée.
 
-Le système précédent Bee utilisait :
-- un Set binaire de croix ;
-- des CustomMarker génériques ;
-- un anneau sombre autour des givens ;
-- une célébration visuelle Bee sans démarrage explicite de la musique Classic.
+Nouvelle UX :
+- 3 choix seulement : Gecko vert / Abeille jaune / Axe rouge ;
+- si Axe : seconde popup uniquement pour l’orientation ;
+- exclusion d’axe = grande barre semi-transparente traversant tout le plateau ;
+- barre draggable ;
+- sortie du plateau = suppression.
 
-La passe 0.15.3 remplace / étend ces points sans toucher aux règles du puzzle.
+Les grosses croix affichées par le solveur / Prof sont jugées moches.
+Le Prof doit préférer les barres globales, à tester.
 
-Décision importante :
-- croix jaune = note personnelle, ne ferme pas une possibilité pour le solveur ;
-- croix verte / rouge = exclusion logique effective.
-Cela évite qu'une simple hypothèse du joueur modifie silencieusement le raisonnement du solveur.
+Les croix joueur peuvent rester temporairement mais ne sont plus le vocabulaire principal du Prof.
 
-Le brouillard est rendu procéduralement dans le Canvas afin d'éviter un nouvel asset lourd et de partager la métaphore entre Classic et GeckoBeeDoku.
+### 2 — Audio capture écran
+Tests réels Samsung + AZ :
+- Pierre audible localement ;
+- Pierre absent de la vidéo enregistrée ;
+- certains vieux sons inaudibles restent capturés.
 
-État : code prêt à commit, CI pas encore exécutée.
-### CI #225 GREEN
+Conclusion de travail :
+auditer en priorité les politiques AudioPlaybackCapture et les lecteurs restés actifs.
 
-Run `36409465578` terminé avec succès. Étapes tests + build APK + upload artefact toutes GREEN. La publication prerelease était skipped car le commit fonctionnel ne portait pas encore `[phone-release]`.
+Points à vérifier :
+- AndroidManifest allowAudioPlaybackCapture ;
+- AudioManager.setAllowedCapturePolicy API 29+ ;
+- AudioAttributes Pierre ;
+- Sherpa/Piper/AudioTrack ;
+- MediaPlayer / SoundPool / vidéo ;
+- différence MUTE vs STOP/RELEASE.
+
+Aucune cause racine n’est encore déclarée tant que l’audit code n’a pas été fait.

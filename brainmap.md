@@ -1,110 +1,73 @@
 # GeckoDoku — brainmap
 
-## État stable
-Classic / Sudoku / Gomoku / GeckoBeeDoku
-→ logique validée
-→ stats / Hall / sauvegardes / export-import
-
-## GECKO-046
+## Mission active GECKO-047
 
 ### Repères
-`LogicalMarker`
-→ GeckoCandidate
-→ BeeCandidate
-→ AxisExclusion(Q/R/S)
-→ Cross(HYPOTHESIS / CONFIRMED / IMPOSSIBLE)
 
-### Input
-double tap
-→ palette logique
-→ placement pièce OU repère
+Double tap
+→ popup 3 choix
 
-single tap / action croix
-→ cycle 3 états
+VERT
+→ Gecko marker
 
-### Solveur / Prof
-`BeeGeckoSolveStep`
-→ mêmes marqueurs
-→ texte
-→ rendu synchronisé
+JAUNE
+→ Bee marker
 
-### Rendu
-Gecko marker
-→ vert + symbole
+ROUGE
+→ popup axe
+  → Classic : horizontal / vertical
+  → GeckoBee : Q / R / S
+→ création AxisBar
 
-Bee marker
-→ jaune + symbole
-→ léger offset
+AxisBar
+→ semi-transparent
+→ traverse tout le plateau
+→ draggable parallèlement à son axe
+→ sortie complète du plateau = delete
 
-Axis exclusion
-→ barre orientée Q/R/S
+Prof / Solver
+→ pas de grosses croix
+→ surbrillances + markers + AxisBar
+→ texte synchronisé
 
-Cross
-→ jaune / vert / rouge
-→ style différent en plus de la couleur
+Projection
+→ zones/couleurs
+→ positions candidates
+→ axes communs
+→ réservations
+→ exclusions
 
-### Victoire
-completion GeckoBee
-→ musique Classic
-→ animation tous Geckos
-→ animation toutes Abeilles
-→ viewport clipping conservé
+### Audio
 
-### Départage visuel
-Classic + GeckoBee
-→ ancien cercle noir supprimé
-→ `Mist/FogOverlay`
-→ transparent
-→ animé
-→ attaché à la zone / cellule logique
+Application startup
+→ Android version
+→ AudioManager capture policy API 29+
+→ log [AUDIO]
 
-### Persistance
-session + export/import
-→ markers
-→ axis exclusions
-→ cross state
-## GECKO-046 — architecture implémentée
+Manifest
+→ allowAudioPlaybackCapture=true
 
-`BeeGeckoCrossState`
-→ HYPOTHESIS / CONFIRMED / IMPOSSIBLE
-→ rendu jaune / vert / rouge
-→ solverCrosses = CONFIRMED + IMPOSSIBLE
+Pierre
+→ Sherpa/Piper path
+→ AudioAttributes
+  → USAGE_MEDIA
+  → CONTENT_TYPE_SPEECH
+  → ALLOW_CAPTURE_BY_ALL
 
-`BeeGeckoLogicalMarks`
-→ GeckoCandidate
-→ BeeCandidate
-→ excludedAxes Set<HexAxis>
+Music / SFX / Video
+→ usage MEDIA ou GAME
+→ ALLOW_CAPTURE_BY_ALL
 
-`double tap Bee`
-→ palette pièce + repères + axes + croix
+Disabled legacy sound
+→ STOP / RELEASE
+→ jamais simple volume=0
 
-`BeeGeckoProfessorMarkerPolicy`
-→ BeeGeckoSolveStep
-→ logicalMarkers
-→ crossStates
-→ BeeGeckoBoardView partage le même renderer que le joueur
+Diagnostics
+→ [AUDIO] source=...
+→ [AUDIO] STOP ...
+→ [AUDIO] RELEASE ...
 
-`BeeGeckoSessionStore schema 3`
-→ crossStates
-→ logicalMarkers
-→ compat schema 2
-
-Victoire :
-`completeBeeGeckoGame()`
-→ startCelebrationMusic()
-→ BeeGeckoBoardView.startVictoryAnimation()
-→ celebrationView
-
-Classic :
-`completeGame()`
-→ GeckoBoardView.startVictoryAnimation()
-
-Givens Classic + Bee :
-→ fog animation partagée par BeeGeckoFogPolicy
-→ plus d'anneau sombre.
-### Validation GECKO-046
-
-code 0.15.3
-→ CI #225 GREEN
-→ prerelease téléphone 0.15.3
-→ validation Fab.
+Validation
+→ Samsung Multimedia capture
+→ Pierre présent
+→ anciens sons supprimés absents.

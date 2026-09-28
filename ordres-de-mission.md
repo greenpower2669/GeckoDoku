@@ -1,390 +1,579 @@
 # GECKODOKU — ORDRE DE MISSION ACTIF
 
-## GECKO-046 — REPÈRES LOGIQUES, CROIX 3 ÉTATS, VICTOIRE VIVANTE ET BROUILLARD
+## GECKO-047 — BARRES D’AXES GLOBALES + AUDIO CAPTURABLE
 
 Date : 2026-09-28  
 Branche : `gecko-039-sudoku-tap-gecko-gomoku`
 
-## ÉTAT VALIDÉ / AU VERT
+---
 
-GECKO-045 est considéré comme **validé par Fab**.
+# ÉTAT DE RÉFÉRENCE
 
-Ne pas régresser :
+Les acquis précédents restent valides sauf indication contraire explicite dans cette mission.
 
-- fenêtre carrée Abeilles & Geckos ;
-- navigation interne ;
+Conserver notamment :
+
+- Classic fonctionnel ;
+- Sudoku fonctionnel ;
+- Gomoku fonctionnel ;
+- GeckoBeeDoku / Abeilles & Geckos fonctionnel ;
+- viewport carré Bee ;
 - zoom / drag ;
-- Abeilles réduites à 50 % ;
-- keycolor VERT ;
-- ailes bleues conservées ;
-- plateau hexagonal ;
-- zones / axes / solveur / générateur ;
-- pédagogie du Prof ;
-- Classic / Sudoku / Gomoku ;
-- sauvegardes / stats / Hall / export-import.
+- Abeilles réduites ;
+- keycolor vert ;
+- solveurs / générateurs ;
+- Prof Gecko ;
+- sauvegardes / stats / Hall / export-import ;
+- musique / animations déjà présentes tant qu’elles ne contredisent pas la mission audio.
 
-La nouvelle mission porte sur les **repères visuels**, la **victoire animée** et le remplacement du **cercle noir de départage**.
+La présente mission remplace les choix précédents concernant :
 
----
-
-# A — DOUBLE CLIC : PALETTE DE REPÈRES LOGIQUES
-
-## 1 — DOUBLE CLIC CONTEXTUEL
-
-Dans GeckoBeeDoku / Abeilles & Geckos, le double clic doit ouvrir une palette logique plus riche.
-
-Le double clic doit permettre de choisir :
-
-- placer / confirmer un Gecko ;
-- placer / confirmer une Abeille ;
-- poser un repère Gecko ;
-- poser un repère Abeille ;
-- poser une barre d'exclusion d'axe ;
-- choisir / modifier une croix logique ;
-- retirer un repère.
-
-Ne pas supprimer les fonctions déjà accessibles par double clic : les intégrer à cette palette.
+- la grosse palette double-clic ;
+- les petites barres locales d’axe ;
+- l’usage des grosses croix par le Prof / solveur.
 
 ---
 
-## 2 — REPÈRE GECKO
+# PARTIE A — REPÈRES D’AXES SIMPLIFIÉS
 
-Créer un repère visuel Gecko :
+## 1 — DOUBLE CLIC : SEULEMENT 3 CHOIX VISUELS
 
-- couleur dominante **VERTE** ;
-- symbole Gecko ou marque claire ;
-- léger décalage par rapport au centre / axe de la case pour ne pas masquer la pièce ;
-- lisible même sans couleur grâce à une forme / symbole distinct.
+Le double clic doit être simplifié.
 
-Ce repère signifie :
+Ne plus afficher une longue liste de commandes.
 
-> « ici je soupçonne / projette un Gecko »
-
-Il ne valide pas automatiquement la solution.
-
----
-
-## 3 — REPÈRE ABEILLE
-
-Créer un repère visuel Abeille :
-
-- couleur dominante **JAUNE** ;
-- symbole Abeille ou marque claire ;
-- légèrement excentré de l'axe / centre pour rester lisible ;
-- distinct du repère Gecko même en vision dégradée.
-
-Ce repère signifie :
-
-> « ici je soupçonne / projette une Abeille »
-
-Il ne valide pas automatiquement la solution.
-
----
-
-## 4 — BARRES D'EXCLUSION D'AXE
-
-Ajouter des **barres d'exclusion** utilisables comme repères.
-
-Pour une case hexagonale, elles doivent pouvoir représenter les familles d'axes logiques :
-
-- axe ↖↘ ;
-- axe ↑↓ ;
-- axe ↗↙.
-
-Une barre d'exclusion signifie :
-
-> « cet axe / cette direction est éliminé(e) pour ce raisonnement »
-
-Les barres doivent être légèrement décalées / superposées sans masquer la case.
-
-Prévoir une représentation visuelle distincte :
-
-- trait / barre ;
-- orientation correspondant réellement à l'axe ;
-- contraste suffisant ;
-- pas uniquement la couleur.
-
----
-
-# B — CROIX À 3 ÉTATS
-
-## 5 — TROIS ÉTATS DE CROIX
-
-Les croix personnelles ne doivent plus être un simple état binaire.
-
-Créer trois états :
-
-### JAUNE
-Hypothèse / doute / piste en cours.
+Afficher un petit sélecteur visuel à **3 choix** :
 
 ### VERT
-Déduction validée / exclusion confirmée par le raisonnement.
+Repère Gecko.
+
+### JAUNE
+Repère Abeille.
 
 ### ROUGE
-Impossible / contradiction / exclusion forte.
+Repère / exclusion d’axe.
 
-Le joueur doit pouvoir faire évoluer une croix entre ces états.
-
-Exemple de cycle possible :
-
-`aucune → jaune → vert → rouge → aucune`
-
-Le cycle exact peut être ajusté pour rester ergonomique.
+Le but est que le double clic soit immédiat et lisible.
 
 ---
 
-## 6 — ACCESSIBILITÉ DES CROIX
+## 2 — CHOIX D’AXE DANS UNE SECONDE PETITE POPUP
 
-Ne pas dépendre uniquement de la couleur.
+Si le joueur choisit le repère ROUGE / AXE :
 
-Chaque état doit aussi avoir une différence perceptible par :
+ouvrir une seconde petite popup demandant seulement l’axe.
 
-- épaisseur ;
-- motif ;
-- petit symbole ;
-- style de trait ;
-- animation légère éventuelle.
+### Classic
+Proposer les axes pertinents du plateau carré :
+- horizontal ;
+- vertical.
 
----
+### GeckoBeeDoku
+Proposer les trois familles d’axes hexagonaux :
+- ↖↘ ;
+- ↑↓ ;
+- ↗↙.
 
-# C — PROF GECKO ET SOLVEUR : UTILISER LES MÊMES REPÈRES
-
-## 7 — SOURCE UNIQUE DE LANGAGE VISUEL
-
-Le Prof et le joueur doivent partager le même vocabulaire graphique.
-
-Quand le Prof explique :
-
-- un Gecko possible → repère Gecko vert ;
-- une Abeille possible → repère Abeille jaune ;
-- un axe impossible → barre d'exclusion orientée ;
-- une hypothèse → croix jaune / marque hypothèse ;
-- une déduction sûre → croix / contour vert ;
-- une contradiction → croix rouge.
-
-Le solveur doit produire les informations nécessaires au rendu.
-
-Ne pas créer un système graphique séparé pour le Prof.
+Ne pas mélanger toutes les commandes dans la première popup.
 
 ---
 
-## 8 — EXPLICATION SYNCHRONISÉE
+## 3 — UNE BARRE SEMI-TRANSPARENTE SUR TOUTE LA LONGUEUR
 
-Quand le Prof dit par exemple :
+Une exclusion d’axe ne doit plus être une petite barre sur une seule case.
 
-> « Cet axe contient déjà un Gecko »
-
-le plateau doit afficher en même temps :
-
-- l'axe concerné ;
-- la barre d'exclusion correspondante ;
-- le Gecko déjà responsable de l'exclusion.
-
-Quand il dit :
-
-> « Il ne reste que cette Abeille »
-
-afficher :
-
-- candidats précédents ;
-- exclusions ;
-- repère Abeille jaune sur la conclusion ;
-- éventuellement repère Gecko vert si le couple est déduit.
-
-Le texte et les repères doivent raconter exactement le même raisonnement.
-
----
-
-# D — VICTOIRE : MUSIQUE CLASSIC + TOUT LE MONDE S'ANIME
-
-## 9 — MUSIQUE DE VICTOIRE
-
-À la résolution d'une grille GeckoBeeDoku / Abeilles & Geckos :
-
-- utiliser **la même musique de victoire que le mode Classic** ;
-- ne pas créer une musique concurrente si celle du Classic existe déjà ;
-- conserver le comportement audio déjà validé.
-
----
-
-## 10 — ANIMATION DE TOUS LES GECKOS ET ABEILLES
-
-À la victoire :
-
-- activer / animer **tous les Geckos** de la grille ;
-- activer / animer **toutes les Abeilles** de la grille ;
-- pas uniquement la dernière pièce posée.
-
-L'effet doit donner une vraie sensation de plateau vivant.
-
-### Contraintes
-
-- rester dans le viewport carré ;
-- respecter le clipping ;
-- conserver les positions logiques ;
-- éviter de masquer tout le plateau ;
-- ne pas lancer des dizaines de vidéos lourdes simultanément si cela détruit les performances.
-
-Si nécessaire, utiliser :
-
-- une animation légère par sprite ;
-- des décalages de phase ;
-- une vague / séquence rapide ;
-- ou un système de batch.
-
-L'objectif visuel prime, mais l'APK doit rester fluide.
-
----
-
-# E — CLASSIC + GECKOBEEDOKU : REMPLACER LE CERCLE NOIR PAR DU BROUILLARD
-
-## 11 — CERCLE NOIR DE DÉPARTAGE
-
-Dans Classic et GeckoBeeDoku, le système actuel utilise un **cercle noir** pour signaler le choix / départage de la grille.
-
-Fab préfère une représentation plus organique.
-
-Le cercle noir doit être remplacé par :
-
-### un nuage de fumée / brouillard
+Elle doit devenir une **grande bande / barre semi-transparente** traversant toute la longueur utile du plateau dans l’axe choisi.
 
 Caractéristiques :
 
-- transparent ;
-- doux ;
-- animé ;
-- diffus ;
-- pas opaque ;
-- pas agressif ;
-- évoque un petit brouillard qui flotte sur la zone concernée.
+- semi-transparente ;
+- lisible mais non envahissante ;
+- attachée au repère logique du plateau ;
+- suit zoom / drag dans GeckoBeeDoku ;
+- ne masque pas les pièces ;
+- longueur couvrant l’axe entier visible / logique.
 
 ---
 
-## 12 — BROUILLARD = INDICATEUR, PAS MASQUE
+## 4 — BARRE DÉPLAÇABLE PAR DRAG
 
-Le brouillard ne doit jamais empêcher la lecture de la grille.
+Une fois créée, la barre d’axe doit pouvoir être déplacée par drag.
 
-Il doit :
+Le joueur doit pouvoir :
 
-- rester semi-transparent ;
-- laisser visibles couleurs, chiffres / pièces et contours ;
-- avoir un mouvement lent / vivant ;
-- être attaché à la zone logique concernée ;
-- suivre correctement zoom / déplacement quand le mode est zoomable.
+1. poser une barre d’un axe donné ;
+2. la saisir ;
+3. la faire glisser parallèlement à elle-même ;
+4. la déplacer sur la ligne / colonne / axe voulu.
 
----
+Le drag de la barre doit être distinct du drag de caméra.
 
-## 13 — MÊME MÉTAPHORE DANS CLASSIC ET GECKOBEEDOKU
-
-Le même concept visuel doit être utilisé dans les deux modes :
-
-- Classic ;
-- GeckoBeeDoku / Abeilles & Geckos.
-
-Éviter deux systèmes différents pour la même notion de départage.
+Prévoir une zone tactile suffisamment large pour être confortable.
 
 ---
 
-# F — PERSISTANCE
+## 5 — SUPPRESSION NATURELLE PAR SORTIE DU PLATEAU
 
-## 14 — REPÈRES JOUEUR
+Si le joueur fait glisser une barre complètement hors du plateau :
 
-Les nouveaux repères doivent être sauvegardés avec la partie :
+→ supprimer cette barre.
 
-- repère Gecko ;
-- repère Abeille ;
-- barres d'axe ;
-- croix jaune / verte / rouge.
+Pas besoin de bouton « supprimer ».
 
-Fermer / rouvrir l'application doit les restaurer.
-
-L'export / import doit aussi les conserver.
+Cette règle doit être cohérente dans Classic et GeckoBeeDoku.
 
 ---
 
-# G — TESTS
+## 6 — REPÈRES GECKO / ABEILLE
 
-## 15 — TESTS OBLIGATOIRES
+Les repères de pièce restent simples :
 
-Ajouter des tests pour :
+### Gecko
+- vert ;
+- clairement identifiable ;
+- discret.
 
-- cycle croix 3 états ;
-- persistance des trois états ;
-- repère Gecko ;
-- repère Abeille ;
-- barres d'axe ;
-- orientation correcte des trois axes ;
-- Prof utilisant les mêmes structures de repères ;
-- sauvegarde / reprise ;
-- victoire : déclenchement musique Classic ;
-- victoire : animation de tous les Geckos ;
-- victoire : animation de toutes les Abeilles ;
-- brouillard présent à la place du cercle noir ;
-- brouillard semi-transparent ;
-- non-régression Classic / Sudoku / Gomoku / GeckoBeeDoku.
+### Abeille
+- jaune ;
+- clairement identifiable ;
+- légèrement excentré pour ne pas se confondre avec le Gecko.
+
+Ces repères sont des notes / projections du joueur, pas des placements validés.
 
 ---
 
-# H — CRITÈRES DE VALIDATION TÉLÉPHONE
+# PARTIE B — PROF / SOLVEUR : SUPPRIMER LES CROIX MOCHES
 
-La mission est terminée seulement si Fab valide :
+## 7 — PAS DE GROSSES CROIX DE PROF
 
-- [ ] double clic ouvre la palette logique complète ;
-- [ ] repère Gecko vert lisible ;
-- [ ] repère Abeille jaune lisible et légèrement excentré ;
-- [ ] barres d'exclusion d'axe faciles à comprendre ;
-- [ ] croix jaune / verte / rouge pratiques ;
-- [ ] Prof utilise réellement ces repères dans ses explications ;
-- [ ] musique de victoire Classic dans GeckoBeeDoku ;
-- [ ] tous les Geckos s'animent à la victoire ;
-- [ ] toutes les Abeilles s'animent à la victoire ;
-- [ ] le cercle noir a disparu ;
-- [ ] brouillard transparent animé agréable ;
-- [ ] brouillard utilisé dans Classic ET GeckoBeeDoku ;
-- [ ] repères sauvegardés ;
-- [ ] aucune régression.
+Retirer les grosses croix graphiques actuellement utilisées par le Prof / solveur pour montrer les exclusions.
+
+Fab les trouve trop lourdes visuellement.
+
+Le Prof peut conserver :
+- surbrillances ;
+- contours ;
+- repères Gecko / Abeille ;
+- projections ;
+- barres d’axes globales.
+
+Mais éviter les grandes croix répétées sur la grille.
+
+---
+
+## 8 — TESTER LES BARRES GLOBALES POUR LES EXPLICATIONS
+
+Quand le solveur / Prof explique une exclusion d’axe :
+
+préférer une **barre globale semi-transparente** correspondant à l’axe concerné.
+
+Exemple :
+
+« Cette zone couleur A n’a plus que deux positions, toutes les deux sur ces deux colonnes.
+La zone couleur B possède exactement les mêmes deux colonnes possibles.
+Ces deux colonnes sont donc réservées à A et B, dans un ordre ou dans l’autre.
+Par projection, les autres candidats sur ces colonnes sont exclus. »
+
+Le Prof doit montrer :
+- les deux zones concernées ;
+- les quatre positions possibles si nécessaire ;
+- les deux axes réservés ;
+- les barres globales correspondant aux axes ;
+- les exclusions qui en découlent.
+
+Ne pas appeler cela X-Wing si la structure à 4 positions / 2×2 n’est pas réellement établie.
+
+Si ce n’est qu’une projection :
+dire explicitement **projection**.
+
+---
+
+## 9 — CROIX JOUEUR
+
+Les croix personnelles déjà présentes peuvent rester pour le moment si elles servent au joueur.
+
+Mais :
+
+- elles ne doivent plus être le langage principal du Prof ;
+- elles ne doivent pas encombrer le double clic ;
+- elles pourront être réévaluées après test téléphone.
+
+---
+
+# PARTIE C — AUDIO : RENDRE PIERRE ET TOUS LES SONS CAPTURABLES
+
+## 10 — CONTEXTE DE TEST RÉEL
+
+Test effectué sur téléphone Samsung avec :
+
+- AZ Screen Recorder ;
+- enregistreur d’écran Samsung natif ;
+- mode « Sons multimédia ».
+
+Résultat :
+
+- certains anciens sons GeckoDoku, pourtant devenus inaudibles dans le jeu, apparaissent encore dans l’enregistrement ;
+- Pierre est audible par Fab dans le casque / téléphone ;
+- MAIS Pierre n’est pas présent dans la vidéo enregistrée.
+
+Conclusion de travail :
+
+le problème est probablement dans le routage / la politique audio de GeckoDoku, pas dans le screen recorder.
+
+---
+
+## 11 — OBJECTIF AUDIO ABSOLU
+
+Obtenir :
+
+### Ce que Fab entend dans GeckoDoku
+=
+### ce que l’enregistreur Samsung capture
+
+pour tous les sons normaux du jeu.
+
+Et inversement :
+
+### Son supprimé / arrêté
+=
+### absent à l’oreille ET absent de l’enregistrement.
+
+---
+
+# PARTIE D — MANIFEST ANDROID
+
+## 12 — AUTORISER LA CAPTURE DE LECTURE AUDIO
+
+Auditer `AndroidManifest.xml`.
+
+Dans `<application>`, vérifier / ajouter explicitement :
+
+`android:allowAudioPlaybackCapture="true"`
+
+Ne pas ajouter `RECORD_AUDIO` pour résoudre ce problème.
+
+GeckoDoku ne doit pas enregistrer le micro.
+
+Il doit uniquement autoriser Android à capturer sa propre lecture audio.
+
+---
+
+# PARTIE E — POLITIQUE GLOBALE DE CAPTURE
+
+## 13 — ANDROID 10+ / API 29+
+
+Auditer l’application d’une politique globale de capture.
+
+Sur API 29+ utiliser, lorsque pertinent :
+
+`AudioManager.setAllowedCapturePolicy(AudioAttributes.ALLOW_CAPTURE_BY_ALL)`
+
+Protéger par version Android.
+
+Ne pas casser les versions plus anciennes.
+
+Au démarrage, logger :
+
+- version Android ;
+- politique demandée ;
+- politique appliquée ;
+- éventuelle impossibilité / exception.
+
+---
+
+# PARTIE F — PIERRE / TTS
+
+## 14 — AUDIT PRIORITAIRE DU CHEMIN PIERRE
+
+Identifier précisément le moteur utilisé par Pierre et son chemin audio réel.
+
+Auditer :
+
+- moteur TTS / Sherpa / Piper ;
+- AudioTrack éventuel ;
+- MediaPlayer éventuel ;
+- AudioAttributes ;
+- Usage ;
+- ContentType ;
+- stream ;
+- policy de capture.
+
+Pierre doit être considéré comme :
+
+- contenu = SPEECH ;
+- usage = MEDIA ;
+- capture = ALLOW_CAPTURE_BY_ALL.
+
+Cible conceptuelle API 29+ :
+
+`AudioAttributes.Builder()`
+`.setUsage(AudioAttributes.USAGE_MEDIA)`
+`.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)`
+`.setAllowedCapturePolicy(AudioAttributes.ALLOW_CAPTURE_BY_ALL)`
+`.build()`
+
+Sur API plus ancienne :
+appliquer les attributs disponibles sans appeler une API inexistante.
+
+---
+
+## 15 — INTERDICTIONS POUR PIERRE
+
+Vérifier que Pierre n’utilise pas accidentellement :
+
+- `USAGE_ASSISTANT` ;
+- `USAGE_VOICE_COMMUNICATION` ;
+- `ALLOW_CAPTURE_BY_NONE` ;
+- un stream système non capturable ;
+- un AudioTrack créé avec des attributs incompatibles avec AudioPlaybackCapture.
+
+Pierre doit rester une voix parlée, mais passer par un chemin média capturable.
+
+---
+
+# PARTIE G — MP3 / MUSIQUES / EFFETS
+
+## 16 — AUDIT DE TOUS LES LECTEURS
+
+Auditer au minimum :
+
+- MediaPlayer ;
+- Media3 / ExoPlayer si présents ;
+- SoundPool ;
+- AudioTrack ;
+- lecteurs vidéo ;
+- Sherpa / Piper ;
+- WebView audio si présent ;
+- autres moteurs internes.
+
+Pour chaque source audible par le joueur :
+
+- préférer `USAGE_GAME` ou `USAGE_MEDIA` selon le rôle ;
+- autoriser `ALLOW_CAPTURE_BY_ALL` sur API 29+ ;
+- ne pas modifier volume / priorité sans nécessité.
+
+---
+
+# PARTIE H — ANCIENS SONS FANTÔMES
+
+## 17 — NE PLUS CONFONDRE MUTE ET STOP
+
+Le test montre qu’un ancien son « supprimé » du jeu reste capturable.
+
+Auditer la différence entre :
+
+### réellement arrêté
+- stop ;
+- pause si reprise nécessaire ;
+- release si fin définitive.
+
+### seulement masqué
+- setVolume(0,0) ;
+- mute logiciel ;
+- piste à volume zéro ;
+- routage alternatif ;
+- lecteur toujours actif.
+
+Un son qui ne doit plus exister ne doit plus continuer à jouer silencieusement.
+
+---
+
+## 18 — RECHERCHER LES ANCIENS ENCOURAGEMENTS
+
+Chercher notamment :
+
+- anciens encouragements audio remplacés par Pierre ;
+- anciennes voix ;
+- anciens jingles ;
+- sons associés à anciennes animations ;
+- lecteurs conservés après changement de média.
+
+Identifier précisément la source fantôme entendue dans les captures écran.
+
+Documenter :
+- asset ;
+- lecteur ;
+- déclencheur ;
+- raison pour laquelle il continuait ;
+- correction.
+
+---
+
+# PARTIE I — VIDÉOS
+
+## 19 — PISTES AUDIO DES VIDÉOS
+
+Auditer les vidéos qui contiennent du son.
+
+Leur audio doit :
+
+- rester audible normalement ;
+- être capturable ;
+- ne pas réveiller un ancien son ;
+- ne pas couper Pierre ;
+- conserver les règles actuelles de coexistence visuelle.
+
+Cette mission concerne le routage audio.
+
+Ne pas réécrire la logique vidéo si elle n’est pas en cause.
+
+---
+
+# PARTIE J — LOGS AUDIO
+
+## 20 — LOGS DE DIAGNOSTIC LISIBLES
+
+Ajouter temporairement des logs homogènes.
+
+Exemples :
+
+`[AUDIO] source=PIERRE usage=MEDIA content=SPEECH capture=ALLOW_ALL`
+
+`[AUDIO] source=MUSIC usage=GAME capture=ALLOW_ALL`
+
+`[AUDIO] source=VIDEO usage=MEDIA capture=ALLOW_ALL`
+
+Lors d’un arrêt :
+
+`[AUDIO] STOP source=...`
+
+Lors d’une libération :
+
+`[AUDIO] RELEASE source=...`
+
+Le but est de voir immédiatement si un vieux lecteur reste vivant.
+
+---
+
+# PARTIE K — TESTS AUDIO
+
+## 21 — TEST A : SANS RECORDER
+
+Vérifier :
+
+- musique ;
+- effets ;
+- Pierre ;
+- vidéos ;
+- volume ;
+- synchronisation.
+
+Aucune régression audible.
+
+---
+
+## 22 — TEST B : ENREGISTREUR SAMSUNG
+
+Mode :
+
+« Sons multimédia ».
+
+Faire parler Pierre.
+
+Résultat attendu :
+
+### Pierre est présent dans la vidéo enregistrée.
+
+---
+
+## 23 — TEST C : ANCIEN SON SUPPRIMÉ
+
+Déclencher les anciennes situations concernées.
+
+Résultat attendu :
+
+le son supprimé est absent :
+
+- à l’oreille ;
+- dans la vidéo enregistrée.
+
+---
+
+## 24 — TEST D : PIERRE + VIDÉO / ANIMATION
+
+Faire parler Pierre pendant les séquences habituelles.
+
+Résultat attendu :
+
+- aucune nouvelle coupure ;
+- aucune régression visuelle ;
+- voix capturable ;
+- coexistence actuelle préservée.
+
+---
+
+# PARTIE L — NE PAS FAIRE
+
+Ne pas :
+
+- ajouter `RECORD_AUDIO` ;
+- demander « afficher par-dessus les autres applications » comme pseudo-correctif ;
+- enregistrer le micro nous-mêmes ;
+- modifier artificiellement le volume de Pierre ;
+- réintroduire les anciens encouragements ;
+- casser la synchro Pierre / animation ;
+- considérer le manifeste seul comme solution complète ;
+- publier une release définitive sans validation Fab.
+
+---
+
+# PARTIE M — DOCUMENTATION FAB COPILOT
+
+## 25 — FICHIERS VIVANTS
+
+Toute intervention de code doit mettre à jour dans le même commit :
+
+- `ordres-de-mission.md` ;
+- `brain.md` ;
+- `brainmap.md` ;
+- `debughistorical.md` ;
+- `todo.md`.
+
+Documenter :
+
+- cause trouvée ;
+- lecteurs concernés ;
+- AudioAttributes avant / après ;
+- ancien son fantôme identifié ou non ;
+- fichiers modifiés ;
+- tests ;
+- résultat CI ;
+- APK/AAB généré.
+
+---
+
+# CRITÈRES DE VALIDATION
+
+## Repères
+
+- [ ] double clic réduit à 3 choix visuels ;
+- [ ] choix ROUGE ouvre seulement le choix d’axe ;
+- [ ] barre semi-transparente sur toute la longueur du plateau ;
+- [ ] barre déplaçable par drag ;
+- [ ] barre supprimée si glissée hors plateau ;
+- [ ] Prof n’utilise plus les grosses croix ;
+- [ ] Prof peut utiliser les barres globales pour ses projections ;
+- [ ] Classic et GeckoBeeDoku cohérents.
+
+## Audio
+
+- [ ] `allowAudioPlaybackCapture=true` vérifié ;
+- [ ] policy globale API 29+ vérifiée ;
+- [ ] Pierre = MEDIA + SPEECH + ALLOW_ALL ;
+- [ ] musique / effets / vidéo capturables ;
+- [ ] aucun ancien son fantôme ;
+- [ ] logs audio cohérents ;
+- [ ] test Samsung : Pierre enregistré ;
+- [ ] aucun changement de volume perçu ;
+- [ ] aucune régression animation / vidéo / pédagogie.
 
 ---
 
 # PRINCIPE DIRECTEUR
 
-Les repères du joueur et ceux du Prof doivent parler **le même langage visuel**.
+## VISUEL
+**Double clic simple → couleur → axe si nécessaire → grande barre globale draggable.**
 
-Le joueur doit pouvoir poser exactement les mêmes types d'indices que ceux qu'il voit dans une démonstration du Prof.
-
-Et lors de la victoire :
-
-**tout le plateau prend vie.**
----
-
-## GECKO-046 — implémentation 0.15.3-dev
-
-Version cible : **0.15.3-dev** / versionCode **38**.
-
-Implémenté dans la passe en cours :
-
-- palette logique enrichie sur double clic ;
-- repère Gecko vert ;
-- repère Abeille jaune, décalé du centre ;
-- barres d'exclusion pour les trois axes hexagonaux ;
-- croix à trois états : jaune → vert → rouge → aucune ;
-- le solveur/Prof produit les mêmes structures visuelles que le joueur ;
-- sauvegarde des cross states et des nouveaux repères logiques ;
-- migration de session Bee schema 2 → 3 ;
-- musique de victoire Classic réutilisée pour GeckoBeeDoku ;
-- animation de victoire légère sur toutes les pièces Gecko/Abeille ;
-- animation de victoire ajoutée aux Geckos Classic ;
-- cercle de départ remplacé par un brouillard animé transparent dans Classic et GeckoBeeDoku ;
-- tests unitaires des nouveaux marqueurs / croix / brouillard.
-
-Ne pas déclarer la mission terminée avant CI GREEN et test téléphone Fab.
-### Jalon GECKO-046
-
-CI #225 GREEN sur la 0.15.3-dev :
-- tests unitaires GREEN ;
-- build phone APK GREEN ;
-- nouveaux repères / cross states compilés ;
-- victoire vivante compilée ;
-- brouillard Classic + GeckoBeeDoku compilé.
-
-Publication téléphone directe demandée via commit [phone-release].
+## AUDIO
+**Ce que Fab entend = ce que Samsung enregistre.  
+Ce qui est supprimé = réellement arrêté.**

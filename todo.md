@@ -1,101 +1,78 @@
 # GeckoDoku — TODO actif
 
-## GECKO-045
-- [x] viewport carré ;
-- [x] navigation interne ;
-- [x] Abeilles 50 % ;
-- [x] keycolor vert ;
-- [x] CI / APK ;
-- [x] validation téléphone Fab.
+## GECKO-047 — REPÈRES
 
-## GECKO-046 — mission active
+- [ ] simplifier double clic à 3 choix ;
+- [ ] vert = repère Gecko ;
+- [ ] jaune = repère Abeille ;
+- [ ] rouge = repère Axe ;
+- [ ] seconde popup uniquement pour l’axe ;
+- [ ] Classic : barres horizontale / verticale ;
+- [ ] GeckoBee : barres Q / R / S ;
+- [ ] barre semi-transparente pleine longueur ;
+- [ ] drag parallèle de la barre ;
+- [ ] suppression si barre complètement hors plateau ;
+- [ ] conserver caméra/drag distinct du drag de barre ;
+- [ ] retirer les grosses croix du Prof ;
+- [ ] faire utiliser les AxisBars au Prof si pédagogiquement utile ;
+- [ ] améliorer le texte des projections deux zones / deux axes ;
+- [ ] ne pas appeler X-Wing une simple projection.
 
-### Repères joueur
-- [ ] auditer la palette double clic actuelle ;
-- [ ] intégrer placement Gecko / Abeille + repères dans une palette commune ;
-- [ ] ajouter repère Gecko vert ;
-- [ ] ajouter repère Abeille jaune avec offset ;
-- [ ] ajouter barres d'exclusion Q/R/S ;
-- [ ] ajouter suppression / modification des repères.
+## GECKO-047 — AUDIO
 
-### Croix
-- [ ] définir structure cross state ;
-- [ ] jaune = hypothèse ;
-- [ ] vert = déduction confirmée ;
-- [ ] rouge = impossible ;
-- [ ] cycle ergonomique ;
-- [ ] rendu accessible hors couleur.
+### Manifest / policy
+- [ ] auditer AndroidManifest ;
+- [ ] vérifier / ajouter allowAudioPlaybackCapture=true ;
+- [ ] ne pas ajouter RECORD_AUDIO ;
+- [ ] auditer AudioManager capture policy ;
+- [ ] appliquer ALLOW_CAPTURE_BY_ALL sur API 29+ si pertinent ;
+- [ ] log Android version + capture policy.
 
-### Prof / solveur
-- [ ] faire produire les repères par le solveur ;
-- [ ] rendre les mêmes structures côté Prof ;
-- [ ] synchroniser texte + graphisme.
+### Pierre
+- [ ] tracer le chemin exact Sherpa/Piper/Pierre ;
+- [ ] identifier lecteur final ;
+- [ ] auditer AudioAttributes ;
+- [ ] USAGE_MEDIA ;
+- [ ] CONTENT_TYPE_SPEECH ;
+- [ ] ALLOW_CAPTURE_BY_ALL API 29+ ;
+- [ ] éliminer usages non capturables.
 
-### Victoire
-- [ ] identifier musique de victoire Classic ;
-- [ ] réutiliser cette musique dans GeckoBeeDoku ;
-- [ ] animer tous les Geckos ;
-- [ ] animer toutes les Abeilles ;
-- [ ] préserver performance / clipping.
+### Autres sons
+- [ ] MediaPlayer ;
+- [ ] SoundPool ;
+- [ ] AudioTrack ;
+- [ ] vidéos ;
+- [ ] Media3 / ExoPlayer si présents ;
+- [ ] WebView audio si présent.
 
-### Brouillard
-- [ ] identifier précisément le cercle noir de départage Classic ;
-- [ ] identifier son équivalent GeckoBeeDoku ;
-- [ ] remplacer par brouillard transparent animé ;
-- [ ] partager le même composant / policy entre les deux modes.
+### Sons fantômes
+- [ ] chercher anciens encouragements ;
+- [ ] chercher anciennes voix ;
+- [ ] chercher lecteurs mute volume=0 ;
+- [ ] remplacer faux mute par STOP / RELEASE lorsque approprié ;
+- [ ] identifier précisément le son fantôme des captures.
 
-### Persistance
-- [ ] sauvegarder repères Gecko/Bee ;
-- [ ] sauvegarder exclusions axes ;
-- [ ] sauvegarder cross states ;
-- [ ] export/import.
+### Logs
+- [ ] [AUDIO] source / usage / content / capture ;
+- [ ] [AUDIO] STOP ;
+- [ ] [AUDIO] RELEASE.
 
-### Validation
+### Tests
+- [ ] test sans recorder ;
+- [ ] test Samsung Sons multimédia ;
+- [ ] Pierre présent dans vidéo ;
+- [ ] vieux son supprimé absent de vidéo ;
+- [ ] Pierre + vidéo sans régression ;
+- [ ] volume perçu inchangé ;
+- [ ] animations inchangées.
+
+## Documentation / livraison
+
+- [x] mission GECKO-047 documentée avant code ;
+- [ ] audit ;
+- [ ] code + 5 fichiers vivants même commit ;
 - [ ] tests unitaires ;
 - [ ] CI GREEN ;
-- [ ] APK téléphone direct ;
-- [ ] validation Fab.
-## GECKO-046 — code 0.15.3 préparé
-
-### Repères
-- [x] cross state jaune / vert / rouge ;
-- [x] repère Gecko vert ;
-- [x] repère Abeille jaune excentré ;
-- [x] barres Q/R/S ;
-- [x] palette double clic enrichie ;
-- [x] renderer partagé Prof / joueur.
-
-### Solveur / Prof
-- [x] mapping solve step → repères communs ;
-- [x] exclusions Prof rendues avec les mêmes croix / barres.
-
-### Persistance
-- [x] session schema 3 ;
-- [x] compat schema 2 ;
-- [x] cross states persistés ;
-- [x] logical markers persistés.
-
-### Victoire
-- [x] musique Classic dans GeckoBeeDoku ;
-- [x] animation de toutes les pièces Bee ;
-- [x] animation de tous les Geckos Classic.
-
-### Brouillard
-- [x] anneau donné Classic remplacé ;
-- [x] anneau donné Bee remplacé ;
-- [x] brouillard animé semi-transparent.
-
-### Validation
-- [x] tests unitaires marqueurs / axes / cycle croix / fog ;
-- [ ] CI GREEN ;
-- [ ] APK téléphone ;
-- [ ] validation Fab.
-### GECKO-046 — après CI #225
-- [x] tests GREEN ;
-- [x] build phone GREEN ;
-- [x] code repères / croix / Prof / victoire / brouillard validé CI ;
-- [ ] publier prerelease téléphone 0.15.3 ;
-- [ ] Fab valide double clic / repères ;
-- [ ] Fab valide croix 3 états ;
-- [ ] Fab valide victoire vivante ;
-- [ ] Fab valide brouillard Classic + GeckoBeeDoku.
+- [ ] APK/AAB de test ;
+- [ ] validation Fab ;
+- [ ] pas de release définitive sans validation.

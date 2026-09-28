@@ -1,84 +1,87 @@
 # GeckoDoku — brain
 
-## État validé au 2026-09-28
+## État stable au 2026-09-28
 
-Branche : `gecko-039-sudoku-tap-gecko-gomoku`
+Branche :
+`gecko-039-sudoku-tap-gecko-gomoku`
 
-### GECKO-045
-Validé par Fab :
+### Validé / conservé
+- Classic ;
+- Sudoku ;
+- Gomoku ;
+- GeckoBeeDoku ;
 - viewport carré Bee ;
-- navigation ;
 - zoom / drag ;
 - Bee scale 50 % ;
 - keycolor vert ;
-- plateau et logique.
+- logique / solveurs / générateurs ;
+- stats / Hall / sauvegardes / export-import.
 
-Considérer GECKO-045 comme acquis.
-
-## Mission active — GECKO-046
-
-Axes :
-
-1. Palette logique au double clic.
-2. Repère Gecko vert.
-3. Repère Abeille jaune, légèrement excentré.
-4. Barres d'exclusion orientées sur les 3 axes hex.
-5. Croix personnelles à 3 états :
-   - jaune = hypothèse ;
-   - vert = déduction sûre ;
-   - rouge = impossible.
-6. Prof / solveur utilisent ces mêmes structures graphiques.
-7. Victoire GeckoBeeDoku :
-   - musique de victoire Classic ;
-   - tous les Geckos animés ;
-   - toutes les Abeilles animées.
-8. Classic + GeckoBeeDoku :
-   - remplacer le cercle noir de départage par un brouillard transparent animé.
-9. Persister / exporter tous les nouveaux repères.
-
-### Invariant
-
-Un seul langage graphique partagé entre joueur, solveur et Prof.
-
-Ne pas refaire la logique du puzzle.
-## GECKO-046 — implémentation 0.15.3-dev
-
-Nouveau langage logique Bee :
-
-- `BeeGeckoCrossState` :
-  - HYPOTHESIS = jaune ;
-  - CONFIRMED = vert ;
-  - IMPOSSIBLE = rouge.
-- `BeeGeckoLogicalMarks` :
-  - geckoCandidate ;
-  - beeCandidate ;
-  - excludedAxes Q/R/S.
-- `BeeGeckoProfessorMarkerPolicy` transforme un `BeeGeckoSolveStep` en ces mêmes repères.
-
-Le moteur conserve `manualCrosses` comme vue logique dérivée : jaune n'exclut pas le solveur ; vert/rouge sont de vraies exclusions.
-
-Persistance :
-- Bee session schema 3 ;
-- lecture de schema 2 conservée ;
-- crossStates + logicalMarkers exportés dans les mêmes SharedPreferences, donc l'export/import global reste compatible.
-
-Victoire :
-- GeckoBeeDoku appelle la musique `AssetAudioCatalog.CELEBRATION` via la même méthode que Classic ;
-- `BeeGeckoBoardView.startVictoryAnimation()` pulse toutes les pièces ;
-- Classic reçoit aussi `GeckoBoardView.startVictoryAnimation()`.
-
-Départage :
-- ancien anneau autour des givens remplacé par un brouillard animé semi-transparent dans Classic et GeckoBeeDoku.
-## GECKO-046 — CI #225 GREEN
-
-La 0.15.3-dev passe la CI complète. Les changements sont maintenant techniquement validés :
-- palette logique ;
-- repères Gecko/Bee ;
-- barres axes ;
+### GECKO-046
+La 0.15.3-dev a passé la CI et a introduit :
+- repères logiques ;
 - croix 3 états ;
-- Prof utilisant le même langage visuel ;
-- persistance schema 3 ;
-- musique Classic + animation globale à la victoire ;
-- brouillard à la place de l'anneau donné.
+- victoire vivante ;
+- brouillard ;
+- persistance schema 3.
 
-Prochaine porte : validation téléphone Fab.
+Mais Fab simplifie maintenant l’UX :
+- trop de choix au double clic ;
+- grosses croix du Prof jugées moches.
+
+## Mission active : GECKO-047
+
+### Repères
+Le double clic doit devenir un sélecteur à 3 choix :
+- vert = Gecko ;
+- jaune = Abeille ;
+- rouge = axe.
+
+Rouge ouvre une seconde mini-popup pour choisir l’axe.
+
+L’axe est représenté par une grande barre semi-transparente couvrant le plateau.
+Cette barre est draggable parallèlement à elle-même.
+Si elle est glissée hors plateau → suppression.
+
+Le Prof ne doit plus utiliser de grosses croix.
+Tester les grandes barres globales comme langage principal des exclusions d’axes.
+
+Les croix joueur peuvent rester temporairement mais hors du langage Prof et hors de la popup double-clic.
+
+### Pédagogie
+Pour une projection de type deux zones / deux colonnes :
+le Prof doit expliciter les couleurs/zones, les deux positions de chacune, les axes communs, puis seulement les exclusions.
+Ne pas appeler X-Wing une simple projection.
+
+## Mission audio active
+
+Symptôme réel :
+- Pierre audible par Fab ;
+- Pierre absent de la capture Samsung / AZ en mode sons multimédia ;
+- certains anciens sons inaudibles dans le jeu restent présents dans la capture.
+
+Hypothèse :
+routage / AudioAttributes / lecteurs fantômes.
+
+Objectif :
+`heard_in_game == captured_by_screen_recorder`
+
+Et :
+`disabled_sound == stopped_and_not_captured`
+
+Audit requis :
+- manifest `allowAudioPlaybackCapture` ;
+- policy globale API 29+ ;
+- Pierre / Sherpa / Piper ;
+- MediaPlayer ;
+- SoundPool ;
+- AudioTrack ;
+- vidéo ;
+- anciens encouragements / sons remplacés.
+
+Pierre cible :
+- USAGE_MEDIA ;
+- CONTENT_TYPE_SPEECH ;
+- ALLOW_CAPTURE_BY_ALL sur API 29+.
+
+Ne pas ajouter RECORD_AUDIO.
