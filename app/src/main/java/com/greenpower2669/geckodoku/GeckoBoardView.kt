@@ -29,6 +29,13 @@ class GeckoBoardView @JvmOverloads constructor(
     var onLongPressCell: ((Cell) -> Unit)? = null
     var onLongPressOutside: (() -> Unit)? = null
 
+    var onAxisGuideMoved:
+        ((
+            ClassicAxisGuide,
+            ClassicAxisGuide?
+        ) -> Unit)? =
+        null
+
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     private val geckoBitmap: Bitmap? =
@@ -54,6 +61,14 @@ class GeckoBoardView @JvmOverloads constructor(
     private var professorTargets: Set<Cell> = emptySet()
     private var professorGhosts: Set<Cell> = emptySet()
     private var professorLevel = 0
+
+    private var professorAxisGuides:
+        Set<ClassicAxisGuide> =
+        emptySet()
+
+    private var draggingAxisGuide:
+        ClassicAxisGuide? =
+        null
 
     private var victoryStartedAt =
         0L
@@ -159,6 +174,10 @@ class GeckoBoardView @JvmOverloads constructor(
         professorGhosts =
             emptySet()
 
+        professorAxisGuides =
+            ClassicProfessorAxisGuidePolicy
+                .forStep(step)
+
         invalidate()
     }
 
@@ -172,6 +191,8 @@ class GeckoBoardView @JvmOverloads constructor(
             emptySet()
         professorGhosts =
             step.sourceCells
+        professorAxisGuides =
+            emptySet()
         invalidate()
     }
 
@@ -187,6 +208,8 @@ class GeckoBoardView @JvmOverloads constructor(
         professorSources = emptySet()
         professorTargets = emptySet()
         professorGhosts = emptySet()
+        professorAxisGuides =
+            emptySet()
         invalidate()
     }
 
@@ -254,8 +277,122 @@ class GeckoBoardView @JvmOverloads constructor(
 
     override fun onTouchEvent(
         event: MotionEvent
-    ): Boolean =
-        gestures.onTouchEvent(event)
+    ): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                val guide =
+                    findAxisGuideAt(
+                        event.x,
+                        event.y
+                    )
+
+                if (guide != null) {
+                    draggingAxisGuide =
+                        guide
+                    parent
+                        ?.requestDisallowInterceptTouchEvent(
+                            true
+                        )
+                    return true
+                }
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                val active =
+                    draggingAxisGuide
+
+                if (active != null) {
+                    val moved =
+                        guideAtPointer(
+                            active.kind,
+                            event.x,
+                            event.y
+                        )
+
+                    if (
+                        moved != null &&
+                        moved != active
+                    ) {
+                        onAxisGuideMoved
+                            ?.invoke(
+                                active,
+                                moved
+                            )
+
+                        draggingAxisGuide =
+                            moved
+                    }
+
+                    invalidate()
+                    return true
+                }
+            }
+
+            MotionEvent.ACTION_UP -> {
+                val active =
+                    draggingAxisGuide
+
+                if (active != null) {
+                    val final =
+                        guideAtPointer(
+                            active.kind,
+                            event.x,
+                            event.y
+                        )
+
+                    if (final == null) {
+                        onAxisGuideMoved
+                            ?.invoke(
+                                active,
+                                null
+                            )
+                    } else if (
+                        final != active
+                    ) {
+                        onAxisGuideMoved
+                            ?.invoke(
+                                active,
+                                final
+                            )
+                    }
+
+                    draggingAxisGuide =
+                        null
+
+                    parent
+                        ?.requestDisallowInterceptTouchEvent(
+                            false
+                        )
+
+                    invalidate()
+                    performClick()
+                    return true
+                }
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                if (
+                    draggingAxisGuide !=
+                        null
+                ) {
+                    draggingAxisGuide =
+                        null
+
+                    parent
+                        ?.requestDisallowInterceptTouchEvent(
+                            false
+                        )
+
+                    invalidate()
+                    return true
+                }
+            }
+        }
+
+        return gestures.onTouchEvent(
+            event
+        )
+    }
 
     override fun onDraw(
         canvas: Canvas
@@ -281,6 +418,16 @@ class GeckoBoardView @JvmOverloads constructor(
 
         drawRegions(canvas)
         drawGrid(canvas)
+        drawAxisGuides(
+            canvas,
+            state.axisGuides,
+            professor = false
+        )
+        drawAxisGuides(
+            canvas,
+            professorAxisGuides,
+            professor = true
+        )
         drawMarks(canvas, state)
         drawProfessorGhosts(canvas, state)
         drawProfessorOverlay(canvas)
@@ -441,6 +588,224 @@ class GeckoBoardView @JvmOverloads constructor(
                 }
             }
         }
+    }
+
+    private fun drawAxisGuides(
+        canvas: Canvas,
+        guides:
+            Set<ClassicAxisGuide>,
+        professor: Boolean
+    ) {
+        if (guides.isEmpty()) {
+            return
+        }
+
+        paint.style =
+            Paint.Style.FILL
+
+        paint.color =
+            if (professor) {
+                Color.argb(
+                    58,
+                    220,
+                    120,
+                    20
+                )
+            } else {
+                Color.argb(
+                    62,
+                    190,
+                    45,
+                    45
+                )
+            }
+
+        val half =
+            cellSize *
+                .17f
+
+        guides.forEach {
+            guide ->
+            when (guide.kind) {
+                ClassicAxisGuideKind
+                    .HORIZONTAL -> {
+                    if (
+                        guide.index !in
+                            0 until puzzle.size
+                    ) {
+                        return@forEach
+                    }
+
+                    val y =
+                        boardRect.top +
+                            (
+                                guide.index +
+                                    .5f
+                                ) *
+                                cellSize
+
+                    canvas.drawRect(
+                        boardRect.left,
+                        y - half,
+                        boardRect.right,
+                        y + half,
+                        paint
+                    )
+                }
+
+                ClassicAxisGuideKind
+                    .VERTICAL -> {
+                    if (
+                        guide.index !in
+                            0 until puzzle.size
+                    ) {
+                        return@forEach
+                    }
+
+                    val x =
+                        boardRect.left +
+                            (
+                                guide.index +
+                                    .5f
+                                ) *
+                                cellSize
+
+                    canvas.drawRect(
+                        x - half,
+                        boardRect.top,
+                        x + half,
+                        boardRect.bottom,
+                        paint
+                    )
+                }
+            }
+        }
+    }
+
+    private fun findAxisGuideAt(
+        x: Float,
+        y: Float
+    ): ClassicAxisGuide? {
+        if (
+            !::snapshotProvider
+                .isInitialized ||
+            !boardRect
+                .contains(
+                    x,
+                    y
+                )
+        ) {
+            return null
+        }
+
+        val guides =
+            snapshotProvider()
+                .axisGuides
+
+        val threshold =
+            maxOf(
+                cellSize *
+                    .25f,
+                dp(16f)
+            )
+
+        return guides
+            .map {
+                guide ->
+                guide to
+                    when (guide.kind) {
+                        ClassicAxisGuideKind
+                            .HORIZONTAL ->
+                            kotlin.math.abs(
+                                y -
+                                    (
+                                        boardRect.top +
+                                            (
+                                                guide.index +
+                                                    .5f
+                                                ) *
+                                                cellSize
+                                        )
+                            )
+
+                        ClassicAxisGuideKind
+                            .VERTICAL ->
+                            kotlin.math.abs(
+                                x -
+                                    (
+                                        boardRect.left +
+                                            (
+                                                guide.index +
+                                                    .5f
+                                                ) *
+                                                cellSize
+                                        )
+                            )
+                    }
+            }
+            .minByOrNull {
+                it.second
+            }
+            ?.takeIf {
+                it.second <=
+                    threshold
+            }
+            ?.first
+    }
+
+    private fun guideAtPointer(
+        kind: ClassicAxisGuideKind,
+        x: Float,
+        y: Float
+    ): ClassicAxisGuide? {
+        if (
+            !boardRect
+                .contains(
+                    x,
+                    y
+                )
+        ) {
+            return null
+        }
+
+        val index =
+            when (kind) {
+                ClassicAxisGuideKind
+                    .HORIZONTAL ->
+                    (
+                        (
+                            y -
+                                boardRect.top
+                            ) /
+                            cellSize
+                        )
+                        .toInt()
+
+                ClassicAxisGuideKind
+                    .VERTICAL ->
+                    (
+                        (
+                            x -
+                                boardRect.left
+                            ) /
+                            cellSize
+                        )
+                        .toInt()
+            }
+
+        if (
+            index !in
+                0 until puzzle.size
+        ) {
+            return null
+        }
+
+        return ClassicAxisGuide(
+            kind =
+                kind,
+            index =
+                index
+        )
     }
 
     private fun drawMarks(

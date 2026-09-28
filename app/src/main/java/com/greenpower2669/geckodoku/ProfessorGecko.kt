@@ -101,8 +101,7 @@ object ProfessorGecko {
                     " candidats projettent la même interdiction."
 
             SolveTechnique.GECKO_X_WING ->
-                "Prof Gecko : cherche le Gecko X-Wing sur " +
-                    (step.axis ?: "les cases surlignées") + "."
+                "Prof Gecko : regarde les quatre positions qui forment le rectangle logique. Je vais te montrer les deux axes réellement réservés."
 
             SolveTechnique.HYPOTHESIS_TEST ->
                 "Prof Gecko : les déductions certaines sont épuisées. Testons les deux candidats de " +
@@ -138,7 +137,9 @@ object ProfessorGecko {
                     " cases. Chaque case cible toucherait le gecko quel que soit le candidat choisi, y compris en diagonale : elle est donc impossible."
 
             SolveTechnique.GECKO_X_WING ->
-                "Deux geckos obligatoires sont enfermés dans les mêmes deux axes. On ne sait pas lequel prend quelle position, mais ces axes leur sont réservés : les autres candidats de ces axes sont impossibles."
+                xWingExplanation(
+                    step
+                )
 
             SolveTechnique.HYPOTHESIS_TEST -> {
                 val bad = step.hypothesisRejected
@@ -210,16 +211,78 @@ object ProfessorGecko {
             val cell =
                 step.eliminated.first()
 
-            return "Je pose la croix certaine en ligne " +
+            return "Cette case devient certainement impossible : ligne " +
                 (cell.row + 1) +
                 ", colonne " +
                 (cell.col + 1) +
                 "."
         }
 
-        return "Je pose " +
+        return "Je confirme " +
             step.eliminated.size +
-            " exclusions certaines sur la grille."
+            " exclusions certaines. Les barres montrent les axes concernés lorsqu'il y en a."
+    }
+
+    private fun xWingExplanation(
+        step: SolveStep
+    ): String {
+        val rows =
+            step.sourceCells
+                .map {
+                    it.row
+                }
+                .toSortedSet()
+
+        val cols =
+            step.sourceCells
+                .map {
+                    it.col
+                }
+                .toSortedSet()
+
+        if (
+            step.sourceCells.size ==
+                4 &&
+            rows.size ==
+                2 &&
+            cols.size ==
+                2
+        ) {
+            val rowText =
+                rows.joinToString(
+                    " et "
+                ) {
+                    "ligne " +
+                        (it + 1)
+                }
+
+            val colText =
+                cols.joinToString(
+                    " et "
+                ) {
+                    "colonne " +
+                        (it + 1)
+                }
+
+            return if (
+                step.sourceRegions.size ==
+                    2
+            ) {
+                "La zone colorée A n’a plus que deux positions possibles et la zone colorée B possède les mêmes deux axes. Les quatre positions sont donc le rectangle formé par " +
+                    rowText +
+                    " et " +
+                    colText +
+                    ". On ne sait pas quel gecko prend quelle position, mais les deux axes sont réservés à A et B. Par projection, aucun autre candidat ne peut rester sur les axes d’exclusion montrés."
+            } else {
+                "Il y a exactement quatre positions : deux sur " +
+                    rowText +
+                    " et les mêmes deux sur " +
+                    colText +
+                    ". Le choix peut se croiser dans un sens ou dans l’autre, mais les deux axes sont forcément occupés par ces deux geckos. Par projection, les autres candidats de ces axes sont exclus."
+            }
+        }
+
+        return "Projection : deux groupes de candidats réservent les mêmes axes. Je montre les axes concernés avant d’appliquer les exclusions."
     }
 
     private fun actionText(step: SolveStep): String {
@@ -234,7 +297,7 @@ object ProfessorGecko {
         val remainingTargets = step.eliminated.size
         if (remainingTargets == 1) {
             val cell = step.eliminated.first()
-            return "Action : pose une croix en ligne " +
+            return "Action : cette case est exclue, ligne " +
                 (cell.row + 1) +
                 ", colonne " +
                 (cell.col + 1) +
@@ -243,6 +306,6 @@ object ProfessorGecko {
 
         return "Action : les " +
             remainingTargets +
-            " cases encadrées sont impossibles. Tu peux y poser des croix."
+            " cases encadrées sont impossibles. Observe les axes réservés avant de continuer."
     }
 }

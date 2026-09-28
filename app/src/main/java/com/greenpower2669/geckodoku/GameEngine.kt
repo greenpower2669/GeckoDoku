@@ -6,6 +6,9 @@ class GameEngine(val puzzle: Puzzle) {
     private val hypotheses = linkedMapOf<Cell, HypothesisMark>()
     private val customMarkers = linkedMapOf<Cell, CustomMarker>()
 
+    private val axisGuides =
+        linkedSetOf<ClassicAxisGuide>()
+
     var mistakes: Int = 0
         private set
 
@@ -16,6 +19,7 @@ class GameEngine(val puzzle: Puzzle) {
         autoCrosses = computeAutoCrosses(),
         hypotheses = hypotheses.toMap(),
         customMarkers = customMarkers.toMap(),
+        axisGuides = axisGuides.toSet(),
         mistakes = mistakes,
         complete = confirmed.size == puzzle.size
     )
@@ -67,6 +71,29 @@ class GameEngine(val puzzle: Puzzle) {
         }
         if (next == HypothesisMark.NONE) hypotheses.remove(cell) else hypotheses[cell] = next
         return ActionFeedback.HYPOTHESIS_CHANGED
+    }
+
+    fun toggleAxisGuide(
+        guide: ClassicAxisGuide
+    ) {
+        if (!axisGuides.add(guide)) {
+            axisGuides.remove(guide)
+        }
+    }
+
+    fun moveAxisGuide(
+        from: ClassicAxisGuide,
+        to: ClassicAxisGuide?
+    ) {
+        axisGuides.remove(from)
+
+        if (
+            to != null &&
+            to.index in
+                0 until puzzle.size
+        ) {
+            axisGuides.add(to)
+        }
     }
 
     fun placeCustomMarker(cell: Cell, marker: CustomMarker?): ActionFeedback {

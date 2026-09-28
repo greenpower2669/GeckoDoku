@@ -76,3 +76,39 @@
 - [ ] APK/AAB de test ;
 - [ ] validation Fab ;
 - [ ] pas de release définitive sans validation.
+## GECKO-047 — code 0.15.4 préparé
+
+### Repères / axes
+- [x] popup Classic 3 choix ;
+- [x] popup Bee 3 choix ;
+- [x] seconde popup axe ;
+- [x] bandes globales Classic ;
+- [x] bandes globales Bee ;
+- [x] drag Classic ;
+- [x] drag Bee ;
+- [x] sortie plateau = suppression ;
+- [x] Prof Bee sans grosses croix ;
+- [x] Prof Bee utilise bandes globales ;
+- [x] Prof Classic utilise bandes globales ;
+- [x] clarification pédagogique X-Wing / projection.
+
+### Audio
+- [x] manifest allowAudioPlaybackCapture ;
+- [x] global ALLOW_CAPTURE_BY_ALL API29+ ;
+- [x] Pierre PCM → MEDIA/SPEECH ;
+- [x] Android TTS fallback → MEDIA/SPEECH ;
+- [x] music MediaPlayer capturable ;
+- [x] video MediaPlayer capturable ;
+- [x] vidéos muted : piste audio désélectionnée ;
+- [x] logs AUDIO START/STOP/RELEASE ;
+- [x] pas de RECORD_AUDIO.
+
+### Tests
+- [x] test policy barre Classic ;
+- [x] test X-Wing axes réservés ;
+- [x] test hard-mute Gecko/Bee media ;
+- [ ] CI GREEN ;
+- [ ] APK/AAB test ;
+- [ ] Fab teste capture Samsung : Pierre présent ;
+- [ ] Fab vérifie disparition ancien son fantôme ;
+- [ ] Fab valide drag des barres.

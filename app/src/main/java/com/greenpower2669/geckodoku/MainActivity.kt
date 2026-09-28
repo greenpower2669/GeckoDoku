@@ -397,6 +397,17 @@ class MainActivity : Activity() {
 
         MediaTrace.install(this)
 
+        AudioCapturePolicy
+            .applyApplicationPolicy(
+                this
+            )
+
+        AudioCapturePolicy.log(
+            source = "FX",
+            detail =
+                "transport=TONE_GENERATOR stream=MUSIC capture=APP_POLICY"
+        )
+
         richMediaSettings =
             RichMediaSettings(this)
 
@@ -681,7 +692,21 @@ class MainActivity : Activity() {
                 }
 
                 onDoubleTapCell = {
-                    handleDoubleTap(it)
+                    showClassicLogicalPalette(
+                        it
+                    )
+                }
+
+                onAxisGuideMoved = {
+                        from,
+                        to ->
+
+                    engine.moveAxisGuide(
+                        from,
+                        to
+                    )
+
+                    board.invalidate()
                 }
 
                 onLongPressCell = {
@@ -858,6 +883,24 @@ class MainActivity : Activity() {
                     showBeeGeckoMarkerPalette(
                         cell
                     )
+                }
+
+                onAxisGuideMoved = {
+                        from,
+                        axis,
+                        to ->
+
+                    beeGeckoEngine
+                        ?.moveAxisMarker(
+                            from,
+                            axis,
+                            to
+                        )
+
+                    beeGeckoBoard
+                        .invalidate()
+
+                    persistBeeGeckoSession()
                 }
 
                 onViewportChanged = {
@@ -2390,6 +2433,101 @@ class MainActivity : Activity() {
         }
 
         board.invalidate()
+    }
+
+    private fun showClassicLogicalPalette(
+        cell: Cell
+    ) {
+        val labels =
+            arrayOf(
+                "🟢  Gecko",
+                "🟡  Hypothèse",
+                "🔴  Axe"
+            )
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Double clic • repère logique"
+            )
+            .setItems(
+                labels
+            ) {
+                    _,
+                    which ->
+
+                when (which) {
+                    0 ->
+                        handleDoubleTap(
+                            cell
+                        )
+
+                    1 ->
+                        handleLongPress(
+                            cell
+                        )
+
+                    2 ->
+                        showClassicAxisPalette(
+                            cell
+                        )
+                }
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
+    }
+
+    private fun showClassicAxisPalette(
+        cell: Cell
+    ) {
+        val labels =
+            arrayOf(
+                "━  Horizontal",
+                "┃  Vertical"
+            )
+
+        val guides =
+            arrayOf(
+                ClassicAxisGuide(
+                    ClassicAxisGuideKind
+                        .HORIZONTAL,
+                    cell.row
+                ),
+                ClassicAxisGuide(
+                    ClassicAxisGuideKind
+                        .VERTICAL,
+                    cell.col
+                )
+            )
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Choisir l’axe"
+            )
+            .setItems(
+                labels
+            ) {
+                    _,
+                    which ->
+
+                engine.toggleAxisGuide(
+                    guides[which]
+                )
+
+                fx.marker()
+
+                status.text =
+                    "Barre d’axe posée. Fais-la glisser ; hors du plateau elle disparaît."
+
+                board.invalidate()
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
     }
 
     private fun handleDoubleTap(
@@ -5949,29 +6087,16 @@ class MainActivity : Activity() {
     private fun showBeeGeckoPiecePalette(
         cell: HexCoord
     ) {
-        val engine =
-            beeGeckoEngine
-                ?: return
-
         val labels =
             arrayOf(
-                "🦎 Placer / retirer un Gecko",
-                "🐝 Placer / retirer une Abeille",
-                "🟢 G  Repère Gecko",
-                "🟡 A  Repère Abeille",
-                "╲  Barre axe ↖↘",
-                "━  Barre axe ↑↓",
-                "╱  Barre axe ↗↙",
-                "✕  Croix jaune • hypothèse",
-                "✕  Croix verte • sûre",
-                "✕  Croix rouge • impossible",
-                "⌫  Effacer repères logiques",
-                "✎  Autres repères personnels"
+                "🟢  Gecko",
+                "🟡  Abeille",
+                "🔴  Axe"
             )
 
         AlertDialog.Builder(this)
             .setTitle(
-                "Case hexagonale • outils logiques"
+                "Double clic • repère logique"
             )
             .setItems(
                 labels
@@ -5979,134 +6104,92 @@ class MainActivity : Activity() {
                     _,
                     which ->
 
-                recordBoardAction()
-                clearProfessorSession()
-
                 when (which) {
                     0 ->
-                        handleBeeGeckoPalettePiece(
-                            engine,
-                            cell,
-                            BeeGeckoPiece
-                                .GECKO
-                        )
+                        beeGeckoEngine
+                            ?.let {
+                                handleBeeGeckoPalettePiece(
+                                    it,
+                                    cell,
+                                    BeeGeckoPiece
+                                        .GECKO
+                                )
+                            }
 
                     1 ->
-                        handleBeeGeckoPalettePiece(
-                            engine,
-                            cell,
-                            BeeGeckoPiece
-                                .BEE
-                        )
+                        beeGeckoEngine
+                            ?.let {
+                                handleBeeGeckoPalettePiece(
+                                    it,
+                                    cell,
+                                    BeeGeckoPiece
+                                        .BEE
+                                )
+                            }
 
-                    2 -> {
-                        engine.toggleLogicalPieceMarker(
-                            cell,
-                            BeeGeckoPiece
-                                .GECKO
-                        )
-                        fx.marker()
-                        status.text =
-                            "Repère Gecko vert basculé."
-                    }
-
-                    3 -> {
-                        engine.toggleLogicalPieceMarker(
-                            cell,
-                            BeeGeckoPiece
-                                .BEE
-                        )
-                        fx.marker()
-                        status.text =
-                            "Repère Abeille jaune basculé."
-                    }
-
-                    4 -> {
-                        engine.toggleAxisMarker(
-                            cell,
-                            HexAxis.Q
-                        )
-                        fx.marker()
-                        status.text =
-                            "Barre d'exclusion ↖↘ basculée."
-                    }
-
-                    5 -> {
-                        engine.toggleAxisMarker(
-                            cell,
-                            HexAxis.S
-                        )
-                        fx.marker()
-                        status.text =
-                            "Barre d'exclusion ↑↓ basculée."
-                    }
-
-                    6 -> {
-                        engine.toggleAxisMarker(
-                            cell,
-                            HexAxis.R
-                        )
-                        fx.marker()
-                        status.text =
-                            "Barre d'exclusion ↗↙ basculée."
-                    }
-
-                    7 -> {
-                        engine.setCrossState(
-                            cell,
-                            BeeGeckoCrossState
-                                .HYPOTHESIS
-                        )
-                        fx.cross()
-                        status.text =
-                            "Croix jaune : hypothèse."
-                    }
-
-                    8 -> {
-                        engine.setCrossState(
-                            cell,
-                            BeeGeckoCrossState
-                                .CONFIRMED
-                        )
-                        fx.cross()
-                        status.text =
-                            "Croix verte : déduction sûre."
-                    }
-
-                    9 -> {
-                        engine.setCrossState(
-                            cell,
-                            BeeGeckoCrossState
-                                .IMPOSSIBLE
-                        )
-                        fx.cross()
-                        status.text =
-                            "Croix rouge : impossible."
-                    }
-
-                    10 -> {
-                        engine.clearLogicalMarkers(
+                    2 ->
+                        showBeeGeckoAxisPalette(
                             cell
                         )
-                        engine.setCrossState(
-                            cell,
-                            null
-                        )
-                        fx.marker()
-                        status.text =
-                            "Repères logiques effacés."
-                    }
-
-                    11 -> {
-                        showBeeGeckoMarkerPalette(
-                            cell
-                        )
-                        return@setItems
-                    }
                 }
 
-                beeGeckoBoard.invalidate()
+                beeGeckoBoard
+                    .invalidate()
+
                 refreshBeeGeckoInfo()
+                persistBeeGeckoSession()
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
+    }
+
+    private fun showBeeGeckoAxisPalette(
+        cell: HexCoord
+    ) {
+        val engine =
+            beeGeckoEngine
+                ?: return
+
+        val labels =
+            arrayOf(
+                "↖↘  Axe Q",
+                "↑↓  Axe S",
+                "↗↙  Axe R"
+            )
+
+        val axes =
+            arrayOf(
+                HexAxis.Q,
+                HexAxis.S,
+                HexAxis.R
+            )
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Choisir l’axe"
+            )
+            .setItems(
+                labels
+            ) {
+                    _,
+                    which ->
+
+                engine.toggleAxisMarker(
+                    cell,
+                    axes[which]
+                )
+
+                fx.marker()
+
+                status.text =
+                    "Barre d’axe posée. Fais-la glisser pour la déplacer ; sors-la du plateau pour l’effacer."
+
+                beeGeckoBoard
+                    .invalidate()
+
                 persistBeeGeckoSession()
             }
             .setNegativeButton(

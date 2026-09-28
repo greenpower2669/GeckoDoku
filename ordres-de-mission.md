@@ -577,3 +577,66 @@ Documenter :
 ## AUDIO
 **Ce que Fab entend = ce que Samsung enregistre.  
 Ce qui est supprimé = réellement arrêté.**
+---
+
+## GECKO-047 — implémentation 0.15.4-dev
+
+Version cible : **0.15.4-dev** / versionCode **39**.
+
+### Repères / axes
+
+Implémenté :
+- Classic : double clic simplifié à 3 choix : Gecko / Hypothèse / Axe ;
+- GeckoBeeDoku : double clic simplifié à 3 choix : Gecko / Abeille / Axe ;
+- choix Axe dans une seconde petite popup ;
+- Classic : axes horizontal / vertical ;
+- GeckoBeeDoku : axes Q / R / S ;
+- grandes bandes semi-transparentes sur toute la ligne logique ;
+- drag direct des bandes ;
+- sortie complète du plateau = suppression ;
+- drag d'une bande prioritaire sur le drag caméra ;
+- Prof Classic : détection des axes réservés et affichage par grandes bandes ;
+- Prof GeckoBeeDoku : mêmes logicalMarkers mais rendus en bandes globales ;
+- grosses croix Prof supprimées dans GeckoBeeDoku ; les exclusions restent indiquées par contours / bandes ;
+- texte X-Wing / projection Classic rendu plus explicite : 4 positions, axes réservés, puis exclusions.
+
+### Audio
+
+Cause concrète trouvée pour Pierre :
+- `VoicePcmPlayer` utilisait `USAGE_ASSISTANCE_ACCESSIBILITY`.
+- Pierre est maintenant routé en `USAGE_MEDIA + CONTENT_TYPE_SPEECH`.
+- sur API 29+, `ALLOW_CAPTURE_BY_ALL` est appliqué.
+
+Manifeste :
+- `android:allowAudioPlaybackCapture="true"` ajouté.
+
+Policy globale :
+- `AudioManager.setAllowedCapturePolicy(ALLOW_CAPTURE_BY_ALL)` sur API 29+ ;
+- log au démarrage.
+
+Android TTS fallback :
+- MEDIA + SPEECH + ALLOW_ALL.
+
+Musique / MP3 :
+- MediaPlayer reçoit des AudioAttributes MEDIA capturables.
+
+Vidéo :
+- MediaPlayer reçoit MEDIA + MOVIE + ALLOW_ALL ;
+- correction importante des vidéos muettes : on ne se contente plus de `setVolume(0,0)` ;
+- leurs pistes audio sont explicitement désélectionnées quand la vidéo est muette ;
+- cela cible directement le symptôme des anciens sons « inaudibles mais capturés ».
+
+Logs ajoutés :
+- [AUDIO] APP ;
+- [AUDIO] PIERRE ;
+- [AUDIO] PIERRE_FALLBACK ;
+- [AUDIO] MUSIC ;
+- [AUDIO] VIDEO ;
+- STOP / RELEASE.
+
+Tests ajoutés :
+- policy axes Classic ;
+- X-Wing → deux axes réservés ;
+- vidéos Gecko/Bee restent hard-muted.
+
+Ne pas déclarer la correction audio téléphone validée avant test Samsung réel.

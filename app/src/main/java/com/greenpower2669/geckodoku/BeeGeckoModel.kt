@@ -627,6 +627,49 @@ class BeeGeckoGameEngine(
             .MARKER_SET
     }
 
+    fun moveAxisMarker(
+        from: HexCoord,
+        axis: HexAxis,
+        to: HexCoord?
+    ): BeeGeckoActionFeedback {
+        val source =
+            logicalMarkers[from]
+                ?: BeeGeckoLogicalMarks()
+
+        val removed =
+            source.copy(
+                excludedAxes =
+                    source.excludedAxes -
+                        axis
+            )
+
+        if (removed.isEmpty) {
+            logicalMarkers.remove(from)
+        } else {
+            logicalMarkers[from] =
+                removed
+        }
+
+        if (
+            to != null &&
+            puzzle.contains(to)
+        ) {
+            val target =
+                logicalMarkers[to]
+                    ?: BeeGeckoLogicalMarks()
+
+            logicalMarkers[to] =
+                target.copy(
+                    excludedAxes =
+                        target.excludedAxes +
+                            axis
+                )
+        }
+
+        return BeeGeckoActionFeedback
+            .MARKER_SET
+    }
+
     fun clearLogicalMarkers(
         cell: HexCoord
     ): BeeGeckoActionFeedback {

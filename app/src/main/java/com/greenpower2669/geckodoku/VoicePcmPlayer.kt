@@ -44,17 +44,8 @@ class VoicePcmPlayer {
         val next =
             AudioTrack.Builder()
                 .setAudioAttributes(
-                    AudioAttributes
-                        .Builder()
-                        .setUsage(
-                            AudioAttributes
-                                .USAGE_ASSISTANCE_ACCESSIBILITY
-                        )
-                        .setContentType(
-                            AudioAttributes
-                                .CONTENT_TYPE_SPEECH
-                        )
-                        .build()
+                    AudioCapturePolicy
+                        .speechAttributes()
                 )
                 .setAudioFormat(
                     AudioFormat
@@ -97,6 +88,14 @@ class VoicePcmPlayer {
         }
 
         track = next
+
+        AudioCapturePolicy.log(
+            source = "PIERRE",
+            detail =
+                "usage=MEDIA content=SPEECH capture=ALLOW_ALL sampleRate=" +
+                    sampleRate
+        )
+
         next.play()
         onStarted?.invoke()
 
@@ -131,6 +130,12 @@ class VoicePcmPlayer {
 
     @Synchronized
     fun stop() {
+        if (track != null) {
+            AudioCapturePolicy.log(
+                source = "PIERRE",
+                detail = "STOP"
+            )
+        }
         releaseRunnable?.let {
             handler.removeCallbacks(it)
         }
@@ -146,6 +151,11 @@ class VoicePcmPlayer {
 
     fun release() {
         stop()
+
+        AudioCapturePolicy.log(
+            source = "PIERRE",
+            detail = "RELEASE"
+        )
     }
 
     private fun releaseTrack(

@@ -85,3 +85,63 @@ Pierre cible :
 - ALLOW_CAPTURE_BY_ALL sur API 29+.
 
 Ne pas ajouter RECORD_AUDIO.
+## GECKO-047 — implémentation 0.15.4-dev
+
+### Cause Pierre trouvée
+
+`VoicePcmPlayer` créait l'AudioTrack avec :
+- USAGE_ASSISTANCE_ACCESSIBILITY ;
+- CONTENT_TYPE_SPEECH.
+
+C'est incohérent avec l'objectif AudioPlaybackCapture multimédia.
+
+Correction :
+- Pierre → USAGE_MEDIA ;
+- CONTENT_TYPE_SPEECH conservé ;
+- ALLOW_CAPTURE_BY_ALL sur API 29+ ;
+- même policy pour Android TTS fallback.
+
+### Son fantôme : cause plausible concrète dans le code
+
+`ChromaKeyVideoView` mutait les vidéos par :
+`MediaPlayer.setVolume(0f,0f)`
+
+Le décodeur audio restait néanmoins actif.
+
+Correction 0.15.4 :
+- lorsque vidéo muted, recherche des tracks audio ;
+- `deselectTrack()` sur les tracks audio avant démarrage ;
+- setVolume(0) reste une sécurité supplémentaire ;
+- STOP/RELEASE loggés.
+
+### Audio policy globale
+
+`AudioCapturePolicy` centralise :
+- speechAttributes() = MEDIA + SPEECH ;
+- musicAttributes() = MEDIA + MUSIC ;
+- videoAttributes() = MEDIA + MOVIE ;
+- ALLOW_CAPTURE_BY_ALL API 29+ ;
+- setAllowedCapturePolicy global.
+
+Manifest :
+`allowAudioPlaybackCapture=true`.
+
+### Axes
+
+Classic :
+`ClassicAxisGuide(kind,index)`
+→ rendu pleine longueur
+→ drag
+→ sortie plateau = delete.
+
+Prof Classic :
+`ClassicProfessorAxisGuidePolicy`
+→ REGION_LOCKED / singles / X-Wing
+→ bandes d'axe.
+
+Bee :
+les `excludedAxes` existants deviennent des bandes globales dédupliquées.
+Leur cellule origine ne sert qu'à identifier la valeur Q/R/S.
+Drag = déplacement de cette origine vers une cellule du nouvel axe.
+
+Le Prof Bee ne dessine plus ses grosses croix.

@@ -38,6 +38,14 @@ class BeeGeckoBoardView @JvmOverloads constructor(
     var onViewportChanged:
         ((BeeGeckoCamera) -> Unit)? = null
 
+    var onAxisGuideMoved:
+        ((
+            HexCoord,
+            HexAxis,
+            HexCoord?
+        ) -> Unit)? =
+        null
+
     private val paint =
         Paint(Paint.ANTI_ALIAS_FLAG)
 
@@ -102,6 +110,10 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         false
     private var longPressTriggered =
         false
+
+    private var draggingAxisGuide:
+        Pair<HexCoord, HexAxis>? =
+        null
 
     private var downCell:
         HexCoord? = null
@@ -1007,8 +1019,15 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             Map<
                 HexCoord,
                 BeeGeckoLogicalMarks
-                >
+                >,
+        professor:
+            Boolean = false
     ) {
+        val drawnAxes =
+            linkedSetOf<
+                Pair<HexAxis, Int>
+                >()
+
         logicalMarkers
             .forEach {
                 (cell, marker) ->
@@ -1066,12 +1085,28 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 marker.excludedAxes
                     .forEach {
                         axis ->
-                        drawAxisExclusion(
-                            canvas,
-                            center.first,
-                            center.second,
-                            axis
-                        )
+                        val key =
+                            axis to
+                                cell.axisValue(
+                                    axis
+                                )
+
+                        if (
+                            drawnAxes.add(
+                                key
+                            )
+                        ) {
+                            drawGlobalAxisBar(
+                                canvas =
+                                    canvas,
+                                origin =
+                                    cell,
+                                axis =
+                                    axis,
+                                professor =
+                                    professor
+                            )
+                        }
                     }
             }
     }
@@ -1127,91 +1162,149 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             false
     }
 
-    private fun drawAxisExclusion(
+    private fun drawGlobalAxisBar(
         canvas: Canvas,
-        centerX: Float,
-        centerY: Float,
-        axis: HexAxis
+        origin: HexCoord,
+        axis: HexAxis,
+        professor: Boolean
     ) {
-        val length =
-            baseRadius *
-                .55f
+        val board =
+            puzzle
+                ?: return
 
-        val angle =
-            when (axis) {
-                HexAxis.Q ->
-                    Math.toRadians(
-                        60.0
-                    )
+        val matching =
+            board.cells
+                .filter {
+                    it.axisValue(
+                        axis
+                    ) ==
+                        origin.axisValue(
+                            axis
+                        )
+                }
 
-                HexAxis.R ->
-                    Math.toRadians(
-                        -60.0
-                    )
+        if (matching.size < 2) {
+            return
+        }
 
-                HexAxis.S ->
-                    Math.toRadians(
-                        0.0
-                    )
+        val centers =
+            matching
+                .map {
+                    cellCenter(it)
+                }
+
+        var first =
+            centers.first()
+
+        var last =
+            centers.last()
+
+        var maxDistance =
+            -1f
+
+        for (a in centers.indices) {
+            for (
+                b in
+                a + 1 until
+                    centers.size
+            ) {
+                val dx =
+                    centers[a].first -
+                        centers[b].first
+                val dy =
+                    centers[a].second -
+                        centers[b].second
+                val distance =
+                    dx * dx +
+                        dy * dy
+
+                if (distance >
+                    maxDistance
+                ) {
+                    maxDistance =
+                        distance
+                    first =
+                        centers[a]
+                    last =
+                        centers[b]
+                }
             }
-
-        val dx =
-            cos(angle)
-                .toFloat() *
-                length
-
-        val dy =
-            sin(angle)
-                .toFloat() *
-                length
+        }
 
         paint.style =
             Paint.Style.STROKE
         paint.strokeCap =
             Paint.Cap.ROUND
         paint.strokeWidth =
-            dp(4.2f) /
-                camera.scale
+            baseRadius *
+                .38f
         paint.color =
-            Color.rgb(
-                155,
-                55,
-                55
-            )
+            if (professor) {
+                Color.argb(
+                    72,
+                    220,
+                    118,
+                    20
+                )
+            } else {
+                Color.argb(
+                    70,
+                    190,
+                    45,
+                    45
+                )
+            }
 
         canvas.drawLine(
-            centerX - dx,
-            centerY - dy,
-            centerX + dx,
-            centerY + dy,
+            first.first,
+            first.second,
+            last.first,
+            last.second,
             paint
         )
+    }
 
-        paint.style =
-            Paint.Style.FILL
-        paint.textAlign =
-            Paint.Align.CENTER
-        paint.textSize =
-            baseRadius *
-                .20f
-        paint.color =
-            Color.rgb(
-                80,
-                40,
-                40
+    private fun findAxisGuideAtScreen(
+        x: Float,
+        y: Float
+    ): Pair<HexCoord, HexAxis>? {
+        if (
+            !::snapshotProvider
+                .isInitialized
+        ) {
+            return null
+        }
+
+        val touched =
+            screenToCell(
+                x,
+                y
             )
+                ?: return null
 
-        canvas.drawText(
-            "×",
-            centerX,
-            centerY -
-                (
-                    paint.ascent() +
-                        paint.descent()
-                    ) /
-                    2f,
-            paint
-        )
+        return snapshotProvider()
+            .logicalMarkers
+            .entries
+            .asSequence()
+            .flatMap {
+                (origin, marker) ->
+                marker.excludedAxes
+                    .asSequence()
+                    .map {
+                        axis ->
+                        origin to
+                            axis
+                    }
+            }
+            .firstOrNull {
+                (origin, axis) ->
+                origin.axisValue(
+                    axis
+                ) ==
+                    touched.axisValue(
+                        axis
+                    )
+            }
     }
 
     private fun drawGivenFog(
@@ -1340,12 +1433,8 @@ class BeeGeckoBoardView @JvmOverloads constructor(
 
         drawLogicalMarkers(
             canvas,
-            hint.logicalMarkers
-        )
-
-        drawCrossStates(
-            canvas,
-            hint.crossStates
+            hint.logicalMarkers,
+            professor = true
         )
 
         drawHintSet(
@@ -1394,7 +1483,7 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     45
                 ),
             symbol =
-                "×",
+                "",
             widthDp =
                 4.0f
         )
@@ -1532,11 +1621,34 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             return false
         }
 
-        scaleDetector
-            .onTouchEvent(event)
-
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
+                val axisGuide =
+                    findAxisGuideAtScreen(
+                        event.x,
+                        event.y
+                    )
+
+                if (axisGuide != null) {
+                    draggingAxisGuide =
+                        axisGuide
+                    dragging = true
+                    scaledGesture = false
+                    longPressTriggered = false
+                    cancelPendingLongPress()
+                    cancelPendingSingleTap()
+
+                    parent
+                        ?.requestDisallowInterceptTouchEvent(
+                            true
+                        )
+
+                    return true
+                }
+
+                scaleDetector
+                    .onTouchEvent(event)
+
                 downX = event.x
                 downY = event.y
                 lastX = event.x
@@ -1556,6 +1668,16 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_POINTER_DOWN -> {
+                if (
+                    draggingAxisGuide !=
+                        null
+                ) {
+                    return true
+                }
+
+                scaleDetector
+                    .onTouchEvent(event)
+
                 scaledGesture = true
                 cancelPendingLongPress()
                 cancelPendingSingleTap()
@@ -1563,6 +1685,45 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_MOVE -> {
+                val activeGuide =
+                    draggingAxisGuide
+
+                if (activeGuide != null) {
+                    val target =
+                        screenToCell(
+                            event.x,
+                            event.y
+                        )
+
+                    if (
+                        target != null &&
+                        target.axisValue(
+                            activeGuide.second
+                        ) !=
+                        activeGuide.first
+                            .axisValue(
+                                activeGuide.second
+                            )
+                    ) {
+                        onAxisGuideMoved
+                            ?.invoke(
+                                activeGuide.first,
+                                activeGuide.second,
+                                target
+                            )
+
+                        draggingAxisGuide =
+                            target to
+                                activeGuide.second
+                    }
+
+                    invalidate()
+                    return true
+                }
+
+                scaleDetector
+                    .onTouchEvent(event)
+
                 if (
                     scaleDetector
                         .isInProgress ||
@@ -1629,6 +1790,57 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_UP -> {
+                val activeGuide =
+                    draggingAxisGuide
+
+                if (activeGuide != null) {
+                    val target =
+                        screenToCell(
+                            event.x,
+                            event.y
+                        )
+
+                    if (target == null) {
+                        onAxisGuideMoved
+                            ?.invoke(
+                                activeGuide.first,
+                                activeGuide.second,
+                                null
+                            )
+                    } else if (
+                        target.axisValue(
+                            activeGuide.second
+                        ) !=
+                        activeGuide.first
+                            .axisValue(
+                                activeGuide.second
+                            )
+                    ) {
+                        onAxisGuideMoved
+                            ?.invoke(
+                                activeGuide.first,
+                                activeGuide.second,
+                                target
+                            )
+                    }
+
+                    draggingAxisGuide =
+                        null
+                    dragging = false
+
+                    parent
+                        ?.requestDisallowInterceptTouchEvent(
+                            false
+                        )
+
+                    invalidate()
+                    performClick()
+                    return true
+                }
+
+                scaleDetector
+                    .onTouchEvent(event)
+
                 cancelPendingLongPress()
 
                 val distance =
@@ -1681,6 +1893,22 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_CANCEL -> {
+                if (
+                    draggingAxisGuide !=
+                        null
+                ) {
+                    draggingAxisGuide =
+                        null
+
+                    parent
+                        ?.requestDisallowInterceptTouchEvent(
+                            false
+                        )
+                }
+
+                scaleDetector
+                    .onTouchEvent(event)
+
                 cancelPendingLongPress()
                 cancelPendingSingleTap()
                 dragging = false
@@ -1689,6 +1917,9 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 return true
             }
         }
+
+        scaleDetector
+            .onTouchEvent(event)
 
         return true
     }

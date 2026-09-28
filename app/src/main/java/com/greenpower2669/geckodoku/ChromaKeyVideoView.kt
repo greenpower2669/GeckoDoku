@@ -74,6 +74,10 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
     private var muted = false
 
+    private var audioTrackIndices:
+        List<Int> =
+        emptyList()
+
     private var activeAssetPath:
         String? = null
 
@@ -288,10 +292,17 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
         muted = value
 
-        player?.setVolume(
-            if (value) 0f else 1f,
-            if (value) 0f else 1f
-        )
+        player?.let {
+            current ->
+            current.setVolume(
+                if (value) 0f else 1f,
+                if (value) 0f else 1f
+            )
+
+            applyAudioTrackPolicy(
+                current
+            )
+        }
     }
 
     fun setYellowTint(
@@ -364,9 +375,16 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             }
 
             current.release()
+
+            AudioCapturePolicy.log(
+                source = "VIDEO",
+                detail = "STOP_RELEASE"
+            )
         }
 
         activeAssetPath = null
+        audioTrackIndices =
+            emptyList()
     }
 
     fun release() {
@@ -397,6 +415,11 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         try {
             val mediaPlayer =
                 MediaPlayer()
+
+            mediaPlayer.setAudioAttributes(
+                AudioCapturePolicy
+                    .videoAttributes()
+            )
 
             player = mediaPlayer
 
@@ -436,6 +459,39 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             mediaPlayer.setOnPreparedListener {
                 activeAssetPath =
                     request.assetPath
+
+                audioTrackIndices =
+                    it.trackInfo
+                        .mapIndexedNotNull {
+                            index,
+                            info ->
+
+                            if (
+                                info.trackType ==
+                                    MediaPlayer.TrackInfo
+                                        .MEDIA_TRACK_TYPE_AUDIO
+                            ) {
+                                index
+                            } else {
+                                null
+                            }
+                        }
+
+                applyAudioTrackPolicy(
+                    it
+                )
+
+                AudioCapturePolicy.log(
+                    source = "VIDEO",
+                    detail =
+                        "START asset=" +
+                            request.assetPath +
+                            " usage=MEDIA content=MOVIE capture=ALLOW_ALL muted=" +
+                            muted +
+                            " audioTracks=" +
+                            audioTrackIndices.size
+                )
+
                 firstFrameGate.onPrepared()
 
                 MediaTrace.event(
@@ -597,6 +653,74 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                     ": " +
                     (error.message ?: "unknown error")
             )
+        }
+    }
+
+    private fun applyAudioTrackPolicy(
+        mediaPlayer: MediaPlayer
+    ) {
+        val tracks =
+            if (
+                audioTrackIndices
+                    .isNotEmpty()
+            ) {
+                audioTrackIndices
+            } else {
+                try {
+                    mediaPlayer
+                        .trackInfo
+                        .mapIndexedNotNull {
+                            index,
+                            info ->
+
+                            if (
+                                info.trackType ==
+                                    MediaPlayer.TrackInfo
+                                        .MEDIA_TRACK_TYPE_AUDIO
+                            ) {
+                                index
+                            } else {
+                                null
+                            }
+                        }
+                } catch (_: Throwable) {
+                    return
+                }
+            }
+
+        if (muted) {
+            tracks.forEach {
+                index ->
+                try {
+                    mediaPlayer
+                        .deselectTrack(
+                            index
+                        )
+                } catch (_: Throwable) {
+                    // Some devices do not expose audio deselection.
+                }
+            }
+
+            AudioCapturePolicy.log(
+                source = "VIDEO",
+                detail =
+                    "MUTE_DECODED_AUDIO tracks=" +
+                        tracks.size
+            )
+        } else {
+            tracks
+                .firstOrNull()
+                ?.let {
+                    index ->
+                    try {
+                        mediaPlayer
+                            .selectTrack(
+                                index
+                            )
+                    } catch (_: Throwable) {
+                        // Default MediaPlayer selection remains active.
+                    }
+                }
         }
     }
 

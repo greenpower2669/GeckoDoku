@@ -31,13 +31,29 @@ class AssetAudioPlayer(
         if (!enabled) return false
         stopMusic()
         return try {
-            val player = newPlayer(assetPath)
+            val player =
+                newPlayer(
+                    assetPath =
+                        assetPath,
+                    speech = false
+                )
+
             musicPlayer = player
             player.setOnPreparedListener {
                 if (
                     enabled &&
                     musicPlayer === it
-                ) it.start()
+                ) {
+                    AudioCapturePolicy.log(
+                        source = "MUSIC",
+                        detail =
+                            "START asset=" +
+                                assetPath +
+                                " usage=MEDIA content=MUSIC capture=ALLOW_ALL"
+                    )
+
+                    it.start()
+                }
             }
             player.setOnCompletionListener {
                 val invoke =
@@ -97,7 +113,13 @@ class AssetAudioPlayer(
             val generation =
                 ++voiceGeneration
             voiceCompletion = onCompletion
-            val player = newPlayer(assetPath)
+            val player =
+                newPlayer(
+                    assetPath =
+                        assetPath,
+                    speech = true
+                )
+
             voicePlayer = player
 
             player.setOnPreparedListener {
@@ -121,6 +143,15 @@ class AssetAudioPlayer(
                 ) {
                     return@setOnSeekCompleteListener
                 }
+                AudioCapturePolicy.log(
+                    source =
+                        "LEGACY_VOICE_SEGMENT",
+                    detail =
+                        "START asset=" +
+                            assetPath +
+                            " usage=MEDIA content=SPEECH capture=ALLOW_ALL"
+                )
+
                 it.start()
                 onStarted?.invoke()
                 handler.postDelayed(
@@ -170,6 +201,13 @@ class AssetAudioPlayer(
 
     fun stopMusic() {
         val current = musicPlayer
+
+        if (current != null) {
+            AudioCapturePolicy.log(
+                source = "MUSIC",
+                detail = "STOP"
+            )
+        }
         musicPlayer = null
         if (current != null) {
             try {
@@ -182,6 +220,14 @@ class AssetAudioPlayer(
     }
 
     fun stopVoice() {
+        if (voicePlayer != null) {
+            AudioCapturePolicy.log(
+                source =
+                    "LEGACY_VOICE_SEGMENT",
+                detail = "STOP"
+            )
+        }
+
         finishVoice(false)
     }
 
@@ -193,6 +239,11 @@ class AssetAudioPlayer(
     fun release() {
         stopAll()
         handler.removeCallbacksAndMessages(null)
+
+        AudioCapturePolicy.log(
+            source = "ASSET_AUDIO",
+            detail = "RELEASE"
+        )
     }
 
     private fun finishVoice(
@@ -219,13 +270,27 @@ class AssetAudioPlayer(
     }
 
     private fun newPlayer(
-        assetPath: String
+        assetPath: String,
+        speech: Boolean
     ): MediaPlayer {
-        val player = MediaPlayer()
+        val player =
+            MediaPlayer()
+
+        player.setAudioAttributes(
+            if (speech) {
+                AudioCapturePolicy
+                    .speechAttributes()
+            } else {
+                AudioCapturePolicy
+                    .musicAttributes()
+            }
+        )
+
         val descriptor =
             context.assets.openFd(
                 assetPath
             )
+
         descriptor.use {
             player.setDataSource(
                 it.fileDescriptor,
@@ -233,6 +298,7 @@ class AssetAudioPlayer(
                 it.length
             )
         }
+
         return player
     }
 }

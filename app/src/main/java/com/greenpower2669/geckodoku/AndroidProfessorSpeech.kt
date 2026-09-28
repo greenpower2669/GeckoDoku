@@ -158,6 +158,11 @@ class AndroidProfessorSpeech(
     }
 
     fun stop() {
+        AudioCapturePolicy.log(
+            source = "PIERRE_FALLBACK",
+            detail = "STOP"
+        )
+
         pendingText = null
         pendingStarted = null
         pendingCompletion = null
@@ -169,6 +174,12 @@ class AndroidProfessorSpeech(
 
     fun release() {
         stop()
+
+        AudioCapturePolicy.log(
+            source = "PIERRE_FALLBACK",
+            detail = "RELEASE"
+        )
+
         tts?.shutdown()
         tts = null
         ready = false
@@ -177,6 +188,17 @@ class AndroidProfessorSpeech(
     private fun configure() {
         val engine =
             tts ?: return
+
+        engine.setAudioAttributes(
+            AudioCapturePolicy
+                .speechAttributes()
+        )
+
+        AudioCapturePolicy.log(
+            source = "PIERRE_FALLBACK",
+            detail =
+                "usage=MEDIA content=SPEECH capture=ALLOW_ALL"
+        )
 
         val result =
             engine.setLanguage(

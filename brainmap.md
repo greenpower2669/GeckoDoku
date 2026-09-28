@@ -71,3 +71,73 @@ Validation
 → Samsung Multimedia capture
 → Pierre présent
 → anciens sons supprimés absents.
+## GECKO-047 — architecture implémentée
+
+### Axis guides Classic
+
+`ClassicAxisGuideKind`
+→ HORIZONTAL
+→ VERTICAL
+
+`GameEngine.axisGuides`
+→ toggleAxisGuide
+→ moveAxisGuide
+
+`GeckoBoardView`
+→ drawAxisGuides
+→ hit-test bande
+→ drag bande
+→ outside = null/delete
+
+`ClassicProfessorAxisGuidePolicy`
+→ SolveStep
+→ axes réellement réservés
+
+### Axis guides Bee
+
+`BeeGeckoLogicalMarks.excludedAxes`
+→ désormais rendu pleine longueur
+
+`BeeGeckoBoardView`
+→ findAxisGuideAtScreen
+→ onAxisGuideMoved
+→ caméra non déplacée pendant drag bande
+
+`BeeGeckoGameEngine.moveAxisMarker`
+→ retire ancien axe
+→ pose nouvel axe
+→ null = suppression
+
+### Audio
+
+Manifest
+→ allowAudioPlaybackCapture=true
+
+MainActivity.onCreate
+→ AudioCapturePolicy.applyApplicationPolicy()
+
+Pierre/Piper
+→ OfflineTts
+→ PCM
+→ VoicePcmPlayer
+→ AudioTrack
+→ MEDIA + SPEECH + ALLOW_ALL
+
+Android fallback
+→ TextToSpeech.setAudioAttributes(MEDIA/SPEECH/ALLOW_ALL)
+
+Music
+→ AssetAudioPlayer
+→ MediaPlayer MEDIA/MUSIC/ALLOW_ALL
+
+Video
+→ ChromaKeyVideoView
+→ MediaPlayer MEDIA/MOVIE/ALLOW_ALL
+→ muted ?
+   → volume 0
+   → deselect audio tracks
+→ unmuted
+   → select first audio track
+
+Logs
+→ [AUDIO] source=...

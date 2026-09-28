@@ -92,5 +92,8 @@ data class GameSnapshot(
     val hypotheses: Map<Cell, HypothesisMark>,
     val customMarkers: Map<Cell, CustomMarker>,
     val mistakes: Int,
-    val complete: Boolean
+    val complete: Boolean,
+    val axisGuides:
+        Set<ClassicAxisGuide> =
+        emptySet()
 )
