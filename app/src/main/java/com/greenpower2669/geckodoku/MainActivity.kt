@@ -6949,6 +6949,20 @@ class MainActivity : Activity() {
                 )
                 ?: return null
 
+        val viewport =
+            beeGeckoBoard
+                .viewportRectOnScreen()
+                ?: return null
+
+        if (
+            !RectF.intersects(
+                screenRect,
+                viewport
+            )
+        ) {
+            return null
+        }
+
         val target =
             centeredScaledRect(
                 screenRect,
@@ -6958,10 +6972,6 @@ class MainActivity : Activity() {
                     )
             )
 
-        // The media frame is intentionally allowed to extend beyond
-        // the board viewport. The visible mascot is centered inside its
-        // transparent/key-color frame, so constraining the frame edges
-        // would incorrectly reject or shift valid Gecko/Bee animations.
         return screenRectToRoot(
             target
         )
