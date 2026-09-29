@@ -664,3 +664,18 @@ Modèle canonique :
 - cellule complètement sortie par zoom/drag : Presence cachée jusqu'au retour.
 
 Version 0.15.20-dev / versionCode 55.
+
+
+## 33 — GECKO-061 : hors-écran = centre de cellule hors viewport
+
+Le retour téléphone 0.15.20-dev montre un Gecko encore dessiné au-dessus du plateau après drag. L'ownership unique est correct, mais la garde géométrique basée sur une simple intersection de cellule est trop permissive : une cellule presque entièrement sortie garde encore une petite intersection et sa Presence reste visible.
+
+Règle canonique :
+- la Presence reste propriétaire unique du PNG fallback et des vidéos ;
+- le cadre média transparent/key-color n'entre jamais dans le test de visibilité ;
+- la cellule fournit la position logique ;
+- si le centre de la cellule est dans le viewport, la Presence est autorisée ;
+- dès que le centre de la cellule sort du viewport, target=null et PNG+vidéo Alive sont cachés ;
+- aucun retour au rendu legacy du board.
+
+Version 0.15.21-dev / versionCode 56.
