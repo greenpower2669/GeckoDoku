@@ -202,7 +202,7 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] version 0.15.16-dev / versionCode 51 ;
 - [x] CI #260 verte ;
 - [x] APK Phone 0.15.16-dev produit ;
-- [ ] téléphone : Gecko Classic bougent ;
+- [x] téléphone : Gecko Classic bougent — VALIDÉ Fab ;
 - [ ] téléphone : Gecko Sudoku bougent ;
 - [ ] téléphone : Gecko Gomoku bougent ;
 - [ ] téléphone : Gecko + Abeilles hexagonaux bougent ;
