@@ -679,3 +679,6 @@ Règle canonique :
 - aucun retour au rendu legacy du board.
 
 Version 0.15.21-dev / versionCode 56.
+
+### GECKO-061 — build
+CI #275 verte sur 94eed6fd4e718d8d5aaeed6350e816709dd45327. APK Phone 0.15.21-dev produit. SHA-256 : 1f65452b0e8b98670eaf27ba9e321e997dfad13c2bfdbf36b2fd17523877da19. Validation téléphone requise.
