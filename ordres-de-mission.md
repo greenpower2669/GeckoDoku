@@ -668,3 +668,5 @@ Correction :
 
 Version cible : 0.15.16-dev / versionCode 51.
 Aucun merge main et aucune release avant validation téléphone.
+
+État GECKO-056 : CI #260 entièrement verte sur a43ef730ec77475e08b3ab7c4b897a023977057c ; artifact GeckoDoku-v0.15.16-dev-phone produit ; aucune release ; validation téléphone Gecko + Abeilles requise.
