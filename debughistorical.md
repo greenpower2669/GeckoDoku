@@ -407,3 +407,18 @@ Commit testé : 352c046bcc6e1af6d26794782f14189054ddcae2. Tests + assemblePhone 
 
 ## GECKO-057 — validation téléphone mode 1
 Fab confirme : mode 1 / Classic corrigé sur 0.15.17-dev. Les Gecko du mode Classic s'animent de nouveau. Les autres modes restent à valider séparément.
+
+
+## GECKO-058 — mode Abeilles & Geckos : Bee OK, Gecko de bord rejetés
+
+Preuve téléphone 0.15.17-dev :
+- Abeille : ALIVE_PLAY -> PLAY_REQUEST -> START -> VIDEO_RENDERING_START_SIGNAL -> VIDEO_FIRST_FRAME -> VIDEO_VISIBLE, donc pipeline vivant fonctionnel ;
+- aucun ALIVE_PLAY kind=GECKO avec owner bee:GECKO:* pendant la séquence du mode hexagonal ;
+- la capture montre les trois Gecko confirmés sur des cellules de bord (gauche, droite, bas), alors que l'Abeille animée est intérieure.
+
+Cause code :
+MainActivity.beeGeckoAliveTarget() construit un rect centré puis retourne null si un seul bord du rect sort de viewportRectOnScreen().
+Les Gecko utilisent une cible plus grande que les Abeilles, donc les Gecko situés sur le pourtour sont rejetés alors que l'Abeille intérieure reste admissible.
+
+Correctif attendu :
+ne plus transformer une légère intersection de bord en target=null ; conserver une cible animable visible, clippée/recentrée dans le viewport et compatible avec zoom/drag.
