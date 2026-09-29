@@ -542,3 +542,13 @@ Décision / correction :
 Version de test : 0.15.13-dev / versionCode 48.
 Le mode ALL ANIMATED sans plafond reste actif pour ne pas mélanger les diagnostics.
 Aucune release publique avant validation téléphone.
+
+
+État GECKO-053 :
+- commit applicatif : 173bf0ed9e4431b3e6efe13de44c4374cc055bcb ;
+- CI #254 verte ;
+- APK téléphone 0.15.13-dev produit ;
+- SHA-256 APK : 4bee54cfdc1261adf75559635c8749ade82133a8383cc34e1ddbea4019d13937 ;
+- ALL ANIMATED reste actif ;
+- aucune prerelease/release ;
+- validation téléphone attendue sur aller-retour Mail/Messages.

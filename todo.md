@@ -135,7 +135,8 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] conserver l'arrêt complet des lecteurs en arrière-plan ;
 - [x] restaurer Plante + snapshot vivant du mode courant dans onResume() ;
 - [x] correction commune Classic / Sudoku / Gomoku / Abeilles & Geckos ;
-- [ ] CI 0.15.13-dev ;
+- [x] CI #254 verte ;
+- [x] APK téléphone 0.15.13-dev produit ;
 - [ ] test téléphone : ouvrir Mail/Messages puis revenir ;
 - [ ] vérifier que toutes les mascottes repartent sans toucher au plateau ;
 - [ ] vérifier que l'intro ne se relance pas au simple retour ;

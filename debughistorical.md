@@ -272,3 +272,19 @@ ajout de syncLivingMascotsForCurrentMode() juste après ensurePlantMascot() dans
 
 Choix conservé :
 stopAll() reste dans onPause() pour éviter lectures vidéo/GLSurfaceView en arrière-plan. La reprise reconstruit depuis le snapshot, ce qui est plus sûr que garder les lecteurs actifs.
+
+
+## GECKO-053 — CI #254 — VERTE
+
+Commit :
+173bf0ed9e4431b3e6efe13de44c4374cc055bcb
+
+Résultat :
+- tests unitaires OK ;
+- build Phone OK ;
+- APK 0.15.13-dev produit ;
+- aucune release/prerelease ;
+- SHA-256 APK : 4bee54cfdc1261adf75559635c8749ade82133a8383cc34e1ddbea4019d13937.
+
+Test appareil attendu :
+basculer vers Mail/Messages puis revenir et vérifier que Gecko/Abeille/Plante reprennent tous sans action utilisateur.

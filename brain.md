@@ -497,3 +497,14 @@ syncLivingMascotsForCurrentMode restaure :
 
 Ainsi un aller-retour Mail/Messages ne transforme plus les mascottes du plateau en PNG statiques permanents.
 Le diagnostic ALL ANIMATED reste actif en 0.15.13-dev.
+
+
+## 26 — Test GECKO-053 0.15.13-dev
+
+Commit : 173bf0ed9e4431b3e6efe13de44c4374cc055bcb.
+CI #254 verte.
+APK : GeckoDoku-v0.15.13-dev.apk.
+SHA-256 : 4bee54cfdc1261adf75559635c8749ade82133a8383cc34e1ddbea4019d13937.
+
+À valider :
+après ouverture de Mail/Messages puis retour, toutes les mascottes du mode courant doivent être reconstruites et recommencer leurs cycles sans relancer l'intro.
