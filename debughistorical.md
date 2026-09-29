@@ -505,3 +505,5 @@ un rideau noir existe avant setContentView et disparaît seulement après prise 
 
 Plante :
 fallback PNG ramené à 95 % via pngScale séparé.
+
+Build GECKO-063 : workflow #286 (run 36630368939) SUCCESS. APK 0.15.23-dev, SHA-256 ae704b70c968030b33389d6296332c3c9d7dbe63b9479e993092f84d5b0e0661. Les quatre validations téléphone restent ouvertes.
