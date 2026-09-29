@@ -358,3 +358,20 @@ Résultat :
 - SHA-256 APK : 671776186328f53df577599e45d2cb85ea8bc6a8ca8daf5d54bf0721c71dabf5.
 
 Le verdict téléphone doit confirmer que la séparation pngContainer / videoContainer empêche le plateau vide.
+
+
+## GECKO-056 — Gecko et Abeilles figés : race première frame
+
+Observation téléphone Fab :
+les Gecko ne démarrent pas leurs animations, et les Abeilles non plus. Le PNG reste visible.
+
+Diagnostic :
+AliveMascotOverlayView lance bien une décision animée et ChromaKeyVideoView garde revealOnFirstFrame=true. FreshPlaybackFrameGate exigeait cependant playerStarted au moment exact où MEDIA_INFO_VIDEO_RENDERING_START était reçu. Ce signal peut arriver pendant MediaPlayer.start(), avant l'appel local onPlayerStarted() placé juste après start(). Dans cet ordre, renderingStarted restait faux pour toute la génération ; aucune frame ne pouvait être acceptée et la vidéo restait alpha=0.
+
+Correction 0.15.16-dev :
+- onRenderingStart() latche le signal pour la génération courante indépendamment de l'ordre ;
+- onFrameRendered() exige toujours playerStarted + renderingStarted ;
+- anciennes générations et cancel() restent bloquants ;
+- FreshPlaybackFrameGateTest couvre l'ordre inversé, les générations périmées et cancel().
+
+Aucun ordonnanceur/pool n'est réintroduit.
