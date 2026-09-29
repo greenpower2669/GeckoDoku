@@ -570,3 +570,20 @@ Premier build du fichier TextureView (#305) a échoué uniquement parce que andr
 
 ## GECKO-066 — CI #310 VERTE
 Run 36641153646 SUCCESS sur 4bf3c696a8dbee1d90f3136c8594684025e4a381. APK 0.15.27-dev : 248574081 octets, SHA-256 e5de07cea97ca736108d644298ab56b2ad16689d695e357ef0a1d4cd280afe3f. Archive artifact SHA-256 e3cc39a3d9821b4894cd5244f7c0994e0b8fc09c2c45fa2c82723beaaf0479ac. Les étapes de publication ont été skipped. Test téléphone attendu : sources ChromaTexture pour bee:/gomoku: et absence de débordement vidéo hors clip.
+
+
+## GECKO-067 — keycolor/jaune instables avec RuntimeShader
+
+Test 0.15.27-dev : TextureView améliore la couche visuelle, mais Fab observe un keycolor et un filtre jaune instables. La géométrie n'est plus en cause.
+
+Hypothèse retenue : RuntimeShader/RenderEffect est un post-effet de View et ne reproduit pas avec assez de stabilité notre ancien chemin GLSL/OES pour ce flux vidéo.
+
+Correction :
+- suppression du RuntimeShader de ChromaKeyTextureView ;
+- création d'un thread OpenGL local avec EGL sur la SurfaceTexture de sortie de TextureView ;
+- MediaPlayer ne décode plus directement vers la TextureView : il décode dans une SurfaceTexture OES d'entrée ;
+- shader GLSL copié de ChromaKeyVideoView, mêmes constantes et même yellowTint ;
+- rendu final swapé dans le TextureView ;
+- garde première frame basée sur une vraie frame OpenGL fraîche rendue après le signal MEDIA_INFO_VIDEO_RENDERING_START.
+
+CI #311 a validé compilation/tests de cette nouvelle architecture avant bump version.
