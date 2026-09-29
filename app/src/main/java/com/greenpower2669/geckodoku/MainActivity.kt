@@ -3545,6 +3545,21 @@ class MainActivity : Activity() {
             aliveMascotOverlay
                 .refreshDynamicTargets()
         }
+
+        if (
+            ::plantMascotOverlay
+                .isInitialized
+        ) {
+            plantMascotOverlay
+                .refreshDynamicTargets()
+        }
+
+        if (
+            ::boardWindowMask
+                .isInitialized
+        ) {
+            boardWindowMask.invalidate()
+        }
     }
 
     private fun ensureBoardAnchorForMode():
@@ -4682,6 +4697,17 @@ class MainActivity : Activity() {
         }
 
         if (
+            ::plantMascotOverlay
+                .isInitialized
+        ) {
+            plantMascotOverlay
+                .setIntroSuppressed(
+                    introPhase !=
+                        IntroPhase.DONE
+                )
+        }
+
+        if (
             !::professorButtonHost
                 .isInitialized
         ) {
@@ -5245,6 +5271,15 @@ class MainActivity : Activity() {
                 .isInitialized
         ) {
             aliveMascotOverlay
+                .animationsEnabled =
+                richMediaSettings.enabled
+        }
+
+        if (
+            ::plantMascotOverlay
+                .isInitialized
+        ) {
+            plantMascotOverlay
                 .animationsEnabled =
                 richMediaSettings.enabled
 
@@ -7111,28 +7146,10 @@ class MainActivity : Activity() {
 
         val screenRect =
             beeGeckoBoard
-                .cellRectOnScreen(
+                .cellRectOnScreenUnbounded(
                     cell
                 )
                 ?: return null
-
-        val viewport =
-            beeGeckoBoard
-                .viewportRectOnScreen()
-                ?: return null
-
-        // Presence lifetime follows the logical cell, not the
-        // transparent media frame. Keep it while any part of the cell
-        // still intersects the board viewport; the actual mascot render
-        // is clipped separately to the viewport.
-        if (
-            !RectF.intersects(
-                screenRect,
-                viewport
-            )
-        ) {
-            return null
-        }
 
         val target =
             centeredScaledRect(
@@ -7146,20 +7163,6 @@ class MainActivity : Activity() {
         return screenRectToRoot(
             target
         )
-    }
-
-    private fun beeGeckoAliveClipRect():
-        RectF? {
-        if (
-            !::beeGeckoBoard
-                .isInitialized
-        ) {
-            return null
-        }
-
-        return beeGeckoBoard
-            .viewportRectOnScreen()
-            ?.let(::screenRectToRoot)
     }
 
     private fun plantAliveTarget():
@@ -7222,13 +7225,13 @@ class MainActivity : Activity() {
 
     private fun ensurePlantMascot() {
         if (
-            !::aliveMascotOverlay
+            !::plantMascotOverlay
                 .isInitialized
         ) {
             return
         }
 
-        aliveMascotOverlay.show(
+        plantMascotOverlay.show(
             kind =
                 MascotKind.PLANT,
             ownerKey =
@@ -7494,9 +7497,6 @@ class MainActivity : Activity() {
                     piece
                 )
             },
-            clipProvider = {
-                beeGeckoAliveClipRect()
-            },
             eligible = {
                 selectedGameMode ==
                     GameMode.BEES_GECKOS &&
@@ -7547,9 +7547,6 @@ class MainActivity : Activity() {
                     cell,
                     piece
                 )
-            },
-            clipProvider = {
-                beeGeckoAliveClipRect()
             }
         )
     }
@@ -10913,7 +10910,7 @@ class MainActivity : Activity() {
 
         val screenRect =
             gomokuBoard
-                .geckoRectOnScreen(
+                .geckoRectOnScreenUnbounded(
                     cell
                 )
                 ?: return null
