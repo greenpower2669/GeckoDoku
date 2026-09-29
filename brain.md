@@ -646,3 +646,6 @@ CI #265 verte sur 2c20b06d2a0f699c8811cdf7cd37871a4b712f45. APK Phone 0.15.18-de
 Fab précise que la règle de rejet/clamp du cadre média n'avait jamais été demandée et qu'elle est conceptuellement fausse ici : les Gecko/Abeilles sont déjà centrés dans un cadre transparent/key-color plus large que le personnage visible.
 
 Décision : beeGeckoAliveTarget() n'applique plus aucun test viewport, aucun rejet partiel et aucun recentrage. La cible centrée sur la cellule est utilisée directement.
+
+### GECKO-059 — build
+CI #267 verte sur baf9743f71821032fbf88480462554eddeade1d5. APK Phone 0.15.19-dev produit. SHA-256 APK : 97e3876d853dd1701f3e7f552fe38d289bf4d5344278416a1e409d7817d6ebcf. Validation téléphone requise.
