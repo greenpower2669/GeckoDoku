@@ -486,3 +486,22 @@ Correction :
 
 ## GECKO-062 — CI #280 VERTE
 Tests unitaires + assemblePhone réussis sur 3187c512c3155581daa3ba24002faada566a7c20. APK 0.15.22-dev SHA-256 70b8cb93a180b2e0612bd445d035650537b52ae8640d46f503293ad5a3bca891. Aucune release.
+
+
+## GECKO-063 — 0.15.22 : la règle 3+3 était contournée
+Preuve journal : des owners gomoku:10:11, 11:9, 10:10, 11:8 puis 10:12, 8:9, 12:11, 8:8, 11:7, 13:7, 9:12, etc. recevaient tous Gecko_apparition.mp4. La chaîne ChromaKey fonctionnait ; le défaut était l'ancien appel direct de showGomokuLivingGecko depuis GECKO_APPEARANCE.
+
+Correction :
+- suppression de ce chemin de création ;
+- sélection 3+3 seule autorisée ;
+- long action réutilise requestCute de la Presence sélectionnée ;
+- trace GOMOKU_LIVING_SELECTION.
+
+Régression carré noir :
+le renderer faisait glClear(alpha=0) mais continuait ensuite à sampler GL_TEXTURE_EXTERNAL_OES même sans frame fraîche. Une texture externe non initialisée/stale pouvait donc produire un rectangle noir. Désormais le shader n'est exécuté qu'après une frame fraîche du playback courant ; avant cela la Surface reste transparente.
+
+Flash du plateau avant intro :
+un rideau noir existe avant setContentView et disparaît seulement après prise de relais par l'overlay Intro noir.
+
+Plante :
+fallback PNG ramené à 95 % via pngScale séparé.
