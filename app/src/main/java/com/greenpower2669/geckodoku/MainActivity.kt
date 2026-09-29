@@ -7013,13 +7013,14 @@ class MainActivity : Activity() {
                 .viewportRectOnScreen()
                 ?: return null
 
-        // Keep the Presence only while the logical cell itself is
-        // inside the board viewport. The media frame may be larger than
-        // the visible mascot, so its edges are deliberately ignored.
+        // Presence lifetime follows the logical cell, not the
+        // transparent media frame. Keep it while any part of the cell
+        // still intersects the board viewport; the actual mascot render
+        // is clipped separately to the viewport.
         if (
-            !viewport.contains(
-                screenRect.centerX(),
-                screenRect.centerY()
+            !RectF.intersects(
+                screenRect,
+                viewport
             )
         ) {
             return null
@@ -7037,6 +7038,20 @@ class MainActivity : Activity() {
         return screenRectToRoot(
             target
         )
+    }
+
+    private fun beeGeckoAliveClipRect():
+        RectF? {
+        if (
+            !::beeGeckoBoard
+                .isInitialized
+        ) {
+            return null
+        }
+
+        return beeGeckoBoard
+            .viewportRectOnScreen()
+            ?.let(::screenRectToRoot)
     }
 
     private fun plantAliveTarget():
@@ -7371,6 +7386,9 @@ class MainActivity : Activity() {
                     piece
                 )
             },
+            clipProvider = {
+                beeGeckoAliveClipRect()
+            },
             eligible = {
                 selectedGameMode ==
                     GameMode.BEES_GECKOS &&
@@ -7422,13 +7440,8 @@ class MainActivity : Activity() {
                     piece
                 )
             },
-            setStaticSuppressed = {
-                    suppressed ->
-                beeGeckoBoard
-                    .setMediaPieceSuppressed(
-                        cell,
-                        suppressed
-                    )
+            clipProvider = {
+                beeGeckoAliveClipRect()
             }
         )
     }
