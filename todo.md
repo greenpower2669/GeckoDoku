@@ -16,17 +16,17 @@
 - [x] mémoire anti-répétition ;
 - [x] réinterrogation après 4 attentes ou fin d'animation longue ;
 - [x] couche AliveMascotOverlayView avec masque conservé entre clips ;
-- [ ] connecter la géométrie exacte PNG/vidéo de chaque mode ;
+- [x] connecter la géométrie exacte PNG/vidéo de chaque mode ;
 - [x] fallback PNG animations OFF prévu par profil.
 
 ### Intégration
-- [ ] Gecko : apparition / idle1..4 / disparition ;
-- [ ] éliminer le flash PNG prématuré ;
-- [ ] Abeille : idle1..4 + fallback transitions si médias manquants ;
-- [ ] Plante : attente décorative bas droite ;
-- [ ] intégration multi-mode sans duplication locale ;
-- [ ] tests unitaires politiques de sélection/anti-répétition ;
-- [ ] CI ;
+- [x] Gecko : apparition / idle1..4 / disparition ;
+- [x] éliminer le flash PNG prématuré par masque continu entre clips ;
+- [x] Abeille : idle1..4 + fallback transitions si média de disparition absent ;
+- [x] Plante : attente décorative bas droite + PlanteTr fallback ;
+- [x] intégration Classic / Sudoku / Gomoku / Abeilles & Geckos via le même moteur ;
+- [x] tests unitaires sélection/anti-répétition + géométrie de taille ;
+- [ ] CI intégration complète ;
 - [ ] validation téléphone Fab.
 
 Voir `ordres-de-mission.md` pour le contrat complet.

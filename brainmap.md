@@ -329,6 +329,10 @@ mot entier église, quelle que soit la casse détectée → eglize dans le flux 
 
 Fichiers :
 - RichMediaOverlayView.kt ;
+- AliveAnimator.kt ;
+- AliveMascotOverlayView.kt ;
+- MascotAnimationProfiles.kt ;
+- MascotRenderPolicy.kt ;
 - ChromaKeyVideoView.kt ;
 - RichMediaPlaybackRegistry.kt ;
 - RichMediaScheduler.kt ;
@@ -483,3 +487,31 @@ Invariants :
 - aucune seconde table de symboles d’axe dans MainActivity ;
 - drag/persistance continuent d’utiliser HexAxis + axisValue ;
 - changer un symbole n’altère jamais les règles du solveur.
+
+
+## 15 — GECKO-050 : moteur de mascottes vivantes
+
+~~~mermaid
+flowchart LR
+    Event[apparition / repère / pièce] --> Layer[AliveMascotOverlayView]
+    Layer --> Coord[MascotLifeCoordinator]
+    Coord --> G[AliveAnimator Gecko]
+    Coord --> B[AliveAnimator Abeille]
+    Coord --> P[AliveAnimator Plante]
+    G --> GV[appear / stay1..4 / cute / disappear]
+    B --> BV[appear / stay1..4 / fallback hide]
+    P --> PV[stay1..4 / cute / PlanteTr fallback]
+    Layer --> CK[ChromaKeyVideoView]
+    CK --> Mask[masque maintenu entre clips]
+~~~
+
+Géométrie :
+- Classic Gecko = 80 % de la cellule, identique au PNG dessiné avec inset 10 % ;
+- Sudoku Gecko = base 66 % de la cellule ;
+- Gomoku utilise geckoRectOnScreen, déjà calé sur le PNG ;
+- Bee/Gecko hex = 0,61 × scale de type, donc Abeille = 0,61 × BEE_SCALE ;
+- Plante = décor bas-droite, indépendante du gameplay.
+
+Une seule instance vivante de chaque type est active à la fois ; quand une nouvelle pièce du même type apparaît, l'ancienne redevient son PNG statique. Cela évite une multiplication de lecteurs vidéo sur les grands plateaux.
+
+Prof Gecko / Pierre n'utilisent pas AliveAnimator.

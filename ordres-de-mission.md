@@ -355,4 +355,15 @@ Fondation technique intégrée :
 - PlanteTr.png fourni par Fab et intégré comme fallback PNG ;
 - version de travail 0.15.7-dev / versionCode 42.
 
-Intégration des appels de jeu encore en cours avant validation CI/téléphone.
+Intégration multi-mode effectuée :
+- Classic : apparition / attente continue / mignonnerie / disparition ;
+- Sudoku : repère Gecko via le même moteur ;
+- Gomoku : dernier Gecko vivant, avec teinte jaune conservée pour le Prof ;
+- Abeilles & Geckos : Gecko ET Abeille passent par le même moteur ;
+- Plante : profil vivant décoratif en bas à droite, PNG PlanteTr si animations OFF ;
+- géométrie vidéo calée sur la taille réelle des PNG de chaque mode ;
+- le masque reste actif entre apparition et attente : pas de réapparition PNG intermédiaire ;
+- changement de mode / nouvelle partie / pause nettoient les instances de plateau ;
+- Pierre et les vidéos du Prof restent hors de cette architecture.
+
+État : code intégré sur 0.15.7-dev ; CI complète et validation téléphone encore requises.

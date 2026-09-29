@@ -2,7 +2,7 @@
 
 > Documentation vivante de l'application telle qu'elle existe au 28 septembre 2026.
 >
-> **Version applicative observée :** `0.15.6-dev` — `versionCode 41`  
+> **Version applicative observée :** `0.15.7-dev` — `versionCode 42`  
 > **Branche :** `gecko-039-sudoku-tap-gecko-gomoku`  
 > **Référence code fonctionnel :** `8ccc0385c8314239976368811dab93808970e35a`  
 > Cette documentation décrit le comportement présent. Elle peut évoluer avec le logiciel. Elle n'est ni un historique de debug ni un ordre de mission.
@@ -524,3 +524,18 @@ La validation finale sur téléphone de ces éléments reste distincte de leur p
 La version 0.15.6-dev corrige un décalage purement géométrique d’affichage : les barres réelles étaient alignées sur les cellules, mais les symboles de S et R ne correspondaient pas aux angles du plateau pointy-top.
 
 La correction ne change ni les règles Abeilles & Geckos, ni le solveur, ni le format de session. Elle unifie uniquement la source géométrique utilisée par le rendu, l’interface et le Prof.
+
+
+### Delta GECKO-050 — mascottes vivantes et sérénité
+
+La version de travail 0.15.7-dev introduit un moteur commun de présence visuelle pour Gecko, Abeille et la Plante décorative.
+
+Quand les animations sont actives, une mascotte peut enchaîner apparition, animations d'attente discrètes et mignonnerie sans repasser brièvement par son PNG entre deux vidéos. Le masque de la pièce statique est conservé pendant toute la chaîne et la taille vidéo est calculée depuis la taille réellement utilisée par le PNG du mode.
+
+Le moteur mémorise les derniers clips et évite une répétition immédiate lorsqu'une alternative existe. Quatre attentes terminées ou la fin d'une mignonnerie provoquent une réinterrogation douce du groupe.
+
+Quand les animations sont désactivées, le jeu revient aux PNG : Gecko/Abeille restent les PNG déjà dessinés par leur plateau ; la Plante utilise `PlanteTr.png`.
+
+Une seule mascotte vivante de chaque type est animée à la fois afin de conserver une charge légère sur téléphone. Les autres pièces restent en PNG.
+
+La Plante est décorative, sans collision ni effet sur les règles. Prof Gecko/Pierre restent sur leur pipeline vidéo/parole séparé.

@@ -718,6 +718,10 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         slot.container
             .visibility =
             View.VISIBLE
+
+        if (visibility != View.VISIBLE) {
+            visibility = View.VISIBLE
+        }
     }
 
     private fun finishSlot(

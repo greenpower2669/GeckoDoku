@@ -8,10 +8,11 @@
 ## État de référence
 
 - Branche : gecko-039-sudoku-tap-gecko-gomoku
-- Version : 0.15.6-dev / versionCode 41
+- Version : 0.15.7-dev / versionCode 42
 - GECKO-047 : VALIDÉ FAB — grandes barres d’axes, drag/suppression hors plateau, Prof utilisant les axes, audio Android/Pierre capturable.
 - GECKO-048 : CODE + CI VERTE, validation téléphone encore attendue — prononciation Pierre et couleurs d’axes.
-- GECKO-049 : CODE + CI #236 VERTE, validation téléphone attendue — géométrie canonique des axes Abeilles & Geckos et cohérence légende/double-clic/Prof.
+- GECKO-049 : VALIDÉ FAB — géométrie canonique des axes Abeilles & Geckos.
+- GECKO-050 : CODE INTÉGRÉ, CI/validation téléphone en cours — moteur commun de mascottes vivantes Gecko/Abeille/Plante.
 - Titre visible dans tous les modes : GeckoDoku 🦎.
 
 ## 1 — Contrat transversal
@@ -213,6 +214,17 @@ Les vidéos/animations sont décoratives :
 - pas de reflow du plateau ;
 - échec média = jeu toujours fonctionnel ;
 - désactivables.
+
+GECKO-050 :
+- AliveAnimator centralise Gecko, Abeille et Plante ;
+- cycle APPEARING → IDLE/CUTE → DISAPPEARING, avec STATIC_PNG si nécessaire ;
+- quatre attentes Gecko et quatre attentes Abeille ;
+- Plante décorative avec quatre attentes + animation longue ;
+- jamais deux choix ambiants identiques consécutifs si une alternative existe ;
+- après quatre attentes terminées ou une mignonnerie, réinterrogation des autres mascottes vivantes ;
+- le masque vidéo reste en place entre les clips, donc le PNG ne flashe pas entre apparition et attente ;
+- taille vidéo dérivée de la taille PNG réellement dessinée dans chaque mode ;
+- animations OFF : PNG de plateau pour Gecko/Abeille, PlanteTr.png pour la Plante.
 
 Vidéo muted :
 - la piste audio est réellement désélectionnée.

@@ -262,6 +262,9 @@ class MainActivity : Activity() {
     private lateinit var richMediaOverlay:
         RichMediaOverlayView
 
+    private lateinit var aliveMascotOverlay:
+        AliveMascotOverlayView
+
     private lateinit var gameAudio:
         AssetAudioPlayer
 
@@ -837,6 +840,14 @@ class MainActivity : Activity() {
                             richMediaOverlay
                                 .refreshDynamicTargets()
                         }
+
+                        if (
+                            ::aliveMascotOverlay
+                                .isInitialized
+                        ) {
+                            aliveMascotOverlay
+                                .refreshDynamicTargets()
+                        }
                     }
                 }
             }
@@ -920,6 +931,14 @@ class MainActivity : Activity() {
                                 .isInitialized
                         ) {
                             richMediaOverlay
+                                .refreshDynamicTargets()
+                        }
+
+                        if (
+                            ::aliveMascotOverlay
+                                .isInitialized
+                        ) {
+                            aliveMascotOverlay
                                 .refreshDynamicTargets()
                         }
                     }
@@ -1594,6 +1613,22 @@ class MainActivity : Activity() {
             positionFloatingBoard()
         }
 
+        aliveMascotOverlay =
+            AliveMascotOverlayView(this).apply {
+                animationsEnabled =
+                    richMediaSettings.enabled
+                visibility =
+                    View.INVISIBLE
+            }
+
+        screenRoot.addView(
+            aliveMascotOverlay,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+
         richMediaOverlay =
             RichMediaOverlayView(this).apply {
                 visibility = View.GONE
@@ -1662,6 +1697,10 @@ class MainActivity : Activity() {
         setContentView(
             screenRoot
         )
+
+        screenRoot.post {
+            ensurePlantMascot()
+        }
 
         protectFromSystemBars(root)
         applyGameModeVisibility()
@@ -1866,6 +1905,14 @@ class MainActivity : Activity() {
             introPhase =
                 IntroPhase.DONE
             applyProfessorIntroVisibility()
+        }
+
+        if (
+            ::aliveMascotOverlay
+                .isInitialized
+        ) {
+            aliveMascotOverlay
+                .stopBoardMascots()
         }
 
         puzzle = nextPuzzle
@@ -3313,6 +3360,14 @@ class MainActivity : Activity() {
                 beeGeckoBoard,
                 geometry
             )
+        }
+
+        if (
+            ::aliveMascotOverlay
+                .isInitialized
+        ) {
+            aliveMascotOverlay
+                .refreshDynamicTargets()
         }
     }
 
@@ -4998,6 +5053,17 @@ class MainActivity : Activity() {
         richMediaSettings.enabled =
             !richMediaSettings.enabled
 
+        if (
+            ::aliveMascotOverlay
+                .isInitialized
+        ) {
+            aliveMascotOverlay
+                .animationsEnabled =
+                richMediaSettings.enabled
+
+            ensurePlantMascot()
+        }
+
         MediaTrace.event(
             source = "MainActivity",
             event = "ANIM_TOGGLE_USER",
@@ -5293,6 +5359,14 @@ class MainActivity : Activity() {
         gomokuGeneration += 1
         gomokuProfessorThinking = false
 
+        if (
+            ::aliveMascotOverlay
+                .isInitialized
+        ) {
+            aliveMascotOverlay
+                .stopBoardMascots()
+        }
+
         selectedGameMode = mode
         gameModePreferences.gameMode =
             mode
@@ -5413,6 +5487,14 @@ class MainActivity : Activity() {
                 .isInitialized
         ) {
             richMediaOverlay.stop()
+        }
+
+        if (
+            ::aliveMascotOverlay
+                .isInitialized
+        ) {
+            aliveMascotOverlay
+                .stopBoardMascots()
         }
 
         if (
@@ -5674,7 +5756,10 @@ class MainActivity : Activity() {
                         " trouvée • " +
                         generated
                             .regionCount +
-                        " zones • axes ↖↘ ↑↓ ↗↙."
+                        " zones • axes " +
+                        BeeGeckoAxisGeometry
+                            .legend() +
+                        "."
 
                 playLevelStartMusic()
             }
@@ -5875,6 +5960,14 @@ class MainActivity : Activity() {
                 RichMediaKind
                     .BEE_APPEARANCE
             )
+        }
+
+        if (
+            ::aliveMascotOverlay
+                .isInitialized
+        ) {
+            aliveMascotOverlay
+                .stopBoardMascots()
         }
 
         if (
@@ -6288,28 +6381,20 @@ class MainActivity : Activity() {
                         "Gecko confirmé."
                     }
 
-                if (
-                    piece ==
-                        BeeGeckoPiece.BEE
-                ) {
-                    playBeeGeckoAnimation(
-                        cell
-                    )
-                }
+                showBeeGeckoLivingPiece(
+                    cell,
+                    piece
+                )
             }
 
             BeeGeckoActionFeedback
                 .COMPLETED -> {
                 fx.complete()
 
-                if (
-                    piece ==
-                        BeeGeckoPiece.BEE
-                ) {
-                    playBeeGeckoAnimation(
-                        cell
-                    )
-                }
+                showBeeGeckoLivingPiece(
+                    cell,
+                    piece
+                )
 
                 completeBeeGeckoGame()
             }
@@ -6319,6 +6404,11 @@ class MainActivity : Activity() {
                 fx.cross()
                 status.text =
                     "Pièce retirée."
+
+                hideBeeGeckoLivingPiece(
+                    cell,
+                    piece
+                )
             }
 
             BeeGeckoActionFeedback
@@ -6614,10 +6704,21 @@ class MainActivity : Activity() {
                 .CROSS_SET -> {
                 beeGeckoBoard.invalidate()
 
+                hint.step.gecko
+                    ?.let {
+                        showBeeGeckoLivingPiece(
+                            it,
+                            BeeGeckoPiece
+                                .GECKO
+                        )
+                    }
+
                 hint.step.bee
                     ?.let {
-                        playBeeGeckoAnimation(
-                            it
+                        showBeeGeckoLivingPiece(
+                            it,
+                            BeeGeckoPiece
+                                .BEE
                         )
                     }
 
@@ -6697,6 +6798,514 @@ class MainActivity : Activity() {
         )
 
         refreshBeeGeckoUi()
+    }
+
+    private fun screenRectToRoot(
+        screenRect: RectF
+    ): RectF? {
+        if (
+            !::screenRoot
+                .isInitialized
+        ) {
+            return null
+        }
+
+        val rootLocation =
+            IntArray(2)
+
+        screenRoot.getLocationOnScreen(
+            rootLocation
+        )
+
+        return RectF(
+            screenRect
+        ).apply {
+            offset(
+                -rootLocation[0]
+                    .toFloat(),
+                -rootLocation[1]
+                    .toFloat()
+            )
+        }
+    }
+
+    private fun centeredScaledRect(
+        source: RectF,
+        scale: Float
+    ): RectF {
+        val halfWidth =
+            source.width() *
+                scale /
+                2f
+        val halfHeight =
+            source.height() *
+                scale /
+                2f
+
+        return RectF(
+            source.centerX() -
+                halfWidth,
+            source.centerY() -
+                halfHeight,
+            source.centerX() +
+                halfWidth,
+            source.centerY() +
+                halfHeight
+        )
+    }
+
+    private fun classicGeckoAliveTarget(
+        cell: Cell
+    ): RectF? =
+        board.cellRectOnScreen(
+            cell
+        )
+            ?.let {
+                centeredScaledRect(
+                    it,
+                    MascotRenderPolicy
+                        .CLASSIC_GECKO_SCALE
+                )
+            }
+            ?.let {
+                screenRectToRoot(it)
+            }
+
+    private fun sudokuGeckoAliveTarget(
+        cell: Cell
+    ): RectF? =
+        sudokuBoard
+            .cellRectOnScreen(
+                cell
+            )
+            ?.let {
+                centeredScaledRect(
+                    it,
+                    MascotRenderPolicy
+                        .SUDOKU_GECKO_SCALE
+                )
+            }
+            ?.let {
+                screenRectToRoot(it)
+            }
+
+    private fun beeGeckoAliveTarget(
+        cell: HexCoord,
+        piece: BeeGeckoPiece
+    ): RectF? {
+        if (
+            !::beeGeckoBoard
+                .isInitialized
+        ) {
+            return null
+        }
+
+        val screenRect =
+            beeGeckoBoard
+                .cellRectOnScreen(
+                    cell
+                )
+                ?: return null
+
+        val target =
+            centeredScaledRect(
+                screenRect,
+                MascotRenderPolicy
+                    .beeGeckoScale(
+                        piece
+                    )
+            )
+
+        val viewport =
+            beeGeckoBoard
+                .viewportRectOnScreen()
+                ?: return null
+
+        if (
+            target.left <
+                viewport.left ||
+            target.top <
+                viewport.top ||
+            target.right >
+                viewport.right ||
+            target.bottom >
+                viewport.bottom
+        ) {
+            return null
+        }
+
+        return screenRectToRoot(
+            target
+        )
+    }
+
+    private fun plantAliveTarget():
+        RectF? {
+        if (
+            !::screenRoot
+                .isInitialized ||
+            !::boardAnchor
+                .isInitialized ||
+            screenRoot.width <= 0 ||
+            boardAnchor.width <= 0 ||
+            boardAnchor.height <= 0
+        ) {
+            return null
+        }
+
+        val rootLocation =
+            IntArray(2)
+        val anchorLocation =
+            IntArray(2)
+
+        screenRoot.getLocationOnScreen(
+            rootLocation
+        )
+        boardAnchor.getLocationOnScreen(
+            anchorLocation
+        )
+
+        val size =
+            dp(
+                MascotRenderPolicy
+                    .PLANT_SIZE_DP
+            ).toFloat()
+
+        val margin =
+            dp(
+                MascotRenderPolicy
+                    .PLANT_MARGIN_DP
+            ).toFloat()
+
+        val right =
+            anchorLocation[0] -
+                rootLocation[0] +
+                boardAnchor.width -
+                margin
+
+        val bottom =
+            anchorLocation[1] -
+                rootLocation[1] +
+                boardAnchor.height -
+                margin
+
+        return RectF(
+            right - size,
+            bottom - size,
+            right,
+            bottom
+        )
+    }
+
+    private fun ensurePlantMascot() {
+        if (
+            !::aliveMascotOverlay
+                .isInitialized
+        ) {
+            return
+        }
+
+        aliveMascotOverlay.show(
+            kind =
+                MascotKind.PLANT,
+            ownerKey =
+                "plant:decoration",
+            targetProvider = {
+                plantAliveTarget()
+            },
+            eligible = {
+                true
+            }
+        )
+    }
+
+    private fun showClassicLivingGecko(
+        cell: Cell
+    ) {
+        if (
+            !::aliveMascotOverlay
+                .isInitialized
+        ) {
+            return
+        }
+
+        aliveMascotOverlay.show(
+            kind =
+                MascotKind.GECKO,
+            ownerKey =
+                "classic:" +
+                    cell.row +
+                    ":" +
+                    cell.col,
+            targetProvider = {
+                classicGeckoAliveTarget(
+                    cell
+                )
+            },
+            maskColorProvider = {
+                board.cellBackgroundColor(
+                    cell
+                )
+            },
+            eligible = {
+                selectedGameMode ==
+                    GameMode.GECKODOKU &&
+                    engine.snapshot()
+                        .confirmed
+                        .contains(
+                            cell
+                        )
+            }
+        )
+    }
+
+    private fun hideClassicLivingGecko(
+        cell: Cell
+    ) {
+        if (
+            !::aliveMascotOverlay
+                .isInitialized
+        ) {
+            return
+        }
+
+        aliveMascotOverlay.disappear(
+            kind =
+                MascotKind.GECKO,
+            ownerKey =
+                "classic:" +
+                    cell.row +
+                    ":" +
+                    cell.col,
+            targetProvider = {
+                classicGeckoAliveTarget(
+                    cell
+                )
+            },
+            maskColorProvider = {
+                board.cellBackgroundColor(
+                    cell
+                )
+            }
+        )
+    }
+
+    private fun showSudokuLivingGecko(
+        cell: Cell
+    ) {
+        if (
+            !::aliveMascotOverlay
+                .isInitialized
+        ) {
+            return
+        }
+
+        aliveMascotOverlay.show(
+            kind =
+                MascotKind.GECKO,
+            ownerKey =
+                "sudoku:" +
+                    cell.row +
+                    ":" +
+                    cell.col,
+            targetProvider = {
+                sudokuGeckoAliveTarget(
+                    cell
+                )
+            },
+            maskColorProvider = {
+                sudokuBoard
+                    .cellBackgroundColor(
+                        cell
+                    )
+            },
+            eligible = {
+                selectedGameMode ==
+                    GameMode.SUDOKU &&
+                    sudokuEngine
+                        ?.snapshot()
+                        ?.hasGeckoMarker(
+                            cell
+                        ) ==
+                        true
+            }
+        )
+    }
+
+    private fun hideSudokuLivingGecko(
+        cell: Cell
+    ) {
+        if (
+            !::aliveMascotOverlay
+                .isInitialized
+        ) {
+            return
+        }
+
+        aliveMascotOverlay.disappear(
+            kind =
+                MascotKind.GECKO,
+            ownerKey =
+                "sudoku:" +
+                    cell.row +
+                    ":" +
+                    cell.col,
+            targetProvider = {
+                sudokuGeckoAliveTarget(
+                    cell
+                )
+            },
+            maskColorProvider = {
+                sudokuBoard
+                    .cellBackgroundColor(
+                        cell
+                    )
+            }
+        )
+    }
+
+    private fun showGomokuLivingGecko(
+        cell: Cell,
+        player: GomokuPlayer
+    ) {
+        if (
+            !::aliveMascotOverlay
+                .isInitialized
+        ) {
+            return
+        }
+
+        aliveMascotOverlay.show(
+            kind =
+                MascotKind.GECKO,
+            ownerKey =
+                "gomoku:" +
+                    cell.row +
+                    ":" +
+                    cell.col,
+            targetProvider = {
+                gomokuOverlayTarget(
+                    cell
+                )
+            },
+            maskColorProvider = {
+                gomokuBoard
+                    .cellBackgroundColor()
+            },
+            eligible = {
+                selectedGameMode ==
+                    GameMode.GOMOKU &&
+                    gomokuEngine
+                        ?.snapshot()
+                        ?.playerAt(
+                            cell
+                        ) ==
+                        player
+            },
+            yellowTint =
+                player ==
+                    GomokuPlayer.PROFESSOR
+        )
+    }
+
+    private fun showBeeGeckoLivingPiece(
+        cell: HexCoord,
+        piece: BeeGeckoPiece
+    ) {
+        if (
+            !::aliveMascotOverlay
+                .isInitialized
+        ) {
+            return
+        }
+
+        val kind =
+            if (
+                piece ==
+                    BeeGeckoPiece.BEE
+            ) {
+                MascotKind.BEE
+            } else {
+                MascotKind.GECKO
+            }
+
+        aliveMascotOverlay.show(
+            kind = kind,
+            ownerKey =
+                "bee:" +
+                    kind.name +
+                    ":" +
+                    cell.q +
+                    ":" +
+                    cell.r,
+            targetProvider = {
+                beeGeckoAliveTarget(
+                    cell,
+                    piece
+                )
+            },
+            maskColorProvider = {
+                beeGeckoBoard
+                    .cellBackgroundColor(
+                        cell
+                    )
+            },
+            eligible = {
+                selectedGameMode ==
+                    GameMode.BEES_GECKOS &&
+                    beeGeckoEngine
+                        ?.snapshot()
+                        ?.pieceAt(
+                            cell
+                        ) ==
+                        piece
+            }
+        )
+    }
+
+    private fun hideBeeGeckoLivingPiece(
+        cell: HexCoord,
+        piece: BeeGeckoPiece
+    ) {
+        if (
+            !::aliveMascotOverlay
+                .isInitialized
+        ) {
+            return
+        }
+
+        val kind =
+            if (
+                piece ==
+                    BeeGeckoPiece.BEE
+            ) {
+                MascotKind.BEE
+            } else {
+                MascotKind.GECKO
+            }
+
+        aliveMascotOverlay.disappear(
+            kind = kind,
+            ownerKey =
+                "bee:" +
+                    kind.name +
+                    ":" +
+                    cell.q +
+                    ":" +
+                    cell.r,
+            targetProvider = {
+                beeGeckoAliveTarget(
+                    cell,
+                    piece
+                )
+            },
+            maskColorProvider = {
+                beeGeckoBoard
+                    .cellBackgroundColor(
+                        cell
+                    )
+            }
+        )
     }
 
     private fun beeGeckoOverlayTarget(
@@ -6780,40 +7389,9 @@ class MainActivity : Activity() {
     private fun playBeeGeckoAnimation(
         cell: HexCoord
     ) {
-        if (
-            !richMediaSettings.enabled ||
-            !::richMediaOverlay
-                .isInitialized
-        ) {
-            return
-        }
-
-        val target =
-            beeGeckoOverlayTarget(
-                cell
-            )
-                ?: return
-
-        richMediaOverlay.play(
-            kind =
-                RichMediaKind
-                    .BEE_APPEARANCE,
-            assetPath =
-                AssetMediaCatalog
-                    .BEE_APPEARANCE,
-            muted = true,
-            target = target,
-            targetProvider = {
-                beeGeckoOverlayTarget(
-                    cell
-                )
-            },
-            titleText = null,
-            skippable = false,
-            maskTarget = null,
-            keyColor =
-                ChromaKeyColor
-                    .GREEN
+        showBeeGeckoLivingPiece(
+            cell,
+            BeeGeckoPiece.BEE
         )
     }
 
@@ -7638,6 +8216,14 @@ class MainActivity : Activity() {
         }
 
         if (
+            ::aliveMascotOverlay
+                .isInitialized
+        ) {
+            aliveMascotOverlay
+                .stopBoardMascots()
+        }
+
+        if (
             ::professorSpeech
                 .isInitialized
         ) {
@@ -8146,50 +8732,15 @@ class MainActivity : Activity() {
                 sudokuBoard.refresh()
                 sudokuValueOverlay.invalidate()
 
-                playSharedGeckoCellAnimation(
-                    kind =
-                        if (active) {
-                            RichMediaKind
-                                .GECKO_APPEARANCE
-                        } else {
-                            RichMediaKind
-                                .GECKO_DISAPPEARANCE
-                        },
-                    screenRect =
-                        sudokuBoard
-                            .cellRectOnScreen(
-                                cell
-                            ),
-                    maskColor =
-                        sudokuBoard
-                            .cellBackgroundColor(
-                                cell
-                            ),
-                    onFinished =
-                        if (active) {
-                            {
-                                maybePlaySharedGeckoLongAction(
-                                    screenRect =
-                                        sudokuBoard
-                                            .cellRectOnScreen(
-                                                cell
-                                            ),
-                                    maskColor =
-                                        sudokuBoard
-                                            .cellBackgroundColor(
-                                                cell
-                                            ),
-                                    eligible =
-                                        engine.snapshot()
-                                            .hasGeckoMarker(
-                                                cell
-                                            )
-                                )
-                            }
-                        } else {
-                            null
-                        }
-                )
+                if (active) {
+                    showSudokuLivingGecko(
+                        cell
+                    )
+                } else {
+                    hideSudokuLivingGecko(
+                        cell
+                    )
+                }
 
                 active
             }
@@ -9755,6 +10306,26 @@ class MainActivity : Activity() {
         cell: Cell,
         onFinished: (() -> Unit)? = null
     ) {
+        when (kind) {
+            RichMediaKind
+                .GECKO_APPEARANCE -> {
+                showClassicLivingGecko(
+                    cell
+                )
+                return
+            }
+
+            RichMediaKind
+                .GECKO_DISAPPEARANCE -> {
+                hideClassicLivingGecko(
+                    cell
+                )
+                return
+            }
+
+            else -> Unit
+        }
+
         playSharedGeckoCellAnimation(
             kind = kind,
             screenRect =
@@ -9808,6 +10379,18 @@ class MainActivity : Activity() {
         player: GomokuPlayer,
         onFinished: (() -> Unit)? = null
     ) {
+        if (
+            kind ==
+                RichMediaKind
+                    .GECKO_APPEARANCE
+        ) {
+            showGomokuLivingGecko(
+                cell,
+                player
+            )
+            return
+        }
+
         val celebrationVisible =
             ::celebrationView.isInitialized &&
                 celebrationView.visibility ==
@@ -9956,6 +10539,15 @@ class MainActivity : Activity() {
     }
 
     private fun stopGomokuPieceMedia() {
+        if (
+            ::aliveMascotOverlay
+                .isInitialized
+        ) {
+            aliveMascotOverlay.stop(
+                MascotKind.GECKO
+            )
+        }
+
         if (
             ::richMediaOverlay
                 .isInitialized
@@ -11435,6 +12027,7 @@ class MainActivity : Activity() {
         ) {
             screenRoot.post {
                 positionTitleIdentity()
+                ensurePlantMascot()
             }
         }
     }
@@ -11460,6 +12053,14 @@ class MainActivity : Activity() {
         cancelProfessorAmbientTick()
         stopTitleIdentityAnimation()
         stopProfessorButtonVideo()
+
+        if (
+            ::aliveMascotOverlay
+                .isInitialized
+        ) {
+            aliveMascotOverlay
+                .stopAll()
+        }
 
         if (::richMediaOverlay.isInitialized) {
             richMediaOverlay.stop()
@@ -11505,6 +12106,14 @@ class MainActivity : Activity() {
 
         if (::richMediaOverlay.isInitialized) {
             richMediaOverlay.release()
+        }
+
+        if (
+            ::aliveMascotOverlay
+                .isInitialized
+        ) {
+            aliveMascotOverlay
+                .release()
         }
 
         if (::gameAudio.isInitialized) {
