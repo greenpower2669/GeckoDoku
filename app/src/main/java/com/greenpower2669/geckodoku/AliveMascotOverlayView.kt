@@ -74,8 +74,6 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
         val video =
             ChromaKeyVideoView(context).apply {
-                useEmbeddedSurfaceLayer()
-
                 visibility =
                     View.INVISIBLE
                 logicalLayer =
