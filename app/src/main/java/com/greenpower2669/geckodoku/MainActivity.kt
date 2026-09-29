@@ -274,12 +274,6 @@ class MainActivity : Activity() {
     private lateinit var aliveMascotOverlay:
         AliveMascotOverlayView
 
-    private lateinit var plantMascotOverlay:
-        AliveMascotOverlayView
-
-    private lateinit var boardWindowMask:
-        BoardWindowMaskView
-
     private lateinit var gameAudio:
         AssetAudioPlayer
 
@@ -543,7 +537,11 @@ class MainActivity : Activity() {
                 )
 
                 setBackgroundColor(
-                    Color.TRANSPARENT
+                    Color.rgb(
+                        247,
+                        250,
+                        247
+                    )
                 )
             }
 
@@ -859,13 +857,6 @@ class MainActivity : Activity() {
                             aliveMascotOverlay
                                 .refreshDynamicTargets()
                         }
-
-                        if (
-                            ::boardWindowMask
-                                .isInitialized
-                        ) {
-                            boardWindowMask.invalidate()
-                        }
                     }
                 }
             }
@@ -958,13 +949,6 @@ class MainActivity : Activity() {
                         ) {
                             aliveMascotOverlay
                                 .refreshDynamicTargets()
-                        }
-
-                        if (
-                            ::boardWindowMask
-                                .isInitialized
-                        ) {
-                            boardWindowMask.invalidate()
                         }
                     }
                 }
@@ -1529,22 +1513,33 @@ class MainActivity : Activity() {
                 clipToPadding = false
 
                 addView(
-                    View(this@MainActivity).apply {
-                        setBackgroundColor(
-                            Color.rgb(
-                                247,
-                                250,
-                                247
-                            )
-                        )
-                        importantForAccessibility =
-                            View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                        isClickable = false
-                    },
+                    root,
                     FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT
                     )
+                )
+
+                addView(
+                    titleIdentityHost,
+                    FrameLayout.LayoutParams(
+                        dp(
+                            titleIdentityPolicy
+                                .iconSizeDp +
+                                titleIdentityPolicy
+                                    .frameExtraDp
+                        ),
+                        dp(
+                            titleIdentityPolicy
+                                .iconSizeDp +
+                                titleIdentityPolicy
+                                    .frameExtraDp
+                        )
+                    ).apply {
+                        gravity =
+                            Gravity.TOP or
+                                Gravity.START
+                    }
                 )
             }
 
@@ -1661,123 +1656,6 @@ class MainActivity : Activity() {
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
-        )
-
-        boardWindowMask =
-            BoardWindowMaskView(this).apply {
-                maskColor =
-                    Color.rgb(
-                        247,
-                        250,
-                        247
-                    )
-
-                windowProvider = {
-                    when (
-                        selectedGameMode
-                    ) {
-                        GameMode.GOMOKU ->
-                            if (
-                                ::gomokuBoard
-                                    .isInitialized
-                            ) {
-                                gomokuBoard
-                                    .viewportRectOnScreen()
-                                    ?.let(
-                                        ::screenRectToRoot
-                                    )
-                            } else {
-                                null
-                            }
-
-                        GameMode.BEES_GECKOS ->
-                            if (
-                                ::beeGeckoBoard
-                                    .isInitialized
-                            ) {
-                                beeGeckoBoard
-                                    .viewportRectOnScreen()
-                                    ?.let(
-                                        ::screenRectToRoot
-                                    )
-                            } else {
-                                null
-                            }
-
-                        else ->
-                            null
-                    }
-                }
-
-                cornerRadiusProvider = {
-                    if (
-                        selectedGameMode ==
-                            GameMode.GOMOKU
-                    ) {
-                        dp(10).toFloat()
-                    } else {
-                        0f
-                    }
-                }
-
-                visibility =
-                    View.GONE
-            }
-
-        screenRoot.addView(
-            boardWindowMask,
-            FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            )
-        )
-
-        plantMascotOverlay =
-            AliveMascotOverlayView(this).apply {
-                animationsEnabled =
-                    richMediaSettings.enabled
-                visibility =
-                    View.INVISIBLE
-            }
-
-        screenRoot.addView(
-            plantMascotOverlay,
-            FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            )
-        )
-
-        // Foreground UI: titles, text and buttons always stay above
-        // board mascots and above the white board-window mask.
-        screenRoot.addView(
-            root,
-            FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            )
-        )
-
-        screenRoot.addView(
-            titleIdentityHost,
-            FrameLayout.LayoutParams(
-                dp(
-                    titleIdentityPolicy
-                        .iconSizeDp +
-                        titleIdentityPolicy
-                            .frameExtraDp
-                ),
-                dp(
-                    titleIdentityPolicy
-                        .iconSizeDp +
-                        titleIdentityPolicy
-                            .frameExtraDp
-                )
-            ).apply {
-                gravity =
-                    Gravity.TOP or
-                        Gravity.START
-            }
         )
 
         richMediaOverlay =
@@ -3559,21 +3437,6 @@ class MainActivity : Activity() {
             aliveMascotOverlay
                 .refreshDynamicTargets()
         }
-
-        if (
-            ::plantMascotOverlay
-                .isInitialized
-        ) {
-            plantMascotOverlay
-                .refreshDynamicTargets()
-        }
-
-        if (
-            ::boardWindowMask
-                .isInitialized
-        ) {
-            boardWindowMask.invalidate()
-        }
     }
 
     private fun ensureBoardAnchorForMode():
@@ -4711,17 +4574,6 @@ class MainActivity : Activity() {
         }
 
         if (
-            ::plantMascotOverlay
-                .isInitialized
-        ) {
-            plantMascotOverlay
-                .setIntroSuppressed(
-                    introPhase !=
-                        IntroPhase.DONE
-                )
-        }
-
-        if (
             !::professorButtonHost
                 .isInitialized
         ) {
@@ -5285,15 +5137,6 @@ class MainActivity : Activity() {
                 .isInitialized
         ) {
             aliveMascotOverlay
-                .animationsEnabled =
-                richMediaSettings.enabled
-        }
-
-        if (
-            ::plantMascotOverlay
-                .isInitialized
-        ) {
-            plantMascotOverlay
                 .animationsEnabled =
                 richMediaSettings.enabled
 
@@ -7165,6 +7008,10 @@ class MainActivity : Activity() {
                 )
                 ?: return null
 
+        // The Presence keeps living even when the cell is fully behind
+        // the board frame. The clipProvider is the only visibility
+        // window, so zoom/drag makes the mascot slide naturally behind
+        // the frame without destroying/recreating its local cycle.
         val target =
             centeredScaledRect(
                 screenRect,
@@ -7177,6 +7024,20 @@ class MainActivity : Activity() {
         return screenRectToRoot(
             target
         )
+    }
+
+    private fun beeGeckoAliveClipRect():
+        RectF? {
+        if (
+            !::beeGeckoBoard
+                .isInitialized
+        ) {
+            return null
+        }
+
+        return beeGeckoBoard
+            .viewportRectOnScreen()
+            ?.let(::screenRectToRoot)
     }
 
     private fun plantAliveTarget():
@@ -7239,13 +7100,13 @@ class MainActivity : Activity() {
 
     private fun ensurePlantMascot() {
         if (
-            !::plantMascotOverlay
+            !::aliveMascotOverlay
                 .isInitialized
         ) {
             return
         }
 
-        plantMascotOverlay.show(
+        aliveMascotOverlay.show(
             kind =
                 MascotKind.PLANT,
             ownerKey =
@@ -7447,6 +7308,9 @@ class MainActivity : Activity() {
                     cell
                 )
             },
+            clipProvider = {
+                gomokuAliveClipRect()
+            },
             setStaticSuppressed = {
                     suppressed ->
                 gomokuBoard
@@ -7511,6 +7375,9 @@ class MainActivity : Activity() {
                     piece
                 )
             },
+            clipProvider = {
+                beeGeckoAliveClipRect()
+            },
             eligible = {
                 selectedGameMode ==
                     GameMode.BEES_GECKOS &&
@@ -7561,6 +7428,9 @@ class MainActivity : Activity() {
                     cell,
                     piece
                 )
+            },
+            clipProvider = {
+                beeGeckoAliveClipRect()
             }
         )
     }
@@ -8955,23 +8825,6 @@ class MainActivity : Activity() {
                 } else {
                     View.GONE
                 }
-        }
-
-        if (
-            ::boardWindowMask
-                .isInitialized
-        ) {
-            boardWindowMask.visibility =
-                if (
-                    gomoku ||
-                    bees
-                ) {
-                    View.VISIBLE
-                } else {
-                    View.GONE
-                }
-
-            boardWindowMask.invalidate()
         }
 
         if (
@@ -10959,6 +10812,20 @@ class MainActivity : Activity() {
                 -rootLocation[1].toFloat()
             )
         }
+    }
+
+    private fun gomokuAliveClipRect():
+        RectF? {
+        if (
+            !::gomokuBoard
+                .isInitialized
+        ) {
+            return null
+        }
+
+        return gomokuBoard
+            .viewportRectOnScreen()
+            ?.let(::screenRectToRoot)
     }
 
     private fun playGomokuPieceAnimation(
