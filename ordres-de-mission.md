@@ -740,3 +740,5 @@ Implémentation :
 
 Version cible : 0.15.21-dev / versionCode 56.
 Aucun merge main ni release avant validation téléphone.
+
+État GECKO-061 : CI #275 verte ; APK 0.15.21-dev produit ; règle hors-écran basée sur le centre de cellule ; aucune release ; validation téléphone requise.
