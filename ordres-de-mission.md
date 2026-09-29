@@ -809,3 +809,42 @@ Version cible 0.15.24-dev / versionCode 59.
 Aucun merge main ni release avant validation téléphone.
 
 État GECKO-064 : CI #289 verte ; APK 0.15.24-dev produit ; validation téléphone du clipping Bee/Gecko requise ; aucune release ni merge main.
+
+
+## GECKO-065 — PASSAGE PERMANENT DERRIÈRE LE CADRE DU PLATEAU
+
+Validation Fab : GO.
+
+BUT
+
+Pour Abeilles & Geckos et Gomoku, les mascottes vivantes doivent rester réellement vivantes même lorsqu'un zoom ou un drag les déplace complètement derrière le cadre blanc du plateau.
+
+CONTRAT
+
+- La Presence existe tant que la pièce logique existe dans la partie.
+- La position cible reste calculée hors viewport.
+- La fenêtre du plateau sert uniquement de clip visuel.
+- Une mascotte entièrement hors fenêtre reste animée mais invisible.
+- Au retour dans la fenêtre, elle glisse naturellement depuis le bord ; aucun spawn/restart artificiel.
+- Aucun clamp, aucun recentrage.
+- Abeilles & Geckos : appliquer à Gecko et Abeille.
+- Gomoku : appliquer uniquement aux Presence sélectionnées par la règle 3+3.
+- Conserver au maximum 3 PLAYER + 3 PROFESSOR en Gomoku.
+- Titres, textes, boutons, commandes et Prof ne doivent jamais être recouverts par les mascottes du plateau.
+- La plante reste indépendante de cette fenêtre de plateau.
+- Ne pas modifier les règles de jeu, solveurs, IA ou difficulté.
+
+ARCHITECTURE
+
+- BeeGeckoBoardView : géométrie de cellule non bornée.
+- GomokuBoardView : géométrie Gecko non bornée + rectangle de viewport exporté.
+- MainActivity : targets non bornées.
+- AliveMascotOverlayView : clipProvider reste l'autorité de visibilité.
+- ChromaKeyVideoView : politique Surface historique conservée.
+- Aucun masque Surface global, aucun nouvel ordonnanceur, pool ou lecteur partagé.
+
+VERSION LIVRÉE POUR TEST
+
+0.15.26-dev / versionCode 61.
+
+État : CI #303 verte, artifact Phone produit, SHA-256 APK 1b25121080454d58934c20366073ad0a255324226759fe3baf22f2d4b1617323. Aucune release/prerelease, aucun merge main. Validation téléphone Fab requise.
