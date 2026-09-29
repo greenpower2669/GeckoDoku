@@ -8,7 +8,7 @@
 ## État de référence
 
 - Branche : gecko-039-sudoku-tap-gecko-gomoku
-- Version : 0.15.9-dev / versionCode 44
+- Version : 0.15.10-dev / versionCode 45
 - GECKO-047 : VALIDÉ FAB — grandes barres d’axes, drag/suppression hors plateau, Prof utilisant les axes, audio Android/Pierre capturable.
 - GECKO-048 : CODE + CI VERTE, validation téléphone encore attendue — prononciation Pierre et couleurs d’axes.
 - GECKO-049 : VALIDÉ FAB — géométrie canonique des axes Abeilles & Geckos.
@@ -374,3 +374,14 @@ Commit applicatif : b6c7f5001b412112c6011882cb540b079db8b9a9.
 CI #248 verte.
 APK de test : GeckoDoku-v0.15.9-dev.apk.
 Aucune release publique avant validation téléphone Fab.
+
+
+## 18 — Nuages des placements donnés 0.15.10-dev
+
+Classic et Abeilles & Geckos utilisent GivenFogVisualPolicy.
+Le brouillard gris des pièces données n'est plus constitué de quatre grands ovales réguliers :
+- 7 bouffées irrégulières ;
+- alpha 8..21 ;
+- tailles et offsets variés ;
+- dérive douce basée sur seed + phase ;
+- rendu décoratif seulement, sans effet logique.

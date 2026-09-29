@@ -59,3 +59,22 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] CI #248 0.15.9-dev verte ;
 - [x] APK téléphone 0.15.9-dev produit ;
 - [ ] validation téléphone Fab : aucun carré de fond + plateau suffisamment vivant + drag Plante.
+
+
+### Grand cycle autonome demandé par Fab
+- [ ] update() choisit une nouvelle petite animation différente à chaque fin ;
+- [ ] mémoriser les dernières séries complètes ;
+- [ ] interdire la répétition immédiate d'une série complète ;
+- [ ] varier longueur/ordre du cycle pour casser les motifs perceptibles ;
+- [ ] fin de grand cycle : choisir une copine visible différente de la précédente pour une mignonnerie ;
+- [ ] autres mascottes repartent sur des cycles désynchronisés ;
+- [ ] éviter répétition de la même mignonnerie et de la même copine.
+
+### Nuages placements donnés — 0.15.10-dev
+- [x] rendu partagé Classic + Abeilles & Geckos ;
+- [x] opacité fortement réduite ;
+- [x] 7 bouffées irrégulières plutôt que 4 ovales géométriques ;
+- [x] dérive douce et déterministe ;
+- [x] test de politique visuelle ;
+- [ ] CI ;
+- [ ] validation téléphone Fab.

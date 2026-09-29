@@ -1404,80 +1404,54 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     seed
                 )
 
-        repeat(4) {
-            index ->
-            val local =
-                (
-                    phase +
-                        index *
-                            .23f
-                    ) %
-                    1f
+        val scale =
+            radius *
+                2f
 
-            val angle =
-                local *
-                    Math.PI *
-                    2.0 +
-                    index *
-                        .8
-
-            val driftX =
-                cos(angle)
-                    .toFloat() *
-                    radius *
-                    .18f
-
-            val driftY =
-                sin(angle)
-                    .toFloat() *
-                    radius *
-                    .12f
-
-            paint.style =
-                Paint.Style.FILL
-            paint.color =
-                Color.argb(
-                    42 +
-                        index *
-                            8,
-                    72,
-                    78,
-                    82
-                )
-
-            val fog =
-                RectF(
-                    centerX -
-                        radius *
-                            (.78f +
-                                index *
-                                    .05f) +
-                        driftX,
-                    centerY -
-                        radius *
-                            (.34f +
-                                index *
-                                    .035f) +
-                        driftY,
-                    centerX +
-                        radius *
-                            (.78f +
-                                index *
-                                    .05f) +
-                        driftX,
-                    centerY +
-                        radius *
-                            (.34f +
-                                index *
-                                    .035f) +
-                        driftY
-                )
-
-            canvas.drawOval(
-                fog,
-                paint
+        GivenFogVisualPolicy
+            .puffs(
+                seed = seed,
+                phase = phase
             )
-        }
+            .forEach {
+                puff ->
+                paint.style =
+                    Paint.Style.FILL
+                paint.color =
+                    Color.argb(
+                        puff.alpha,
+                        72,
+                        78,
+                        82
+                    )
+
+                val cx =
+                    centerX +
+                        puff.offsetX *
+                            scale
+                val cy =
+                    centerY +
+                        puff.offsetY *
+                            scale
+
+                canvas.drawOval(
+                    RectF(
+                        cx -
+                            puff.halfWidth *
+                                scale,
+                        cy -
+                            puff.halfHeight *
+                                scale,
+                        cx +
+                            puff.halfWidth *
+                                scale,
+                        cy +
+                            puff.halfHeight *
+                                scale
+                    ),
+                    paint
+                )
+            }
     }
 
     private fun victoryScaleFor(

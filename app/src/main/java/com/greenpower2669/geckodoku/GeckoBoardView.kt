@@ -1054,71 +1054,57 @@ class GeckoBoardView @JvmOverloads constructor(
                     cell.col * 19
             )
 
-        repeat(4) {
-            index ->
-            val local =
-                (
-                    phase +
-                        index * .22f
-                    ) % 1f
+        val centerX =
+            rect.centerX()
+        val centerY =
+            rect.centerY()
 
-            val angle =
-                local *
-                    Math.PI *
-                    2.0 +
-                    index * .75
-
-            val driftX =
-                cos(angle)
-                    .toFloat() *
-                    cellSize *
-                    .06f
-
-            val driftY =
-                sin(angle)
-                    .toFloat() *
-                    cellSize *
-                    .04f
-
-            paint.style =
-                Paint.Style.FILL
-            paint.color =
-                Color.argb(
-                    38 +
-                        index * 8,
-                    72,
-                    78,
-                    82
-                )
-
-            canvas.drawOval(
-                RectF(
-                    rect.left +
-                        cellSize * .13f +
-                        driftX,
-                    rect.top +
-                        cellSize *
-                            (
-                                .29f +
-                                    index *
-                                        .015f
-                                ) +
-                        driftY,
-                    rect.right -
-                        cellSize * .13f +
-                        driftX,
-                    rect.bottom -
-                        cellSize *
-                            (
-                                .29f +
-                                    index *
-                                        .015f
-                                ) +
-                        driftY
-                ),
-                paint
+        GivenFogVisualPolicy
+            .puffs(
+                seed =
+                    cell.row * 37 +
+                        cell.col * 19,
+                phase = phase
             )
-        }
+            .forEach {
+                puff ->
+                paint.style =
+                    Paint.Style.FILL
+                paint.color =
+                    Color.argb(
+                        puff.alpha,
+                        72,
+                        78,
+                        82
+                    )
+
+                val cx =
+                    centerX +
+                        puff.offsetX *
+                            cellSize
+                val cy =
+                    centerY +
+                        puff.offsetY *
+                            cellSize
+
+                canvas.drawOval(
+                    RectF(
+                        cx -
+                            puff.halfWidth *
+                                cellSize,
+                        cy -
+                            puff.halfHeight *
+                                cellSize,
+                        cx +
+                            puff.halfWidth *
+                                cellSize,
+                        cy +
+                            puff.halfHeight *
+                                cellSize
+                    ),
+                    paint
+                )
+            }
     }
 
     private fun drawVictoryGecko(

@@ -392,3 +392,30 @@ Implémentation :
 - aucune modification des règles de jeu.
 
 État : code 0.15.9-dev intégré au commit b6c7f5001b412112c6011882cb540b079db8b9a9 ; CI #248 entièrement verte ; APK téléphone produit. Validation Fab requise avant toute release publique.
+
+
+## GECKO-050 — comportement autonome des grands cycles + nuages doux
+
+Décision Fab sur AliveAnimator :
+- update() doit gérer automatiquement la vie visuelle sans intervention du jeu ;
+- chaque fin de petite animation choisit une attente différente de la précédente ;
+- le moteur doit mémoriser les séries complètes, pas seulement le dernier clip ;
+- un nouveau grand cycle ne doit pas reproduire la même série que le précédent, car l'œil humain repère vite les motifs ;
+- fin de grand cycle : choisir une autre mascotte visible et lui proposer une animation mignonne/longue ;
+- les autres mascottes réinitialisent leur propre cycle de manière désynchronisée ;
+- éviter aussi de sélectionner toujours la même copine ou la même mignonnerie.
+
+État de ce point : CONTRAT ENREGISTRÉ, PAS ENCORE IMPLÉMENTÉ dans 0.15.10-dev.
+
+Décision Fab sur les nuages des placements donnés/grisés :
+- conserver l'idée du nuage ;
+- beaucoup plus transparent ;
+- moins géométrique ;
+- forme organique faite de petites bouffées irrégulières ;
+- ne jamais masquer la lisibilité de la pièce ou de la case.
+
+Implémentation 0.15.10-dev :
+- GivenFogVisualPolicy commun aux grilles Classic et Abeilles & Geckos ;
+- 7 bouffées de tailles/positions différentes au lieu de 4 grands ovales réguliers ;
+- alpha abaissé à 8..21 ;
+- légère dérive déterministe pour rester douce et stable.

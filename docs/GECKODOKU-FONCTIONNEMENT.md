@@ -2,7 +2,7 @@
 
 > Documentation vivante de l'application telle qu'elle existe au 28 septembre 2026.
 >
-> **Version applicative observée :** `0.15.9-dev` — `versionCode 44`  
+> **Version applicative observée :** `0.15.10-dev` — `versionCode 45`  
 > **Branche :** `gecko-039-sudoku-tap-gecko-gomoku`  
 > **Référence code fonctionnel :** `8ccc0385c8314239976368811dab93808970e35a`  
 > Cette documentation décrit le comportement présent. Elle peut évoluer avec le logiciel. Elle n'est ni un historique de debug ni un ordre de mission.
@@ -559,3 +559,8 @@ Le nombre d'instances vidéo reste borné pour protéger le téléphone tout en 
 La Plante carnivore est déplaçable par drag. Sa position est mémorisée sous forme normalisée afin de rester cohérente après les changements de dimensions.
 
 Le PNG interne sert aussi de pont entre clips et reçoit la teinte jaune lorsqu'il représente le Gecko du Prof.
+
+
+#### Nuages des placements donnés 0.15.10-dev
+
+Les placements imposés/grisés conservent une brume visuelle mais elle est désormais beaucoup plus légère. Un moteur commun construit sept petites bouffées irrégulières, avec des tailles et positions légèrement différentes et une opacité comprise entre 8 et 21. Le mouvement reste lent et déterministe par cellule, ce qui évite l'aspect de quatre ellipses géométriques superposées.

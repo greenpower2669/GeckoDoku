@@ -127,3 +127,16 @@ Résultat :
 - PNG pont propre ;
 - Gecko Prof jaune sans carré ;
 - drag et mémorisation de la Plante.
+
+
+## GECKO-050 — nuages trop géométriques
+
+Observation téléphone Fab :
+les nuages gris des placements de départ sont agréables mais encore trop opaques et géométriques.
+
+Correction 0.15.10-dev :
+- remplacement des 4 ovales réguliers par 7 petites bouffées irrégulières ;
+- alpha réduit de l'ancien ordre 38..66 vers 8..21 ;
+- tailles et positions variées par seed ;
+- mouvement conservé mais plus discret ;
+- même politique visuelle en Classic et Abeilles & Geckos.

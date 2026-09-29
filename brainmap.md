@@ -547,3 +547,17 @@ Suppression statique par vue :
 
 Il n'existe plus de maskColorProvider dans AliveMascotOverlayView.
 La couleur de la case n'entre plus dans le pipeline vivant.
+
+
+## 17 — GivenFogVisualPolicy
+
+~~~mermaid
+flowchart LR
+    Given[placement donné / grisé] --> Policy[GivenFogVisualPolicy]
+    Policy --> Puffs[7 bouffées irrégulières alpha 8..21]
+    Puffs --> Classic[GeckoBoardView]
+    Puffs --> Hex[BeeGeckoBoardView]
+~~~
+
+Le brouillard reste déterministe pour une cellule donnée, avec mouvement doux par phase.
+Aucune géométrie de jeu n'en dépend.
