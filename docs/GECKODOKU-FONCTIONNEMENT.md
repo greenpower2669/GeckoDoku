@@ -2,7 +2,7 @@
 
 > Documentation vivante de l'application telle qu'elle existe au 28 septembre 2026.
 >
-> **Version applicative observée :** `0.15.8-dev` — `versionCode 43`  
+> **Version applicative observée :** `0.15.9-dev` — `versionCode 44`  
 > **Branche :** `gecko-039-sudoku-tap-gecko-gomoku`  
 > **Référence code fonctionnel :** `8ccc0385c8314239976368811dab93808970e35a`  
 > Cette documentation décrit le comportement présent. Elle peut évoluer avec le logiciel. Elle n'est ni un historique de debug ni un ordre de mission.
@@ -548,3 +548,14 @@ Le premier essai téléphone GECKO-050 a montré un bref vide intermittent entre
 Cause : lorsqu'un nouveau clip est demandé, le lecteur précédent est arrêté et la nouvelle surface reste volontairement transparente jusqu'à sa première frame décodée. Le masque continu empêchait alors le PNG du plateau de réapparaître, laissant momentanément seulement le fond.
 
 Correction : après qu'une mascotte a déjà rendu sa première frame, son PNG transparent canonique de même taille sert de pont uniquement pendant la préparation du clip suivant. Il est retiré exactement dans `onFirstFrameRendered`. La première animation d'apparition ne montre donc toujours aucun PNG prématuré.
+
+
+#### Refactor autonomie visuelle 0.15.9-dev
+
+Le pipeline vivant n'utilise plus aucune couleur de fond de case. Gecko, Abeille et Plante possèdent leur PNG transparent dans leur profil AliveAnimator. Pendant qu'une instance est vivante, le plateau suspend uniquement le dessin de son ancien PNG statique ; AliveMascotOverlayView devient l'unique propriétaire visuel de cette mascotte.
+
+Le nombre d'instances vidéo reste borné pour protéger le téléphone tout en rendant le plateau plus vivant : trois Gecko, deux Abeilles et une Plante peuvent être animés simultanément. Lorsqu'un pool est plein, l'instance la plus ancienne revient au PNG statique du plateau.
+
+La Plante carnivore est déplaçable par drag. Sa position est mémorisée sous forme normalisée afin de rester cohérente après les changements de dimensions.
+
+Le PNG interne sert aussi de pont entre clips et reçoit la teinte jaune lorsqu'il représente le Gecko du Prof.

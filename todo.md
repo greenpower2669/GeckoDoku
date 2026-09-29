@@ -43,3 +43,18 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] compilation Kotlin Debug/Phone atteinte en CI #242 ;
 - [x] défaut du test de compteur identifié et corrigé ;
 - [ ] nouvelle CI verte après correction.
+
+
+### Correctif téléphone 0.15.9-dev
+- [x] supprimer maskColorProvider de la nouvelle classe ;
+- [x] supprimer le rectangle de couleur derrière Gecko/Abeille ;
+- [x] AliveAnimator possède toujours son PNG transparent ;
+- [x] masquer seulement le PNG statique du plateau pour les instances prises en charge ;
+- [x] 3 Gecko vivants simultanés ;
+- [x] 2 Abeilles vivantes simultanées ;
+- [x] 1 Plante vivante ;
+- [x] PNG pont jaune cohérent avec le Gecko Prof ;
+- [x] Plante déplaçable par drag ;
+- [x] position Plante mémorisée ;
+- [ ] CI 0.15.9-dev ;
+- [ ] validation téléphone Fab : aucun carré de fond + plateau suffisamment vivant.

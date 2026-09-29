@@ -84,3 +84,27 @@ Résultat :
 
 À valider sur téléphone :
 absence du vide entre deux clips grâce au bridge PNG, sans PNG prématuré avant la première apparition.
+
+
+## GECKO-050 — carrés de fond visibles — CAUSE ET REFACTOR 0.15.9-dev
+
+Observation Fab :
+carrés de couleur visibles derrière certains Gecko jaunes et Abeilles alors que le chroma-key lui-même fonctionne.
+
+Cause :
+la première implémentation AliveMascotOverlayView conservait l'ancienne technique maskColorProvider et peignait la couleur de la case sous la vidéo.
+
+Décision :
+supprimer totalement cette technique dans la nouvelle classe.
+
+Correction :
+- aucun fond artificiel ;
+- chaque instance vivante possède PNG transparent + vidéo ;
+- le plateau masque seulement son ancien PNG à la cellule concernée ;
+- plusieurs slots vivants simultanés pour augmenter la présence d'animations ;
+- Plante draggable avec position persistée.
+
+Commit applicatif :
+b6c7f5001b412112c6011882cb540b079db8b9a9
+
+CI et téléphone à valider.

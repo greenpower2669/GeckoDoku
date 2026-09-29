@@ -524,3 +524,26 @@ Continuité inter-clips :
 - au premier APPEARING, aucun bridge PNG n'est montré avant la vidéo.
 
 Prof Gecko / Pierre n'utilisent pas AliveAnimator.
+
+
+## 16 — GECKO-050 : suppression du vieux masque et pool vivant
+
+~~~mermaid
+flowchart LR
+    Board[Plateau] -->|position + suppression PNG statique| Alive[AliveMascotOverlayView]
+    Alive --> PNG[PNG transparent interne]
+    Alive --> Video[ChromaKeyVideoView]
+    PNG --> Bridge[pont inter-clips]
+    Video --> Bridge
+    Alive --> Pool[pool 3 Gecko / 2 Abeilles / 1 Plante]
+    Plant[Plante] --> Drag[drag + position normalisée persistée]
+~~~
+
+Suppression statique par vue :
+- GeckoBoardView.mediaSuppressedGeckos ;
+- SudokuValueOverlayView.mediaSuppressedGeckos ;
+- GomokuBoardView.mediaSuppressedCells existant ;
+- BeeGeckoBoardView.mediaSuppressedPieces.
+
+Il n'existe plus de maskColorProvider dans AliveMascotOverlayView.
+La couleur de la case n'entre plus dans le pipeline vivant.

@@ -8,7 +8,7 @@
 ## État de référence
 
 - Branche : gecko-039-sudoku-tap-gecko-gomoku
-- Version : 0.15.8-dev / versionCode 43
+- Version : 0.15.9-dev / versionCode 44
 - GECKO-047 : VALIDÉ FAB — grandes barres d’axes, drag/suppression hors plateau, Prof utilisant les axes, audio Android/Pierre capturable.
 - GECKO-048 : CODE + CI VERTE, validation téléphone encore attendue — prononciation Pierre et couleurs d’axes.
 - GECKO-049 : VALIDÉ FAB — géométrie canonique des axes Abeilles & Geckos.
@@ -343,3 +343,26 @@ Commit applicatif : d9a744fc96814ada0dda5077363c18e4a6d7517a.
 CI #247 verte.
 APK de test : GeckoDoku-v0.15.8-dev.apk.
 Aucune release publique avant validation téléphone Fab.
+
+
+## 16 — GECKO-050 architecture autonome 0.15.9-dev
+
+Règle canonique :
+AliveAnimator possède le PNG transparent et les vidéos de la mascotte. Il ne demande jamais la couleur de fond au plateau et ne peint aucun masque de case.
+
+Pendant la prise en charge d'une pièce :
+- le plateau suspend uniquement son PNG statique ;
+- AliveMascotOverlayView affiche son PNG transparent ou sa vidéo ;
+- à la libération du slot, le plateau reprend son PNG statique.
+
+Activité simultanée bornée :
+- 3 Gecko ;
+- 2 Abeilles ;
+- 1 Plante.
+
+Ce pool rend le plateau visiblement vivant tout en bornant les lecteurs vidéo.
+
+Plante :
+- drag direct ;
+- position mémorisée en fractions de l'écran ;
+- reste décorative et sans impact gameplay.

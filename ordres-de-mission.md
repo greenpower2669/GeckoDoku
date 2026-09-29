@@ -368,3 +368,27 @@ Intégration multi-mode effectuée :
 - Pierre et les vidéos du Prof restent hors de cette architecture.
 
 État : test téléphone 0.15.7-dev effectué. Fab observe parfois un bref vide entre deux vidéos. Diagnostic : ChromaKeyVideoView rend le nouveau clip transparent jusqu'à sa première frame après arrêt du clip précédent. Correctif 0.15.8-dev : le PNG transparent canonique, à géométrie identique, sert uniquement de pont entre deux clips déjà visibles puis disparaît sur la première frame du clip suivant. CI #247 verte ; revalidation téléphone Fab requise avant toute release publique.
+
+
+## GECKO-050 — correction téléphone 0.15.9-dev
+
+Décision Fab :
+- supprimer totalement l'ancien masquage par couleur de fond dans AliveAnimator ;
+- Gecko, Abeille et Plante possèdent leur PNG transparent dans la classe vivante ;
+- le plateau ne fournit plus de couleur de case ;
+- lorsqu'une mascotte est prise en charge par AliveAnimator, le plateau suspend uniquement son ancien PNG statique à cette position ;
+- AliveAnimator affiche son propre PNG ou sa vidéo ;
+- plusieurs mascottes doivent rester vivantes simultanément afin que le plateau paraisse suffisamment animé ;
+- la Plante carnivore doit être déplaçable par drag.
+
+Implémentation :
+- aucun maskColorProvider dans AliveMascotOverlayView ;
+- aucun rectangle de fond ajouté derrière les mascottes ;
+- pool borné : 3 Gecko + 2 Abeilles + 1 Plante ;
+- quand le pool est plein, la mascotte vivante la plus ancienne rend sa place et son PNG de plateau réapparaît ;
+- PNG interne utilisé en mode animations OFF et comme pont entre clips ;
+- PNG pont du Gecko Prof reçoit la même teinte jaune que sa vidéo ;
+- Plante draggable, position mémorisée en coordonnées normalisées ;
+- aucune modification des règles de jeu.
+
+État : code 0.15.9-dev intégré au commit b6c7f5001b412112c6011882cb540b079db8b9a9 ; CI et validation téléphone requises.
