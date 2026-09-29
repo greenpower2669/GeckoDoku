@@ -483,3 +483,6 @@ Correction :
 - redistribution uniquement lors du grand cycle Alive ;
 - si alternatives disponibles, le trio suivant diffère du précédent ;
 - tests unitaires dédiés.
+
+## GECKO-062 — CI #280 VERTE
+Tests unitaires + assemblePhone réussis sur 3187c512c3155581daa3ba24002faada566a7c20. APK 0.15.22-dev SHA-256 70b8cb93a180b2e0612bd445d035650537b52ae8640d46f503293ad5a3bca891. Aucune release.
