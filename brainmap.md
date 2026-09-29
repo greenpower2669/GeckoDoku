@@ -695,3 +695,20 @@ flowchart LR
 Le refresh de géométrie n'est plus autorisé à réinitialiser l'horloge d'une Presence.
 
 GECKO-057 : CI #263 verte ; APK Phone 0.15.17-dev prêt ; prochain test = ALIVE_PLAY visible puis stay1..4 Gecko/Abeille à l'écran.
+
+
+## 26 — GECKO-058 bord du viewport hexagonal
+
+~~~mermaid
+flowchart LR
+    C[Cellule Gecko/Abeille] --> T[cible centrée]
+    T --> I{intersection viewport ?}
+    I -->|non| N[target null]
+    I -->|oui| B{dépasse un bord ?}
+    B -->|non| R[cible inchangée]
+    B -->|oui| K[clamp / recentrage minimal]
+    K --> V[Presence animable]
+    R --> V
+~~~
+
+La bordure ne supprime plus une mascotte encore visible.
