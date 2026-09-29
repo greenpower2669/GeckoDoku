@@ -391,4 +391,4 @@ Implémentation :
 - Plante draggable, position mémorisée en coordonnées normalisées ;
 - aucune modification des règles de jeu.
 
-État : code 0.15.9-dev intégré au commit b6c7f5001b412112c6011882cb540b079db8b9a9 ; CI et validation téléphone requises.
+État : code 0.15.9-dev intégré au commit b6c7f5001b412112c6011882cb540b079db8b9a9 ; CI #248 entièrement verte ; APK téléphone produit. Validation Fab requise avant toute release publique.

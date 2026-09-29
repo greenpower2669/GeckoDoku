@@ -56,5 +56,6 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] PNG pont jaune cohérent avec le Gecko Prof ;
 - [x] Plante déplaçable par drag ;
 - [x] position Plante mémorisée ;
-- [ ] CI 0.15.9-dev ;
-- [ ] validation téléphone Fab : aucun carré de fond + plateau suffisamment vivant.
+- [x] CI #248 0.15.9-dev verte ;
+- [x] APK téléphone 0.15.9-dev produit ;
+- [ ] validation téléphone Fab : aucun carré de fond + plateau suffisamment vivant + drag Plante.

@@ -108,3 +108,22 @@ Commit applicatif :
 b6c7f5001b412112c6011882cb540b079db8b9a9
 
 CI et téléphone à valider.
+
+
+## GECKO-050 — CI #248 — VERTE
+
+Commit applicatif :
+b6c7f5001b412112c6011882cb540b079db8b9a9
+
+Résultat :
+- tests unitaires OK ;
+- compilation Debug/Phone OK ;
+- APK 0.15.9-dev produit ;
+- aucune prerelease/release déclenchée.
+
+À valider sur téléphone :
+- disparition complète des carrés de couleur ;
+- 3 Gecko / 2 Abeilles suffisamment vivants sans surcharge ;
+- PNG pont propre ;
+- Gecko Prof jaune sans carré ;
+- drag et mémorisation de la Plante.

@@ -366,3 +366,11 @@ Plante :
 - drag direct ;
 - position mémorisée en fractions de l'écran ;
 - reste décorative et sans impact gameplay.
+
+
+## 17 — GECKO-050 test 0.15.9-dev
+
+Commit applicatif : b6c7f5001b412112c6011882cb540b079db8b9a9.
+CI #248 verte.
+APK de test : GeckoDoku-v0.15.9-dev.apk.
+Aucune release publique avant validation téléphone Fab.
