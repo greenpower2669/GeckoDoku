@@ -376,3 +376,8 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] téléphone : Gecko bas encore partiellement visible tant que sa cellule touche le plateau ;
 - [ ] zoom/drag : glissement progressif derrière les quatre bords ;
 - [ ] aucune release avant validation Fab.
+
+### GECKO-064 build
+- [x] CI #289 verte ;
+- [x] APK Phone 0.15.24-dev produit ;
+- [x] SHA-256 APK : 0792b38bc21fc8dc9f705220f2d3a11dd16a8c91ebd39a44fcacdfc2dd059e67.
