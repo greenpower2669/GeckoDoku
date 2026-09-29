@@ -367,4 +367,4 @@ Intégration multi-mode effectuée :
 - changement de mode / nouvelle partie / pause nettoient les instances de plateau ;
 - Pierre et les vidéos du Prof restent hors de cette architecture.
 
-État : code intégré sur 0.15.7-dev ; CI complète et validation téléphone encore requises.
+État : code intégré sur 0.15.7-dev ; CI #246 entièrement verte ; APK téléphone de test produit. Validation téléphone Fab encore requise avant toute release publique.

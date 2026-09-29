@@ -34,3 +34,18 @@ Correction :
 
 But :
 éviter un changement visuel à chaque boucle et conserver la sérénité voulue.
+
+
+## GECKO-050 — CI #246 — VERTE
+
+Commit applicatif testé :
+92eed1b0f273a1be069994d61f91f75ab3a5bc7f
+
+Résultat :
+- tests unitaires OK ;
+- compilation Debug/Phone OK ;
+- APK 0.15.7-dev produit ;
+- aucune prerelease/release déclenchée.
+
+Reste :
+validation téléphone Fab de la continuité vidéo/PNG, des échelles, des attentes 4 cycles, des key colors, de la Plante et des non-régressions Prof/Pierre.

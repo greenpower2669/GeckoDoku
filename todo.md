@@ -27,7 +27,8 @@
 - [x] intégration Classic / Sudoku / Gomoku / Abeilles & Geckos via le même moteur ;
 - [x] un retrait ancien ne peut pas interrompre la mascotte vivante plus récente du même type ;
 - [x] tests unitaires sélection/anti-répétition + géométrie de taille ;
-- [ ] CI intégration complète ;
+- [x] CI #246 intégration complète verte ;
+- [x] APK téléphone 0.15.7-dev produit en artifact privé de test ;
 - [ ] validation téléphone Fab.
 
 Voir `ordres-de-mission.md` pour le contrat complet.
