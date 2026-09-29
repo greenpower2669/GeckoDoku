@@ -818,3 +818,6 @@ L'interface ChromaKeyPlayback permet à AliveMascotOverlayView de piloter indiff
 Invariant : 1 Presence = 1 PNG + 1 backend vidéo + 1 AliveAnimator + 1 callback local. Aucun ordonnanceur, pool ou lecteur partagé.
 
 CI #309 a déjà confirmé compilation/tests du nouveau backend avant bump. Version de test : 0.15.27-dev / 62.
+
+### GECKO-066 — build final
+CI #310 / run 36641153646 SUCCESS sur 4bf3c696a8dbee1d90f3136c8594684025e4a381. APK Phone 0.15.27-dev produit, 248574081 octets, SHA-256 e5de07cea97ca736108d644298ab56b2ad16689d695e357ef0a1d4cd280afe3f. Archive artifact SHA-256 e3cc39a3d9821b4894cd5244f7c0994e0b8fc09c2c45fa2c82723beaaf0479ac. Aucune release/prerelease. Validation téléphone ciblée Bee/Gecko + Gomoku requise.
