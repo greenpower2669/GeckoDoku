@@ -471,3 +471,15 @@ Correction 0.15.21-dev :
 
 ## GECKO-061 — CI #275 VERTE
 Commit testé : 94eed6fd4e718d8d5aaeed6350e816709dd45327. Tests + assemblePhone : succès. APK SHA-256 : 1f65452b0e8b98670eaf27ba9e321e997dfad13c2bfdbf36b2fd17523877da19. Aucune release.
+
+
+## GECKO-062 — trop d'animations simultanées en Gomoku
+Cause : syncLivingMascotsForCurrentMode() créait une Presence Alive pour chaque pierre du plateau.
+
+Correction :
+- nouvelle GomokuLivingSelectionPolicy ;
+- cap 3 PLAYER + 3 PROFESSOR ;
+- sélection conservée entre les refresh UI ordinaires ;
+- redistribution uniquement lors du grand cycle Alive ;
+- si alternatives disponibles, le trio suivant diffère du précédent ;
+- tests unitaires dédiés.
