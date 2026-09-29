@@ -699,3 +699,6 @@ Règle canonique :
 
 Implémentation : GomokuLivingSelectionPolicy + callback onGroupCycleCompleted de AliveMascotOverlayView.
 Version 0.15.22-dev / 57.
+
+### GECKO-062 — build
+CI #280 verte sur 3187c512c3155581daa3ba24002faada566a7c20. APK Phone 0.15.22-dev produit. SHA-256 : 70b8cb93a180b2e0612bd445d035650537b52ae8640d46f503293ad5a3bca891. Validation téléphone requise.
