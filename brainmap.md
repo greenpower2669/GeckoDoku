@@ -514,4 +514,6 @@ Géométrie :
 
 Une seule instance vivante de chaque type est active à la fois ; quand une nouvelle pièce du même type apparaît, l'ancienne redevient son PNG statique. Cela évite une multiplication de lecteurs vidéo sur les grands plateaux.
 
+Invariant de propriété : retirer une ancienne pièce statique ne reprend pas le slot vivant à une pièce plus récente du même type.
+
 Prof Gecko / Pierre n'utilisent pas AliveAnimator.

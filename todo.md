@@ -25,6 +25,7 @@
 - [x] Abeille : idle1..4 + fallback transitions si média de disparition absent ;
 - [x] Plante : attente décorative bas droite + PlanteTr fallback ;
 - [x] intégration Classic / Sudoku / Gomoku / Abeilles & Geckos via le même moteur ;
+- [x] un retrait ancien ne peut pas interrompre la mascotte vivante plus récente du même type ;
 - [x] tests unitaires sélection/anti-répétition + géométrie de taille ;
 - [ ] CI intégration complète ;
 - [ ] validation téléphone Fab.

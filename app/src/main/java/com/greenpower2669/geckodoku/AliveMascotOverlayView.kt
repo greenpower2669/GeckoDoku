@@ -305,6 +305,20 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 slots[kind]
             )
 
+        val currentOwner =
+            slot.placement
+                ?.ownerKey
+
+        if (
+            slot.active &&
+            currentOwner != null &&
+            currentOwner != ownerKey
+        ) {
+            // One live slot per mascot kind: removing an older
+            // static piece must not interrupt the newer living one.
+            return
+        }
+
         slot.generation += 1
         slot.video.stopPlayback()
         slot.active = true
