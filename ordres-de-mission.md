@@ -711,3 +711,5 @@ Correction 0.15.18-dev :
 - ne modifier ni AliveAnimator ni la logique de puzzle.
 
 Interdictions inchangées : aucun ordonnanceur/pool partagé, aucun merge main, aucune release avant validation téléphone.
+
+État GECKO-058 : CI #265 verte sur 2c20b06d2a0f699c8811cdf7cd37871a4b712f45 ; APK 0.15.18-dev produit ; SHA-256 9e0ad087bc2f641ecd80010bb162cf57739ac0b0a236d2dc21cbe5d321311b77 ; aucune release ; validation téléphone requise.
