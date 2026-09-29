@@ -346,28 +346,24 @@ Son intégration peut être faite après Gecko/Abeille si nécessaire.
 ### État
 ORDRE DE MISSION OUVERT.
 
-Fondation technique intégrée :
-- AliveAnimator + MascotLifeCoordinator ;
-- profils Gecko / Abeille / Plante ;
-- couche AliveMascotOverlayView maintenant le masque entre deux clips pour supprimer le flash PNG ;
-- mémoire anti-répétition ;
-- réinterrogation générale après 4 attentes ou une mignonnerie ;
-- nouveaux stay rangés sur la branche active ;
-- PlanteTr.png fourni par Fab et intégré comme fallback PNG ;
-- version de travail 0.15.7-dev / versionCode 42.
+Socle actuel validé techniquement :
+- AliveAnimator + profils Gecko / Abeille / Plante ;
+- AliveMascotOverlayView autonome visuellement ;
+- aucun maskColorProvider et aucun rectangle de couleur de fond ;
+- chaque mascotte possède son PNG transparent et ses vidéos ;
+- le plateau suspend uniquement son ancien PNG statique pendant la prise en charge par la classe vivante ;
+- PNG transparent interne utilisé comme pont entre deux clips ;
+- pool borné actuel : 3 Gecko + 2 Abeilles + 1 Plante ;
+- Plante draggable avec position mémorisée ;
+- Classic / Sudoku / Gomoku / Abeilles & Geckos branchés sur le même moteur ;
+- Pierre / ProfParle restent hors de cette architecture.
 
-Intégration multi-mode effectuée :
-- Classic : apparition / attente continue / mignonnerie / disparition ;
-- Sudoku : repère Gecko via le même moteur ;
-- Gomoku : dernier Gecko vivant, avec teinte jaune conservée pour le Prof ;
-- Abeilles & Geckos : Gecko ET Abeille passent par le même moteur ;
-- Plante : profil vivant décoratif en bas à droite, PNG PlanteTr si animations OFF ;
-- géométrie vidéo calée sur la taille réelle des PNG de chaque mode ;
-- le masque reste actif entre apparition et attente : pas de réapparition PNG intermédiaire ;
-- changement de mode / nouvelle partie / pause nettoient les instances de plateau ;
-- Pierre et les vidéos du Prof restent hors de cette architecture.
+Retours téléphone Fab :
+- 0.15.9-dev : rendu visuel jugé propre après suppression des anciens masques ; le point restant n'est plus le chroma-key mais le comportement trop mécanique des cycles ;
+- 0.15.10-dev : nuages des placements donnés validés « parfait » après réduction d'opacité et forme plus organique.
 
-État : test téléphone 0.15.7-dev effectué. Fab observe parfois un bref vide entre deux vidéos. Diagnostic : ChromaKeyVideoView rend le nouveau clip transparent jusqu'à sa première frame après arrêt du clip précédent. Correctif 0.15.8-dev : le PNG transparent canonique, à géométrie identique, sert uniquement de pont entre deux clips déjà visibles puis disparaît sur la première frame du clip suivant. CI #247 verte ; revalidation téléphone Fab requise avant toute release publique.
+PROCHAINE ÉTAPE ACTIVE :
+implémenter le vrai update() autonome des mascottes avec mémoire des séries complètes, grand cycle non répétitif, désynchronisation et déclenchement d'une mignonnerie chez une copine visible en fin de grand cycle.
 
 
 ## GECKO-050 — correction téléphone 0.15.9-dev
@@ -425,4 +421,5 @@ Implémentation 0.15.10-dev :
 - commit applicatif 266a0efcd471f90b09f17341b5c2958121b80498 ;
 - CI #249 verte ;
 - APK téléphone produit ;
-- validation Fab requise.
+- validation téléphone Fab : PARFAIT / VALIDÉ ;
+- ne pas rouvrir ce rendu sauf régression.

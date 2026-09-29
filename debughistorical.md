@@ -155,3 +155,22 @@ Résultat :
 
 À valider sur téléphone :
 nuages plus transparents, moins géométriques, toujours lisibles sur les placements donnés.
+
+
+## GECKO-050 — validations téléphone après CI #249
+
+0.15.9-dev :
+Fab juge le rendu visuel « propre » après suppression des anciens maskColorProvider et rectangles de couleur. Le défaut restant identifié n'est plus un incident de chroma-key : la vie des mascottes paraît encore trop mécanique.
+
+Décision fonctionnelle suivante :
+update() devra gérer des grands cycles autonomes et non répétitifs, mémoriser les séries complètes et transmettre une mignonnerie à une copine visible en fin de cycle.
+
+0.15.10-dev :
+Fab valide « Parfait » le nouveau brouillard des placements donnés :
+- opacité réduite ;
+- forme moins géométrique ;
+- petites bouffées irrégulières.
+Ce point est clos sauf régression.
+
+Note historique :
+les mentions plus haut de « masque continu » ou maskColorProvider décrivent les anciennes versions 0.15.7/0.15.8. Elles ne décrivent plus l'architecture courante depuis 0.15.9.

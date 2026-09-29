@@ -15,13 +15,13 @@
 - [x] états HIDDEN / APPEARING / IDLE / CUTE / DISAPPEARING / STATIC_PNG ;
 - [x] mémoire anti-répétition ;
 - [x] réinterrogation après 4 attentes ou fin d'animation longue ;
-- [x] couche AliveMascotOverlayView avec masque conservé entre clips ;
+- [x] couche AliveMascotOverlayView autonome, sans masque de couleur de fond ;
 - [x] connecter la géométrie exacte PNG/vidéo de chaque mode ;
 - [x] fallback PNG animations OFF prévu par profil.
 
 ### Intégration
 - [x] Gecko : apparition / idle1..4 / disparition ;
-- [x] éliminer le flash PNG prématuré par masque continu entre clips ;
+- [x] continuité inter-clips via PNG transparent interne, sans masque de fond ;
 - [x] Abeille : idle1..4 + fallback transitions si média de disparition absent ;
 - [x] Plante : attente décorative bas droite + PlanteTr fallback ;
 - [x] intégration Classic / Sudoku / Gomoku / Abeilles & Geckos via le même moteur ;
@@ -34,7 +34,7 @@
 - [x] correction : PNG transparent canonique utilisé uniquement comme pont entre deux clips déjà commencés ;
 - [x] CI #247 0.15.8-dev verte ;
 - [x] APK téléphone 0.15.8-dev produit ;
-- [ ] validation téléphone Fab du pont sans coupure.
+- [x] continuité visuelle reprise dans le refactor autonome 0.15.9-dev ; rendu déclaré propre sur téléphone.
 
 Voir `ordres-de-mission.md` pour le contrat complet.
 
@@ -42,7 +42,7 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 ### CI fondation
 - [x] compilation Kotlin Debug/Phone atteinte en CI #242 ;
 - [x] défaut du test de compteur identifié et corrigé ;
-- [ ] nouvelle CI verte après correction.
+- [x] CI suivantes vertes jusqu'à #249.
 
 
 ### Correctif téléphone 0.15.9-dev
@@ -58,7 +58,9 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] position Plante mémorisée ;
 - [x] CI #248 0.15.9-dev verte ;
 - [x] APK téléphone 0.15.9-dev produit ;
-- [ ] validation téléphone Fab : aucun carré de fond + plateau suffisamment vivant + drag Plante.
+- [x] rendu téléphone sans anciens carrés de fond jugé propre ;
+- [ ] fréquence/sémantique des animations à reprendre via le grand cycle autonome ;
+- [ ] revalider le drag Plante si modifié par la prochaine passe.
 
 
 ### Grand cycle autonome demandé par Fab
@@ -78,4 +80,4 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] test de politique visuelle ;
 - [x] CI #249 verte ;
 - [x] APK téléphone 0.15.10-dev produit ;
-- [ ] validation téléphone Fab.
+- [x] validation téléphone Fab : « Parfait » ; ne pas rouvrir sauf régression.

@@ -489,64 +489,58 @@ Invariants :
 - changer un symbole n’altère jamais les règles du solveur.
 
 
-## 15 — GECKO-050 : moteur de mascottes vivantes
+## 15 — GECKO-050 : moteur de mascottes vivantes — architecture courante
 
 ~~~mermaid
 flowchart LR
-    Event[apparition / repère / pièce] --> Layer[AliveMascotOverlayView]
-    Layer --> Coord[MascotLifeCoordinator]
-    Coord --> G[AliveAnimator Gecko]
-    Coord --> B[AliveAnimator Abeille]
-    Coord --> P[AliveAnimator Plante]
-    G --> GV[appear / stay1..4 / cute / disappear]
-    B --> BV[appear / stay1..4 / fallback hide]
-    P --> PV[stay1..4 / cute / PlanteTr fallback]
-    Layer --> CK[ChromaKeyVideoView]
-    CK --> Mask[masque maintenu entre clips]
-    CK --> Bridge[PNG canonique pont pendant first-frame gate]
+    Event[pièce / repère / décoration] --> Layer[AliveMascotOverlayView]
+    Layer --> Slot[pool vivant borné]
+    Slot --> A[AliveAnimator par slot]
+    A --> PNG[PNG transparent interne]
+    A --> Video[ChromaKeyVideoView]
+    PNG --> Bridge[pont pendant first-frame gate]
+    Board[Plateau] -->|suspend seulement son PNG statique| Slot
+    Plant[Plante] --> Drag[drag + position persistée]
 ~~~
+
+Capacités :
+- 3 Gecko ;
+- 2 Abeilles ;
+- 1 Plante.
 
 Géométrie :
-- Classic Gecko = 80 % de la cellule, identique au PNG dessiné avec inset 10 % ;
-- Sudoku Gecko = base 66 % de la cellule ;
-- Gomoku utilise geckoRectOnScreen, déjà calé sur le PNG ;
-- Bee/Gecko hex = 0,61 × scale de type, donc Abeille = 0,61 × BEE_SCALE ;
-- Plante = décor bas-droite, indépendante du gameplay.
-
-Une seule instance vivante de chaque type est active à la fois ; quand une nouvelle pièce du même type apparaît, l'ancienne redevient son PNG statique. Cela évite une multiplication de lecteurs vidéo sur les grands plateaux.
-
-Invariant de propriété : retirer une ancienne pièce statique ne reprend pas le slot vivant à une pièce plus récente du même type.
-
-Continuité inter-clips :
-- play() arme revealOnFirstFrame et met la nouvelle surface vidéo à alpha 0 ;
-- si un clip précédent a déjà rendu une frame, AliveMascotOverlayView affiche temporairement le PNG canonique sous la vidéo ;
-- onFirstFrameRendered retire ce PNG immédiatement ;
-- au premier APPEARING, aucun bridge PNG n'est montré avant la vidéo.
-
-Prof Gecko / Pierre n'utilisent pas AliveAnimator.
-
-
-## 16 — GECKO-050 : suppression du vieux masque et pool vivant
-
-~~~mermaid
-flowchart LR
-    Board[Plateau] -->|position + suppression PNG statique| Alive[AliveMascotOverlayView]
-    Alive --> PNG[PNG transparent interne]
-    Alive --> Video[ChromaKeyVideoView]
-    PNG --> Bridge[pont inter-clips]
-    Video --> Bridge
-    Alive --> Pool[pool 3 Gecko / 2 Abeilles / 1 Plante]
-    Plant[Plante] --> Drag[drag + position normalisée persistée]
-~~~
+- Classic Gecko = 80 % de la cellule ;
+- Sudoku Gecko = base 66 % ;
+- Gomoku = geckoRectOnScreen ;
+- Bee/Gecko hex = 0,61 × scale de type ;
+- Plante = décor indépendante, déplaçable par drag.
 
 Suppression statique par vue :
 - GeckoBoardView.mediaSuppressedGeckos ;
 - SudokuValueOverlayView.mediaSuppressedGeckos ;
-- GomokuBoardView.mediaSuppressedCells existant ;
+- GomokuBoardView.mediaSuppressedCells ;
 - BeeGeckoBoardView.mediaSuppressedPieces.
 
-Il n'existe plus de maskColorProvider dans AliveMascotOverlayView.
-La couleur de la case n'entre plus dans le pipeline vivant.
+Invariants :
+- aucun maskColorProvider dans AliveMascotOverlayView ;
+- aucune couleur de case dans le pipeline vivant ;
+- chaque slot possède son PNG transparent et sa vidéo ;
+- libérer/remplacer un slot restaure le PNG statique du plateau concerné ;
+- le PNG interne sert de pont inter-clips et reçoit aussi la teinte jaune pour le Gecko Prof ;
+- Prof Gecko / Pierre n'utilisent pas ce moteur.
+
+### Prochaine évolution demandée
+
+AliveAnimator.update() doit devenir autonome :
+- choix différent à chaque petite animation ;
+- mémorisation des séries complètes ;
+- jamais la même série juste après ;
+- longueur/ordre variables pour éviter les motifs humains ;
+- fin de grand cycle : une copine visible différente joue une mignonnerie ;
+- autres mascottes repartent sur des cycles désynchronisés ;
+- éviter répétition de la même copine et de la même mignonnerie.
+
+Cette évolution est contractuelle mais pas encore codée dans 0.15.10-dev.
 
 
 ## 17 — GivenFogVisualPolicy

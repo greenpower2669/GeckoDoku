@@ -217,16 +217,16 @@ Les vidéos/animations sont décoratives :
 
 GECKO-050 :
 - AliveAnimator centralise Gecko, Abeille et Plante ;
-- cycle APPEARING → IDLE/CUTE → DISAPPEARING, avec STATIC_PNG si nécessaire ;
-- quatre attentes Gecko et quatre attentes Abeille ;
-- Plante décorative avec quatre attentes + animation longue ;
-- jamais deux choix ambiants identiques consécutifs si une alternative existe ;
-- après quatre attentes terminées ou une mignonnerie, réinterrogation des autres mascottes vivantes ;
-- le masque vidéo reste en place entre les clips ;
-- après une vidéo déjà visible, le PNG transparent canonique de même géométrie sert de pont pendant le préchargement de la vidéo suivante, puis est retiré exactement à sa première frame ;
-- ce pont n'est jamais montré avant la toute première apparition ;
-- taille vidéo dérivée de la taille PNG réellement dessinée dans chaque mode ;
-- animations OFF : PNG de plateau pour Gecko/Abeille, PlanteTr.png pour la Plante.
+- chaque profil possède son PNG transparent + ses vidéos ;
+- aucune couleur de fond de case et aucun masque coloré dans la classe vivante ;
+- le plateau suspend seulement son ancien PNG statique pendant qu'un slot vivant possède la mascotte ;
+- PNG interne utilisé en STATIC_PNG et comme pont inter-clips ;
+- pool vivant borné : 3 Gecko + 2 Abeilles + 1 Plante ;
+- Plante draggable, position persistée ;
+- quatre attentes Gecko et quatre attentes Abeille ; Plante quatre attentes + animation longue ;
+- Prof/Pierre reste séparé ;
+- animations OFF : la classe vivante affiche directement son PNG transparent ;
+- comportement actuel des petits cycles encore trop mécanique : le prochain travail est un update() autonome avec séries complètes mémorisées, séries successives différentes, désynchronisation, et fin de grand cycle déclenchant une mignonnerie chez une copine visible différente.
 
 Vidéo muted :
 - la piste audio est réellement désélectionnée.
@@ -387,9 +387,13 @@ Le brouillard gris des pièces données n'est plus constitué de quatre grands o
 - rendu décoratif seulement, sans effet logique.
 
 
-## 19 — Test nuages 0.15.10-dev
+## 19 — Validation téléphone 0.15.10-dev
 
 Commit applicatif : 266a0efcd471f90b09f17341b5c2958121b80498.
 CI #249 verte.
 APK téléphone produit.
-Le contrat des grands cycles autonomes reste enregistré dans l'ordre de mission et le TODO, mais n'est pas encore implémenté dans cette version.
+Fab valide le nouveau rendu des nuages : « Parfait ».
+Ce point est clos sauf régression.
+
+Reste actif :
+le contrat des grands cycles autonomes des mascottes est enregistré dans l'ordre de mission et le TODO mais n'est pas encore implémenté.
