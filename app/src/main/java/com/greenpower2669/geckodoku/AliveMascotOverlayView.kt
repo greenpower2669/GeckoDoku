@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.RectF
-import android.os.SystemClock
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -21,27 +20,20 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 ) : FrameLayout(context, attrs) {
     private data class Placement(
         val ownerKey: String,
-        val targetProvider:
-            () -> RectF?,
-        val setStaticSuppressed:
-            (Boolean) -> Unit,
-        val eligible:
-            () -> Boolean,
+        val targetProvider: () -> RectF?,
+        val setStaticSuppressed: (Boolean) -> Unit,
+        val eligible: () -> Boolean,
         val yellowTint: Boolean,
         val draggable: Boolean
     )
 
     private inner class Presence(
-        val profile:
-            MascotAnimationProfile,
+        val profile: MascotAnimationProfile,
         val ownerKey: String,
-        var placement:
-            Placement
+        var placement: Placement
     ) {
         val animator =
-            AliveAnimator(
-                profile
-            )
+            AliveAnimator(profile)
 
         val container =
             FrameLayout(context).apply {
@@ -54,41 +46,45 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         val image =
             ImageView(context).apply {
                 scaleType =
-                    ImageView.ScaleType
-                        .FIT_CENTER
+                    ImageView.ScaleType.FIT_CENTER
                 importantForAccessibility =
                     IMPORTANT_FOR_ACCESSIBILITY_NO
 
                 profile.pngAsset
-                    ?.let {
-                        bitmapFor(it)
-                    }
-                    ?.let {
-                        setImageBitmap(it)
-                    }
+                    ?.let(::bitmapFor)
+                    ?.let(::setImageBitmap)
+            }
+
+        val video =
+            ChromaKeyVideoView(context).apply {
+                visibility =
+                    View.INVISIBLE
+                logicalLayer =
+                    "ALIVE_" +
+                        profile.kind.name +
+                        "_" +
+                        ownerKey.replace(':', '_')
+                importantForAccessibility =
+                    IMPORTANT_FOR_ACCESSIBILITY_NO
+                isClickable = false
+                setKeyColor(profile.keyColor)
             }
 
         var pendingDecision:
-            AliveAnimationDecision? =
-            null
+            AliveAnimationDecision? = null
 
-        var nextAnimationAt =
-            0L
+        var currentDecision:
+            AliveAnimationDecision? = null
 
-        var videoActive =
-            false
+        var videoActive = false
+        var removing = false
+        var forceCute = false
+        var staticSuppressed = false
+        var hideStaticUntilAppearanceEnds = false
+        var generation = 0
 
-        var staticSuppressed =
-            false
-
-        var removing =
-            false
-
-        var forceCute =
-            false
-
-        var lastAnimatedOrder =
-            0L
+        lateinit var cycleRunnable:
+            Runnable
 
         var dragCenterXFraction:
             Float? =
@@ -96,9 +92,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 profile.kind ==
                     MascotKind.PLANT
             ) {
-                storedFraction(
-                    PLANT_X_KEY
-                )
+                storedFraction(PLANT_X_KEY)
             } else {
                 null
             }
@@ -109,9 +103,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 profile.kind ==
                     MascotKind.PLANT
             ) {
-                storedFraction(
-                    PLANT_Y_KEY
-                )
+                storedFraction(PLANT_Y_KEY)
             } else {
                 null
             }
@@ -129,64 +121,6 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     LayoutParams.MATCH_PARENT
                 )
             )
-
-            container.setOnTouchListener {
-                    _,
-                    event ->
-                if (
-                    placement.draggable
-                ) {
-                    handleDrag(
-                        this,
-                        event
-                    )
-                } else {
-                    false
-                }
-            }
-        }
-    }
-
-    private inner class VideoSlot(
-        val profile:
-            MascotAnimationProfile,
-        val slotIndex: Int
-    ) {
-        val container =
-            FrameLayout(context).apply {
-                visibility =
-                    View.INVISIBLE
-                importantForAccessibility =
-                    IMPORTANT_FOR_ACCESSIBILITY_NO
-            }
-
-        val video =
-            ChromaKeyVideoView(
-                context
-            ).apply {
-                visibility =
-                    View.INVISIBLE
-                logicalLayer =
-                    "ALIVE_" +
-                        profile.kind.name +
-                        "_" +
-                        slotIndex
-                importantForAccessibility =
-                    IMPORTANT_FOR_ACCESSIBILITY_NO
-                isClickable = false
-                setKeyColor(
-                    profile.keyColor
-                )
-            }
-
-        var presence:
-            Presence? =
-            null
-
-        var generation =
-            0
-
-        init {
             container.addView(
                 video,
                 LayoutParams(
@@ -198,30 +132,17 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             container.setOnTouchListener {
                     _,
                     event ->
-                val current =
-                    presence
-
-                if (
-                    current != null &&
-                    current.placement
-                        .draggable
-                ) {
-                    handleDrag(
-                        current,
-                        event
-                    )
+                if (placement.draggable) {
+                    handleDrag(this, event)
                 } else {
                     false
                 }
             }
 
-            addView(
-                container,
-                LayoutParams(
-                    1,
-                    1
-                )
-            )
+            cycleRunnable =
+                Runnable {
+                    advancePresence(this)
+                }
         }
     }
 
@@ -245,86 +166,61 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     private val presences =
         linkedMapOf<String, Presence>()
 
-    private val videoSlots =
-        mutableListOf<VideoSlot>()
-
-    private var introSuppressed =
-        false
-
-    private var animationSerial =
-        0L
+    private var introSuppressed = false
 
     private var lastCuteOwnerKey:
-        String? =
-        null
-
-    private val updateRunnable =
-        Runnable {
-            update()
-        }
+        String? = null
 
     var animationsEnabled =
         true
         set(value) {
-            if (
-                field ==
-                    value
-            ) {
+            if (field == value) {
                 return
             }
 
             field = value
 
-            videoSlots
-                .forEach {
-                    unbindSlot(
-                        it,
-                        keepPresence = true
-                    )
-                }
-
             presences.values
                 .toList()
                 .forEach {
                     presence ->
-                    presence.forceCute =
+                    cancelPresencePlayback(
+                        presence,
+                        preserveCurrentDecision = false
+                    )
+
+                    presence.forceCute = false
+                    presence.hideStaticUntilAppearanceEnds =
                         false
 
                     presence.pendingDecision =
                         if (value) {
                             presence.animator
                                 .startAmbient(
-                                    animationsEnabled =
-                                        true,
+                                    animationsEnabled = true,
                                     randomValue =
                                         Random.nextInt()
                                 )
                         } else {
                             presence.animator
                                 .start(
-                                    animationsEnabled =
-                                        false,
+                                    animationsEnabled = false,
                                     randomValue = 0
                                 )
                         }
 
-                    presence.nextAnimationAt =
-                        SystemClock
-                            .uptimeMillis() +
-                            if (value) {
-                                randomPauseMs()
-                            } else {
-                                0L
-                            }
-
-                    presence.image
-                        .visibility =
+                    presence.image.visibility =
                         View.VISIBLE
+                    refreshPresenceTarget(presence)
+
+                    if (value) {
+                        schedulePresence(
+                            presence,
+                            randomPauseMs()
+                        )
+                    }
                 }
 
-            scheduleUpdate(
-                40L
-            )
             refreshVisibility()
         }
 
@@ -339,85 +235,74 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     fun show(
         kind: MascotKind,
         ownerKey: String,
-        targetProvider:
-            () -> RectF?,
+        targetProvider: () -> RectF?,
         setStaticSuppressed:
             (Boolean) -> Unit = {},
-        eligible:
-            () -> Boolean = {
-                true
-            },
+        eligible: () -> Boolean = {
+            true
+        },
         yellowTint: Boolean = false,
         draggable: Boolean = false,
         animateAppearance: Boolean = true
     ) {
         val id =
-            presenceId(
-                kind,
-                ownerKey
-            )
+            presenceId(kind, ownerKey)
 
         val placement =
             Placement(
-                ownerKey =
-                    ownerKey,
-                targetProvider =
-                    targetProvider,
+                ownerKey = ownerKey,
+                targetProvider = targetProvider,
                 setStaticSuppressed =
                     setStaticSuppressed,
-                eligible =
-                    eligible,
-                yellowTint =
-                    yellowTint,
-                draggable =
-                    draggable
+                eligible = eligible,
+                yellowTint = yellowTint,
+                draggable = draggable
             )
 
         val existing =
             presences[id]
 
-        if (
-            existing != null
-        ) {
+        if (existing != null) {
             existing.placement =
                 placement
-            existing.container
-                .isClickable =
+            existing.container.isClickable =
                 draggable
-            applyImageTint(
-                existing
-            )
-            setStaticSuppressed(
-                existing,
-                true
-            )
-            refreshPresenceTarget(
-                existing
-            )
-            videoSlotFor(
-                existing
-            )
-                ?.let {
-                    refreshSlotTarget(
-                        it
-                    )
-                }
+            applyTint(existing)
+            val hasTarget =
+                refreshPresenceTarget(existing)
+
+            if (
+                animationsEnabled &&
+                !introSuppressed &&
+                !existing.videoActive &&
+                existing.pendingDecision == null &&
+                !existing.removing
+            ) {
+                existing.pendingDecision =
+                    existing.animator
+                        .startAmbient(
+                            animationsEnabled = true,
+                            randomValue =
+                                Random.nextInt()
+                        )
+                schedulePresence(
+                    existing,
+                    if (hasTarget) {
+                        randomPauseMs()
+                    } else {
+                        TARGET_RETRY_MS
+                    }
+                )
+            }
             return
         }
-
-        val profile =
-            profileFor(
-                kind
-            )
 
         val presence =
             Presence(
                 profile =
-                    profile,
-                ownerKey =
-                    ownerKey,
-                placement =
-                    placement
+                    profileFor(kind),
+                ownerKey = ownerKey,
+                placement = placement
             )
 
         presences[id] =
@@ -425,43 +310,24 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
         addView(
             presence.container,
-            0,
-            LayoutParams(
-                1,
-                1
-            )
+            LayoutParams(1, 1)
         )
 
-        applyImageTint(
-            presence
-        )
-        setStaticSuppressed(
-            presence,
-            true
-        )
-        refreshPresenceTarget(
-            presence
-        )
+        applyTint(presence)
 
-        presence.pendingDecision =
-            if (
-                animationsEnabled
-            ) {
-                if (
-                    animateAppearance
-                ) {
+        val initialDecision =
+            if (animationsEnabled) {
+                if (animateAppearance) {
                     presence.animator
                         .start(
-                            animationsEnabled =
-                                true,
+                            animationsEnabled = true,
                             randomValue =
                                 Random.nextInt()
                         )
                 } else {
                     presence.animator
                         .startAmbient(
-                            animationsEnabled =
-                                true,
+                            animationsEnabled = true,
                             randomValue =
                                 Random.nextInt()
                         )
@@ -469,30 +335,51 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             } else {
                 presence.animator
                     .start(
-                        animationsEnabled =
-                            false,
+                        animationsEnabled = false,
                         randomValue = 0
                     )
             }
 
-        presence.nextAnimationAt =
-            SystemClock
-                .uptimeMillis() +
-                if (
-                    animationsEnabled &&
-                    !animateAppearance
-                ) {
-                    Random.nextLong(
-                        250L,
-                        1600L
-                    )
-                } else {
-                    0L
-                }
+        presence.pendingDecision =
+            initialDecision
+        presence.hideStaticUntilAppearanceEnds =
+            initialDecision.state ==
+                AliveVisualState.APPEARING
 
-        scheduleUpdate(
-            20L
-        )
+        presence.image.visibility =
+            if (
+                presence
+                    .hideStaticUntilAppearanceEnds
+            ) {
+                View.INVISIBLE
+            } else {
+                View.VISIBLE
+            }
+
+        val hasTarget =
+            refreshPresenceTarget(presence)
+
+        if (
+            animationsEnabled &&
+            !introSuppressed
+        ) {
+            schedulePresence(
+                presence,
+                when {
+                    presence
+                        .hideStaticUntilAppearanceEnds ->
+                        0L
+                    hasTarget ->
+                        Random.nextLong(
+                            80L,
+                            700L
+                        )
+                    else ->
+                        TARGET_RETRY_MS
+                }
+            )
+        }
+
         refreshVisibility()
     }
 
@@ -503,72 +390,52 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     ) {
         presences.values
             .filter {
-                it.profile.kind ==
-                    kind &&
+                it.profile.kind == kind &&
                     it.ownerKey
-                        .startsWith(
-                            ownerPrefix
-                        ) &&
+                        .startsWith(ownerPrefix) &&
                     it.ownerKey !in
                         ownerKeys
             }
             .toList()
-            .forEach {
-                removePresence(
-                    it
-                )
-            }
+            .forEach(::removePresence)
 
-        scheduleUpdate(
-            20L
-        )
+        refreshVisibility()
     }
 
     fun disappear(
         kind: MascotKind,
         ownerKey: String,
-        targetProvider:
-            () -> RectF?,
+        targetProvider: () -> RectF?,
         setStaticSuppressed:
             (Boolean) -> Unit = {},
         yellowTint: Boolean = false
     ) {
         val presence =
             presences[
-                presenceId(
-                    kind,
-                    ownerKey
-                )
+                presenceId(kind, ownerKey)
             ]
                 ?: return
 
         presence.placement =
-            presence.placement
-                .copy(
-                    targetProvider =
-                        targetProvider,
-                    setStaticSuppressed =
-                        setStaticSuppressed,
-                    eligible = {
-                        false
-                    },
-                    yellowTint =
-                        yellowTint
-                )
+            presence.placement.copy(
+                targetProvider =
+                    targetProvider,
+                setStaticSuppressed =
+                    setStaticSuppressed,
+                eligible = {
+                    false
+                },
+                yellowTint = yellowTint
+            )
 
-        presence.removing =
-            true
+        presence.removing = true
+        presence.hideStaticUntilAppearanceEnds =
+            false
 
-        videoSlotFor(
-            presence
+        cancelPresencePlayback(
+            presence,
+            preserveCurrentDecision = false
         )
-            ?.let {
-                unbindSlot(
-                    it,
-                    keepPresence =
-                        true
-                )
-            }
 
         val decision =
             presence.animator
@@ -578,20 +445,25 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
         if (
             decision.state ==
-                AliveVisualState
-                    .HIDDEN
+                AliveVisualState.HIDDEN
         ) {
-            removePresence(
-                presence
-            )
-        } else {
-            presence.pendingDecision =
-                decision
-            presence.nextAnimationAt =
-                SystemClock
-                    .uptimeMillis()
-            scheduleUpdate(
-                10L
+            removePresence(presence)
+            return
+        }
+
+        presence.pendingDecision =
+            decision
+        presence.image.visibility =
+            View.VISIBLE
+        refreshPresenceTarget(presence)
+
+        if (
+            animationsEnabled &&
+            !introSuppressed
+        ) {
+            schedulePresence(
+                presence,
+                0L
             )
         }
     }
@@ -609,86 +481,63 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         introSuppressed =
             suppressed
 
-        removeCallbacks(
-            updateRunnable
-        )
-
         if (suppressed) {
-            videoSlots
+            presences.values
+                .toList()
                 .forEach {
-                    unbindSlot(
+                    cancelPresencePlayback(
                         it,
-                        keepPresence =
-                            true
+                        preserveCurrentDecision =
+                            false
                     )
                 }
-
             visibility =
                 View.INVISIBLE
             return
         }
 
-        val now =
-            SystemClock
-                .uptimeMillis()
-
         presences.values
             .toList()
             .forEach {
                 presence ->
-                if (
-                    presence.removing
-                ) {
-                    removePresence(
-                        presence
-                    )
+                if (presence.removing) {
+                    removePresence(presence)
                 } else {
+                    presence.hideStaticUntilAppearanceEnds =
+                        false
+                    presence.forceCute = false
+                    presence.image.visibility =
+                        View.VISIBLE
                     presence.pendingDecision =
-                        if (
-                            animationsEnabled
-                        ) {
+                        if (animationsEnabled) {
                             presence.animator
                                 .startAmbient(
-                                    animationsEnabled =
-                                        true,
+                                    animationsEnabled = true,
                                     randomValue =
                                         Random.nextInt()
                                 )
                         } else {
                             presence.animator
                                 .start(
-                                    animationsEnabled =
-                                        false,
+                                    animationsEnabled = false,
                                     randomValue = 0
                                 )
                         }
 
-                    presence.nextAnimationAt =
-                        now +
-                            if (
-                                animationsEnabled
-                            ) {
-                                Random.nextLong(
-                                    50L,
-                                    450L
-                                )
-                            } else {
-                                0L
-                            }
+                    refreshPresenceTarget(presence)
 
-                    presence.image
-                        .visibility =
-                        View.VISIBLE
-
-                    refreshPresenceTarget(
-                        presence
-                    )
+                    if (animationsEnabled) {
+                        schedulePresence(
+                            presence,
+                            Random.nextLong(
+                                50L,
+                                450L
+                            )
+                        )
+                    }
                 }
             }
 
-        scheduleUpdate(
-            20L
-        )
         refreshVisibility()
     }
 
@@ -697,33 +546,23 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     ) {
         presences.values
             .filter {
-                it.profile.kind ==
-                    kind
+                it.profile.kind == kind
             }
             .toList()
-            .forEach {
-                removePresence(
-                    it
-                )
-            }
-
+            .forEach(::removePresence)
         refreshVisibility()
     }
 
     fun stopBoardMascots() {
-        stop(
-            MascotKind.GECKO
-        )
-        stop(
-            MascotKind.BEE
-        )
+        stop(MascotKind.GECKO)
+        stop(MascotKind.BEE)
     }
 
     fun stopAll() {
-        MascotKind.entries
-            .forEach {
-                stop(it)
-            }
+        presences.values
+            .toList()
+            .forEach(::removePresence)
+        refreshVisibility()
     }
 
     fun refreshDynamicTargets() {
@@ -732,395 +571,314 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             .forEach {
                 presence ->
                 if (
-                    presence.placement
-                        .eligible() ||
-                    presence.removing
+                    !presence.removing &&
+                    !presence.placement
+                        .eligible()
                 ) {
-                    refreshPresenceTarget(
-                        presence
-                    )
+                    removePresence(presence)
                 } else {
-                    removePresence(
-                        presence
-                    )
+                    val hasTarget =
+                        refreshPresenceTarget(
+                            presence
+                        )
+
+                    if (
+                        !hasTarget &&
+                        presence.videoActive
+                    ) {
+                        cancelPresencePlayback(
+                            presence,
+                            preserveCurrentDecision =
+                                true
+                        )
+                    }
+
+                    if (
+                        animationsEnabled &&
+                        !introSuppressed &&
+                        !presence.videoActive &&
+                        presence.pendingDecision !=
+                            null
+                    ) {
+                        schedulePresence(
+                            presence,
+                            if (hasTarget) {
+                                40L
+                            } else {
+                                TARGET_RETRY_MS
+                            }
+                        )
+                    }
                 }
             }
 
-        videoSlots
-            .filter {
-                it.presence !=
-                    null
-            }
-            .forEach {
-                refreshSlotTarget(
-                    it
-                )
-            }
-
-        refreshVisibility()
-    }
-
-    fun update() {
-        removeCallbacks(
-            updateRunnable
-        )
-
-        if (
-            !animationsEnabled
-        ) {
-            refreshVisibility()
-            return
-        }
-
-        val now =
-            SystemClock
-                .uptimeMillis()
-
-        val invalid =
-            presences.values
-                .filter {
-                    !it.removing &&
-                        !it.placement
-                            .eligible()
-                }
-                .toList()
-
-        invalid.forEach {
-            removePresence(
-                it
-            )
-        }
-
-        ensureVideoSlotForEveryPresence()
-
-        videoSlots
-            .filter {
-                it.presence ==
-                    null
-            }
-            .forEach {
-                slot ->
-                val candidate =
-                    nextCandidate(
-                        kind =
-                            slot.profile
-                                .kind,
-                        now =
-                            now
-                    )
-
-                if (
-                    candidate !=
-                        null
-                ) {
-                    bindAndPlay(
-                        slot,
-                        candidate
-                    )
-                }
-            }
-
-        scheduleUpdate(
-            280L
-        )
         refreshVisibility()
     }
 
     fun release() {
-        removeCallbacks(
-            updateRunnable
-        )
-
         presences.values
             .toList()
-            .forEach {
-                removePresence(
-                    it
-                )
-            }
-
-        videoSlots.forEach {
-            it.generation += 1
-            it.video.release()
-            it.presence = null
-        }
-
-        visibility =
-            View.GONE
+            .forEach(::removePresence)
+        bitmapCache.clear()
+        visibility = View.GONE
     }
 
-    private fun ensureVideoSlotForEveryPresence() {
-        MascotAnimationProfiles
-            .all
-            .forEach {
-                profile ->
-                val required =
-                    presences.values
-                        .count {
-                            presence ->
-                            presence.profile
-                                .kind ==
-                                profile.kind &&
-                                (
-                                    presence.removing ||
-                                        presence.placement
-                                            .eligible()
-                                    )
-                        }
-
-                var existing =
-                    videoSlots
-                        .count {
-                            it.profile.kind ==
-                                profile.kind
-                        }
-
-                while (
-                    existing <
-                        required
-                ) {
-                    videoSlots.add(
-                        VideoSlot(
-                            profile =
-                                profile,
-                            slotIndex =
-                                existing
-                        )
-                    )
-                    existing += 1
-                }
-            }
-    }
-
-    private fun nextCandidate(
-        kind: MascotKind,
-        now: Long
-    ): Presence? {
-        val candidates =
-            presences.values
-                .filter {
-                    it.profile.kind ==
-                        kind &&
-                        !it.videoActive &&
-                        it.pendingDecision
-                            ?.assetPath !=
-                            null &&
-                        it.nextAnimationAt <=
-                            now &&
-                        (
-                            it.removing ||
-                                it.placement
-                                    .eligible()
-                            )
-                }
-
-        if (
-            candidates.isEmpty()
-        ) {
-            return null
-        }
-
-        val removing =
-            candidates
-                .filter {
-                    it.removing
-                }
-
-        val pool =
-            if (
-                removing.isNotEmpty()
-            ) {
-                removing
-            } else {
-                candidates
-            }
-
-        val oldestOrder =
-            pool.minOf {
-                it.lastAnimatedOrder
-            }
-
-        val oldest =
-            pool.filter {
-                it.lastAnimatedOrder ==
-                    oldestOrder
-            }
-
-        return oldest[
-            Random.nextInt(
-                oldest.size
-            )
-        ]
-    }
-
-    private fun bindAndPlay(
-        slot: VideoSlot,
+    private fun advancePresence(
         presence: Presence
     ) {
+        if (
+            introSuppressed ||
+            !presences.values
+                .contains(presence)
+        ) {
+            return
+        }
+
+        if (
+            !presence.removing &&
+            !presence.placement
+                .eligible()
+        ) {
+            removePresence(presence)
+            return
+        }
+
+        val hasTarget =
+            refreshPresenceTarget(presence)
+
+        if (!hasTarget) {
+            if (presence.videoActive) {
+                cancelPresencePlayback(
+                    presence,
+                    preserveCurrentDecision =
+                        true
+                )
+            }
+            if (animationsEnabled) {
+                schedulePresence(
+                    presence,
+                    TARGET_RETRY_MS
+                )
+            }
+            return
+        }
+
+        if (!animationsEnabled) {
+            presence.image.visibility =
+                View.VISIBLE
+            refreshVisibility()
+            return
+        }
+
+        if (presence.videoActive) {
+            return
+        }
+
         val decision =
             presence.pendingDecision
-                ?: return
+                ?: if (presence.forceCute) {
+                    presence.forceCute = false
+                    presence.animator
+                        .requestCute(
+                            animationsEnabled = true,
+                            randomValue =
+                                Random.nextInt()
+                        )
+                } else {
+                    presence.animator
+                        .startAmbient(
+                            animationsEnabled = true,
+                            randomValue =
+                                Random.nextInt()
+                        )
+                }
 
-        val asset =
-            decision.assetPath
-                ?: return
+        presence.pendingDecision = null
 
-        slot.generation += 1
+        when (decision.state) {
+            AliveVisualState.HIDDEN ->
+                removePresence(presence)
+
+            AliveVisualState.STATIC_PNG -> {
+                presence.image.visibility =
+                    View.VISIBLE
+                presence.video.visibility =
+                    View.INVISIBLE
+                presence.currentDecision =
+                    null
+                refreshVisibility()
+            }
+
+            AliveVisualState.APPEARING,
+            AliveVisualState.IDLE,
+            AliveVisualState.CUTE,
+            AliveVisualState.DISAPPEARING -> {
+                val asset =
+                    decision.assetPath
+
+                if (asset == null) {
+                    fallbackAfterMediaFailure(
+                        presence
+                    )
+                } else {
+                    playDecision(
+                        presence,
+                        decision,
+                        asset
+                    )
+                }
+            }
+        }
+    }
+
+    private fun playDecision(
+        presence: Presence,
+        decision: AliveAnimationDecision,
+        assetPath: String
+    ) {
+        if (
+            !refreshPresenceTarget(
+                presence
+            )
+        ) {
+            presence.pendingDecision =
+                decision
+            schedulePresence(
+                presence,
+                TARGET_RETRY_MS
+            )
+            return
+        }
+
+        presence.generation += 1
         val generation =
-            slot.generation
+            presence.generation
 
-        slot.presence =
-            presence
-        presence.videoActive =
-            true
-        presence.lastAnimatedOrder =
-            ++animationSerial
-        presence.pendingDecision =
-            null
+        presence.currentDecision =
+            decision
+        presence.videoActive = true
 
-        refreshPresenceTarget(
-            presence
-        )
-        refreshSlotTarget(
-            slot
-        )
-
-        val hidePngUntilFrame =
+        val strictAppearance =
             decision.state ==
-                AliveVisualState
-                    .APPEARING &&
-                presence.lastAnimatedOrder <=
-                    1L
+                AliveVisualState.APPEARING &&
+                presence
+                    .hideStaticUntilAppearanceEnds
 
-        presence.image
-            .visibility =
-            if (
-                hidePngUntilFrame
-            ) {
+        presence.image.visibility =
+            if (strictAppearance) {
                 View.INVISIBLE
             } else {
                 View.VISIBLE
             }
 
-        slot.video
+        setStaticSuppressed(
+            presence,
+            true
+        )
+
+        presence.video
             .setKeyColor(
                 presence.profile
                     .keyColor
             )
-        slot.video
+        presence.video
             .setYellowTint(
                 presence.placement
                     .yellowTint
             )
-        slot.video.visibility =
+        presence.video.visibility =
             View.VISIBLE
-        slot.container.visibility =
-            View.VISIBLE
-        bringChildToFront(
-            slot.container
-        )
 
-        slot.video.play(
-            assetPath =
-                asset,
+        presence.video.play(
+            assetPath = assetPath,
             muted = true,
-            revealOnFirstFrame =
-                true,
+            revealOnFirstFrame = true,
             onFirstFrameRendered = {
                 if (
                     generation !=
-                        slot.generation ||
-                    slot.presence !==
-                        presence
+                        presence.generation ||
+                    !presences.values
+                        .contains(presence)
                 ) {
                     return@play
                 }
 
-                presence.image
-                    .visibility =
+                presence.image.visibility =
                     View.INVISIBLE
             },
             onStarted = {},
             onCompletion = {
                 if (
                     generation !=
-                        slot.generation ||
-                    slot.presence !==
-                        presence
+                        presence.generation ||
+                    !presences.values
+                        .contains(presence)
                 ) {
                     return@play
                 }
 
-                handleClipCompleted(
-                    slot,
-                    presence
+                onPresenceClipCompleted(
+                    presence,
+                    decision
                 )
             },
             onError = {
                     _ ->
                 if (
                     generation !=
-                        slot.generation ||
-                    slot.presence !==
-                        presence
+                        presence.generation ||
+                    !presences.values
+                        .contains(presence)
                 ) {
                     return@play
                 }
 
-                presence.pendingDecision =
-                    presence.animator
-                        .fallbackToStatic()
-                unbindSlot(
-                    slot,
-                    keepPresence =
-                        true
-                )
-                presence.nextAnimationAt =
-                    SystemClock
-                        .uptimeMillis() +
-                        randomPauseMs()
-                scheduleUpdate(
-                    100L
+                fallbackAfterMediaFailure(
+                    presence
                 )
             }
         )
+
+        refreshVisibility()
     }
 
-    private fun handleClipCompleted(
-        slot: VideoSlot,
-        presence: Presence
+    private fun onPresenceClipCompleted(
+        presence: Presence,
+        completed:
+            AliveAnimationDecision
     ) {
-        presence.image
-            .visibility =
-            View.VISIBLE
+        presence.videoActive = false
+        presence.currentDecision = null
+        presence.video.visibility =
+            View.INVISIBLE
 
-        val completedState =
-            presence.animator
-                .state
-
-        unbindSlot(
-            slot,
-            keepPresence =
-                true
-        )
+        if (
+            completed.state ==
+                AliveVisualState.APPEARING
+        ) {
+            presence.hideStaticUntilAppearanceEnds =
+                false
+        }
 
         if (
             presence.removing ||
-            completedState ==
-                AliveVisualState
-                    .DISAPPEARING
+            completed.state ==
+                AliveVisualState.DISAPPEARING
         ) {
-            removePresence(
-                presence
-            )
-            scheduleUpdate(
-                20L
-            )
+            removePresence(presence)
             return
         }
 
-        val randomValue =
-            Random.nextInt()
+        if (
+            !presence.placement
+                .eligible()
+        ) {
+            removePresence(presence)
+            return
+        }
+
+        presence.image.visibility =
+            View.VISIBLE
 
         val normalDecision =
             presence.animator
@@ -1128,24 +886,21 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     animationsEnabled =
                         animationsEnabled,
                     randomValue =
-                        randomValue
+                        Random.nextInt()
                 )
 
         if (
             normalDecision
                 .requestGroupRefresh
         ) {
-            handleGrandCycle(
-                presence
+            coordinateGrandCycle(
+                origin = presence
             )
         }
 
         presence.pendingDecision =
-            if (
-                presence.forceCute
-            ) {
-                presence.forceCute =
-                    false
+            if (presence.forceCute) {
+                presence.forceCute = false
                 presence.animator
                     .requestCute(
                         animationsEnabled =
@@ -1157,17 +912,57 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 normalDecision
             }
 
-        presence.nextAnimationAt =
-            SystemClock
-                .uptimeMillis() +
-                randomPauseMs()
-
-        scheduleUpdate(
-            80L
+        schedulePresence(
+            presence,
+            randomPauseMs()
         )
     }
 
-    private fun handleGrandCycle(
+    private fun fallbackAfterMediaFailure(
+        presence: Presence
+    ) {
+        presence.generation += 1
+        presence.video.stopPlayback()
+        presence.video.visibility =
+            View.INVISIBLE
+        presence.videoActive = false
+        presence.currentDecision = null
+        presence.hideStaticUntilAppearanceEnds =
+            false
+        presence.image.visibility =
+            View.VISIBLE
+
+        if (presence.removing) {
+            removePresence(presence)
+            return
+        }
+
+        if (
+            animationsEnabled &&
+            presence.placement
+                .eligible()
+        ) {
+            presence.pendingDecision =
+                presence.animator
+                    .startAmbient(
+                        animationsEnabled = true,
+                        randomValue =
+                            Random.nextInt()
+                    )
+            schedulePresence(
+                presence,
+                MEDIA_RETRY_MS
+            )
+        } else {
+            presence.pendingDecision =
+                presence.animator
+                    .fallbackToStatic()
+        }
+
+        refreshVisibility()
+    }
+
+    private fun coordinateGrandCycle(
         origin: Presence
     ) {
         val peers =
@@ -1181,9 +976,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
         peers.forEach {
             peer ->
-            if (
-                peer.videoActive
-            ) {
+            if (peer.videoActive) {
                 peer.animator
                     .requestPeerRefresh()
             } else {
@@ -1195,13 +988,13 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                             randomValue =
                                 Random.nextInt()
                         )
-                peer.nextAnimationAt =
-                    SystemClock
-                        .uptimeMillis() +
-                        Random.nextLong(
-                            250L,
-                            1200L
-                        )
+                schedulePresence(
+                    peer,
+                    Random.nextLong(
+                        250L,
+                        1200L
+                    )
+                )
             }
         }
 
@@ -1212,23 +1005,19 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     .isNotEmpty()
             }
 
-        if (
-            cuteCandidates.isEmpty()
-        ) {
+        if (cuteCandidates.isEmpty()) {
             return
         }
 
         val withoutLast =
-            cuteCandidates
-                .filter {
-                    it.ownerKey !=
-                        lastCuteOwnerKey
-                }
+            cuteCandidates.filter {
+                it.ownerKey !=
+                    lastCuteOwnerKey
+            }
 
         val pool =
             if (
-                withoutLast
-                    .isNotEmpty()
+                withoutLast.isNotEmpty()
             ) {
                 withoutLast
             } else {
@@ -1237,19 +1026,14 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
         val friend =
             pool[
-                Random.nextInt(
-                    pool.size
-                )
+                Random.nextInt(pool.size)
             ]
 
         lastCuteOwnerKey =
             friend.ownerKey
 
-        if (
-            friend.videoActive
-        ) {
-            friend.forceCute =
-                true
+        if (friend.videoActive) {
+            friend.forceCute = true
         } else {
             friend.pendingDecision =
                 friend.animator
@@ -1259,103 +1043,92 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         randomValue =
                             Random.nextInt()
                     )
-            friend.nextAnimationAt =
-                SystemClock
-                    .uptimeMillis() +
-                    Random.nextLong(
-                        100L,
-                        500L
-                    )
+            schedulePresence(
+                friend,
+                Random.nextLong(
+                    100L,
+                    500L
+                )
+            )
         }
     }
 
-    private fun unbindSlot(
-        slot: VideoSlot,
-        keepPresence: Boolean
+    private fun schedulePresence(
+        presence: Presence,
+        delayMs: Long
     ) {
-        val presence =
-            slot.presence
-
-        slot.generation += 1
-        slot.video.stopPlayback()
-        slot.video.visibility =
-            View.INVISIBLE
-        slot.container.visibility =
-            View.INVISIBLE
-        slot.presence =
-            null
+        removeCallbacks(
+            presence.cycleRunnable
+        )
 
         if (
-            presence != null
+            !animationsEnabled ||
+            introSuppressed ||
+            !presences.values
+                .contains(presence)
         ) {
-            presence.videoActive =
-                false
-
-            if (
-                keepPresence &&
-                presences.values
-                    .contains(
-                        presence
-                    )
-            ) {
-                presence.image
-                    .visibility =
-                    View.VISIBLE
-                refreshPresenceTarget(
-                    presence
-                )
-            }
+            return
         }
+
+        postDelayed(
+            presence.cycleRunnable,
+            delayMs
+        )
     }
 
-    private fun removePresence(
-        presence: Presence
+    private fun cancelPresencePlayback(
+        presence: Presence,
+        preserveCurrentDecision:
+            Boolean
     ) {
-        videoSlotFor(
-            presence
+        removeCallbacks(
+            presence.cycleRunnable
         )
-            ?.let {
-                unbindSlot(
-                    it,
-                    keepPresence =
-                        false
-                )
+
+        presence.generation += 1
+
+        if (
+            preserveCurrentDecision &&
+            presence.currentDecision != null
+        ) {
+            presence.pendingDecision =
+                presence.currentDecision
+        }
+
+        presence.currentDecision = null
+        presence.videoActive = false
+        presence.video.stopPlayback()
+        presence.video.visibility =
+            View.INVISIBLE
+
+        presence.image.visibility =
+            if (
+                presence
+                    .hideStaticUntilAppearanceEnds
+            ) {
+                View.INVISIBLE
+            } else {
+                View.VISIBLE
             }
-
-        setStaticSuppressed(
-            presence,
-            false
-        )
-
-        presences.remove(
-            presenceId(
-                presence.profile
-                    .kind,
-                presence.ownerKey
-            )
-        )
-
-        removeView(
-            presence.container
-        )
     }
 
     private fun refreshPresenceTarget(
         presence: Presence
-    ) {
+    ): Boolean {
         val raw =
             presence.placement
                 .targetProvider()
-                ?: run {
-                    setStaticSuppressed(
-                        presence,
-                        false
-                    )
-                    presence.container
-                        .visibility =
-                        View.INVISIBLE
-                    return
-                }
+
+        if (raw == null) {
+            setStaticSuppressed(
+                presence,
+                presence
+                    .hideStaticUntilAppearanceEnds
+            )
+            presence.container.visibility =
+                View.INVISIBLE
+            return false
+        }
 
         val scaled =
             scaledRect(
@@ -1387,13 +1160,13 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             target.width()
                 .roundToInt()
                 .coerceAtLeast(1)
+
         val targetHeight =
             target.height()
                 .roundToInt()
                 .coerceAtLeast(1)
 
-        presence.container
-            .layoutParams =
+        presence.container.layoutParams =
             LayoutParams(
                 targetWidth,
                 targetHeight
@@ -1406,83 +1179,53 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         .roundToInt()
             }
 
-        applyImageTint(
-            presence
-        )
+        applyTint(presence)
         setStaticSuppressed(
             presence,
             true
         )
-        presence.container
-            .visibility =
+        presence.container.visibility =
             View.VISIBLE
-
-        videoSlotFor(
-            presence
-        )
-            ?.let {
-                refreshSlotTarget(
-                    it
-                )
-            }
-
-        if (
-            visibility !=
-                View.VISIBLE
-        ) {
-            visibility =
-                View.VISIBLE
-        }
+        return true
     }
 
-    private fun refreshSlotTarget(
-        slot: VideoSlot
+    private fun removePresence(
+        presence: Presence
     ) {
-        val presence =
-            slot.presence
-                ?: return
+        removeCallbacks(
+            presence.cycleRunnable
+        )
 
-        val params =
+        presence.generation += 1
+        presence.video.stopPlayback()
+        presence.video.release()
+        presence.videoActive = false
+        presence.currentDecision = null
+        presence.pendingDecision = null
+
+        setStaticSuppressed(
+            presence,
+            false
+        )
+
+        presences.remove(
+            presenceId(
+                presence.profile.kind,
+                presence.ownerKey
+            )
+        )
+
+        removeView(
             presence.container
-                .layoutParams
-                as? LayoutParams
-                ?: return
-
-        slot.container
-            .layoutParams =
-            LayoutParams(
-                params.width,
-                params.height
-            ).apply {
-                leftMargin =
-                    params.leftMargin
-                topMargin =
-                    params.topMargin
-            }
-
-        slot.container.visibility =
-            if (
-                presence.container
-                    .visibility ==
-                    View.VISIBLE
-            ) {
-                View.VISIBLE
-            } else {
-                View.INVISIBLE
-            }
+        )
     }
 
     private fun scaledRect(
         raw: RectF,
         scale: Float
     ): RectF {
-        if (
-            scale ==
-                1f
-        ) {
-            return RectF(
-                raw
-            )
+        if (scale == 1f) {
+            return RectF(raw)
         }
 
         val halfWidth =
@@ -1518,28 +1261,19 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 ?: return template
 
         val centerX =
-            xFraction *
-                width
+            xFraction * width
         val centerY =
-            yFraction *
-                height
-
+            yFraction * height
         val halfWidth =
-            template.width() /
-                2f
+            template.width() / 2f
         val halfHeight =
-            template.height() /
-                2f
+            template.height() / 2f
 
         return RectF(
-            centerX -
-                halfWidth,
-            centerY -
-                halfHeight,
-            centerX +
-                halfWidth,
-            centerY +
-                halfHeight
+            centerX - halfWidth,
+            centerY - halfHeight,
+            centerX + halfWidth,
+            centerY + halfHeight
         )
     }
 
@@ -1554,9 +1288,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             return false
         }
 
-        when (
-            event.actionMasked
-        ) {
+        when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 presence.dragStartRawX =
                     event.rawX
@@ -1578,7 +1310,6 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     ?.requestDisallowInterceptTouchEvent(
                         true
                     )
-
                 return true
             }
 
@@ -1605,7 +1336,6 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                             childWidth
                         )
                         .coerceAtLeast(0)
-
                 val maxTop =
                     (
                         height -
@@ -1623,7 +1353,6 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                             0,
                             maxLeft
                         )
-
                 val top =
                     (
                         presence.dragStartTop +
@@ -1635,16 +1364,13 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                             maxTop
                         )
 
-                presence.container
-                    .layoutParams =
+                presence.container.layoutParams =
                     LayoutParams(
                         childWidth,
                         childHeight
                     ).apply {
-                        leftMargin =
-                            left
-                        topMargin =
-                            top
+                        leftMargin = left
+                        topMargin = top
                     }
 
                 updateDragFractions(
@@ -1654,16 +1380,6 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     childWidth,
                     childHeight
                 )
-
-                videoSlotFor(
-                    presence
-                )
-                    ?.let {
-                        refreshSlotTarget(
-                            it
-                        )
-                    }
-
                 return true
             }
 
@@ -1701,16 +1417,13 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         presence.dragCenterXFraction =
             (
                 left +
-                    childWidth /
-                        2f
+                    childWidth / 2f
                 ) /
                 width
-
         presence.dragCenterYFraction =
             (
                 top +
-                    childHeight /
-                        2f
+                    childHeight / 2f
                 ) /
                 height
     }
@@ -1725,21 +1438,14 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             presence.dragCenterYFraction
                 ?: return
 
-        positionPrefs
-            .edit()
+        positionPrefs.edit()
             .putFloat(
                 PLANT_X_KEY,
-                x.coerceIn(
-                    0f,
-                    1f
-                )
+                x.coerceIn(0f, 1f)
             )
             .putFloat(
                 PLANT_Y_KEY,
-                y.coerceIn(
-                    0f,
-                    1f
-                )
+                y.coerceIn(0f, 1f)
             )
             .apply()
     }
@@ -1748,15 +1454,12 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         key: String
     ): Float? {
         val value =
-            positionPrefs
-                .getFloat(
-                    key,
-                    Float.NaN
-                )
+            positionPrefs.getFloat(
+                key,
+                Float.NaN
+            )
 
-        return if (
-            value.isNaN()
-        ) {
+        return if (value.isNaN()) {
             null
         } else {
             value.coerceIn(
@@ -1766,11 +1469,10 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         }
     }
 
-    private fun applyImageTint(
+    private fun applyTint(
         presence: Presence
     ) {
-        presence.image
-            .colorFilter =
+        presence.image.colorFilter =
             if (
                 presence.placement
                     .yellowTint
@@ -1779,6 +1481,12 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             } else {
                 null
             }
+
+        presence.video
+            .setYellowTint(
+                presence.placement
+                    .yellowTint
+            )
     }
 
     private fun setStaticSuppressed(
@@ -1796,19 +1504,9 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             .setStaticSuppressed(
                 suppressed
             )
-
         presence.staticSuppressed =
             suppressed
     }
-
-    private fun videoSlotFor(
-        presence: Presence
-    ): VideoSlot? =
-        videoSlots
-            .firstOrNull {
-                it.presence ===
-                    presence
-            }
 
     private fun profileFor(
         kind: MascotKind
@@ -1817,8 +1515,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             MascotAnimationProfiles
                 .all
                 .firstOrNull {
-                    it.kind ==
-                        kind
+                    it.kind == kind
                 }
         )
 
@@ -1837,28 +1534,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             2100L
         )
 
-    private fun scheduleUpdate(
-        delayMs: Long
-    ) {
-        removeCallbacks(
-            updateRunnable
-        )
-
-        if (
-            animationsEnabled &&
-            !introSuppressed
-        ) {
-            postDelayed(
-                updateRunnable,
-                delayMs
-            )
-        }
-    }
-
     private fun refreshVisibility() {
-        if (
-            introSuppressed
-        ) {
+        if (introSuppressed) {
             visibility =
                 View.INVISIBLE
             return
@@ -1871,12 +1548,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         it.container
                             .visibility ==
                             View.VISIBLE
-                    } ||
-                videoSlots.any {
-                    it.container
-                        .visibility ==
-                        View.VISIBLE
-                }
+                    }
             ) {
                 View.VISIBLE
             } else {
@@ -1889,38 +1561,25 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     ): Bitmap? {
         if (
             bitmapCache
-                .containsKey(
-                    path
-                )
+                .containsKey(path)
         ) {
-            return bitmapCache[
-                path
-            ]
+            return bitmapCache[path]
         }
 
         val bitmap =
             try {
                 context.assets
-                    .open(
-                        path
-                    )
+                    .open(path)
                     .use {
                         BitmapFactory
-                            .decodeStream(
-                                it
-                            )
+                            .decodeStream(it)
                     }
-            } catch (
-                _: Exception
-            ) {
+            } catch (_: Exception) {
                 null
             }
 
-        bitmapCache[
-            path
-        ] =
+        bitmapCache[path] =
             bitmap
-
         return bitmap
     }
 
@@ -1929,5 +1588,9 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             "plant_center_x"
         private const val PLANT_Y_KEY =
             "plant_center_y"
+        private const val TARGET_RETRY_MS =
+            240L
+        private const val MEDIA_RETRY_MS =
+            900L
     }
 }

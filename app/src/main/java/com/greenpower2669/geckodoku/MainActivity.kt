@@ -7616,6 +7616,21 @@ class MainActivity : Activity() {
 
         aliveMascotOverlay
             .refreshDynamicTargets()
+
+        if (
+            ::screenRoot
+                .isInitialized
+        ) {
+            screenRoot.post {
+                if (
+                    ::aliveMascotOverlay
+                        .isInitialized
+                ) {
+                    aliveMascotOverlay
+                        .refreshDynamicTargets()
+                }
+            }
+        }
     }
 
     private fun beeGeckoOverlayTarget(

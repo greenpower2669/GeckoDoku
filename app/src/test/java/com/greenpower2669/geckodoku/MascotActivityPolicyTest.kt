@@ -5,10 +5,10 @@ import org.junit.Test
 
 class MascotActivityPolicyTest {
     @Test
-    fun diagnosticBuildAnimatesEveryVisiblePresenceWithoutPoolCap() {
+    fun everyVisiblePresenceOwnsItsVideoWithoutSharedScheduler() {
         assertTrue(
             MascotActivityPolicy
-                .ALL_VISIBLE_VIDEO_DIAGNOSTIC
+                .PER_PRESENCE_VIDEO
         )
     }
 }
