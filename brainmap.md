@@ -740,3 +740,5 @@ GECKO-061 : CI #275 verte ; APK 0.15.21-dev prêt ; test attendu = drag : cellul
 stones -> séparation PLAYER / PROFESSOR -> max 3 aléatoires par camp -> Alive Presence.
 Toutes les autres pierres restent statiques.
 Grand cycle Alive terminé -> callback -> nouvelle sélection 3+3 -> anciens owners rendus au board, nouveaux owners promus.
+
+GECKO-062 : CI #280 verte ; APK 0.15.22-dev prêt ; test téléphone = maximum 3 verts + 3 jaunes vivants, redistribution au grand cycle.
