@@ -385,3 +385,11 @@ Le brouillard gris des pièces données n'est plus constitué de quatre grands o
 - tailles et offsets variés ;
 - dérive douce basée sur seed + phase ;
 - rendu décoratif seulement, sans effet logique.
+
+
+## 19 — Test nuages 0.15.10-dev
+
+Commit applicatif : 266a0efcd471f90b09f17341b5c2958121b80498.
+CI #249 verte.
+APK téléphone produit.
+Le contrat des grands cycles autonomes reste enregistré dans l'ordre de mission et le TODO, mais n'est pas encore implémenté dans cette version.

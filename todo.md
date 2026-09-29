@@ -76,5 +76,6 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] 7 bouffées irrégulières plutôt que 4 ovales géométriques ;
 - [x] dérive douce et déterministe ;
 - [x] test de politique visuelle ;
-- [ ] CI ;
+- [x] CI #249 verte ;
+- [x] APK téléphone 0.15.10-dev produit ;
 - [ ] validation téléphone Fab.

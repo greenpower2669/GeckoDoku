@@ -140,3 +140,18 @@ Correction 0.15.10-dev :
 - tailles et positions variées par seed ;
 - mouvement conservé mais plus discret ;
 - même politique visuelle en Classic et Abeilles & Geckos.
+
+
+## GECKO-050 — CI #249 — VERTE
+
+Commit applicatif :
+266a0efcd471f90b09f17341b5c2958121b80498
+
+Résultat :
+- tests unitaires OK ;
+- compilation Debug/Phone OK ;
+- APK 0.15.10-dev produit ;
+- aucune prerelease/release déclenchée.
+
+À valider sur téléphone :
+nuages plus transparents, moins géométriques, toujours lisibles sur les placements donnés.

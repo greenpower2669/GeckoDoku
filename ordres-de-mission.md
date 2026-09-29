@@ -419,3 +419,10 @@ Implémentation 0.15.10-dev :
 - 7 bouffées de tailles/positions différentes au lieu de 4 grands ovales réguliers ;
 - alpha abaissé à 8..21 ;
 - légère dérive déterministe pour rester douce et stable.
+
+
+État nuages 0.15.10-dev :
+- commit applicatif 266a0efcd471f90b09f17341b5c2958121b80498 ;
+- CI #249 verte ;
+- APK téléphone produit ;
+- validation Fab requise.
