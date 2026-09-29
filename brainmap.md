@@ -768,3 +768,36 @@ target + viewport root -> intersection -> clipBounds locale -> PNG et vidéo.
 Aucun clamp, aucun recentrage, aucun seuil center-in-viewport.
 
 GECKO-064 : CI #289 verte -> APK 0.15.24-dev -> validation téléphone clipping haut/bas/gauche/droite -> pas de release.
+
+
+## GECKO-065 — carte de couche « derrière le cadre »
+
+Abeilles & Geckos / Gomoku :
+cellule logique
+→ target non bornée
+→ Presence Alive persistante
+→ PNG fallback + ChromaKeyVideoView
+→ clipProvider = fenêtre réelle du plateau
+→ visible si intersection
+→ clip vide si entièrement derrière le cadre
+→ cycle AliveAnimator continue localement
+→ retour drag/zoom = réapparition progressive de la même Presence.
+
+Le viewport ne doit plus décider de l'existence de la Presence.
+
+Gomoku conserve en amont :
+snapshot pierres
+→ GomokuLivingSelectionPolicy
+→ max 3 PLAYER + 3 PROFESSOR
+→ redistribution au grand cycle
+→ seules ces Presence passent dans la chaîne non bornée + clip.
+
+Hors chaîne :
+titres / textes / boutons / Prof restent hors de la fenêtre de rendu des mascottes de plateau.
+
+Ne pas réintroduire :
+viewport -> target=null pour une simple sortie visuelle ;
+clamp/recentrage de mascotte ;
+masque SurfaceView global ;
+setZOrderOnTop/mediaOverlay modifié pour contourner la géométrie ;
+ordonnanceur/pool/lecteur partagé.
