@@ -823,3 +823,5 @@ AliveMascotOverlayView
 → playback: ChromaKeyPlayback pour play/mute/keycolor/tint/release.
 
 Ne pas étendre TextureView à Pierre/Intro/Classic/Sudoku/Plante avant validation téléphone.
+
+GECKO-066 -> CI #310 SUCCESS -> APK 0.15.27-dev -> téléphone : chercher ALIVE_VIDEO_BACKEND backend=TextureView sur owner bee:/gomoku: puis vérifier clip identique PNG/vidéo -> aucune release.
