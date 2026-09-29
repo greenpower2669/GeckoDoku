@@ -784,3 +784,37 @@ Invariant toujours absolu :
 
 ### GECKO-065 — build
 CI #303 (run 36638744397) verte sur 1cffec0bbf88148c210fad545e1a3ad4a2f56ad4. Artifact GeckoDoku-v0.15.26-dev-phone. SHA-256 archive e5f33774d3bd0ab3af52bee00b25c1b75d5ba4a4d70b22ca09067e1b4f1092dd. APK 248557697 octets, SHA-256 1b25121080454d58934c20366073ad0a255324226759fe3baf22f2d4b1617323. Aucune prerelease/release.
+
+
+## 38 — GECKO-066 : TextureView ciblé pour Abeilles/Geckos et Gomoku
+
+Observation téléphone 0.15.26-dev : la géométrie et le clipping PNG sont bons, mais le rendu peut sembler changer dans le temps parce que GLSurfaceView/SurfaceView est composé séparément du reste de la hiérarchie Android. Une vidéo Alive peut donc ne pas respecter exactement le même clip/Z-order que son PNG fallback.
+
+Test architectural autorisé par Fab :
+- ne toucher ni Pierre, ni intro, ni Classic, ni Sudoku, ni plante ;
+- uniquement owners bee:* et gomoku:* sur Android API >= 33 utilisent ChromaKeyTextureView ;
+- les autres Presence gardent ChromaKeyVideoView historique ;
+- Android < 33 garde aussi le GLSurfaceView pour compatibilité.
+
+ChromaKeyTextureView :
+- MediaPlayer décode directement vers la SurfaceTexture du TextureView ;
+- TextureView est une vraie View Android, donc clipBounds, alpha, parent clipping et ordre visuel sont composés avec le PNG ;
+- RuntimeShader + RenderEffect reproduisent l'algorithme keycolor actuel : dominance bleu/vert, seuil/softness/despill, puis yellowTint Gomoku ;
+- sortie AGSL prémultipliée pour conserver des bords transparents propres ;
+- isOpaque=false ;
+- fit-center via TextureView.setTransform pour conserver le ratio vidéo.
+
+Garde première frame :
+- alpha=0 au play ;
+- baseline de onSurfaceTextureUpdated enregistrée ;
+- MediaPlayer doit avoir démarré ;
+- MEDIA_INFO_VIDEO_RENDERING_START doit être reçu ;
+- une mise à jour SurfaceTexture postérieure au baseline doit arriver ;
+- seulement alors VIDEO_FIRST_FRAME puis VIDEO_VISIBLE ;
+- holdOnFirstFrame reste supporté.
+
+L'interface ChromaKeyPlayback permet à AliveMascotOverlayView de piloter indifféremment l'ancien backend ou le TextureView sans modifier AliveAnimator ni les callbacks locaux.
+
+Invariant : 1 Presence = 1 PNG + 1 backend vidéo + 1 AliveAnimator + 1 callback local. Aucun ordonnanceur, pool ou lecteur partagé.
+
+CI #309 a déjà confirmé compilation/tests du nouveau backend avant bump. Version de test : 0.15.27-dev / 62.
