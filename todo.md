@@ -428,3 +428,12 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] téléphone : pas de carré noir ni flash keycolor avant première frame ;
 - [ ] téléphone : zoom/drag garde la même Presence et glisse proprement derrière les bords ;
 - [ ] aucune release/prerelease ni merge main avant validation explicite Fab.
+
+### GECKO-066 build final
+- [x] CI #310 verte ;
+- [x] run 36641153646 SUCCESS ;
+- [x] APK Phone 0.15.27-dev produit ;
+- [x] taille APK : 248574081 octets ;
+- [x] SHA-256 APK : e5de07cea97ca736108d644298ab56b2ad16689d695e357ef0a1d4cd280afe3f ;
+- [x] artifact archive SHA-256 : e3cc39a3d9821b4894cd5244f7c0994e0b8fc09c2c45fa2c82723beaaf0479ac ;
+- [x] release/prerelease : non déclenchées.
