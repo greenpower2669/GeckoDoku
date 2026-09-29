@@ -725,3 +725,18 @@ Version cible : 0.15.19-dev / versionCode 54. Aucun merge main ni release avant 
 
 ## GECKO-060 — OWNERSHIP UNIQUE
 Décision Fab : en mode Abeilles & Geckos, la Presence Alive remplace l'ancien rendu de pièce et possède son PNG fallback et ses vidéos. La règle hors écran est conservée sur la cellule du plateau : cellule hors viewport = mascotte cachée ; cadre média débordant = autorisé. Version 0.15.20-dev / 55. Pas de merge main ni release avant validation téléphone.
+
+
+## GECKO-061 — GARDE HORS ÉCRAN APRÈS DRAG
+
+Décision Fab : conserver la règle utile qui masque une mascotte quand le drag sort réellement sa cellule du plateau.
+
+Implémentation :
+- ownership unique Alive conservé ;
+- visibilité décidée par le centre de la cellule logique ;
+- centre dans viewport => Presence visible et libre de dépasser avec son cadre média transparent ;
+- centre hors viewport => Presence cachée ;
+- ne pas restaurer l'ancien renderer PNG BeeGeckoBoardView.
+
+Version cible : 0.15.21-dev / versionCode 56.
+Aucun merge main ni release avant validation téléphone.
