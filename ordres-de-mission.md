@@ -720,3 +720,5 @@ Interdictions inchangées : aucun ordonnanceur/pool partagé, aucun merge main, 
 Validation Fab : supprimer cette règle. Les assets Gecko/Abeille sont déjà centrés dans leur cadre transparent/key-color. beeGeckoAliveTarget() doit simplement calculer la cible centrée et la convertir vers screenRoot, sans rejet ni clamp viewport.
 
 Version cible : 0.15.19-dev / versionCode 54. Aucun merge main ni release avant validation téléphone.
+
+État GECKO-059 : CI #267 verte ; APK 0.15.19-dev produit ; aucune release ; validation téléphone requise.
