@@ -25,10 +25,12 @@ data class MascotAnimationProfile(
     val idleAssets: List<String>,
     val cuteAssets: List<String>,
     val keyColor: ChromaKeyColor,
-    val renderScale: Float = 1f
+    val renderScale: Float = 1f,
+    val pngScale: Float = 1f
 ) {
     init {
         require(renderScale > 0f)
+        require(pngScale > 0f)
         require(
             idleAssets.isNotEmpty() ||
                 cuteAssets.isNotEmpty() ||
