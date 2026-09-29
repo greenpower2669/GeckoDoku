@@ -914,3 +914,5 @@ INTERDIT
 - merge main / release avant validation téléphone.
 
 Version cible : 0.15.28-dev / versionCode 63.
+
+État GECKO-067 : CI #312 verte ; APK 0.15.28-dev produit ; SHA-256 APK 296240aa14d866f101ac921887ca30c46c1eebbde946d2f7dc5797ae70d1ce79 ; validation téléphone requise ; aucune release/prerelease ni merge main.
