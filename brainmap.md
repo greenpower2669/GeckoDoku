@@ -714,3 +714,8 @@ flowchart LR
 La bordure ne supprime plus une mascotte encore visible.
 
 GECKO-058 : CI #265 verte ; APK Phone 0.15.18-dev prêt ; prochain test = Gecko gauche/droite/bas animés + Abeille intérieure inchangée + zoom/drag.
+
+
+## 27 — GECKO-059
+cellule -> centeredScaledRect -> screenRectToRoot -> Presence Gecko/Abeille.
+Aucune contrainte viewport sur le cadre média.
