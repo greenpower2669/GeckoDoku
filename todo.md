@@ -222,9 +222,11 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] tracer ALIVE_PLAY pour le prochain test téléphone ;
 - [x] faire entrer aussi le dernier Gecko de fin de partie dans la couche vivante ;
 - [x] version 0.15.17-dev / versionCode 52 ;
-- [ ] CI verte ;
-- [ ] APK Phone produit ;
+- [x] CI #263 verte ;
+- [x] APK Phone 0.15.17-dev produit ;
 - [ ] téléphone : voir ALIVE_PLAY pour Gecko ;
 - [ ] téléphone : voir ALIVE_PLAY pour Abeille ;
 - [ ] téléphone : confirmer les stay1..4 visibles ;
 - [ ] aucune release avant validation explicite Fab.
+
+- [x] artifact CI #263 : GeckoDoku-v0.15.17-dev-phone ; APK SHA-256 cb50cb5e97ed9cc33ab7285982a6da7fda5e6439040fa2a195b7c59bb6fa8577.
