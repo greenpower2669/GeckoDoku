@@ -756,3 +756,7 @@ Chroma : beginPlayback -> clear transparent -> texture interdite -> VIDEO_RENDER
 Plant : target vidéo 100 % ; PNG interne 95 %, centre identique.
 
 GECKO-063 build -> CI #286 SUCCESS -> 0.15.23-dev -> test téléphone requis -> pas de release.
+
+## 32 — stratégie géométrique proposée Bee/Gecko
+cellRect intersecte viewport ? -> non : Presence cachée ; oui : Presence conservée -> target centré sur cellule -> rendu clipé au viewport réel du plateau.
+Remplace le seuil center-in-viewport, qui masque trop tôt en bas et laisse déborder en haut.
