@@ -127,3 +127,16 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] test téléphone : intro réellement au-dessus de tout ? ;
 - [ ] décider ensuite si le pool borné était la cause ;
 - [ ] aucune release avant verdict Fab.
+
+
+## GECKO-053 — retour Mail/Messages
+- [x] confirmer que onPause() détruit les Presence via stopAll() ;
+- [x] confirmer que onResume() ne restaurait que la Plante ;
+- [x] conserver l'arrêt complet des lecteurs en arrière-plan ;
+- [x] restaurer Plante + snapshot vivant du mode courant dans onResume() ;
+- [x] correction commune Classic / Sudoku / Gomoku / Abeilles & Geckos ;
+- [ ] CI 0.15.13-dev ;
+- [ ] test téléphone : ouvrir Mail/Messages puis revenir ;
+- [ ] vérifier que toutes les mascottes repartent sans toucher au plateau ;
+- [ ] vérifier que l'intro ne se relance pas au simple retour ;
+- [ ] aucune release avant verdict Fab.

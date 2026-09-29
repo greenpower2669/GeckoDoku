@@ -590,3 +590,20 @@ flowchart LR
 
 MascotActivityPolicy conserve les anciens nombres 3/2/1 uniquement comme référence historique.
 AliveMascotOverlayView ne les utilise pas dans 0.15.12-dev.
+
+
+## 20 — GECKO-053 lifecycle reprise
+
+~~~mermaid
+flowchart LR
+    App[GeckoDoku] --> Pause[onPause]
+    Pause --> Stop[AliveMascotOverlay.stopAll]
+    Stop --> BG[aucun lecteur en arrière-plan]
+    BG --> Resume[onResume]
+    Resume --> Plant[ensurePlantMascot]
+    Plant --> Sync[syncLivingMascotsForCurrentMode]
+    Sync --> Modes[Classic / Sudoku / Gomoku / Bee]
+    Modes --> Update[update ALL ANIMATED]
+~~~
+
+Le snapshot de jeu est la source de vérité après reprise ; les Presence sont reconstructibles et ne doivent pas être conservées comme état métier.

@@ -2,7 +2,7 @@
 
 > Documentation vivante de l'application telle qu'elle existe au 28 septembre 2026.
 >
-> **Version applicative observée :** `0.15.12-dev` — `versionCode 47`  
+> **Version applicative observée :** `0.15.13-dev` — `versionCode 48`  
 > **Branche :** `gecko-039-sudoku-tap-gecko-gomoku`  
 > **Référence code fonctionnel :** `8ccc0385c8314239976368811dab93808970e35a`  
 > Cette documentation décrit le comportement présent. Elle peut évoluer avec le logiciel. Elle n'est ni un historique de debug ni un ordre de mission.
@@ -578,3 +578,8 @@ AliveAnimator change de stay à chaque clip, forme des séries de 3 à 5 stays, 
 Pour isoler un défaut observé sur téléphone, le plafond de lecteurs vidéo est temporairement retiré. AliveMascotOverlayView crée dynamiquement un VideoSlot par Presence visible ; toutes les mascottes peuvent ainsi être animées simultanément. Ce réglage sert à déterminer si le pool borné 3 Gecko / 2 Abeilles était responsable de l'arrêt apparent des animations.
 
 Pendant les deux vidéos d'introduction, la couche AliveMascotOverlayView est suspendue et cachée. Les lecteurs mascottes sont arrêtés afin qu'aucun Gecko ou Plante ne puisse apparaître au-dessus de l'intro. Après fin naturelle ou skip, les Presence reprennent leur PNG interne et leur cycle.
+
+
+#### Reprise après changement d'application 0.15.13-dev
+
+Quand GeckoDoku passe en arrière-plan, AliveMascotOverlayView est volontairement arrêté afin qu'aucun lecteur vidéo ne continue à fonctionner hors écran. Au retour dans l'application, la couche vivante est maintenant entièrement reconstruite : la Plante est recréée puis les mascottes du mode courant sont resynchronisées depuis le snapshot du moteur. La reprise couvre Classic, Sudoku, Gomoku et Abeilles & Geckos. Le simple aller-retour vers Mail ou Messages ne relance pas l'introduction.

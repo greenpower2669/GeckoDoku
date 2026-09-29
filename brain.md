@@ -8,7 +8,7 @@
 ## État de référence
 
 - Branche : gecko-039-sudoku-tap-gecko-gomoku
-- Version : 0.15.12-dev / versionCode 47
+- Version : 0.15.13-dev / versionCode 48
 - GECKO-047 : VALIDÉ FAB — grandes barres d’axes, drag/suppression hors plateau, Prof utilisant les axes, audio Android/Pierre capturable.
 - GECKO-048 : CODE + CI VERTE, validation téléphone encore attendue — prononciation Pierre et couleurs d’axes.
 - GECKO-049 : VALIDÉ FAB — géométrie canonique des axes Abeilles & Geckos.
@@ -480,3 +480,20 @@ Build diagnostic :
 - AliveMascotOverlayView supprimé pendant INTRO FIRST/SECOND ;
 - reprise après DONE/skip ;
 - aucune release publique.
+
+
+## 25 — GECKO-053 reprise lifecycle Android
+
+Invariance lifecycle :
+- onPause() conserve stopAll() : aucun lecteur mascotte ne reste actif en arrière-plan ;
+- onResume() doit reconstruire l'état visuel vivant depuis la vérité des moteurs ;
+- ordre de reprise : positionTitleIdentity → ensurePlantMascot → syncLivingMascotsForCurrentMode.
+
+syncLivingMascotsForCurrentMode restaure :
+- Classic : confirmed ;
+- Sudoku : geckoMarkers ;
+- Gomoku : stones ;
+- Abeilles & Geckos : confirmedGeckos + confirmedBees.
+
+Ainsi un aller-retour Mail/Messages ne transforme plus les mascottes du plateau en PNG statiques permanents.
+Le diagnostic ALL ANIMATED reste actif en 0.15.13-dev.

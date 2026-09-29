@@ -12338,6 +12338,7 @@ class MainActivity : Activity() {
             screenRoot.post {
                 positionTitleIdentity()
                 ensurePlantMascot()
+                syncLivingMascotsForCurrentMode()
             }
         }
     }

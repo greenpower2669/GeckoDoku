@@ -517,3 +517,28 @@ Pas de release publique avant test téléphone.
 - SHA-256 APK : a50bffee172b944dfe1e40d977b6eccc5b3383722aed7c4ff1d2e643615fc1c3 ;
 - aucune prerelease/release déclenchée ;
 - verdict téléphone attendu sur ALL ANIMATED + intro on top.
+
+
+## GECKO-053 — reprise après changement d'application
+
+Observation téléphone Fab sur le build ALL ANIMATED :
+- sans limite d'ordonnanceur, les mascottes s'animent correctement ;
+- mais après bascule vers Mail / Messages / autre application puis retour, seuls Pierre et la Plante repartent ;
+- les Gecko/Abeilles du plateau restent statiques.
+
+Cause confirmée dans le cycle Android :
+- onPause() appelle aliveMascotOverlay.stopAll() pour arrêter proprement les lecteurs en arrière-plan ;
+- onResume() reconstruisait seulement la Plante avec ensurePlantMascot() ;
+- le snapshot du mode courant n'était pas resynchronisé.
+
+Décision / correction :
+- conserver stopAll() dans onPause() pour ne laisser aucun MediaPlayer/GLSurface actif en arrière-plan ;
+- dans le screenRoot.post de onResume(), appeler successivement :
+  1. positionTitleIdentity()
+  2. ensurePlantMascot()
+  3. syncLivingMascotsForCurrentMode()
+- la reconstruction couvre donc Classic, Sudoku, Gomoku et Abeilles & Geckos.
+
+Version de test : 0.15.13-dev / versionCode 48.
+Le mode ALL ANIMATED sans plafond reste actif pour ne pas mélanger les diagnostics.
+Aucune release publique avant validation téléphone.

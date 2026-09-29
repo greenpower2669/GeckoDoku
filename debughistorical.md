@@ -257,3 +257,18 @@ Résultat :
 2. Abeilles et Gecko du mode hexagonal doivent tous pouvoir s'animer ;
 3. les deux vidéos intro doivent masquer totalement Gecko/Plante ;
 4. surveiller volontairement fluidité, chauffe et stabilité car ce build est sans limitation.
+
+
+## GECKO-053 — animations perdues après changement d'application
+
+Observation Fab :
+le build 0.15.12-dev sans verrou fonctionne tant que GeckoDoku reste au premier plan. Après passage par Mail/Messages puis retour, Pierre et la Plante repartent mais les mascottes de plateau restent statiques.
+
+Cause code :
+onPause() stopAll() supprime volontairement toutes les Presence. onResume() rappelait ensurePlantMascot() mais pas syncLivingMascotsForCurrentMode().
+
+Correction 0.15.13-dev :
+ajout de syncLivingMascotsForCurrentMode() juste après ensurePlantMascot() dans le screenRoot.post de onResume().
+
+Choix conservé :
+stopAll() reste dans onPause() pour éviter lectures vidéo/GLSurfaceView en arrière-plan. La reprise reconstruit depuis le snapshot, ce qui est plus sûr que garder les lecteurs actifs.
