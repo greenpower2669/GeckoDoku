@@ -825,3 +825,28 @@ AliveMascotOverlayView
 Ne pas étendre TextureView à Pierre/Intro/Classic/Sudoku/Plante avant validation téléphone.
 
 GECKO-066 -> CI #310 SUCCESS -> APK 0.15.27-dev -> téléphone : chercher ALIVE_VIDEO_BACKEND backend=TextureView sur owner bee:/gomoku: puis vérifier clip identique PNG/vidéo -> aucune release.
+
+
+## 35 — GECKO-067 / flux final expérimental plateau
+
+MediaPlayer
+→ Surface(input SurfaceTexture OES)
+→ frame disponible sur thread GL local
+→ updateTexImage + textureMatrix
+→ GLSL historique keycolor bleu/vert + despill + yellowTint
+→ EGLSurface liée à TextureView.SurfaceTexture
+→ eglSwapBuffers
+→ TextureView composée comme vraie View Android
+→ clipBounds/Z-order identiques au PNG.
+
+First frame :
+PLAY alpha=0
+→ MEDIA_INFO_VIDEO_RENDERING_START
+→ arm baseline
+→ frame OES fraîche
+→ draw shader
+→ eglSwapBuffers OK
+→ VIDEO_FIRST_FRAME
+→ alpha=1.
+
+Portée : bee:* + gomoku:* seulement.
