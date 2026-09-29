@@ -330,3 +330,24 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] CI #280 verte ;
 - [x] APK Phone 0.15.22-dev produit ;
 - [x] SHA-256 APK : 70b8cb93a180b2e0612bd445d035650537b52ae8640d46f503293ad5a3bca891.
+
+
+## GECKO-063 — passe cumulée Gomoku / intro / surface / plante
+- [x] supprimer le contournement Gomoku : GECKO_APPEARANCE ne crée plus directement une Presence ;
+- [x] le sélecteur 3 PLAYER + 3 PROFESSOR est l'unique autorité de création des Presence Gomoku ;
+- [x] les actions longues Gomoku sont routées vers requestCute() d'une Presence déjà sélectionnée ;
+- [x] trace GOMOKU_LIVING_SELECTION avec compte par camp ;
+- [x] ajouter un rideau noir topmost avant la première intro, présent avant setContentView ;
+- [x] retirer le rideau seulement quand l'overlay intro a pris le relais ou si l'intro est indisponible ;
+- [x] empêcher ChromaRenderer d'échantillonner la texture externe tant qu'aucune frame fraîche du playback courant n'a été consommée ;
+- [x] conserver un clear alpha=0 avant la première frame pour éliminer le carré noir ;
+- [x] réduire uniquement le PNG fallback de la plante à 95 %, sans modifier sa vidéo ni son centre ;
+- [x] version 0.15.23-dev / versionCode 58 ;
+- [ ] CI verte ;
+- [ ] APK Phone produit ;
+- [ ] téléphone Gomoku : jamais plus de 3 verts + 3 jaunes vivants ;
+- [ ] téléphone Gomoku : redistribution au grand cycle sans création parasite ;
+- [ ] lancement : aucun plateau visible avant l'intro ;
+- [ ] aucun carré noir avant la première frame Gecko/Abeille/Plante/Prof ;
+- [ ] plante : transition PNG/vidéo alignée à ~95 % ;
+- [ ] aucune release ni merge main avant validation Fab.
