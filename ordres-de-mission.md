@@ -762,3 +762,30 @@ Contrat :
 Version cible : 0.15.22-dev / versionCode 57.
 
 État GECKO-062 : CI #280 verte ; APK 0.15.22-dev produit ; aucune release ; validation téléphone requise sur cap 3+3 et redistribution de fin de cycle.
+
+
+## GECKO-063 — LOT CUMULÉ VALIDÉ PAR « GOGOGO »
+
+1. GOMOKU
+- maximum strict 3 Gecko verts + 3 jaunes vivants, contre Prof et JcJ ;
+- aucune création directe par le vieux chemin GECKO_APPEARANCE ;
+- redistribution uniquement par le cycle Alive ;
+- les autres pierres restent statiques ;
+- long/cute = action de la Presence sélectionnée, jamais un deuxième objet vidéo parallèle.
+
+2. INTRO
+- aucun plateau visible 1–2 s avant IntroGeckoGD ;
+- rideau noir présent avant l'affichage de l'UI ;
+- overlay Intro noir prend le relais de façon atomique.
+
+3. CARRÉ NOIR CHROMA
+- ne jamais dessiner la texture externe avant une frame fraîche du playback courant ;
+- clear transparent jusque-là ;
+- conserver la règle PNG visible -> frame vidéo fraîche/keyée -> bascule.
+
+4. PLANTE
+- PNG fallback -5 % (95 %) autour du même centre ;
+- vidéo et target inchangées.
+
+Version cible 0.15.23-dev / versionCode 58.
+Aucun merge main ni release sans validation explicite de Fab.
