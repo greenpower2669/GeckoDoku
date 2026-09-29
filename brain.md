@@ -682,3 +682,20 @@ Version 0.15.21-dev / versionCode 56.
 
 ### GECKO-061 — build
 CI #275 verte sur 94eed6fd4e718d8d5aaeed6350e816709dd45327. APK Phone 0.15.21-dev produit. SHA-256 : 1f65452b0e8b98670eaf27ba9e321e997dfad13c2bfdbf36b2fd17523877da19. Validation téléphone requise.
+
+
+## 34 — GECKO-062 : Gomoku limité à 3 Presence par équipe
+
+Retour Fab : en Gomoku (contre ordinateur/Prof comme en JcJ), animer chaque pierre produit trop de mouvement.
+
+Règle canonique :
+- les pierres du plateau restent toutes visibles ;
+- au maximum 3 pierres PLAYER (vertes) et 3 pierres PROFESSOR (jaunes) sont promues en Presence Alive ;
+- les autres restent le rendu PNG statique du GomokuBoardView ;
+- la sélection est aléatoire mais stable pendant un grand cycle ;
+- lorsqu'un AliveAnimator termine une série et demande le grand rafraîchissement de groupe, MainActivity redistribue la sélection 3+3 ;
+- s'il existe plus de 3 candidats dans une équipe, une redistribution évite de conserver exactement le même trio ;
+- cette règle vaut pour VS_PROFESSOR et HUMAN_VS_HUMAN.
+
+Implémentation : GomokuLivingSelectionPolicy + callback onGroupCycleCompleted de AliveMascotOverlayView.
+Version 0.15.22-dev / 57.
