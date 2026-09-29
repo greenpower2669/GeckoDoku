@@ -381,3 +381,29 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] CI #289 verte ;
 - [x] APK Phone 0.15.24-dev produit ;
 - [x] SHA-256 APK : 0792b38bc21fc8dc9f705220f2d3a11dd16a8c91ebd39a44fcacdfc2dd059e67.
+
+
+## GECKO-065 — mascottes toujours vivantes derrière le cadre du plateau
+- [x] séparer définitivement existence de la Presence et visibilité dans la fenêtre du plateau ;
+- [x] Abeilles & Geckos : target géométrique non bornée, même quand la cellule est entièrement derrière le cadre ;
+- [x] Abeilles & Geckos : clipProvider reste l'unique fenêtre visuelle du plateau ;
+- [x] Gomoku : même stratégie target non bornée + clipProvider ;
+- [x] préserver le cap Gomoku 3 PLAYER + 3 PROFESSOR et sa redistribution de grand cycle ;
+- [x] conserver le ChromaKeyVideoView/SurfaceView historique ; ne pas intercaler une politique Surface globale fragile ;
+- [x] le cadre blanc, titres, textes, boutons et Prof restent hors de la fenêtre où les mascottes peuvent être visibles ;
+- [x] aucune destruction/recréation d'une Presence uniquement parce qu'elle passe derrière un bord pendant zoom/drag ;
+- [x] version 0.15.26-dev / versionCode 61 ;
+- [x] CI #303 verte ;
+- [x] APK Phone 0.15.26-dev produit ;
+- [ ] téléphone Abeilles & Geckos : glissement derrière les 4 bords sans pop/disparition prématurée ;
+- [ ] téléphone Abeilles & Geckos : au zoom maximal, retour dans le plateau sans redémarrage visible du cycle ;
+- [ ] téléphone Gomoku : même glissement derrière le cadre, avec maximum 3+3 vivants ;
+- [ ] téléphone : aucune mascotte de plateau ne recouvre titres, textes, boutons ou Prof ;
+- [ ] aucune release ni merge main avant validation explicite Fab.
+
+### GECKO-065 build
+- [x] run CI #303 / 36638744397 SUCCESS sur 1cffec0bbf88148c210fad545e1a3ad4a2f56ad4 ;
+- [x] artifact GeckoDoku-v0.15.26-dev-phone ;
+- [x] SHA-256 archive : e5f33774d3bd0ab3af52bee00b25c1b75d5ba4a4d70b22ca09067e1b4f1092dd ;
+- [x] SHA-256 APK : 1b25121080454d58934c20366073ad0a255324226759fe3baf22f2d4b1617323 ;
+- [x] prerelease/release : non déclenchées.
