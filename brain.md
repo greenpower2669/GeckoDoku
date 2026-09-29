@@ -702,3 +702,29 @@ Version 0.15.22-dev / 57.
 
 ### GECKO-062 — build
 CI #280 verte sur 3187c512c3155581daa3ba24002faada566a7c20. APK Phone 0.15.22-dev produit. SHA-256 : 70b8cb93a180b2e0612bd445d035650537b52ae8640d46f503293ad5a3bca891. Validation téléphone requise.
+
+
+## 35 — GECKO-063 : autorité Alive unique + garde première frame
+
+Le journal téléphone de 0.15.22-dev a prouvé que la limite Gomoku 3+3 était contournée par l'ancien chemin playGomokuPieceAnimation(GECKO_APPEARANCE) -> showGomokuLivingGecko(). Chaque nouveau coup créait ainsi une nouvelle Presence malgré GomokuLivingSelectionPolicy.
+
+Correction canonique :
+- GECKO_APPEARANCE ne crée plus de Presence et force seulement la synchronisation du sélecteur 3+3 ;
+- les longs gestes Gomoku ne passent plus par un overlay de pierre indépendant : ils deviennent requestCute() sur une Presence déjà sélectionnée ;
+- GOMOKU_LIVING_SELECTION journalise player/professor/total pour preuve téléphone ;
+- l'architecture reste 1 Presence = son PNG + son ChromaKeyVideoView + son AliveAnimator.
+
+Démarrage :
+- un launchCurtain noir est ajouté au-dessus de toute l'UI avant setContentView sur le premier lancement avec médias actifs ;
+- dès que la session Intro est acceptée, RichMediaOverlay est déjà noir et prend le relais ; sinon le rideau est retiré pour ne jamais bloquer l'application.
+
+Carré noir :
+- ChromaRenderer ne dessine plus l'external texture tant qu'une frame fraîche appartenant au playback courant n'a pas été consommée ;
+- jusque-là il ne publie que le clear transparent alpha=0 ;
+- pour les playbacks gate-first-frame, le rendu n'est armé qu'au VIDEO_RENDERING_START_SIGNAL puis attend une frame postérieure ;
+- cela protège Gecko, Abeille, Plante et Prof sans cacher artificiellement leurs conteneurs.
+
+Plante :
+- pngScale=0.95 est distinct de renderScale ; seule l'ImageView PNG est réduite autour de son centre, vidéo et target inchangés.
+
+Version 0.15.23-dev / versionCode 58.
