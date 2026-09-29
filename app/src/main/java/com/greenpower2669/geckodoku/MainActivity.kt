@@ -274,6 +274,12 @@ class MainActivity : Activity() {
     private lateinit var aliveMascotOverlay:
         AliveMascotOverlayView
 
+    private lateinit var plantMascotOverlay:
+        AliveMascotOverlayView
+
+    private lateinit var boardWindowMask:
+        BoardWindowMaskView
+
     private lateinit var gameAudio:
         AssetAudioPlayer
 
@@ -537,11 +543,7 @@ class MainActivity : Activity() {
                 )
 
                 setBackgroundColor(
-                    Color.rgb(
-                        247,
-                        250,
-                        247
-                    )
+                    Color.TRANSPARENT
                 )
             }
 
@@ -1513,33 +1515,22 @@ class MainActivity : Activity() {
                 clipToPadding = false
 
                 addView(
-                    root,
+                    View(this@MainActivity).apply {
+                        setBackgroundColor(
+                            Color.rgb(
+                                247,
+                                250,
+                                247
+                            )
+                        )
+                        importantForAccessibility =
+                            View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                        isClickable = false
+                    },
                     FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT
                     )
-                )
-
-                addView(
-                    titleIdentityHost,
-                    FrameLayout.LayoutParams(
-                        dp(
-                            titleIdentityPolicy
-                                .iconSizeDp +
-                                titleIdentityPolicy
-                                    .frameExtraDp
-                        ),
-                        dp(
-                            titleIdentityPolicy
-                                .iconSizeDp +
-                                titleIdentityPolicy
-                                    .frameExtraDp
-                        )
-                    ).apply {
-                        gravity =
-                            Gravity.TOP or
-                                Gravity.START
-                    }
                 )
             }
 
@@ -1656,6 +1647,123 @@ class MainActivity : Activity() {
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
+        )
+
+        boardWindowMask =
+            BoardWindowMaskView(this).apply {
+                maskColor =
+                    Color.rgb(
+                        247,
+                        250,
+                        247
+                    )
+
+                windowProvider = {
+                    when (
+                        selectedGameMode
+                    ) {
+                        GameMode.GOMOKU ->
+                            if (
+                                ::gomokuBoard
+                                    .isInitialized
+                            ) {
+                                gomokuBoard
+                                    .viewportRectOnScreen()
+                                    ?.let(
+                                        ::screenRectToRoot
+                                    )
+                            } else {
+                                null
+                            }
+
+                        GameMode.BEES_GECKOS ->
+                            if (
+                                ::beeGeckoBoard
+                                    .isInitialized
+                            ) {
+                                beeGeckoBoard
+                                    .viewportRectOnScreen()
+                                    ?.let(
+                                        ::screenRectToRoot
+                                    )
+                            } else {
+                                null
+                            }
+
+                        else ->
+                            null
+                    }
+                }
+
+                cornerRadiusProvider = {
+                    if (
+                        selectedGameMode ==
+                            GameMode.GOMOKU
+                    ) {
+                        dp(10).toFloat()
+                    } else {
+                        0f
+                    }
+                }
+
+                visibility =
+                    View.GONE
+            }
+
+        screenRoot.addView(
+            boardWindowMask,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+
+        plantMascotOverlay =
+            AliveMascotOverlayView(this).apply {
+                animationsEnabled =
+                    richMediaSettings.enabled
+                visibility =
+                    View.INVISIBLE
+            }
+
+        screenRoot.addView(
+            plantMascotOverlay,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+
+        // Foreground UI: titles, text and buttons always stay above
+        // board mascots and above the white board-window mask.
+        screenRoot.addView(
+            root,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+
+        screenRoot.addView(
+            titleIdentityHost,
+            FrameLayout.LayoutParams(
+                dp(
+                    titleIdentityPolicy
+                        .iconSizeDp +
+                        titleIdentityPolicy
+                            .frameExtraDp
+                ),
+                dp(
+                    titleIdentityPolicy
+                        .iconSizeDp +
+                        titleIdentityPolicy
+                            .frameExtraDp
+                )
+            ).apply {
+                gravity =
+                    Gravity.TOP or
+                        Gravity.START
+            }
         )
 
         richMediaOverlay =
