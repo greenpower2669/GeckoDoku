@@ -732,3 +732,5 @@ La visibilité hors-écran dépend de la cellule du plateau, pas du cadre média
 ## 29 — GECKO-061 visibilité hexagonale
 cellule -> centre écran -> centre dans viewport ? -> oui : Presence PNG/vidéo ; non : Presence cachée.
 Le cadre média transparent/key-color n'est jamais utilisé pour décider la visibilité.
+
+GECKO-061 : CI #275 verte ; APK 0.15.21-dev prêt ; test attendu = drag : cellule hors viewport => Presence cachée.
