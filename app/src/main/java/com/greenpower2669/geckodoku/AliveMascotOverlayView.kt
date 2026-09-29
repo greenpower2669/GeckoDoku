@@ -63,6 +63,11 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 profile.pngAsset
                     ?.let(::bitmapFor)
                     ?.let(::setImageBitmap)
+
+                scaleX =
+                    profile.pngScale
+                scaleY =
+                    profile.pngScale
             }
 
         val video =
@@ -413,6 +418,46 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         }
 
         refreshVisibility()
+    }
+
+    fun requestCute(
+        kind: MascotKind,
+        ownerKey: String
+    ) {
+        val presence =
+            presences[
+                presenceId(
+                    kind,
+                    ownerKey
+                )
+            ] ?: return
+
+        if (
+            !animationsEnabled ||
+            introSuppressed ||
+            presence.removing ||
+            !presence.placement
+                .eligible()
+        ) {
+            return
+        }
+
+        if (presence.videoActive) {
+            presence.forceCute = true
+        } else {
+            presence.pendingDecision =
+                presence.animator
+                    .requestCute(
+                        animationsEnabled = true,
+                        randomValue =
+                            Random.nextInt()
+                    )
+
+            schedulePresence(
+                presence,
+                0L
+            )
+        }
     }
 
     fun retainOwners(
