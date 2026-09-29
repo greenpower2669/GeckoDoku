@@ -465,3 +465,18 @@ Intro :
 applyProfessorIntroVisibility() pilote désormais AliveMascotOverlayView.setIntroSuppressed().
 Pendant FIRST/SECOND, les lecteurs mascottes sont arrêtés et la couche est invisible.
 À DONE/skip, la couche vivante reprend et les cycles repartent.
+
+
+## 24 — Test GECKO-052 0.15.12-dev
+
+Commit applicatif : f90f41a4d6c65d952538a1cbad266e7b2f0c0abd.
+CI #253 : verte.
+APK : GeckoDoku-v0.15.12-dev.apk.
+SHA-256 : a50bffee172b944dfe1e40d977b6eccc5b3383722aed7c4ff1d2e643615fc1c3.
+
+Build diagnostic :
+- pas de plafond runtime des lecteurs mascottes ;
+- toutes les Presence visibles peuvent être animées simultanément ;
+- AliveMascotOverlayView supprimé pendant INTRO FIRST/SECOND ;
+- reprise après DONE/skip ;
+- aucune release publique.

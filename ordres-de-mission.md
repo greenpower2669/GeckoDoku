@@ -507,3 +507,13 @@ Pendant INTRO_FIRST / INTRO_SECOND :
 
 Version : 0.15.12-dev / versionCode 47.
 Pas de release publique avant test téléphone.
+
+
+État GECKO-052 :
+- commit applicatif : f90f41a4d6c65d952538a1cbad266e7b2f0c0abd ;
+- CI #253 entièrement verte ;
+- tests + build Phone OK ;
+- APK téléphone 0.15.12-dev produit ;
+- SHA-256 APK : a50bffee172b944dfe1e40d977b6eccc5b3383722aed7c4ff1d2e643615fc1c3 ;
+- aucune prerelease/release déclenchée ;
+- verdict téléphone attendu sur ALL ANIMATED + intro on top.

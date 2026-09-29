@@ -238,3 +238,22 @@ Test 0.15.12-dev :
 Autre défaut observé sur capture :
 Gecko/Plante passaient devant les deux vidéos intro.
 Correction : suspension complète de AliveMascotOverlayView pendant les phases INTRO FIRST/SECOND, reprise à DONE/skip.
+
+
+## GECKO-052 — CI #253 — VERTE
+
+Commit :
+f90f41a4d6c65d952538a1cbad266e7b2f0c0abd
+
+Résultat :
+- tests unitaires OK ;
+- compilation Phone OK ;
+- artifact 0.15.12-dev produit ;
+- aucune release/prerelease ;
+- SHA-256 APK : a50bffee172b944dfe1e40d977b6eccc5b3383722aed7c4ff1d2e643615fc1c3.
+
+À observer sur téléphone :
+1. tous les Gecko visibles doivent s'animer sans attendre un slot ;
+2. Abeilles et Gecko du mode hexagonal doivent tous pouvoir s'animer ;
+3. les deux vidéos intro doivent masquer totalement Gecko/Plante ;
+4. surveiller volontairement fluidité, chauffe et stabilité car ce build est sans limitation.

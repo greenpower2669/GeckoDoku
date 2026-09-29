@@ -120,7 +120,8 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] conserver les PNG internes et les grands cycles ;
 - [x] intro FIRST/SECOND suspend totalement la couche mascottes ;
 - [x] reprise des mascottes après fin/skip intro ;
-- [ ] CI 0.15.12-dev ;
+- [x] CI #253 entièrement verte ;
+- [x] APK téléphone 0.15.12-dev produit ;
 - [ ] test téléphone : tous les Gecko visibles bougent-ils réellement ? ;
 - [ ] test téléphone : Abeilles & Geckos tous animés ? ;
 - [ ] test téléphone : intro réellement au-dessus de tout ? ;
