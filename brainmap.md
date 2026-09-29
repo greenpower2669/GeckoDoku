@@ -734,3 +734,9 @@ cellule -> centre écran -> centre dans viewport ? -> oui : Presence PNG/vidéo 
 Le cadre média transparent/key-color n'est jamais utilisé pour décider la visibilité.
 
 GECKO-061 : CI #275 verte ; APK 0.15.21-dev prêt ; test attendu = drag : cellule hors viewport => Presence cachée.
+
+
+## 30 — GECKO-062 Gomoku vivant
+stones -> séparation PLAYER / PROFESSOR -> max 3 aléatoires par camp -> Alive Presence.
+Toutes les autres pierres restent statiques.
+Grand cycle Alive terminé -> callback -> nouvelle sélection 3+3 -> anciens owners rendus au board, nouveaux owners promus.
