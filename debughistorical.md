@@ -523,3 +523,6 @@ Correction :
 - clip identique pour pngContainer et videoContainer ;
 - intersection calculée avec le viewport réel du board puis convertie en clip local ;
 - suppression du callback legacy setMediaPieceSuppressed lors de disappear Bee/Gecko.
+
+## GECKO-064 — CI #289 VERTE
+Run 36633302195 SUCCESS, commit testé 65bf2f5016f9373d5804d7ece962f1c17522f2c3. APK 0.15.24-dev : 248557697 octets, SHA-256 0792b38bc21fc8dc9f705220f2d3a11dd16a8c91ebd39a44fcacdfc2dd059e67. Aucune release.
