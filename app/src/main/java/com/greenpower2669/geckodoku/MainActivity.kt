@@ -235,6 +235,12 @@ class MainActivity : Activity() {
     private var gomokuGeneration =
         0
 
+    private val gomokuLivingCells =
+        linkedSetOf<Cell>()
+
+    private var gomokuLivingRedistributionRequested =
+        true
+
     private lateinit var beeGeckoBoard:
         BeeGeckoBoardView
 
@@ -1617,6 +1623,26 @@ class MainActivity : Activity() {
             AliveMascotOverlayView(this).apply {
                 animationsEnabled =
                     richMediaSettings.enabled
+
+                onGroupCycleCompleted = {
+                        kind,
+                        ownerKey ->
+
+                    if (
+                        kind ==
+                            MascotKind.GECKO &&
+                        ownerKey.startsWith(
+                            "gomoku:"
+                        ) &&
+                        selectedGameMode ==
+                            GameMode.GOMOKU
+                    ) {
+                        gomokuLivingRedistributionRequested =
+                            true
+                        syncLivingMascotsForCurrentMode()
+                    }
+                }
+
                 visibility =
                     View.INVISIBLE
             }
@@ -5506,6 +5532,9 @@ class MainActivity : Activity() {
         gomokuGeneration += 1
         gomokuProfessorThinking =
             false
+        gomokuLivingCells.clear()
+        gomokuLivingRedistributionRequested =
+            true
 
         gomokuEngine =
             GomokuGameEngine(
@@ -7495,18 +7524,36 @@ class MainActivity : Activity() {
                         ?.snapshot()
                         ?: return
 
+                val selectedCells =
+                    GomokuLivingSelectionPolicy
+                        .select(
+                            stones =
+                                snapshot.stones,
+                            previous =
+                                gomokuLivingCells,
+                            redistribute =
+                                gomokuLivingRedistributionRequested,
+                            randomValue =
+                                Random.nextInt()
+                        )
+
+                gomokuLivingCells.clear()
+                gomokuLivingCells.addAll(
+                    selectedCells
+                )
+                gomokuLivingRedistributionRequested =
+                    false
+
                 val owners =
-                    snapshot.stones
-                        .keys
-                        .mapTo(
-                            linkedSetOf()
-                        ) {
-                            cell ->
-                            "gomoku:" +
-                                cell.row +
-                                ":" +
-                                cell.col
-                        }
+                    selectedCells.mapTo(
+                        linkedSetOf()
+                    ) {
+                        cell ->
+                        "gomoku:" +
+                            cell.row +
+                            ":" +
+                            cell.col
+                    }
 
                 aliveMascotOverlay
                     .retainOwners(
@@ -7518,18 +7565,19 @@ class MainActivity : Activity() {
                             owners
                     )
 
-                snapshot.stones
-                    .forEach {
-                        (cell, player) ->
-                        showGomokuLivingGecko(
-                            cell =
-                                cell,
-                            player =
-                                player,
-                            animateAppearance =
-                                false
-                        )
-                    }
+                selectedCells.forEach {
+                    cell ->
+                    val player =
+                        snapshot.stones[cell]
+                            ?: return@forEach
+
+                    showGomokuLivingGecko(
+                        cell = cell,
+                        player = player,
+                        animateAppearance =
+                            false
+                    )
+                }
             }
 
             GameMode.BEES_GECKOS -> {
