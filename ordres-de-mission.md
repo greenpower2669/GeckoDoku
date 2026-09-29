@@ -691,3 +691,5 @@ Règles 0.15.17-dev :
 - le dernier Gecko d'une partie Classic doit aussi être vivant avant completeGame.
 
 Interdictions inchangées : aucun ordonnanceur global, aucun pool, aucun merge main, aucune release avant validation téléphone.
+
+État GECKO-057 : CI #263 verte sur 352c046bcc6e1af6d26794782f14189054ddcae2 ; APK 0.15.17-dev produit ; SHA-256 cb50cb5e97ed9cc33ab7285982a6da7fda5e6439040fa2a195b7c59bb6fa8577 ; aucune release ; validation téléphone requise.
