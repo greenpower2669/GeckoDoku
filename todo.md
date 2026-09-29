@@ -290,3 +290,16 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] drag : une cellule sortie du viewport cache sa mascotte ;
 - [ ] drag retour : la Presence reprend sans PNG legacy ;
 - [ ] aucune release avant validation Fab.
+
+
+## GECKO-061 — règle hors-écran sur le centre de cellule
+- [x] conserver l'ownership unique Alive (PNG fallback + vidéo) ;
+- [x] ne pas tester les bords du cadre média transparent/key-color ;
+- [x] masquer la Presence dès que le centre logique de sa cellule sort du viewport ;
+- [x] version 0.15.21-dev / versionCode 56 ;
+- [ ] CI verte ;
+- [ ] APK Phone produit ;
+- [ ] drag haut : le Gecko hors plateau disparaît ;
+- [ ] drag gauche/droite/bas : même comportement ;
+- [ ] cellule visible : PNG/vidéo restent centrés naturellement ;
+- [ ] aucune release avant validation Fab.
