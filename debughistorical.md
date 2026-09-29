@@ -439,3 +439,7 @@ Après 0.15.18-dev :
 - trace BEE_GECKO_ALIVE_TARGET_CLAMPED avec piece/q/r/dx/dy.
 
 Ce changement vise les Gecko de bord observés sur la capture (gauche, droite, bas) sans modifier les Abeilles déjà fonctionnelles.
+
+## GECKO-058 — CI #265 VERTE
+
+Commit testé : 2c20b06d2a0f699c8811cdf7cd37871a4b712f45. Tests + assemblePhone : succès. APK : GeckoDoku-v0.15.18-dev.apk. SHA-256 : 9e0ad087bc2f641ecd80010bb162cf57739ac0b0a236d2dc21cbe5d321311b77. Aucune release/prerelease.
