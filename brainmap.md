@@ -721,3 +721,9 @@ cellule -> centeredScaledRect -> screenRectToRoot -> Presence Gecko/Abeille.
 Aucune contrainte viewport sur le cadre média.
 
 GECKO-059 : CI #267 verte ; APK Phone 0.15.19-dev prêt ; prochain test = Gecko de bord animés sans clamp ni décalage artificiel.
+
+
+## 28 — GECKO-060 ownership visuel unique
+Snapshot Bee/Gecko -> Alive Presence -> PNG fallback OU vidéo.
+BeeGeckoBoardView garde grille, axes, croix et marqueurs mais ne dessine plus les mascottes.
+La visibilité hors-écran dépend de la cellule du plateau, pas du cadre média transparent.
