@@ -526,3 +526,29 @@ Correction :
 
 ## GECKO-064 — CI #289 VERTE
 Run 36633302195 SUCCESS, commit testé 65bf2f5016f9373d5804d7ece962f1c17522f2c3. APK 0.15.24-dev : 248557697 octets, SHA-256 0792b38bc21fc8dc9f705220f2d3a11dd16a8c91ebd39a44fcacdfc2dd059e67. Aucune release.
+
+
+## GECKO-065 — la géométrie de visibilité ne doit plus tuer la mascotte
+
+Retour Fab après GECKO-064 : le clipping strict était visuellement propre, mais la stratégie restait mauvaise pour un plateau exploratoire. À fort zoom/drag, une mascotte pouvait encore dépendre de la géométrie « est-ce que ma cellule touche le viewport ? ». Fab demande qu'elle reste vivante tout le temps derrière le cadre blanc, puis glisse de nouveau dans la fenêtre.
+
+Cause structurelle :
+beeGeckoAliveTarget() retournait encore null dès que cellRectOnScreen() cessait d'intersecter la fenêtre. Gomoku utilisait lui aussi une API de cellule bornée. La visibilité du viewport restait donc mêlée à l'existence de la Presence.
+
+Correction finale :
+- BeeGeckoBoardView.cellRectOnScreenUnbounded() calcule la cellule sans rejet viewport ;
+- GomokuBoardView.geckoRectOnScreenUnbounded() calcule le Gecko sans rejet boardRect ;
+- GomokuBoardView.viewportRectOnScreen() expose uniquement la fenêtre de clipping ;
+- beeGeckoAliveTarget() et gomokuOverlayTarget() restent valides derrière le cadre ;
+- clipProvider coupe PNG et vidéo au rectangle du plateau ;
+- hors fenêtre complète : clipBounds vide, mais target non nulle et cycle local conservé.
+
+Tentative intermédiaire non retenue :
+un BoardWindowMaskView et une politique ChromaKeyVideoView en Surface media-overlay ont été essayés dans l'historique de branche. Cette direction a été abandonnée avant livraison téléphone car l'interclassement SurfaceView / vues Android normales est inutilement fragile ici. Les fichiers/comportements correspondants ont été retirés, et la politique Surface historique a été restaurée.
+
+Résultat attendu :
+les mascottes restent devant le dessin du plateau lorsqu'elles sont dans sa fenêtre, semblent passer derrière le cadre blanc à la sortie, continuent leur animation hors vue et réapparaissent sans pop. Le Gomoku garde strictement son 3+3.
+
+## GECKO-065 — CI #303 VERTE
+
+Run 36638744397 SUCCESS, commit testé 1cffec0bbf88148c210fad545e1a3ad4a2f56ad4. Tests + assemblePhone réussis. Artifact GeckoDoku-v0.15.26-dev-phone. APK : 248557697 octets. SHA-256 APK : 1b25121080454d58934c20366073ad0a255324226759fe3baf22f2d4b1617323. Aucune prerelease/release.
