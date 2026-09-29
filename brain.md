@@ -594,3 +594,25 @@ Invariant inchangé : 1 Presence = 1 PNG + 1 ChromaKeyVideoView + 1 AliveAnimato
 
 ### GECKO-056 — build
 CI #260 verte sur a43ef730ec77475e08b3ab7c4b897a023977057c. Artifact : GeckoDoku-v0.15.16-dev-phone. SHA-256 archive : 4fde649f9492e89ba01e12e62a4094e454e229008c930c35837b200c94308894. Validation téléphone Gecko + Abeilles encore requise.
+
+
+## 29 — GECKO-057 : famine des callbacks Presence
+
+Le log téléphone de 0.15.16-dev est décisif : Pierre produit PLAY_REQUEST / VIDEO_FIRST_FRAME / VIDEO_VISIBLE, tandis que les ChromaKey supplémentaires des mascottes de plateau sont bien construits mais ne produisent aucun PLAY_REQUEST. GECKO-056 avait donc corrigé un gate situé après play(), pas la cause empêchant play() d'être appelé.
+
+Cause retenue dans AliveMascotOverlayView :
+- refreshDynamicTargets() rappelle refreshPresenceTarget() ;
+- refreshPresenceTarget() remplaçait systématiquement les LayoutParams des deux siblings PNG/vidéo, même à géométrie identique ;
+- chaque refresh d'une Presence encore pending rappelait schedulePresence() ;
+- schedulePresence() faisait removeCallbacks() puis postDelayed() ;
+- les refresh/layout pouvaient ainsi repousser continuellement le même cycle avant son exécution.
+
+GECKO-057 :
+- LayoutParams appliqués seulement si taille/position changent ;
+- une Presence déjà armée garde son callback local : un refresh ne peut plus le repousser ;
+- le callback se désarme lui-même juste avant advancePresence ;
+- cancel/remove désarment explicitement ;
+- ALIVE_PLAY est journalisé avant ChromaKeyVideoView.play ;
+- le dernier Gecko Classic, joueur ou Prof, est aussi enregistré dans la couche vivante avant completeGame.
+
+Invariant : aucune coordination globale, aucun pool, aucun ordonnanceur. Une Presence possède son unique callback local.
