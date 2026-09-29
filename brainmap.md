@@ -719,3 +719,5 @@ GECKO-058 : CI #265 verte ; APK Phone 0.15.18-dev prêt ; prochain test = Gecko 
 ## 27 — GECKO-059
 cellule -> centeredScaledRect -> screenRectToRoot -> Presence Gecko/Abeille.
 Aucune contrainte viewport sur le cadre média.
+
+GECKO-059 : CI #267 verte ; APK Phone 0.15.19-dev prêt ; prochain test = Gecko de bord animés sans clamp ni décalage artificiel.
