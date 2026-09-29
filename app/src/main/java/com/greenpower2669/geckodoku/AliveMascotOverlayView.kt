@@ -193,6 +193,10 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     private var lastCuteOwnerKey:
         String? = null
 
+    var onGroupCycleCompleted:
+        ((MascotKind, String) -> Unit)? =
+        null
+
     var animationsEnabled =
         true
         set(value) {
@@ -959,6 +963,24 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             presence,
             randomPauseMs()
         )
+
+        if (
+            normalDecision
+                .requestGroupRefresh
+        ) {
+            val kind =
+                presence.profile.kind
+            val ownerKey =
+                presence.ownerKey
+
+            post {
+                onGroupCycleCompleted
+                    ?.invoke(
+                        kind,
+                        ownerKey
+                    )
+            }
+        }
     }
 
     private fun fallbackAfterMediaFailure(
