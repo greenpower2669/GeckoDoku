@@ -407,3 +407,24 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] SHA-256 archive : e5f33774d3bd0ab3af52bee00b25c1b75d5ba4a4d70b22ca09067e1b4f1092dd ;
 - [x] SHA-256 APK : 1b25121080454d58934c20366073ad0a255324226759fe3baf22f2d4b1617323 ;
 - [x] prerelease/release : non déclenchées.
+
+
+## GECKO-066 — test TextureView pour les mascottes de plateau
+- [x] ajouter une abstraction ChromaKeyPlayback commune ;
+- [x] conserver ChromaKeyVideoView/GLSurfaceView comme backend historique ;
+- [x] créer ChromaKeyTextureView pour Android 13+ avec MediaPlayer -> TextureView ;
+- [x] reproduire le keycolor bleu/vert et le jaune Gomoku via RuntimeShader/RenderEffect ;
+- [x] conserver la garde première frame : VIDEO_RENDERING_START + onSurfaceTextureUpdated fraîche avant alpha=1 ;
+- [x] appliquer TextureView uniquement aux owners bee:* et gomoku:* ;
+- [x] conserver Classic, Sudoku et Plante sur le backend GLSurface historique ;
+- [x] fallback automatique GLSurface pour bee/gomoku si SDK < 33 ;
+- [x] tests unitaires AliveVideoBackendPolicy ;
+- [x] compilation fonctionnelle confirmée par CI #309 avant bump ;
+- [x] version 0.15.27-dev / versionCode 62 ;
+- [ ] CI finale 0.15.27 verte ;
+- [ ] APK Phone 0.15.27-dev produit ;
+- [ ] téléphone : PNG et vidéo Bee/Gecko obéissent exactement au même clip pendant tout le cycle ;
+- [ ] téléphone : Gomoku vidéo ne déborde jamais sur boutons/titres/Prof ;
+- [ ] téléphone : pas de carré noir ni flash keycolor avant première frame ;
+- [ ] téléphone : zoom/drag garde la même Presence et glisse proprement derrière les bords ;
+- [ ] aucune release/prerelease ni merge main avant validation explicite Fab.
