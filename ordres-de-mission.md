@@ -794,3 +794,16 @@ Aucun merge main ni release sans validation explicite de Fab.
 Validé téléphone : intro sans flash plateau, suppression du carré noir avant première frame, plante PNG ~95 %.
 Restent ouverts : Gomoku et Abeilles & Geckos.
 Pour Abeilles & Geckos, ne pas coder de nouveau correctif géométrique avant validation de Fab. Proposition : Presence conservée tant que sa cellule intersecte le viewport, target toujours centrée sur cellule, puis clipping strict du rendu au rectangle réel du plateau. Ne plus utiliser le centre de cellule comme frontière d'affichage.
+
+
+## GECKO-064 — CLIPPING BEE/GECKO VALIDÉ PAR FAB
+Contrat :
+- cellule qui touche encore le viewport = Presence conservée ;
+- mascotte toujours centrée sur sa cellule ;
+- rendu PNG et vidéo clipé strictement à la fenêtre réelle du plateau ;
+- aucune translation ou recentrage artificiel ;
+- cellule totalement hors viewport = Presence cachée ;
+- zoom/drag doit faire glisser progressivement la mascotte derrière les bords.
+
+Version cible 0.15.24-dev / versionCode 59.
+Aucun merge main ni release avant validation téléphone.
