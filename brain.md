@@ -852,3 +852,6 @@ Ainsi :
 Invariant inchangé : chaque Presence possède son propre PNG, son propre backend vidéo, son propre AliveAnimator et son callback local. Aucun ordonnanceur global ni partage de lecteur.
 
 Version test : 0.15.28-dev / versionCode 63.
+
+### GECKO-067 — build final
+CI #312 / run 36643601567 SUCCESS sur 075160c5bd45157d7c818e2e996e1518554efe95. APK Phone 0.15.28-dev produit, 248574081 octets, SHA-256 296240aa14d866f101ac921887ca30c46c1eebbde946d2f7dc5797ae70d1ce79. Archive artifact SHA-256 2633430128a4fcd465bea4a559770ec3810d0f305c20eddafe30ced7b74585ae. Aucune release/prerelease. Validation téléphone keycolor/jaune/clipping requise.
