@@ -850,3 +850,5 @@ PLAY alpha=0
 → alpha=1.
 
 Portée : bee:* + gomoku:* seulement.
+
+GECKO-067 -> CI #312 SUCCESS -> APK 0.15.28-dev -> téléphone : ChromaTextureGL@... + keycolor stable + yellowTint stable + clip identique PNG/vidéo -> aucune release.
