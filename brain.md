@@ -755,3 +755,32 @@ Le grand cadre transparent/key-color ne décide jamais de l'existence de la masc
 
 ### GECKO-064 — build
 CI #289 / run 36633302195 SUCCESS sur 65bf2f5016f9373d5804d7ece962f1c17522f2c3. APK Phone 0.15.24-dev produit, 248557697 octets, SHA-256 0792b38bc21fc8dc9f705220f2d3a11dd16a8c91ebd39a44fcacdfc2dd059e67. Validation téléphone requise ; aucune release.
+
+
+## 37 — GECKO-065 : existence vivante indépendante de la fenêtre visible
+
+Décision Fab : en Abeilles & Geckos comme en Gomoku, une mascotte ne doit plus être détruite, suspendue ou perdre sa géométrie simplement parce que le zoom/drag la fait passer derrière le cadre blanc du plateau.
+
+Modèle canonique final :
+- le plateau reste en dessous ;
+- la Presence Alive reste au-dessus du plateau ;
+- la cible géométrique de la mascotte reste calculable même quand sa cellule est entièrement hors de la fenêtre visible ;
+- le clip du plateau décide seul de ce qui est visible ;
+- clip vide = mascotte entièrement derrière le cadre, mais son AliveAnimator local continue son cycle ;
+- au retour par drag/zoom, la même Presence réapparaît progressivement, sans recentrage, sans pop et sans recréation ;
+- titres, textes, boutons et Prof sont hors de cette fenêtre visuelle et ne peuvent donc pas être recouverts par une mascotte de plateau.
+
+Abeilles & Geckos :
+BeeGeckoBoardView expose désormais cellRectOnScreenUnbounded(). MainActivity.beeGeckoAliveTarget() s'appuie dessus. Le clipProvider existant reste viewportRectOnScreen() converti dans screenRoot. Il n'existe plus de condition viewport qui transforme la cible en null.
+
+Gomoku :
+GomokuBoardView expose geckoRectOnScreenUnbounded() et viewportRectOnScreen(). Les 3+3 Presence sélectionnées utilisent une cible non bornée et un gomokuAliveClipRect(). Le cap 3 PLAYER + 3 PROFESSOR et la redistribution par grand cycle restent inchangés.
+
+Point d'architecture important :
+une tentative intermédiaire de masque global + changement de couche SurfaceView a été abandonnée avant livraison téléphone. Le code final 0.15.26-dev restaure la politique ChromaKeyVideoView historique. L'effet « derrière le cadre » est obtenu par clip local de chaque Presence, pas par un nouvel ordre global de SurfaceView.
+
+Invariant toujours absolu :
+1 Presence = 1 PNG fallback + 1 ChromaKeyVideoView + 1 AliveAnimator + 1 callback local. Aucun ordonnanceur global, pool ou lecteur partagé.
+
+### GECKO-065 — build
+CI #303 (run 36638744397) verte sur 1cffec0bbf88148c210fad545e1a3ad4a2f56ad4. Artifact GeckoDoku-v0.15.26-dev-phone. SHA-256 archive e5f33774d3bd0ab3af52bee00b25c1b75d5ba4a4d70b22ca09067e1b4f1092dd. APK 248557697 octets, SHA-256 1b25121080454d58934c20366073ad0a255324226759fe3baf22f2d4b1617323. Aucune prerelease/release.
