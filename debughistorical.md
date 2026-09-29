@@ -512,3 +512,14 @@ Build GECKO-063 : workflow #286 (run 36630368939) SUCCESS. APK 0.15.23-dev, SHA-
 Validé : rideau intro, garde première frame/carré noir, PNG plante ~95 %.
 Non validé : Gomoku et Abeilles & Geckos.
 Capture Bee/Gecko Expert 6 zones : le test viewport.contains(cell center) introduit une frontière logique trop brutale. Cas haut : centre dedans mais sprite dépasse hors plateau. Cas bas : centre dehors alors qu'une partie utile de la cellule reste visible, donc Presence absente. Diagnostic : on utilise un test de présence comme substitut à un vrai clipping. Proposition : revenir à l'intersection de cellule pour conserver la Presence et clipper le rendu au rectangle du plateau.
+
+
+## GECKO-064 — correction des limites décalées Bee/Gecko
+Le critère center-in-viewport de 0.15.21/0.15.23 masquait trop tôt les cellules du bas et autorisait un sprite du haut à déborder tant que le centre restait dedans.
+
+Correction :
+- retour à RectF.intersects(cellRect, viewport) uniquement pour la durée de vie de la Presence ;
+- ajout de clipProvider dans AliveMascotOverlayView ;
+- clip identique pour pngContainer et videoContainer ;
+- intersection calculée avec le viewport réel du board puis convertie en clip local ;
+- suppression du callback legacy setMediaPieceSuppressed lors de disappear Bee/Gecko.
