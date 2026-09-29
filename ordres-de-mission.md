@@ -693,3 +693,21 @@ Règles 0.15.17-dev :
 Interdictions inchangées : aucun ordonnanceur global, aucun pool, aucun merge main, aucune release avant validation téléphone.
 
 État GECKO-057 : CI #263 verte sur 352c046bcc6e1af6d26794782f14189054ddcae2 ; APK 0.15.17-dev produit ; SHA-256 cb50cb5e97ed9cc33ab7285982a6da7fda5e6439040fa2a195b7c59bb6fa8577 ; aucune release ; validation téléphone requise.
+
+
+## GECKO-058 — CORRIGER LES GECKO DE BORD DANS ABEILLES & GECKOS
+
+Validation Fab : correction autorisée.
+
+Cause confirmée :
+beeGeckoAliveTarget() retournait null dès que la cible animée dépassait le viewport. Les Gecko, plus grands, étaient donc éliminés sur les cellules périphériques alors que les Abeilles intérieures restaient animées.
+
+Correction 0.15.18-dev :
+- conserver null uniquement pour une cible totalement hors viewport ;
+- sinon préserver taille et proportions ;
+- translater la cible du minimum nécessaire pour la garder visible ;
+- recentrer uniquement si elle est plus grande que le viewport ;
+- journaliser BEE_GECKO_ALIVE_TARGET_CLAMPED ;
+- ne modifier ni AliveAnimator ni la logique de puzzle.
+
+Interdictions inchangées : aucun ordonnanceur/pool partagé, aucun merge main, aucune release avant validation téléphone.
