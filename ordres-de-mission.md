@@ -722,3 +722,6 @@ Validation Fab : supprimer cette règle. Les assets Gecko/Abeille sont déjà ce
 Version cible : 0.15.19-dev / versionCode 54. Aucun merge main ni release avant validation téléphone.
 
 État GECKO-059 : CI #267 verte ; APK 0.15.19-dev produit ; aucune release ; validation téléphone requise.
+
+## GECKO-060 — OWNERSHIP UNIQUE
+Décision Fab : en mode Abeilles & Geckos, la Presence Alive remplace l'ancien rendu de pièce et possède son PNG fallback et ses vidéos. La règle hors écran est conservée sur la cellule du plateau : cellule hors viewport = mascotte cachée ; cadre média débordant = autorisé. Version 0.15.20-dev / 55. Pas de merge main ni release avant validation téléphone.
