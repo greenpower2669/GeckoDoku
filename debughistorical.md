@@ -443,3 +443,10 @@ Ce changement vise les Gecko de bord observés sur la capture (gauche, droite, b
 ## GECKO-058 — CI #265 VERTE
 
 Commit testé : 2c20b06d2a0f699c8811cdf7cd37871a4b712f45. Tests + assemblePhone : succès. APK : GeckoDoku-v0.15.18-dev.apk. SHA-256 : 9e0ad087bc2f641ecd80010bb162cf57739ac0b0a236d2dc21cbe5d321311b77. Aucune release/prerelease.
+
+
+## GECKO-059 — règle viewport supprimée
+
+Le cadre média transparent/key-color est plus large que le personnage visible et celui-ci est déjà centré. Rejeter ou déplacer le média parce que le cadre dépasse le viewport était donc une erreur de modèle et une règle non demandée.
+
+Correction 0.15.19-dev : suppression du test viewport, du clamp et de la trace BEE_GECKO_ALIVE_TARGET_CLAMPED.
