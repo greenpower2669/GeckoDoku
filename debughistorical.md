@@ -567,3 +567,6 @@ Expérience GECKO-066 :
 - fallback GLSurface conservé pour les anciens Android et les autres modes.
 
 Premier build du fichier TextureView (#305) a échoué uniquement parce que androidx.annotation.RequiresApi n'est pas une dépendance du projet. Annotation supprimée ; CI #309 ensuite SUCCESS sur l'ensemble du nouveau pipeline avant bump version. Aucune régression de logique de jeu introduite.
+
+## GECKO-066 — CI #310 VERTE
+Run 36641153646 SUCCESS sur 4bf3c696a8dbee1d90f3136c8594684025e4a381. APK 0.15.27-dev : 248574081 octets, SHA-256 e5de07cea97ca736108d644298ab56b2ad16689d695e357ef0a1d4cd280afe3f. Archive artifact SHA-256 e3cc39a3d9821b4894cd5244f7c0994e0b8fc09c2c45fa2c82723beaaf0479ac. Les étapes de publication ont été skipped. Test téléphone attendu : sources ChromaTexture pour bee:/gomoku: et absence de débordement vidéo hors clip.
