@@ -268,9 +268,11 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] supprimer le clamp/recentrage ajouté en GECKO-058 ;
 - [x] utiliser directement la cible centrée sur la cellule ;
 - [x] version 0.15.19-dev / versionCode 54 ;
-- [ ] CI verte ;
-- [ ] APK Phone produit ;
+- [x] CI #267 verte ;
+- [x] APK Phone 0.15.19-dev produit ;
 - [ ] téléphone : Gecko de bord animés sans décalage ;
 - [ ] Abeilles inchangées ;
 - [ ] zoom/drag cohérents ;
 - [ ] aucune release avant validation Fab.
+
+- [x] APK SHA-256 : 97e3876d853dd1701f3e7f552fe38d289bf4d5344278416a1e409d7817d6ebcf.
