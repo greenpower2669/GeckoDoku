@@ -859,6 +859,13 @@ class MainActivity : Activity() {
                             aliveMascotOverlay
                                 .refreshDynamicTargets()
                         }
+
+                        if (
+                            ::boardWindowMask
+                                .isInitialized
+                        ) {
+                            boardWindowMask.invalidate()
+                        }
                     }
                 }
             }
@@ -951,6 +958,13 @@ class MainActivity : Activity() {
                         ) {
                             aliveMascotOverlay
                                 .refreshDynamicTargets()
+                        }
+
+                        if (
+                            ::boardWindowMask
+                                .isInitialized
+                        ) {
+                            boardWindowMask.invalidate()
                         }
                     }
                 }
@@ -8941,6 +8955,23 @@ class MainActivity : Activity() {
                 } else {
                     View.GONE
                 }
+        }
+
+        if (
+            ::boardWindowMask
+                .isInitialized
+        ) {
+            boardWindowMask.visibility =
+                if (
+                    gomoku ||
+                    bees
+                ) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
+
+            boardWindowMask.invalidate()
         }
 
         if (
