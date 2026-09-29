@@ -34,6 +34,9 @@ class Gecko037LivingProfessorTest {
         val used =
             mutableMapOf<String, Long>()
         var last: String? = null
+        var recent:
+            List<String> =
+            emptyList()
 
         override fun readLastUsedAt(
             id: String
@@ -54,14 +57,25 @@ class Gecko037LivingProfessorTest {
         ) {
             last = id
         }
+
+        override fun readRecentPhraseIds():
+            List<String> =
+            recent
+
+        override fun writeRecentPhraseIds(
+            ids: List<String>
+        ) {
+            recent =
+                ids.toList()
+        }
     }
 
     @Test
-    fun corpusContainsExactly309StableUniquePhrases() {
+    fun corpusContains599StableUniquePhrasesIncluding300Returns() {
         val all =
             ProfessorPhraseCatalog.all
 
-        assertEquals(309, all.size)
+        assertEquals(599, all.size)
         assertEquals(
             100,
             all.count {
@@ -109,6 +123,31 @@ class Gecko037LivingProfessorTest {
             }
         )
         assertEquals(
+            300,
+            all.count {
+                it.category ==
+                    PhraseCategory.RETURN
+            }
+        )
+
+        assertEquals(
+            20,
+            all.filter {
+                it.category ==
+                    PhraseCategory.RETURN
+            }
+                .map {
+                    it.id
+                        .removePrefix(
+                            "prof_return_"
+                        )
+                        .substringBefore("_")
+                }
+                .toSet()
+                .size
+        )
+
+        assertEquals(
             10,
             all.count {
                 it.category ==
@@ -129,6 +168,54 @@ class Gecko037LivingProfessorTest {
                     PhraseCategory.TAQUIN
             }
         )
+    }
+
+    @Test
+    fun returnEventAlwaysUsesTheDedicatedReturnPool() {
+        val history =
+            ProfessorPhraseHistory(
+                clock =
+                    FakeClock(),
+                storage =
+                    MemoryStorage()
+            )
+
+        val selector =
+            ProfessorPhraseSelector(
+                catalog =
+                    ProfessorPhraseCatalog
+                        .all,
+                history = history,
+                random =
+                    FakeRandom(
+                        mutableListOf(
+                            0,
+                            1,
+                            2
+                        )
+                    )
+            )
+
+        repeat(3) {
+            val selection =
+                selector.select(
+                    event =
+                        ProfessorPlayerEvent
+                            .RETURN_AFTER_PAUSE,
+                    context =
+                        ProfessorPlayerContext(),
+                    difficulty =
+                        GameDifficulty.EASY
+                )
+
+            assertNotNull(selection)
+            assertEquals(
+                PhraseCategory.RETURN,
+                selection!!
+                    .phrase
+                    .category
+            )
+        }
     }
 
     @Test

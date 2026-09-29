@@ -10,6 +10,16 @@ interface ProfessorPhraseHistoryStorage {
     )
     fun readLastPhraseId(): String?
     fun writeLastPhraseId(id: String?)
+
+    fun readRecentPhraseIds():
+        List<String> =
+        emptyList()
+
+    fun writeRecentPhraseIds(
+        ids: List<String>
+    ) {
+        // Optional for test/in-memory stores.
+    }
 }
 
 class ProfessorPhraseHistory(
@@ -22,6 +32,11 @@ class ProfessorPhraseHistory(
     val lastPhraseId: String?
         get() =
             storage.readLastPhraseId()
+
+    val recentPhraseIds:
+        List<String>
+        get() =
+            storage.readRecentPhraseIds()
 
     fun lastUsedAt(id: String): Long? =
         storage.readLastUsedAt(id)
@@ -42,7 +57,32 @@ class ProfessorPhraseHistory(
             id,
             clock.nowMs()
         )
+
+        val recent =
+            storage.readRecentPhraseIds()
+                .filterNot {
+                    it == id
+                }
+                .toMutableList()
+
+        recent.add(id)
+
+        while (
+            recent.size >
+                RECENT_HISTORY_LIMIT
+        ) {
+            recent.removeAt(0)
+        }
+
+        storage.writeRecentPhraseIds(
+            recent
+        )
         storage.writeLastPhraseId(id)
+    }
+
+    companion object {
+        private const val RECENT_HISTORY_LIMIT =
+            48
     }
 }
 
@@ -101,11 +141,49 @@ class SharedPreferencesProfessorPhraseHistoryStorage(
         edit.apply()
     }
 
+    override fun readRecentPhraseIds():
+        List<String> =
+        prefs.getString(
+            RECENT_IDS_KEY,
+            null
+        )
+            ?.split(RECENT_SEPARATOR)
+            ?.filter {
+                it.isNotBlank()
+            }
+            ?: emptyList()
+
+    override fun writeRecentPhraseIds(
+        ids: List<String>
+    ) {
+        val edit =
+            prefs.edit()
+
+        if (ids.isEmpty()) {
+            edit.remove(
+                RECENT_IDS_KEY
+            )
+        } else {
+            edit.putString(
+                RECENT_IDS_KEY,
+                ids.joinToString(
+                    RECENT_SEPARATOR
+                )
+            )
+        }
+
+        edit.apply()
+    }
+
     private fun usedKey(id: String): String =
         "used_" + id
 
     companion object {
         private const val LAST_ID_KEY =
             "last_phrase_id"
+        private const val RECENT_IDS_KEY =
+            "recent_phrase_ids"
+        private const val RECENT_SEPARATOR =
+            "|"
     }
 }

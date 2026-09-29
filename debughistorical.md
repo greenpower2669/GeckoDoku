@@ -288,3 +288,26 @@ Résultat :
 
 Test appareil attendu :
 basculer vers Mail/Messages puis revenir et vérifier que Gecko/Abeille/Plante reprennent tous sans action utilisateur.
+
+
+## GECKO-054 — ordonnanceur supprimé définitivement
+
+Verdict téléphone Fab :
+le mode sans limitation a confirmé que l’ancien ordonnanceur/pool participait à l’essoufflement des animations. Décision : « plus jamais d’ordonnanceur ».
+
+Le correctif 0.15.14-dev regroupe aussi les autres observations :
+- pièces initiales de map pouvant rester mortes, surtout Bee/Gecko ;
+- target parfois null avant layout ;
+- PNG visible avant vidéo d’apparition ;
+- reconstruction nécessaire après Mail/Messages ;
+- Pierre fonctionne sur son pipeline autonome et ne doit pas être fusionné avec AliveMascotOverlayView.
+
+Correction :
+- 1 Presence = 1 lecteur vidéo ;
+- retry local target ;
+- refresh post-layout ;
+- apparition stricte ;
+- lifecycle snapshot conservé ;
+- intro prioritaire ;
+- Pierre inchangé visuellement ;
+- 300 phrases RETURN avec anti-répétition renforcée.

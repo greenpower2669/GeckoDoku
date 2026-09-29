@@ -1409,56 +1409,8 @@ object ProfessorPhraseCatalog {
             text = "Travail terminé ! Je vous accorde officiellement le droit de regarder la grille avec fierté.",
             category = PhraseCategory.FINISH
         ),
-        phrase(
-            id = "prof_return_001",
-            text = "Ah, vous revoilà. J’avais commencé à distribuer les rôles aux chiffres.",
-            category = PhraseCategory.RETURN
-        ),
-        phrase(
-            id = "prof_return_002",
-            text = "Retour au bureau ! Le dossier est resté exactement là où vous l’aviez laissé.",
-            category = PhraseCategory.RETURN
-        ),
-        phrase(
-            id = "prof_return_003",
-            text = "Vous tombez bien. La grille vient justement de nier toutes les accusations.",
-            category = PhraseCategory.RETURN
-        ),
-        phrase(
-            id = "prof_return_004",
-            text = "Reprise de séance. Tout le monde debout… non, finalement restez installé.",
-            category = PhraseCategory.RETURN
-        ),
-        phrase(
-            id = "prof_return_005",
-            text = "Vous voilà ! J’ai empêché les chiffres de toucher à quoi que ce soit.",
-            category = PhraseCategory.RETURN
-        ),
-        phrase(
-            id = "prof_return_006",
-            text = "Le cours reprend. J’ai même remis mon air officiel.",
-            category = PhraseCategory.RETURN
-        ),
-        phrase(
-            id = "prof_return_007",
-            text = "Content de vous revoir. J’avais presque commencé une réunion sans vous.",
-            category = PhraseCategory.RETURN
-        ),
-        phrase(
-            id = "prof_return_008",
-            text = "Retour aux affaires ! Les suspects sont toujours dans la salle.",
-            category = PhraseCategory.RETURN
-        ),
-        phrase(
-            id = "prof_return_009",
-            text = "Très bien, reprenons avant que la grille ne profite de notre absence.",
-            category = PhraseCategory.RETURN
-        ),
-        phrase(
-            id = "prof_return_010",
-            text = "Vous êtes de retour. Parfait, je peux arrêter de faire semblant de remplir des formulaires.",
-            category = PhraseCategory.RETURN
-        ),
+        *buildReturnPhrases()
+            .toTypedArray(),
         phrase(
             id = "prof_rare_001",
             text = "Information confidentielle : je n’ai absolument aucune idée d’où j’ai rangé mon bureau.",
@@ -1625,6 +1577,80 @@ object ProfessorPhraseCatalog {
         }
 
         return result
+    }
+
+    private fun buildReturnPhrases():
+        List<ProfessorPhrase> {
+        val openings =
+            listOf(
+                "Ah, vous revoilà.",
+                "Tiens, retour parmi nous.",
+                "Parfait, vous êtes revenu.",
+                "Reprise de séance.",
+                "Vous voilà de nouveau devant la grille.",
+                "Je reconnais ce retour.",
+                "La porte imaginaire vient de se rouvrir.",
+                "Excellent, la pause est terminée.",
+                "Le professeur note votre retour.",
+                "Et hop, vous revoici.",
+                "La grille vient de vous voir revenir.",
+                "Bon retour au quartier général.",
+                "Je savais que vous reviendriez.",
+                "Nous reprenons exactement ici.",
+                "Votre chaise logique est encore chaude.",
+                "Le bureau des énigmes vous rend votre place.",
+                "Retour détecté, craie imaginaire en main.",
+                "Vous revoilà dans mon champ de vision.",
+                "La parenthèse extérieure est refermée.",
+                "Présence retrouvée, dossier rouvert."
+            )
+
+        val continuations =
+            listOf(
+                "J’ai gardé la grille au chaud sans toucher à une seule case.",
+                "Les chiffres ont promis de rester sages pendant votre absence.",
+                "Je surveillais les suspects, personne n’a quitté sa ligne.",
+                "Votre raisonnement est toujours là, exactement où vous l’aviez laissé.",
+                "J’ai refusé trois formulaires et une réunion pour vous attendre.",
+                "Le gecko de service n’a signalé aucune évasion.",
+                "On peut reprendre sans refaire tout le procès.",
+                "La grille faisait semblant de dormir, mais je l’ai vue réfléchir.",
+                "Je n’ai rien déplacé, parole de professeur presque officiel.",
+                "Les cases ont profité du silence, pas de la situation.",
+                "Votre prochaine déduction n’a pas bougé d’un millimètre.",
+                "J’allais commencer à parler tout seul, vous arrivez juste à temps.",
+                "Le comité des chiffres a suspendu la séance jusqu’à votre retour.",
+                "Je gardais votre place avec un sérieux totalement disproportionné.",
+                "Très bien, voyons ce que la grille préparait pendant ce temps."
+            )
+
+        return buildList {
+            openings.forEachIndexed {
+                    openingIndex,
+                    opening ->
+                continuations.forEachIndexed {
+                        continuationIndex,
+                        continuation ->
+                    add(
+                        phrase(
+                            id =
+                                String.format(
+                                    Locale.ROOT,
+                                    "prof_return_%02d_%02d",
+                                    openingIndex + 1,
+                                    continuationIndex + 1
+                                ),
+                            text =
+                                opening +
+                                    " " +
+                                    continuation,
+                            category =
+                                PhraseCategory.RETURN
+                        )
+                    )
+                }
+            }
+        }
     }
 
     private fun phrase(

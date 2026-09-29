@@ -2,7 +2,7 @@
 
 > Documentation vivante de l'application telle qu'elle existe au 28 septembre 2026.
 >
-> **Version applicative observée :** `0.15.13-dev` — `versionCode 48`  
+> **Version applicative observée :** `0.15.14-dev` — `versionCode 49`  
 > **Branche :** `gecko-039-sudoku-tap-gecko-gomoku`  
 > **Référence code fonctionnel :** `8ccc0385c8314239976368811dab93808970e35a`  
 > Cette documentation décrit le comportement présent. Elle peut évoluer avec le logiciel. Elle n'est ni un historique de debug ni un ordre de mission.
@@ -583,3 +583,16 @@ Pendant les deux vidéos d'introduction, la couche AliveMascotOverlayView est su
 #### Reprise après changement d'application 0.15.13-dev
 
 Quand GeckoDoku passe en arrière-plan, AliveMascotOverlayView est volontairement arrêté afin qu'aucun lecteur vidéo ne continue à fonctionner hors écran. Au retour dans l'application, la couche vivante est maintenant entièrement reconstruite : la Plante est recréée puis les mascottes du mode courant sont resynchronisées depuis le snapshot du moteur. La reprise couvre Classic, Sudoku, Gomoku et Abeilles & Geckos. Le simple aller-retour vers Mail ou Messages ne relance pas l'introduction.
+
+
+#### Architecture définitive mascottes 0.15.14-dev
+
+Le diagnostic ALL ANIMATED devient la règle permanente : chaque mascotte visible possède son propre PNG transparent, son AliveAnimator et son propre ChromaKeyVideoView. Il n’existe plus de pool, de limite 3/2/1 ni de rotation de lecteurs.
+
+Une mascotte créée avant la fin du layout reste enregistrée et retente localement sa géométrie jusqu’à disponibilité. Les pièces déjà données par une map peuvent donc devenir vivantes sans action du joueur. Un refresh post-layout complète la synchronisation Classic, Sudoku, Gomoku et Abeilles & Geckos.
+
+Pour Gecko, une vraie apparition suit désormais strictement : case vide → vidéo d’apparition → PNG/idle vivant. Les deux intros continuent de suspendre entièrement la couche vivante.
+
+#### Pierre — retours après pause
+
+Le moteur visuel/parole de Pierre reste séparé. La catégorie RETURN contient maintenant 300 phrases. RETURN_AFTER_PAUSE utilise exclusivement ce corpus, conserve 48 h de cooldown individuel, mémorise les 48 derniers IDs et évite autant que possible les mêmes familles d’ouverture ainsi que les formulations lexicalement proches des derniers retours.

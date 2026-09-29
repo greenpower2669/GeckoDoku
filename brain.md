@@ -8,7 +8,7 @@
 ## État de référence
 
 - Branche : gecko-039-sudoku-tap-gecko-gomoku
-- Version : 0.15.13-dev / versionCode 48
+- Version : 0.15.14-dev / versionCode 49
 - GECKO-047 : VALIDÉ FAB — grandes barres d’axes, drag/suppression hors plateau, Prof utilisant les axes, audio Android/Pierre capturable.
 - GECKO-048 : CODE + CI VERTE, validation téléphone encore attendue — prononciation Pierre et couleurs d’axes.
 - GECKO-049 : VALIDÉ FAB — géométrie canonique des axes Abeilles & Geckos.
@@ -508,3 +508,28 @@ SHA-256 : 4bee54cfdc1261adf75559635c8749ade82133a8383cc34e1ddbea4019d13937.
 
 À valider :
 après ouverture de Mail/Messages puis retour, toutes les mascottes du mode courant doivent être reconstruites et recommencer leurs cycles sans relancer l'intro.
+
+
+## 26 — GECKO-054 canon : une mascotte = un lecteur
+
+Décision définitive Fab : plus jamais d’ordonnanceur de mascottes.
+
+AliveMascotOverlayView :
+- chaque Presence possède directement son ImageView, son ChromaKeyVideoView et son AliveAnimator ;
+- aucun VideoSlot partagé, aucun pool, aucune capacity(), aucune rotation ;
+- chaque Presence programme uniquement sa propre prochaine étape ;
+- target temporairement null : retry local 240 ms, sans supprimer la mascotte ;
+- échec média : PNG fallback puis nouvel ambient après 900 ms.
+
+Apparition :
+tant que Gecko_apparition n’a pas fini, ni PNG interne ni PNG historique du plateau. Ensuite seulement PNG/idle vivant.
+
+État initial :
+syncLivingMascotsForCurrentMode reste commun aux quatre modes, complété par refresh post-layout.
+
+Lifecycle :
+onPause stopAll/release ; onResume ensurePlantMascot + syncLivingMascotsForCurrentMode.
+
+Pierre :
+pipeline visuel/parole séparé.
+RETURN_AFTER_PAUSE = 300 phrases dédiées, cooldown 48 h, 48 IDs récents persistants, anti-famille et anti-similarité.

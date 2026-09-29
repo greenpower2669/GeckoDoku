@@ -552,3 +552,37 @@ Aucune release publique avant validation téléphone.
 - ALL ANIMATED reste actif ;
 - aucune prerelease/release ;
 - validation téléphone attendue sur aller-retour Mail/Messages.
+
+
+## GECKO-054 — architecture définitive : PLUS JAMAIS D’ORDONNANCEUR
+
+Décision explicite Fab après tests téléphone :
+« Plus jamais d’ordonnanceur ».
+
+Règle canonique à partir de 0.15.14-dev :
+- 1 mascotte visible = 1 Presence = 1 AliveAnimator = 1 ChromaKeyVideoView ;
+- aucun pool partagé ;
+- aucune capacité 3/2/1 ;
+- aucun prêt ou rotation de lecteur ;
+- chaque Presence gère seule son propre cycle ;
+- la coordination de fin de grand cycle ne fait qu’envoyer un signal refresh/cute à une copine, sans posséder de lecteur ni de planning global.
+
+Correctifs inclus :
+- mascottes issues de la map initiale : une target encore indisponible au premier layout ne tue plus la Presence ; retry local jusqu’à géométrie valide ;
+- refresh post-layout pour les quatre modes ;
+- apparition Gecko stricte : aucun PNG avant la vraie vidéo d’apparition ; ordre vide → vidéo → vivant ;
+- retour Mail/Messages : onPause libère, onResume reconstruit Plante + snapshot complet ;
+- intros FIRST/SECOND restent au-dessus de toute la couche vivante.
+
+Pierre :
+- pipeline animation/parole inchangé ;
+- RETURN passe de 10 à 300 phrases dédiées ;
+- RETURN_AFTER_PAUSE choisit exclusivement RETURN ;
+- cooldown exact 48 h par phrase ;
+- historique persistant des 48 derniers IDs ;
+- éviter les familles d’ouverture récemment utilisées ;
+- éviter aussi les textes trop similaires aux derniers retours ;
+- si les 300 sont épuisées, prendre la RETURN la plus ancienne.
+
+Version : 0.15.14-dev / versionCode 49.
+Aucune publication publique avant validation téléphone.

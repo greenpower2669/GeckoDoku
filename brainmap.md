@@ -607,3 +607,27 @@ flowchart LR
 ~~~
 
 Le snapshot de jeu est la source de vérité après reprise ; les Presence sont reconstructibles et ne doivent pas être conservées comme état métier.
+
+
+## 21 — GECKO-054 : zéro ordonnanceur
+
+~~~mermaid
+flowchart TD
+    Snapshot[Snapshot du mode] --> Sync[syncLivingMascotsForCurrentMode]
+    Sync --> P[Presence]
+    P --> PNG[ImageView propre]
+    P --> Video[ChromaKeyVideoView propre]
+    P --> Anim[AliveAnimator propre]
+    Anim --> Local[cycleRunnable local]
+    Local --> Video
+    Target[target null] --> Retry[retry local 240 ms]
+    Retry --> P
+    Intro[INTRO FIRST/SECOND] --> Hide[coupe/cache toutes les Presence]
+    Resume[onResume] --> Sync
+~~~
+
+Il n’existe plus de lecteur partagé, pool, capacité ou scheduler global.
+La coordination grand cycle reste un simple signal entre instances déjà autonomes.
+
+Pierre :
+RETURN_AFTER_PAUSE → 300 RETURN → cooldown 48 h → historique 48 IDs → filtre famille récente → filtre similarité → pipeline Pierre existant.

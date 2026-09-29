@@ -38,6 +38,68 @@ class ProfessorPhraseSelector(
                 difficulty
             )
 
+        if (
+            event ==
+                ProfessorPlayerEvent
+                    .RETURN_AFTER_PAUSE
+        ) {
+            chooseAvailable(
+                PhraseCategory.RETURN
+            )?.let {
+                chosen ->
+                return remember(
+                    phrase =
+                        chosen.first,
+                    mood =
+                        mood,
+                    requested =
+                        PhraseCategory.RETURN,
+                    eligibleCount =
+                        chosen.second,
+                    fallback = false,
+                    forcedOldest = false
+                )
+            }
+
+            val forcedReturn =
+                catalog
+                    .filter {
+                        it.category ==
+                            PhraseCategory.RETURN &&
+                            it.id !=
+                                history.lastPhraseId
+                    }
+                    .minWithOrNull(
+                        compareBy<
+                            ProfessorPhrase
+                        > {
+                            history
+                                .lastUsedAt(
+                                    it.id
+                                )
+                                ?: Long.MIN_VALUE
+                        }.thenBy {
+                            it.id
+                        }
+                    )
+
+            if (
+                forcedReturn != null
+            ) {
+                return remember(
+                    phrase =
+                        forcedReturn,
+                    mood =
+                        mood,
+                    requested =
+                        PhraseCategory.RETURN,
+                    eligibleCount = 0,
+                    fallback = false,
+                    forcedOldest = true
+                )
+            }
+        }
+
         maybeSpecial(
             category = PhraseCategory.RARE,
             probability =
@@ -255,13 +317,107 @@ class ProfessorPhraseSelector(
             return null
         }
 
-        return (
-            available[
-                random.nextInt(
-                    available.size
+        val pool =
+            if (
+                category ==
+                    PhraseCategory.RETURN
+            ) {
+                diversifiedReturnPool(
+                    available
                 )
-            ] to available.size
+            } else {
+                available
+            }
+
+        return (
+            pool[
+                random.nextInt(
+                    pool.size
+                )
+            ] to pool.size
             )
+    }
+
+    private fun diversifiedReturnPool(
+        available:
+            List<ProfessorPhrase>
+    ): List<ProfessorPhrase> {
+        val recent =
+            history.recentPhraseIds
+                .asReversed()
+                .mapNotNull {
+                    id ->
+                    catalog.firstOrNull {
+                        it.id == id &&
+                            it.category ==
+                                PhraseCategory.RETURN
+                    }
+                }
+                .take(12)
+
+        if (recent.isEmpty()) {
+            return available
+        }
+
+        val recentFamilies =
+            recent
+                .take(8)
+                .mapNotNull {
+                    returnFamily(it.id)
+                }
+                .toSet()
+
+        var pool =
+            available.filter {
+                returnFamily(it.id) !in
+                    recentFamilies
+            }
+
+        if (pool.isEmpty()) {
+            pool = available
+        }
+
+        val semanticallyFresh =
+            pool.filter {
+                candidate ->
+                recent
+                    .take(6)
+                    .all {
+                        previous ->
+                        ProfessorPhraseCatalog
+                            .textSimilarity(
+                                candidate.text,
+                                previous.text
+                            ) <
+                            RETURN_SIMILARITY_LIMIT
+                    }
+            }
+
+        return if (
+            semanticallyFresh.isNotEmpty()
+        ) {
+            semanticallyFresh
+        } else {
+            pool
+        }
+    }
+
+    private fun returnFamily(
+        id: String
+    ): String? {
+        val prefix =
+            "prof_return_"
+
+        if (!id.startsWith(prefix)) {
+            return null
+        }
+
+        return id
+            .removePrefix(prefix)
+            .substringBefore("_")
+            .takeIf {
+                it.isNotBlank()
+            }
     }
 
     private fun remember(
@@ -289,4 +445,10 @@ class ProfessorPhraseSelector(
                 forcedOldest
         )
     }
+
+    companion object {
+        private const val RETURN_SIMILARITY_LIMIT =
+            0.46
+    }
+
 }

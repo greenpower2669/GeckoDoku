@@ -64,13 +64,13 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 
 
 ### Grand cycle autonome demandé par Fab
-- [ ] update() choisit une nouvelle petite animation différente à chaque fin ;
-- [ ] mémoriser les dernières séries complètes ;
-- [ ] interdire la répétition immédiate d'une série complète ;
-- [ ] varier longueur/ordre du cycle pour casser les motifs perceptibles ;
-- [ ] fin de grand cycle : choisir une copine visible différente de la précédente pour une mignonnerie ;
-- [ ] autres mascottes repartent sur des cycles désynchronisés ;
-- [ ] éviter répétition de la même mignonnerie et de la même copine.
+- [x] chaque instance choisit une nouvelle petite animation différente à chaque fin ;
+- [x] mémoriser les dernières séries complètes ;
+- [x] interdire la répétition immédiate d'une série complète ;
+- [x] varier longueur/ordre du cycle pour casser les motifs perceptibles ;
+- [x] fin de grand cycle : choisir une copine visible différente de la précédente pour une mignonnerie ;
+- [x] autres mascottes repartent sur des cycles désynchronisés ;
+- [x] éviter répétition de la même copine ; variété mignonnerie limitée aux assets présents.
 
 ### Nuages placements donnés — 0.15.10-dev
 - [x] rendu partagé Classic + Abeilles & Geckos ;
@@ -141,3 +141,28 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] vérifier que toutes les mascottes repartent sans toucher au plateau ;
 - [ ] vérifier que l'intro ne se relance pas au simple retour ;
 - [ ] aucune release avant verdict Fab.
+
+
+## GECKO-054 — zéro ordonnanceur
+- [x] supprimer VideoSlot/pool partagé ;
+- [x] un ChromaKeyVideoView par Presence ;
+- [x] aucun plafond Gecko/Abeille/Plante ;
+- [x] cycle autonome local par mascotte ;
+- [x] target null au premier layout = retry local ;
+- [x] refresh post-layout multi-mode ;
+- [x] apparition sans PNG prématuré ;
+- [x] lifecycle retour appli conservé ;
+- [x] intro au-dessus conservée ;
+- [x] Pierre visuel/parole laissé séparé ;
+- [x] 300 RETURN dédiées ;
+- [x] RETURN_AFTER_PAUSE = RETURN uniquement ;
+- [x] cooldown 48 h + historique 48 IDs ;
+- [x] anti-répétition famille + similarité ;
+- [ ] CI 0.15.14-dev ;
+- [ ] validation téléphone sur les 4 modes ;
+- [ ] validation pièces initiales Bee/Gecko ;
+- [ ] validation apparition vide → vidéo → vivant ;
+- [ ] validation retour Mail/Messages ;
+- [ ] validation intros on top ;
+- [ ] validation variété Pierre ;
+- [ ] release seulement après validation explicite Fab.
