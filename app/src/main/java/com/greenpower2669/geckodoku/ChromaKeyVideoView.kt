@@ -27,7 +27,8 @@ enum class ChromaKeyColor(
 class ChromaKeyVideoView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
-) : GLSurfaceView(context, attrs) {
+) : GLSurfaceView(context, attrs),
+    ChromaKeyPlayback {
     private val chromaRenderer =
         ChromaRenderer(
             requestFrame = {
@@ -108,7 +109,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
     private var activePlaybackGeneration =
         0L
 
-    var logicalLayer: String =
+    override var logicalLayer: String =
         "UNSPECIFIED"
 
     private val layerPolicy =
@@ -158,15 +159,15 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             IMPORTANT_FOR_ACCESSIBILITY_NO
     }
 
-    fun play(
+    override fun play(
         assetPath: String,
         muted: Boolean,
         onCompletion: () -> Unit,
         onError: (String) -> Unit,
-        onStarted: () -> Unit = {},
-        revealOnFirstFrame: Boolean = true,
-        holdOnFirstFrame: Boolean = false,
-        onFirstFrameRendered: () -> Unit = {}
+        onStarted: () -> Unit,
+        revealOnFirstFrame: Boolean,
+        holdOnFirstFrame: Boolean,
+        onFirstFrameRendered: () -> Unit
     ) {
         MediaTrace.event(
             source =
@@ -264,7 +265,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         startPendingPlayback()
     }
 
-    fun revealHeldFirstFrame(): Boolean {
+    override fun revealHeldFirstFrame(): Boolean {
         if (!firstFrameHeld) {
             return false
         }
@@ -289,7 +290,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         }
     }
 
-    fun setMuted(
+    override fun setMuted(
         value: Boolean
     ) {
         MediaTrace.event(
@@ -318,7 +319,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         }
     }
 
-    fun setYellowTint(
+    override fun setYellowTint(
         enabled: Boolean
     ) {
         queueEvent {
@@ -330,7 +331,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         requestRender()
     }
 
-    fun setKeyColor(
+    override fun setKeyColor(
         color: ChromaKeyColor
     ) {
         queueEvent {
@@ -342,7 +343,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         requestRender()
     }
 
-    fun stopPlayback() {
+    override fun stopPlayback() {
         abortFirstFrameReveal(
             "stop"
         )
@@ -400,7 +401,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             emptyList()
     }
 
-    fun release() {
+    override fun release() {
         MediaTrace.event(
             source =
                 traceSource(),
