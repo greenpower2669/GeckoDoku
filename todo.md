@@ -230,3 +230,15 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] aucune release avant validation explicite Fab.
 
 - [x] artifact CI #263 : GeckoDoku-v0.15.17-dev-phone ; APK SHA-256 cb50cb5e97ed9cc33ab7285982a6da7fda5e6439040fa2a195b7c59bb6fa8577.
+
+
+## GECKO-058 — Abeilles & Geckos : seules les Abeilles s'animent en bordure
+- [x] confirmer par log : BEE produit ALIVE_PLAY / VIDEO_VISIBLE ;
+- [x] confirmer l'absence de ALIVE_PLAY pour les Gecko du plateau hexagonal ;
+- [x] corréler avec la capture : les 3 Gecko visibles sont placés sur des cellules de bord ;
+- [x] isoler la cause dans beeGeckoAliveTarget() : rejet total si le rect animé dépasse même légèrement viewportRectOnScreen() ;
+- [ ] remplacer le rejet par une cible visible/clippée ou recentrée dans le viewport, sans casser zoom/drag ;
+- [ ] tester Gecko bord gauche, bord droit et bord bas ;
+- [ ] vérifier Abeille intérieure inchangée ;
+- [ ] vérifier Gecko/Abeille après zoom et drag ;
+- [ ] aucune release avant validation Fab.
