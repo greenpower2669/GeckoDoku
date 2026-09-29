@@ -586,3 +586,14 @@ Pierre :
 
 Version : 0.15.14-dev / versionCode 49.
 Aucune publication publique avant validation téléphone.
+
+
+État GECKO-054 :
+- commit architecture sans ordonnanceur : 302debfdc4fba4e9a9bdc483f0fbf7a19c5d8484 ;
+- commit final mascottes + Pierre : ab82f3d338cef1a8338d70d41fb2e70267fdc90d ;
+- CI #255 entièrement verte ;
+- tests + build Phone OK ;
+- APK 0.15.14-dev produit ;
+- SHA-256 APK : 67cb5429d2ae188e8a5a58f09f43afa2032a96e43f1998f1265bafe96eed8abb ;
+- aucune prerelease/release déclenchée ;
+- validation téléphone Fab requise avant publication.

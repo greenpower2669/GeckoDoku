@@ -533,3 +533,15 @@ onPause stopAll/release ; onResume ensurePlantMascot + syncLivingMascotsForCurre
 Pierre :
 pipeline visuel/parole séparé.
 RETURN_AFTER_PAUSE = 300 phrases dédiées, cooldown 48 h, 48 IDs récents persistants, anti-famille et anti-similarité.
+
+
+## 27 — Test GECKO-054 0.15.14-dev
+
+Commits :
+- 302debfdc4fba4e9a9bdc483f0fbf7a19c5d8484 : suppression définitive du lecteur partagé ;
+- ab82f3d338cef1a8338d70d41fb2e70267fdc90d : 300 retours Pierre + anti-répétition + mémoires.
+
+CI #255 entièrement verte.
+APK : GeckoDoku-v0.15.14-dev.apk.
+SHA-256 : 67cb5429d2ae188e8a5a58f09f43afa2032a96e43f1998f1265bafe96eed8abb.
+Aucune release publique avant validation téléphone.

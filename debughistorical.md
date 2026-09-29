@@ -311,3 +311,15 @@ Correction :
 - intro prioritaire ;
 - Pierre inchangé visuellement ;
 - 300 phrases RETURN avec anti-répétition renforcée.
+
+
+## GECKO-054 — CI #255 — VERTE
+
+Résultat :
+- tests unitaires OK ;
+- compilation Phone OK ;
+- artifact GeckoDoku-v0.15.14-dev-phone produit ;
+- aucune prerelease/release ;
+- SHA-256 APK : 67cb5429d2ae188e8a5a58f09f43afa2032a96e43f1998f1265bafe96eed8abb.
+
+Validation appareil attendue : quatre modes, pièces initiales Bee/Gecko, apparition, retour Mail/Messages, intros on top et variété des 300 retours Pierre.

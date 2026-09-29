@@ -158,7 +158,7 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] RETURN_AFTER_PAUSE = RETURN uniquement ;
 - [x] cooldown 48 h + historique 48 IDs ;
 - [x] anti-répétition famille + similarité ;
-- [ ] CI 0.15.14-dev ;
+- [x] CI #255 0.15.14-dev entièrement verte ;
 - [ ] validation téléphone sur les 4 modes ;
 - [ ] validation pièces initiales Bee/Gecko ;
 - [ ] validation apparition vide → vidéo → vivant ;
@@ -166,3 +166,5 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] validation intros on top ;
 - [ ] validation variété Pierre ;
 - [ ] release seulement après validation explicite Fab.
+
+- [x] APK 0.15.14-dev produit ; SHA-256 67cb5429d2ae188e8a5a58f09f43afa2032a96e43f1998f1265bafe96eed8abb ;
