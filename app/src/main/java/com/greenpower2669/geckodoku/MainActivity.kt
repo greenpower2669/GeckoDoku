@@ -3062,6 +3062,13 @@ class MainActivity : Activity() {
             result ==
             ActionFeedback.COMPLETED
         ) {
+            hint.step.cell
+                ?.let {
+                    showClassicLivingGecko(
+                        it
+                    )
+                }
+
             completeGame(
                 playCelebrationMusicImmediately =
                     true
@@ -12201,6 +12208,10 @@ class MainActivity : Activity() {
         }
 
         if (completed) {
+            showClassicLivingGecko(
+                cell
+            )
+
             completeGame(
                 playCelebrationMusicImmediately =
                     !voiceStarted
