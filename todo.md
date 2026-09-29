@@ -276,3 +276,17 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] aucune release avant validation Fab.
 
 - [x] APK SHA-256 : 97e3876d853dd1701f3e7f552fe38d289bf4d5344278416a1e409d7817d6ebcf.
+
+
+## GECKO-060 — ownership visuel unique Bee/Gecko
+- [x] Alive Presence possède PNG fallback + vidéos ;
+- [x] BeeGeckoBoardView ne rend plus une seconde mascotte legacy ;
+- [x] conserver l'ownership Alive quand la target sort temporairement ;
+- [x] restaurer la règle hors-écran sur la cellule du plateau, pas sur le cadre média ;
+- [x] version 0.15.20-dev / versionCode 55 ;
+- [ ] CI verte ;
+- [ ] APK Phone produit ;
+- [ ] téléphone : toutes les Abeilles et tous les Gecko passent par leur Presence ;
+- [ ] drag : une cellule sortie du viewport cache sa mascotte ;
+- [ ] drag retour : la Presence reprend sans PNG legacy ;
+- [ ] aucune release avant validation Fab.
