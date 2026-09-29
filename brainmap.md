@@ -727,3 +727,8 @@ GECKO-059 : CI #267 verte ; APK Phone 0.15.19-dev prêt ; prochain test = Gecko 
 Snapshot Bee/Gecko -> Alive Presence -> PNG fallback OU vidéo.
 BeeGeckoBoardView garde grille, axes, croix et marqueurs mais ne dessine plus les mascottes.
 La visibilité hors-écran dépend de la cellule du plateau, pas du cadre média transparent.
+
+
+## 29 — GECKO-061 visibilité hexagonale
+cellule -> centre écran -> centre dans viewport ? -> oui : Presence PNG/vidéo ; non : Presence cachée.
+Le cadre média transparent/key-color n'est jamais utilisé pour décider la visibilité.
