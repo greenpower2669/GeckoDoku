@@ -190,3 +190,21 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] release seulement après validation Fab.
 
 - [x] artifact Phone 0.15.15-dev produit ; SHA-256 APK 671776186328f53df577599e45d2cb85ea8bc6a8ca8daf5d54bf0721c71dabf5.
+
+
+## GECKO-056 — Gecko + Abeilles figés malgré animations ON
+- [x] auditer la chaîne commune Gecko/Abeille ;
+- [x] isoler la course MEDIA_INFO_VIDEO_RENDERING_START / onPlayerStarted ;
+- [x] latcher rendering-start pour la génération courante, quel que soit l'ordre des callbacks ;
+- [x] conserver l'obligation playerStarted + renderingStarted avant révélation ;
+- [x] protéger les générations anciennes et cancel() ;
+- [x] ajouter FreshPlaybackFrameGateTest ;
+- [x] version 0.15.16-dev / versionCode 51 ;
+- [ ] CI verte ;
+- [ ] APK Phone produit ;
+- [ ] téléphone : Gecko Classic bougent ;
+- [ ] téléphone : Gecko Sudoku bougent ;
+- [ ] téléphone : Gecko Gomoku bougent ;
+- [ ] téléphone : Gecko + Abeilles hexagonaux bougent ;
+- [ ] téléphone : retour Mail/Messages conserve la reprise ;
+- [ ] aucune release avant validation explicite Fab.
