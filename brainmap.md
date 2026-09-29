@@ -760,3 +760,9 @@ GECKO-063 build -> CI #286 SUCCESS -> 0.15.23-dev -> test téléphone requis -> 
 ## 32 — stratégie géométrique proposée Bee/Gecko
 cellRect intersecte viewport ? -> non : Presence cachée ; oui : Presence conservée -> target centré sur cellule -> rendu clipé au viewport réel du plateau.
 Remplace le seuil center-in-viewport, qui masque trop tôt en bas et laisse déborder en haut.
+
+
+## 33 — GECKO-064
+cellRect ∩ viewport ? -> non : target null / Presence cachée ; oui : target centrée sur cellule.
+target + viewport root -> intersection -> clipBounds locale -> PNG et vidéo.
+Aucun clamp, aucun recentrage, aucun seuil center-in-viewport.
