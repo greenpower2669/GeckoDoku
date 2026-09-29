@@ -591,3 +591,6 @@ Correction 0.15.16-dev :
 Portée commune : Classic, Sudoku, Gomoku, Abeilles & Geckos ; Gecko et Abeille partagent ChromaKeyVideoView/FreshPlaybackFrameGate.
 
 Invariant inchangé : 1 Presence = 1 PNG + 1 ChromaKeyVideoView + 1 AliveAnimator ; zéro ordonnanceur, zéro pool, zéro lecteur partagé.
+
+### GECKO-056 — build
+CI #260 verte sur a43ef730ec77475e08b3ab7c4b897a023977057c. Artifact : GeckoDoku-v0.15.16-dev-phone. SHA-256 archive : 4fde649f9492e89ba01e12e62a4094e454e229008c930c35837b200c94308894. Validation téléphone Gecko + Abeilles encore requise.
