@@ -468,3 +468,6 @@ Correction 0.15.21-dev :
 - centre de cellule hors viewport => target null => PNG+vidéo Alive cachés ;
 - centre dedans => média autorisé, même si son grand cadre transparent dépasse ;
 - ownership Alive inchangé, aucun retour au rendu PNG legacy.
+
+## GECKO-061 — CI #275 VERTE
+Commit testé : 94eed6fd4e718d8d5aaeed6350e816709dd45327. Tests + assemblePhone : succès. APK SHA-256 : 1f65452b0e8b98670eaf27ba9e321e997dfad13c2bfdbf36b2fd17523877da19. Aucune release.
