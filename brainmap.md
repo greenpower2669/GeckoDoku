@@ -673,3 +673,5 @@ flowchart LR
 ~~~
 
 Avant 0.15.16-dev, R reçu avant PS était perdu. GECKO-056 mémorise R par génération ; la révélation reste impossible tant que PS n'est pas également arrivé.
+
+GECKO-056 : CI #260 verte ; APK Phone 0.15.16-dev construit ; prochain nœud = validation téléphone des Gecko et Abeilles dans les quatre modes.
