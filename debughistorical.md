@@ -49,3 +49,23 @@ Résultat :
 
 Reste :
 validation téléphone Fab de la continuité vidéo/PNG, des échelles, des attentes 4 cycles, des key colors, de la Plante et des non-régressions Prof/Pierre.
+
+
+## GECKO-050 — 0.15.7-dev — COUPURE ENTRE DEUX VIDÉOS
+
+Observation téléphone Fab :
+parfois la mascotte disparaît brièvement entre deux vidéos, comme une coupure.
+
+Cause confirmée dans l'architecture :
+ChromaKeyVideoView.play() appelle stopPlayback(), arme revealOnFirstFrame et place alpha=0 jusqu'à la première frame du nouveau clip.
+Le masque GECKO-050 reste actif pour cacher le PNG du plateau.
+Entre les deux, on peut donc voir uniquement le fond.
+
+Correctif 0.15.8-dev :
+- si une première frame a déjà été rendue (maskLatched=true), afficher le PNG canonique dans AliveMascotOverlayView pendant le first-frame gate du clip suivant ;
+- conserver exactement la même géométrie ;
+- cacher le PNG dans onFirstFrameRendered ;
+- ne jamais utiliser ce bridge avant la première apparition.
+
+Résultat attendu :
+vidéo A → image fixe cohérente très brève → vidéo B, sans phase vide.

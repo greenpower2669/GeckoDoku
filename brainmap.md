@@ -503,6 +503,7 @@ flowchart LR
     P --> PV[stay1..4 / cute / PlanteTr fallback]
     Layer --> CK[ChromaKeyVideoView]
     CK --> Mask[masque maintenu entre clips]
+    CK --> Bridge[PNG canonique pont pendant first-frame gate]
 ~~~
 
 Géométrie :
@@ -515,5 +516,11 @@ Géométrie :
 Une seule instance vivante de chaque type est active à la fois ; quand une nouvelle pièce du même type apparaît, l'ancienne redevient son PNG statique. Cela évite une multiplication de lecteurs vidéo sur les grands plateaux.
 
 Invariant de propriété : retirer une ancienne pièce statique ne reprend pas le slot vivant à une pièce plus récente du même type.
+
+Continuité inter-clips :
+- play() arme revealOnFirstFrame et met la nouvelle surface vidéo à alpha 0 ;
+- si un clip précédent a déjà rendu une frame, AliveMascotOverlayView affiche temporairement le PNG canonique sous la vidéo ;
+- onFirstFrameRendered retire ce PNG immédiatement ;
+- au premier APPEARING, aucun bridge PNG n'est montré avant la vidéo.
 
 Prof Gecko / Pierre n'utilisent pas AliveAnimator.

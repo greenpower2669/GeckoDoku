@@ -8,7 +8,7 @@
 ## État de référence
 
 - Branche : gecko-039-sudoku-tap-gecko-gomoku
-- Version : 0.15.7-dev / versionCode 42
+- Version : 0.15.8-dev / versionCode 43
 - GECKO-047 : VALIDÉ FAB — grandes barres d’axes, drag/suppression hors plateau, Prof utilisant les axes, audio Android/Pierre capturable.
 - GECKO-048 : CODE + CI VERTE, validation téléphone encore attendue — prononciation Pierre et couleurs d’axes.
 - GECKO-049 : VALIDÉ FAB — géométrie canonique des axes Abeilles & Geckos.
@@ -222,7 +222,9 @@ GECKO-050 :
 - Plante décorative avec quatre attentes + animation longue ;
 - jamais deux choix ambiants identiques consécutifs si une alternative existe ;
 - après quatre attentes terminées ou une mignonnerie, réinterrogation des autres mascottes vivantes ;
-- le masque vidéo reste en place entre les clips, donc le PNG ne flashe pas entre apparition et attente ;
+- le masque vidéo reste en place entre les clips ;
+- après une vidéo déjà visible, le PNG transparent canonique de même géométrie sert de pont pendant le préchargement de la vidéo suivante, puis est retiré exactement à sa première frame ;
+- ce pont n'est jamais montré avant la toute première apparition ;
 - taille vidéo dérivée de la taille PNG réellement dessinée dans chaque mode ;
 - animations OFF : PNG de plateau pour Gecko/Abeille, PlanteTr.png pour la Plante.
 

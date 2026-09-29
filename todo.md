@@ -29,7 +29,11 @@
 - [x] tests unitaires sélection/anti-répétition + géométrie de taille ;
 - [x] CI #246 intégration complète verte ;
 - [x] APK téléphone 0.15.7-dev produit en artifact privé de test ;
-- [ ] validation téléphone Fab.
+- [x] test téléphone Fab : coupure visuelle intermittente entre deux vidéos reproduite conceptuellement ;
+- [x] cause : nouveau lecteur transparent jusqu'à sa première frame alors que le PNG plateau reste masqué ;
+- [x] correction : PNG transparent canonique utilisé uniquement comme pont entre deux clips déjà commencés ;
+- [ ] CI 0.15.8-dev ;
+- [ ] validation téléphone Fab du pont sans coupure.
 
 Voir `ordres-de-mission.md` pour le contrat complet.
 

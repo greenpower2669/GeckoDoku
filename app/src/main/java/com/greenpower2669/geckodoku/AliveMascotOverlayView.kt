@@ -499,8 +499,23 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
         refreshSlotTarget(slot)
 
+        val usePngBridge =
+            slot.maskLatched &&
+                slot.profile
+                    .pngAsset != null
+
+        // Between two already-visible clips, ChromaKeyVideoView.play()
+        // stops the previous MediaPlayer and keeps the new surface at
+        // alpha=0 until its first decoded frame. Keep the canonical
+        // transparent PNG underneath during that preparation window so
+        // the mascot never disappears. This bridge is never shown before
+        // the very first appearance because maskLatched is still false.
         slot.image.visibility =
-            View.GONE
+            if (usePngBridge) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
 
         val maskColor =
             placement
@@ -554,6 +569,11 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
                 slot.maskLatched =
                     true
+
+                // The new video is now genuinely visible: remove the
+                // static bridge on this exact first rendered frame.
+                slot.image.visibility =
+                    View.GONE
 
                 if (
                     slot.mask.visibility ==

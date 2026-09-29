@@ -367,4 +367,4 @@ Intégration multi-mode effectuée :
 - changement de mode / nouvelle partie / pause nettoient les instances de plateau ;
 - Pierre et les vidéos du Prof restent hors de cette architecture.
 
-État : code intégré sur 0.15.7-dev ; CI #246 entièrement verte ; APK téléphone de test produit. Validation téléphone Fab encore requise avant toute release publique.
+État : test téléphone 0.15.7-dev effectué. Fab observe parfois un bref vide entre deux vidéos. Diagnostic : ChromaKeyVideoView rend le nouveau clip transparent jusqu'à sa première frame après arrêt du clip précédent. Correctif 0.15.8-dev : le PNG transparent canonique, à géométrie identique, sert uniquement de pont entre deux clips déjà visibles puis disparaît sur la première frame du clip suivant. CI et revalidation téléphone requises avant toute release publique.

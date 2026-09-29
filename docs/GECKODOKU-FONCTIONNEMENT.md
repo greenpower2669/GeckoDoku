@@ -2,7 +2,7 @@
 
 > Documentation vivante de l'application telle qu'elle existe au 28 septembre 2026.
 >
-> **Version applicative observée :** `0.15.7-dev` — `versionCode 42`  
+> **Version applicative observée :** `0.15.8-dev` — `versionCode 43`  
 > **Branche :** `gecko-039-sudoku-tap-gecko-gomoku`  
 > **Référence code fonctionnel :** `8ccc0385c8314239976368811dab93808970e35a`  
 > Cette documentation décrit le comportement présent. Elle peut évoluer avec le logiciel. Elle n'est ni un historique de debug ni un ordre de mission.
@@ -539,3 +539,12 @@ Quand les animations sont désactivées, le jeu revient aux PNG : Gecko/Abeille 
 Une seule mascotte vivante de chaque type est animée à la fois afin de conserver une charge légère sur téléphone. Les autres pièces restent en PNG.
 
 La Plante est décorative, sans collision ni effet sur les règles. Prof Gecko/Pierre restent sur leur pipeline vidéo/parole séparé.
+
+
+#### Correctif continuité 0.15.8-dev
+
+Le premier essai téléphone GECKO-050 a montré un bref vide intermittent entre deux clips successifs.
+
+Cause : lorsqu'un nouveau clip est demandé, le lecteur précédent est arrêté et la nouvelle surface reste volontairement transparente jusqu'à sa première frame décodée. Le masque continu empêchait alors le PNG du plateau de réapparaître, laissant momentanément seulement le fond.
+
+Correction : après qu'une mascotte a déjà rendu sa première frame, son PNG transparent canonique de même taille sert de pont uniquement pendant la préparation du clip suivant. Il est retiré exactement dans `onFirstFrameRendered`. La première animation d'apparition ne montre donc toujours aucun PNG prématuré.
