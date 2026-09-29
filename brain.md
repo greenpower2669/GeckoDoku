@@ -572,3 +572,22 @@ aucun ordonnanceur, aucun pool, aucun lecteur partagé.
 CI #257 verte sur 135ec82888e8d01494f74bd56adcea86f5dae490.
 APK Phone 0.15.15-dev SHA-256 671776186328f53df577599e45d2cb85ea8bc6a8ca8daf5d54bf0721c71dabf5.
 Validation téléphone encore requise.
+
+
+## 28 — GECKO-056 first-frame Gecko/Abeille
+
+Observation téléphone : Gecko et Abeilles restent en PNG fixe alors que les animations sont ON.
+
+Cause code ciblée :
+FreshPlaybackFrameGate rejetait MEDIA_INFO_VIDEO_RENDERING_START si onPlayerStarted() n'avait pas encore été appelé. Android peut délivrer le signal de rendu pendant MediaPlayer.start(), donc avant le retour local de start() et avant onPlayerStarted().
+
+Correction 0.15.16-dev :
+- onRenderingStart() mémorise le signal pour la génération courante sans exiger playerStarted à cet instant ;
+- onFrameRendered() conserve la barrière stricte playerStarted && renderingStarted ;
+- une génération périmée ne déverrouille jamais la suivante ;
+- cancel() reste bloquant ;
+- test unitaire dédié ajouté.
+
+Portée commune : Classic, Sudoku, Gomoku, Abeilles & Geckos ; Gecko et Abeille partagent ChromaKeyVideoView/FreshPlaybackFrameGate.
+
+Invariant inchangé : 1 Presence = 1 PNG + 1 ChromaKeyVideoView + 1 AliveAnimator ; zéro ordonnanceur, zéro pool, zéro lecteur partagé.
