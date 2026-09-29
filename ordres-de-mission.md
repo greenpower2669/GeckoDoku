@@ -423,3 +423,20 @@ Implémentation 0.15.10-dev :
 - APK téléphone produit ;
 - validation téléphone Fab : PARFAIT / VALIDÉ ;
 - ne pas rouvrir ce rendu sauf régression.
+
+
+## Publication 0.15.10-dev
+
+Fab a validé la version pour publication publique.
+
+Publication effectuée :
+- prerelease créée par CI #250 via [phone-release] ;
+- tag : phone-0.15.10-dev-run-250 ;
+- promotion en release publique normale par CI #251 via [phone-publish] ;
+- titre final : GeckoDoku 0.15.10-dev • téléphone validé ;
+- prerelease = false ;
+- release publique confirmée sur GitHub ;
+- APK : GeckoDoku-v0.15.10-dev.apk ;
+- SHA-256 GitHub : 684a40dbdc8ab91a8ca4ccdb5d4d904907279b9ad9c05c35603ae0b253ac9b46.
+
+La prochaine mission active reste le grand cycle autonome des mascottes.

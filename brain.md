@@ -397,3 +397,14 @@ Ce point est clos sauf régression.
 
 Reste actif :
 le contrat des grands cycles autonomes des mascottes est enregistré dans l'ordre de mission et le TODO mais n'est pas encore implémenté.
+
+
+## 20 — Release publique 0.15.10-dev
+
+Version téléphone validée et publiée publiquement.
+Tag : phone-0.15.10-dev-run-250.
+CI #250 a créé la prerelease ; CI #251 l'a promue en release normale.
+APK public : GeckoDoku-v0.15.10-dev.apk.
+SHA-256 : 684a40dbdc8ab91a8ca4ccdb5d4d904907279b9ad9c05c35603ae0b253ac9b46.
+
+Prochaine évolution active : grand cycle autonome des mascottes.

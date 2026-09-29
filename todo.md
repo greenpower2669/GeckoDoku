@@ -81,3 +81,12 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] CI #249 verte ;
 - [x] APK téléphone 0.15.10-dev produit ;
 - [x] validation téléphone Fab : « Parfait » ; ne pas rouvrir sauf régression.
+
+
+### Publication 0.15.10-dev
+- [x] validation Fab ;
+- [x] CI #250 : prerelease créée ;
+- [x] CI #251 : release promue en publique ;
+- [x] tag phone-0.15.10-dev-run-250 ;
+- [x] APK public disponible ;
+- [ ] grand cycle autonome des mascottes reste la prochaine tâche active.

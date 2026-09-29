@@ -174,3 +174,15 @@ Ce point est clos sauf régression.
 
 Note historique :
 les mentions plus haut de « masque continu » ou maskColorProvider décrivent les anciennes versions 0.15.7/0.15.8. Elles ne décrivent plus l'architecture courante depuis 0.15.9.
+
+
+## GECKO-050 — publication 0.15.10-dev
+
+Après validation téléphone Fab :
+- CI #250 : build vert + création de la prerelease phone-0.15.10-dev-run-250 ;
+- CI #251 : build vert + promotion réussie ;
+- release finale non-prerelease ;
+- APK public confirmé ;
+- SHA-256 : 684a40dbdc8ab91a8ca4ccdb5d4d904907279b9ad9c05c35603ae0b253ac9b46.
+
+Aucun incident de publication.
