@@ -742,3 +742,21 @@ Version cible : 0.15.21-dev / versionCode 56.
 Aucun merge main ni release avant validation téléphone.
 
 État GECKO-061 : CI #275 verte ; APK 0.15.21-dev produit ; règle hors-écran basée sur le centre de cellule ; aucune release ; validation téléphone requise.
+
+
+## GECKO-062 — GOMOKU 3 ANIMATIONS PAR ÉQUIPE
+
+Décision Fab :
+dans les deux variantes Gomoku (contre Prof/ordinateur et JcJ), ne pas animer toutes les pierres.
+
+Contrat :
+- maximum 3 Gecko verts vivants ;
+- maximum 3 Gecko jaunes vivants ;
+- choix aléatoire ;
+- autres pierres en PNG statique ;
+- le groupe reste stable pendant son cycle ;
+- à la fin d'un grand cycle, redistribuer aléatoirement les 3 par équipe ;
+- ne pas modifier les règles de jeu, IA, zoom/drag ou couleurs ;
+- aucune release ni merge main avant validation téléphone.
+
+Version cible : 0.15.22-dev / versionCode 57.
