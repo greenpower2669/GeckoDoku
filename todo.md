@@ -251,11 +251,13 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] continuer à retourner null si la mascotte est totalement hors écran ;
 - [x] ajouter la trace BEE_GECKO_ALIVE_TARGET_CLAMPED ;
 - [x] version 0.15.18-dev / versionCode 53 ;
-- [ ] CI verte ;
-- [ ] APK Phone produit ;
+- [x] CI #265 verte ;
+- [x] APK Phone 0.15.18-dev produit ;
 - [ ] téléphone : Gecko bord gauche animé ;
 - [ ] téléphone : Gecko bord droit animé ;
 - [ ] téléphone : Gecko bord bas animé ;
 - [ ] téléphone : Abeille intérieure inchangée ;
 - [ ] téléphone : zoom/drag conservent les animations ;
 - [ ] aucune release avant validation explicite Fab.
+
+- [x] artifact CI #265 : GeckoDoku-v0.15.18-dev-phone ; APK SHA-256 9e0ad087bc2f641ecd80010bb162cf57739ac0b0a236d2dc21cbe5d321311b77.
