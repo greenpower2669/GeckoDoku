@@ -309,3 +309,19 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] CI #275 verte ;
 - [x] APK Phone 0.15.21-dev produit ;
 - [x] SHA-256 APK : 1f65452b0e8b98670eaf27ba9e321e997dfad13c2bfdbf36b2fd17523877da19.
+
+
+## GECKO-062 — Gomoku : 3 mascottes vivantes par équipe
+- [x] appliquer au Gomoku contre Prof et au Gomoku JcJ ;
+- [x] conserver tous les autres pions Gecko en PNG statique ;
+- [x] sélectionner aléatoirement au maximum 3 Gecko verts et 3 jaunes pour Alive ;
+- [x] garder la sélection stable pendant un grand cycle ;
+- [x] redistribuer les 3+3 à la fin d'un grand cycle Alive ;
+- [x] garantir un changement de sélection quand une alternative existe ;
+- [x] tests unitaires de la politique 3 par équipe ;
+- [x] version 0.15.22-dev / versionCode 57 ;
+- [ ] CI verte ;
+- [ ] APK Phone produit ;
+- [ ] téléphone : jamais plus de 3 Gecko animés par équipe ;
+- [ ] téléphone : redistribution visible en fin de cycle ;
+- [ ] aucune release avant validation Fab.
