@@ -476,3 +476,34 @@ Aucune publication publique avant validation téléphone Fab.
 - SHA-256 APK : 9d8de7bd06a5defcbef0523cbdae293f125c077f9a628bfdb0b37357cfbf709f ;
 - aucune prerelease/release déclenchée ;
 - validation téléphone Fab requise sur les 4 modes avant publication.
+
+
+## GECKO-052 — diagnostic ALL ANIMATED + intros réellement au-dessus
+
+Retour téléphone Fab sur 0.15.11-dev :
+- la grille est visuellement propre ;
+- les Gecko restent cependant statiques après un moment ;
+- en pratique seuls Pierre et la Plante donnent encore une impression d'animation ;
+- hypothèse à tester : le verrou/pool des lecteurs vidéo empêche la vie des mascottes.
+
+Décision Fab :
+RETIRER TEMPORAIREMENT TOUTE LIMITATION DE CONCURRENCE.
+Toutes les mascottes visibles doivent pouvoir jouer leur vidéo simultanément afin d'isoler le rôle du verrou.
+
+Implémentation diagnostic 0.15.12-dev :
+- videoSlots devient dynamique ;
+- un slot ChromaKeyVideoView est créé paresseusement pour chaque Presence visible ;
+- aucune limite 3 Gecko / 2 Abeilles n'est appliquée dans ce build ;
+- toutes les Presence éligibles peuvent donc être animées en même temps ;
+- le mécanisme de grands cycles reste actif ;
+- ce mode est volontairement diagnostic : performances/batterie ne sont pas encore le critère.
+
+Correction jointe demandée par Fab :
+les deux vidéos d'introduction doivent être ON TOP.
+Pendant INTRO_FIRST / INTRO_SECOND :
+- AliveMascotOverlayView arrête ses lecteurs actifs et devient invisible ;
+- aucune mascotte ni Plante ne peut passer devant l'intro ;
+- à la fin ou au skip de l'intro, les Presence reprennent leurs PNG et leurs cycles.
+
+Version : 0.15.12-dev / versionCode 47.
+Pas de release publique avant test téléphone.

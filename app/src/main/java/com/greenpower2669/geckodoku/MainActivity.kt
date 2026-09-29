@@ -4500,6 +4500,17 @@ class MainActivity : Activity() {
 
     private fun applyProfessorIntroVisibility() {
         if (
+            ::aliveMascotOverlay
+                .isInitialized
+        ) {
+            aliveMascotOverlay
+                .setIntroSuppressed(
+                    introPhase !=
+                        IntroPhase.DONE
+                )
+        }
+
+        if (
             !::professorButtonHost
                 .isInitialized
         ) {

@@ -8,7 +8,7 @@
 ## État de référence
 
 - Branche : gecko-039-sudoku-tap-gecko-gomoku
-- Version : 0.15.11-dev / versionCode 46
+- Version : 0.15.12-dev / versionCode 47
 - GECKO-047 : VALIDÉ FAB — grandes barres d’axes, drag/suppression hors plateau, Prof utilisant les axes, audio Android/Pierre capturable.
 - GECKO-048 : CODE + CI VERTE, validation téléphone encore attendue — prononciation Pierre et couleurs d’axes.
 - GECKO-049 : VALIDÉ FAB — géométrie canonique des axes Abeilles & Geckos.
@@ -449,3 +449,19 @@ Aucune release publique : validation téléphone Fab nécessaire, en particulier
 - aucun retour de carré de fond ;
 - pas de surcharge visible avec le pool vidéo borné ;
 - Plante drag et Pierre inchangés.
+
+
+## 23 — GECKO-052 diagnostic ALL ANIMATED
+
+0.15.12-dev désactive volontairement le plafond runtime des lecteurs vidéo.
+AliveMascotOverlayView.videoSlots est dynamique : il alloue autant de VideoSlot que de Presence visibles pour chaque type.
+
+But :
+tester directement l'hypothèse que le pool borné / ordonnanceur est la raison pour laquelle les Gecko cessent de s'animer sur téléphone.
+
+Ce choix est DIAGNOSTIC, pas encore l'architecture finale optimisée.
+
+Intro :
+applyProfessorIntroVisibility() pilote désormais AliveMascotOverlayView.setIntroSuppressed().
+Pendant FIRST/SECOND, les lecteurs mascottes sont arrêtés et la couche est invisible.
+À DONE/skip, la couche vivante reprend et les cycles repartent.

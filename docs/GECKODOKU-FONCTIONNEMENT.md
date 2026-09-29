@@ -2,7 +2,7 @@
 
 > Documentation vivante de l'application telle qu'elle existe au 28 septembre 2026.
 >
-> **Version applicative observée :** `0.15.11-dev` — `versionCode 46`  
+> **Version applicative observée :** `0.15.12-dev` — `versionCode 47`  
 > **Branche :** `gecko-039-sudoku-tap-gecko-gomoku`  
 > **Référence code fonctionnel :** `8ccc0385c8314239976368811dab93808970e35a`  
 > Cette documentation décrit le comportement présent. Elle peut évoluer avec le logiciel. Elle n'est ni un historique de debug ni un ordre de mission.
@@ -571,3 +571,10 @@ Les placements imposés/grisés conservent une brume visuelle mais elle est dés
 Toutes les mascottes visibles sont désormais enregistrées comme Presence légères dans AliveMascotOverlayView, y compris celles déjà présentes lors du chargement d'une partie. Le PNG transparent appartient à la Presence. Les lecteurs vidéo sont séparés et restent bornés à 3 Gecko, 2 Abeilles et 1 Plante simultanément. Le scheduler update() fait tourner ces lecteurs entre toutes les Presence visibles, par ordre d'ancienneté d'animation avec des pauses légèrement aléatoires. Cette architecture est commune aux modes Classic, Sudoku, Gomoku et Abeilles & Geckos.
 
 AliveAnimator change de stay à chaque clip, forme des séries de 3 à 5 stays, évite de reproduire immédiatement une série complète et déclenche à la fin d'un grand cycle une animation cute chez une autre mascotte visible qui en possède une.
+
+
+#### Diagnostic ALL ANIMATED 0.15.12-dev
+
+Pour isoler un défaut observé sur téléphone, le plafond de lecteurs vidéo est temporairement retiré. AliveMascotOverlayView crée dynamiquement un VideoSlot par Presence visible ; toutes les mascottes peuvent ainsi être animées simultanément. Ce réglage sert à déterminer si le pool borné 3 Gecko / 2 Abeilles était responsable de l'arrêt apparent des animations.
+
+Pendant les deux vidéos d'introduction, la couche AliveMascotOverlayView est suspendue et cachée. Les lecteurs mascottes sont arrêtés afin qu'aucun Gecko ou Plante ne puisse apparaître au-dessus de l'intro. Après fin naturelle ou skip, les Presence reprennent leur PNG interne et leur cycle.

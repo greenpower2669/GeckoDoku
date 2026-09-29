@@ -245,25 +245,11 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     private val presences =
         linkedMapOf<String, Presence>()
 
-    private val videoSlots:
-        List<VideoSlot> =
-        MascotAnimationProfiles
-            .all
-            .flatMap {
-                profile ->
-                List(
-                    MascotActivityPolicy
-                        .capacity(
-                            profile.kind
-                        )
-                ) {
-                    index ->
-                    VideoSlot(
-                        profile,
-                        index
-                    )
-                }
-            }
+    private val videoSlots =
+        mutableListOf<VideoSlot>()
+
+    private var introSuppressed =
+        false
 
     private var animationSerial =
         0L
@@ -610,6 +596,102 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         }
     }
 
+    fun setIntroSuppressed(
+        suppressed: Boolean
+    ) {
+        if (
+            introSuppressed ==
+                suppressed
+        ) {
+            return
+        }
+
+        introSuppressed =
+            suppressed
+
+        removeCallbacks(
+            updateRunnable
+        )
+
+        if (suppressed) {
+            videoSlots
+                .forEach {
+                    unbindSlot(
+                        it,
+                        keepPresence =
+                            true
+                    )
+                }
+
+            visibility =
+                View.INVISIBLE
+            return
+        }
+
+        val now =
+            SystemClock
+                .uptimeMillis()
+
+        presences.values
+            .toList()
+            .forEach {
+                presence ->
+                if (
+                    presence.removing
+                ) {
+                    removePresence(
+                        presence
+                    )
+                } else {
+                    presence.pendingDecision =
+                        if (
+                            animationsEnabled
+                        ) {
+                            presence.animator
+                                .startAmbient(
+                                    animationsEnabled =
+                                        true,
+                                    randomValue =
+                                        Random.nextInt()
+                                )
+                        } else {
+                            presence.animator
+                                .start(
+                                    animationsEnabled =
+                                        false,
+                                    randomValue = 0
+                                )
+                        }
+
+                    presence.nextAnimationAt =
+                        now +
+                            if (
+                                animationsEnabled
+                            ) {
+                                Random.nextLong(
+                                    50L,
+                                    450L
+                                )
+                            } else {
+                                0L
+                            }
+
+                    presence.image
+                        .visibility =
+                        View.VISIBLE
+
+                    refreshPresenceTarget(
+                        presence
+                    )
+                }
+            }
+
+        scheduleUpdate(
+            20L
+        )
+        refreshVisibility()
+    }
+
     fun stop(
         kind: MascotKind
     ) {
@@ -709,6 +791,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             )
         }
 
+        ensureVideoSlotForEveryPresence()
+
         videoSlots
             .filter {
                 it.presence ==
@@ -763,6 +847,49 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
         visibility =
             View.GONE
+    }
+
+    private fun ensureVideoSlotForEveryPresence() {
+        MascotAnimationProfiles
+            .all
+            .forEach {
+                profile ->
+                val required =
+                    presences.values
+                        .count {
+                            presence ->
+                            presence.profile
+                                .kind ==
+                                profile.kind &&
+                                (
+                                    presence.removing ||
+                                        presence.placement
+                                            .eligible()
+                                    )
+                        }
+
+                var existing =
+                    videoSlots
+                        .count {
+                            it.profile.kind ==
+                                profile.kind
+                        }
+
+                while (
+                    existing <
+                        required
+                ) {
+                    videoSlots.add(
+                        VideoSlot(
+                            profile =
+                                profile,
+                            slotIndex =
+                                existing
+                        )
+                    )
+                    existing += 1
+                }
+            }
     }
 
     private fun nextCandidate(
@@ -1718,7 +1845,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         )
 
         if (
-            animationsEnabled
+            animationsEnabled &&
+            !introSuppressed
         ) {
             postDelayed(
                 updateRunnable,
@@ -1728,6 +1856,14 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     }
 
     private fun refreshVisibility() {
+        if (
+            introSuppressed
+        ) {
+            visibility =
+                View.INVISIBLE
+            return
+        }
+
         visibility =
             if (
                 presences.values

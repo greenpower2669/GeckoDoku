@@ -574,3 +574,19 @@ flowchart TD
 Le plafond de MascotActivityPolicy est désormais un plafond de lecteurs vidéo simultanés, pas un plafond de mascottes vivantes.
 
 Les quatre modes alimentent le même registre de Presence à partir de leur snapshot courant.
+
+
+## 19 — GECKO-052 : diagnostic sans pool borné
+
+~~~mermaid
+flowchart LR
+    P[Presence visibles] --> Count[compter par type]
+    Count --> Slots[créer 1 VideoSlot par Presence]
+    Slots --> All[ALL ANIMATED simultanément]
+    Intro[INTRO FIRST/SECOND] --> Suppress[setIntroSuppressed true]
+    Suppress --> Stop[stop lecteurs mascottes + overlay invisible]
+    Done[INTRO DONE/skip] --> Resume[reprendre PNG + cycles]
+~~~
+
+MascotActivityPolicy conserve les anciens nombres 3/2/1 uniquement comme référence historique.
+AliveMascotOverlayView ne les utilise pas dans 0.15.12-dev.

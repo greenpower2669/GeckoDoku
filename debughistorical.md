@@ -220,3 +220,21 @@ Résultat :
 - SHA-256 APK : 9d8de7bd06a5defcbef0523cbdae293f125c077f9a628bfdb0b37357cfbf709f.
 
 Validation appareil encore requise pour confirmer la rotation réelle entre toutes les Presence visibles dans les quatre modes.
+
+
+## GECKO-052 — test de l'hypothèse « verrou vidéo »
+
+Observation Fab, 0.15.11-dev :
+sur une grille Classic terminée, les Gecko sont présents et propres mais l'animation s'essouffle ; seuls Pierre et la Plante semblent continuer à vivre.
+
+Hypothèse diagnostique :
+le pool borné des ChromaKeyVideoView ou son ordonnanceur empêche les Presence Gecko d'obtenir/reprendre un lecteur.
+
+Test 0.15.12-dev :
+- suppression du plafond runtime ;
+- allocation lazy d'un VideoSlot par Presence visible ;
+- toutes les mascottes éligibles peuvent jouer simultanément.
+
+Autre défaut observé sur capture :
+Gecko/Plante passaient devant les deux vidéos intro.
+Correction : suspension complète de AliveMascotOverlayView pendant les phases INTRO FIRST/SECOND, reprise à DONE/skip.

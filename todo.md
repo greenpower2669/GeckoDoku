@@ -111,3 +111,18 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] APK téléphone 0.15.11-dev produit ;
 - [ ] validation téléphone Fab sur les 4 modes ;
 - [ ] release seulement après validation explicite.
+
+
+## GECKO-052 — diagnostic sans verrou
+- [x] retirer le plafond runtime 3 Gecko / 2 Abeilles ;
+- [x] créer un lecteur vidéo paresseux par Presence visible ;
+- [x] permettre à toutes les mascottes visibles de s'animer simultanément ;
+- [x] conserver les PNG internes et les grands cycles ;
+- [x] intro FIRST/SECOND suspend totalement la couche mascottes ;
+- [x] reprise des mascottes après fin/skip intro ;
+- [ ] CI 0.15.12-dev ;
+- [ ] test téléphone : tous les Gecko visibles bougent-ils réellement ? ;
+- [ ] test téléphone : Abeilles & Geckos tous animés ? ;
+- [ ] test téléphone : intro réellement au-dessus de tout ? ;
+- [ ] décider ensuite si le pool borné était la cause ;
+- [ ] aucune release avant verdict Fab.
