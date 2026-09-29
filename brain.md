@@ -649,3 +649,18 @@ Décision : beeGeckoAliveTarget() n'applique plus aucun test viewport, aucun rej
 
 ### GECKO-059 — build
 CI #267 verte sur baf9743f71821032fbf88480462554eddeade1d5. APK Phone 0.15.19-dev produit. SHA-256 APK : 97e3876d853dd1701f3e7f552fe38d289bf4d5344278416a1e409d7817d6ebcf. Validation téléphone requise.
+
+
+## 32 — GECKO-060 : une seule source visuelle par mascotte
+
+Retour Fab : la nouvelle classe vivante contient déjà son PNG fallback et choisit elle-même ses animations. L'ancien rendu PNG du BeeGeckoBoard ne doit donc plus coexister avec elle.
+
+Modèle canonique :
+- une Presence Alive possède le PNG fallback ET les vidéos ;
+- BeeGeckoBoardView ne dessine plus de seconde représentation Gecko/Abeille ;
+- target temporairement absente : PNG+vidéo Alive sont cachés sans rendre l'ancien PNG du board ;
+- la règle hors-écran reste utile mais teste l'intersection de la cellule avec le viewport, jamais les bords du cadre transparent/key-color ;
+- cellule visible : le cadre média peut dépasser naturellement ;
+- cellule complètement sortie par zoom/drag : Presence cachée jusqu'au retour.
+
+Version 0.15.20-dev / versionCode 55.
