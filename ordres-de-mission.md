@@ -789,3 +789,8 @@ Version cible : 0.15.22-dev / versionCode 57.
 
 Version cible 0.15.23-dev / versionCode 58.
 Aucun merge main ni release sans validation explicite de Fab.
+
+## ÉTAT APRÈS TEST 0.15.23-dev
+Validé téléphone : intro sans flash plateau, suppression du carré noir avant première frame, plante PNG ~95 %.
+Restent ouverts : Gomoku et Abeilles & Geckos.
+Pour Abeilles & Geckos, ne pas coder de nouveau correctif géométrique avant validation de Fab. Proposition : Presence conservée tant que sa cellule intersecte le viewport, target toujours centrée sur cellule, puis clipping strict du rendu au rectangle réel du plateau. Ne plus utiliser le centre de cellule comme frontière d'affichage.
