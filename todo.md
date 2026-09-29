@@ -458,3 +458,12 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] téléphone : aucun débordement vidéo hors cadre/boutons ;
 - [ ] téléphone : aucun carré noir avant première frame ;
 - [ ] aucune release/prerelease ni merge main avant validation Fab.
+
+### GECKO-067 build final
+- [x] CI #312 verte ;
+- [x] run 36643601567 SUCCESS ;
+- [x] APK Phone 0.15.28-dev produit ;
+- [x] taille APK : 248574081 octets ;
+- [x] SHA-256 APK : 296240aa14d866f101ac921887ca30c46c1eebbde946d2f7dc5797ae70d1ce79 ;
+- [x] SHA-256 archive : 2633430128a4fcd465bea4a559770ec3810d0f305c20eddafe30ced7b74585ae ;
+- [x] release/prerelease : non déclenchées.
