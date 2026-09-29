@@ -552,3 +552,18 @@ les mascottes restent devant le dessin du plateau lorsqu'elles sont dans sa fen�
 ## GECKO-065 — CI #303 VERTE
 
 Run 36638744397 SUCCESS, commit testé 1cffec0bbf88148c210fad545e1a3ad4a2f56ad4. Tests + assemblePhone réussis. Artifact GeckoDoku-v0.15.26-dev-phone. APK : 248557697 octets. SHA-256 APK : 1b25121080454d58934c20366073ad0a255324226759fe3baf22f2d4b1617323. Aucune prerelease/release.
+
+
+## GECKO-066 — Surface vidéo ne suivait pas toujours le clip du PNG
+
+0.15.26-dev : captures Gomoku/Bee-Gecko suggèrent un comportement temporel : selon l'état PNG ou vidéo d'une Presence, la mascotte ne respecte pas toujours la même frontière. La géométrie cible n'est plus la suspecte principale. Le backend historique est un GLSurfaceView avec SurfaceView et setZOrderOnTop ; sa composition est séparée des Views Android normales.
+
+Expérience GECKO-066 :
+- abstraction ChromaKeyPlayback ;
+- ChromaKeyTextureView ciblé Bee/Gecko + Gomoku sur API 33+ ;
+- TextureView reste dans la hiérarchie View, donc le clip du videoContainer s'applique réellement au rendu vidéo comme au PNG ;
+- RuntimeShader AGSL réimplémente le shader GLSL de keycolor ;
+- first-frame gate basé sur un vrai onSurfaceTextureUpdated frais, combiné au signal MEDIA_INFO_VIDEO_RENDERING_START ;
+- fallback GLSurface conservé pour les anciens Android et les autres modes.
+
+Premier build du fichier TextureView (#305) a échoué uniquement parce que androidx.annotation.RequiresApi n'est pas une dépendance du projet. Annotation supprimée ; CI #309 ensuite SUCCESS sur l'ensemble du nouveau pipeline avant bump version. Aucune régression de logique de jeu introduite.
