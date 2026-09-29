@@ -507,3 +507,8 @@ Plante :
 fallback PNG ramené à 95 % via pngScale séparé.
 
 Build GECKO-063 : workflow #286 (run 36630368939) SUCCESS. APK 0.15.23-dev, SHA-256 ae704b70c968030b33389d6296332c3c9d7dbe63b9479e993092f84d5b0e0661. Les quatre validations téléphone restent ouvertes.
+
+## 0.15.23-dev — validation partielle téléphone
+Validé : rideau intro, garde première frame/carré noir, PNG plante ~95 %.
+Non validé : Gomoku et Abeilles & Geckos.
+Capture Bee/Gecko Expert 6 zones : le test viewport.contains(cell center) introduit une frontière logique trop brutale. Cas haut : centre dedans mais sprite dépasse hors plateau. Cas bas : centre dehors alors qu'une partie utile de la cellule reste visible, donc Presence absente. Diagnostic : on utilise un test de présence comme substitut à un vrai clipping. Proposition : revenir à l'intersection de cellule pour conserver la Presence et clipper le rendu au rectangle du plateau.
