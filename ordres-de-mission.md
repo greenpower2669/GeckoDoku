@@ -848,3 +848,34 @@ VERSION LIVRÉE POUR TEST
 0.15.26-dev / versionCode 61.
 
 État : CI #303 verte, artifact Phone produit, SHA-256 APK 1b25121080454d58934c20366073ad0a255324226759fe3baf22f2d4b1617323. Aucune release/prerelease, aucun merge main. Validation téléphone Fab requise.
+
+
+## GECKO-066 — TEST BACKEND TEXTUREVIEW POUR LE PLATEAU
+
+Validation Fab : « Ok on test ».
+
+OBJECTIF
+Vérifier si la divergence temporelle PNG/vidéo vient du SurfaceView historique en faisant passer uniquement les mascottes des plateaux exploratoires dans une vraie TextureView Android.
+
+PORTÉE STRICTE
+- Abeilles & Geckos : Gecko + Abeille.
+- Gomoku : seulement les Presence choisies par le cap 3+3.
+- Android API >= 33 uniquement.
+- Classic, Sudoku, Plante, Prof, Intro et autres médias restent sur le backend historique.
+- SDK < 33 : fallback GLSurfaceView.
+
+CONTRAT VISUEL
+- PNG et vidéo doivent suivre le même target, le même clip et le même Z-order.
+- Une vidéo ne doit jamais apparaître au-dessus des boutons, titres ou Prof hors fenêtre du plateau.
+- Une Presence qui passe derrière un bord continue son cycle et revient sans recréation.
+- Aucun carré noir/keycolor avant première frame.
+- YellowTint Gomoku conservé.
+- Bleu et vert keycolor conservés.
+
+CONTRAT ARCHITECTURE
+- ChromaKeyPlayback est l'interface commune.
+- TextureView utilise MediaPlayer + RuntimeShader RenderEffect.
+- Aucun ordonnanceur global, pool, lecteur partagé ou changement de règles.
+- Aucun merge main ni release/prerelease avant validation téléphone.
+
+Version test : 0.15.27-dev / versionCode 62.
