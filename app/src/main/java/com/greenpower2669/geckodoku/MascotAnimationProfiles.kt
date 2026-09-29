@@ -61,7 +61,9 @@ object MascotAnimationProfiles {
                         .PLANT_LONG_ACTION
                 ),
             keyColor =
-                ChromaKeyColor.BLUE
+                ChromaKeyColor.BLUE,
+            pngScale =
+                .95f
         )
 
     val all =
