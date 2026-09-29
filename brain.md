@@ -730,3 +730,14 @@ Plante :
 Version 0.15.23-dev / versionCode 58.
 
 Build GECKO-063 : CI #286 / run 36630368939 SUCCESS. Artifact GeckoDoku-v0.15.23-dev-phone, APK SHA-256 ae704b70c968030b33389d6296332c3c9d7dbe63b9479e993092f84d5b0e0661. Validation téléphone encore requise ; aucune release.
+
+## 36 — Retour téléphone 0.15.23-dev : géométrie Bee/Gecko à revoir
+Fab valide le lot cumulé hors Gomoku et Abeilles & Geckos : intro sans flash du plateau, disparition du carré noir avant première frame et ajustement PNG plante ~95 % fonctionnent.
+
+Sur Abeilles & Geckos, la capture Expert 6 zones montre l'échec du critère centre-de-cellule : un Gecko dont le centre reste dans le viewport peut déborder au-dessus de la bordure ; inversement une cellule encore partiellement visible en bas peut avoir son centre hors viewport et sa Presence est alors supprimée trop tôt.
+
+Le bon modèle proposé pour la suite est de séparer deux notions :
+1. existence logique de la Presence : la cellule existe tant qu'elle intersecte le viewport ;
+2. visibilité physique : le rendu PNG/vidéo reste centré sur la cellule mais doit être clipé par le rectangle réel du plateau.
+
+Ainsi aucune translation/recentrage artificiel, aucun test sur le grand cadre média, et aucun seuil brutal sur le centre de cellule. Cette stratégie doit être confirmée par Fab avant code.
