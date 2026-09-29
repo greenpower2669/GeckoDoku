@@ -6954,10 +6954,13 @@ class MainActivity : Activity() {
                 .viewportRectOnScreen()
                 ?: return null
 
+        // Keep the Presence only while the logical cell itself is
+        // inside the board viewport. The media frame may be larger than
+        // the visible mascot, so its edges are deliberately ignored.
         if (
-            !RectF.intersects(
-                screenRect,
-                viewport
+            !viewport.contains(
+                screenRect.centerX(),
+                screenRect.centerY()
             )
         ) {
             return null
