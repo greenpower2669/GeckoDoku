@@ -109,19 +109,39 @@ class AliveAnimator(
             AliveVisualState.IDLE -> {
                 idleCyclesSinceRefresh += 1
 
-                val requestRefresh =
+                val completedBlock =
                     idleCyclesSinceRefresh >=
                         refreshAfterIdleCycles
 
-                if (requestRefresh) {
-                    idleCyclesSinceRefresh = 0
-                }
+                val shouldReroll =
+                    completedBlock ||
+                        peerRefreshRequested
 
-                chooseAmbient(
-                    randomValue,
-                    requestGroupRefresh =
-                        requestRefresh
-                )
+                if (shouldReroll) {
+                    idleCyclesSinceRefresh = 0
+
+                    chooseAmbient(
+                        randomValue,
+                        requestGroupRefresh =
+                            completedBlock
+                    )
+                } else {
+                    val asset =
+                        currentAsset
+
+                    if (asset == null) {
+                        chooseAmbient(
+                            randomValue
+                        )
+                    } else {
+                        clipDecision(
+                            state =
+                                AliveVisualState.IDLE,
+                            asset = asset,
+                            remember = false
+                        )
+                    }
+                }
             }
 
             AliveVisualState.CUTE -> {
@@ -202,16 +222,30 @@ class AliveAnimator(
                 profile.idleAssets
             }
 
+        val allAmbient =
+            (
+                profile.idleAssets +
+                    profile.cuteAssets
+                )
+                .distinct()
+
         val fallback =
-            if (preferred.isNotEmpty()) {
-                preferred
-            } else if (
-                profile.idleAssets
-                    .isNotEmpty()
-            ) {
-                profile.idleAssets
-            } else {
-                profile.cuteAssets
+            when {
+                preferred.isEmpty() ->
+                    allAmbient
+
+                preferred.any {
+                    it != currentAsset
+                } ->
+                    preferred
+
+                allAmbient.any {
+                    it != currentAsset
+                } ->
+                    allAmbient
+
+                else ->
+                    preferred
             }
 
         if (fallback.isEmpty()) {

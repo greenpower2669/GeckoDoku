@@ -143,9 +143,10 @@ AliveAnimator doit mémoriser au minimum :
 - dernière animation longue éventuelle.
 
 ### Règles
-- ne jamais rejouer la même animation deux fois de suite ;
-- si plusieurs choix sont disponibles, éviter les dernières animations récentes ;
-- une attente peut être rejouée jusqu'à 4 fois au maximum avant réinterrogation générale ;
+- un **nouveau choix** d'animation ne doit jamais sélectionner le même clip que le choix précédent si une alternative existe ;
+- une attente choisie reste volontairement stable et peut boucler jusqu'à 4 fois : c'est le mouvement discret et répétitif demandé par Fab ;
+- si plusieurs nouveaux choix sont disponibles, éviter aussi les animations récentes ;
+- après la 4e boucle de l'attente, lancer une réinterrogation générale puis choisir un autre clip ;
 - au terme d'une mignonnerie / animation longue, forcer une réinterrogation ;
 - le choix initial se fait lors de init() ;
 - la sélection aléatoire doit rester douce et non frénétique.

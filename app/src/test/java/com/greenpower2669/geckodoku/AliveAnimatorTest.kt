@@ -74,7 +74,56 @@ class AliveAnimatorTest {
     }
 
     @Test
-    fun twoConsecutiveAmbientChoicesDoNotRepeat() {
+    fun oneIdleChoiceRepeatsFourCyclesThenRerollsToDifferentChoice() {
+        val animator =
+            AliveAnimator(
+                profile(
+                    cute = false
+                )
+            )
+
+        animator.start(
+            animationsEnabled = true,
+            randomValue = 0
+        )
+
+        val firstChoice =
+            animator.afterCurrentClip(
+                animationsEnabled = true,
+                randomValue = 0
+            )
+
+        repeat(3) {
+            val repeated =
+                animator.afterCurrentClip(
+                    animationsEnabled = true,
+                    randomValue = 0
+                )
+
+            assertEquals(
+                firstChoice.assetPath,
+                repeated.assetPath
+            )
+        }
+
+        val nextChoice =
+            animator.afterCurrentClip(
+                animationsEnabled = true,
+                randomValue = 0
+            )
+
+        assertNotEquals(
+            firstChoice.assetPath,
+            nextChoice.assetPath
+        )
+        assertTrue(
+            nextChoice
+                .requestGroupRefresh
+        )
+    }
+
+    @Test
+    fun cuteActionCannotImmediatelySelectItselfAgainWhenIdleExists() {
         val animator =
             AliveAnimator(
                 profile()
@@ -85,21 +134,30 @@ class AliveAnimatorTest {
             randomValue = 0
         )
 
-        val first =
+        val cute =
             animator.afterCurrentClip(
                 animationsEnabled = true,
-                randomValue = 0
+                randomValue = 4
             )
 
-        val second =
+        assertEquals(
+            AliveVisualState.CUTE,
+            cute.state
+        )
+
+        val afterCute =
             animator.afterCurrentClip(
                 animationsEnabled = true,
-                randomValue = 0
+                randomValue = 4
             )
 
         assertNotEquals(
-            first.assetPath,
-            second.assetPath
+            cute.assetPath,
+            afterCute.assetPath
+        )
+        assertTrue(
+            afterCute
+                .requestGroupRefresh
         )
     }
 
