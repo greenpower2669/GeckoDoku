@@ -670,3 +670,24 @@ Version cible : 0.15.16-dev / versionCode 51.
 Aucun merge main et aucune release avant validation téléphone.
 
 État GECKO-056 : CI #260 entièrement verte sur a43ef730ec77475e08b3ab7c4b897a023977057c ; artifact GeckoDoku-v0.15.16-dev-phone produit ; aucune release ; validation téléphone Gecko + Abeilles requise.
+
+
+## GECKO-057 — CYCLE LOCAL GECKO/ABEILLE QUI NE DOIT PLUS ÊTRE AFFAMÉ
+
+Retour téléphone : 0.15.16-dev affiche encore des Gecko statiques / absents. Le journal montre que Pierre atteint normalement ChromaKeyVideoView.play(), alors que les Presence Gecko/Abeille sont construites sans aucun PLAY_REQUEST.
+
+Cause corrigée :
+- refreshPresenceTarget réécrivait des LayoutParams identiques ;
+- refreshDynamicTargets pouvait alors reprogrammer une Presence pending ;
+- schedulePresence annulait le callback précédent avant de le repousser ;
+- le cycle pouvait ne jamais atteindre advancePresence/playDecision.
+
+Règles 0.15.17-dev :
+- une Presence n'a qu'un callback local armé à la fois ;
+- un refresh de géométrie ne repousse jamais un callback déjà armé ;
+- les LayoutParams ne sont remplacés que si la géométrie a réellement changé ;
+- cancel/remove libèrent le flag local ;
+- ALIVE_PLAY doit être visible dans le journal dès qu'une animation Gecko/Abeille part ;
+- le dernier Gecko d'une partie Classic doit aussi être vivant avant completeGame.
+
+Interdictions inchangées : aucun ordonnanceur global, aucun pool, aucun merge main, aucune release avant validation téléphone.
