@@ -27,10 +27,11 @@ class FreshPlaybackFrameGate {
     fun onRenderingStart(
         generation: Long
     ) {
-        if (
-            generation == currentGeneration &&
-            playerStarted
-        ) {
+        if (generation == currentGeneration) {
+            // Android can report MEDIA_INFO_VIDEO_RENDERING_START
+            // while MediaPlayer.start() is still returning.
+            // Latch the signal for this generation even if
+            // onPlayerStarted() has not run yet.
             renderingStarted = true
         }
     }
