@@ -303,3 +303,9 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] drag gauche/droite/bas : même comportement ;
 - [ ] cellule visible : PNG/vidéo restent centrés naturellement ;
 - [ ] aucune release avant validation Fab.
+
+
+### GECKO-061 build
+- [x] CI #275 verte ;
+- [x] APK Phone 0.15.21-dev produit ;
+- [x] SHA-256 APK : 1f65452b0e8b98670eaf27ba9e321e997dfad13c2bfdbf36b2fd17523877da19.
