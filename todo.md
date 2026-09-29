@@ -200,11 +200,13 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] protéger les générations anciennes et cancel() ;
 - [x] ajouter FreshPlaybackFrameGateTest ;
 - [x] version 0.15.16-dev / versionCode 51 ;
-- [ ] CI verte ;
-- [ ] APK Phone produit ;
+- [x] CI #260 verte ;
+- [x] APK Phone 0.15.16-dev produit ;
 - [ ] téléphone : Gecko Classic bougent ;
 - [ ] téléphone : Gecko Sudoku bougent ;
 - [ ] téléphone : Gecko Gomoku bougent ;
 - [ ] téléphone : Gecko + Abeilles hexagonaux bougent ;
 - [ ] téléphone : retour Mail/Messages conserve la reprise ;
 - [ ] aucune release avant validation explicite Fab.
+
+- [x] artifact CI #260 : GeckoDoku-v0.15.16-dev-phone ; SHA-256 archive 4fde649f9492e89ba01e12e62a4094e454e229008c930c35837b200c94308894.
