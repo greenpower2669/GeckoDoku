@@ -741,3 +741,14 @@ Le bon modèle proposé pour la suite est de séparer deux notions :
 2. visibilité physique : le rendu PNG/vidéo reste centré sur la cellule mais doit être clipé par le rectangle réel du plateau.
 
 Ainsi aucune translation/recentrage artificiel, aucun test sur le grand cadre média, et aucun seuil brutal sur le centre de cellule. Cette stratégie doit être confirmée par Fab avant code.
+
+
+## 37 — GECKO-064 : existence par cellule, visibilité par clipping
+
+Après validation de Fab, la géométrie Bee/Gecko est corrigée selon deux responsabilités séparées :
+- existence logique : beeGeckoAliveTarget() retourne une target tant que cellRectOnScreen intersecte viewportRectOnScreen ;
+- visibilité physique : AliveMascotOverlayView reçoit un clipProvider optionnel et applique exactement la même clipBounds aux conteneurs PNG et vidéo.
+
+Le target reste centré sur la cellule sans translation ni clamp. Le clip est calculé dans l'espace root puis converti dans les coordonnées locales du conteneur : intersection(target, viewport), offsetée de -target.left/-target.top. Ainsi le sprite glisse réellement derrière la bordure du plateau pendant zoom/drag.
+
+Le grand cadre transparent/key-color ne décide jamais de l'existence de la mascotte ; il est simplement découpé au viewport comme le PNG. Version 0.15.24-dev / 59.
