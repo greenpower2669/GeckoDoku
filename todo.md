@@ -284,8 +284,8 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] conserver l'ownership Alive quand la target sort temporairement ;
 - [x] restaurer la règle hors-écran sur la cellule du plateau, pas sur le cadre média ;
 - [x] version 0.15.20-dev / versionCode 55 ;
-- [ ] CI verte ;
-- [ ] APK Phone produit ;
+- [x] CI #286 verte ;
+- [x] APK Phone produit ;
 - [ ] téléphone : toutes les Abeilles et tous les Gecko passent par leur Presence ;
 - [ ] drag : une cellule sortie du viewport cache sa mascotte ;
 - [ ] drag retour : la Presence reprend sans PNG legacy ;
