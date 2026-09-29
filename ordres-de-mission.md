@@ -634,3 +634,14 @@ Propriété visuelle :
 
 Version : 0.15.15-dev / versionCode 50.
 Aucune release publique avant validation téléphone.
+
+
+État GECKO-055 :
+- commit architecture : 4d6731523990ecc80810207259b2282757011862 ;
+- correctif compilation listener : 135ec82888e8d01494f74bd56adcea86f5dae490 ;
+- CI #257 entièrement verte ;
+- tests + build Phone OK ;
+- artifact GeckoDoku-v0.15.15-dev-phone produit ;
+- APK SHA-256 : 671776186328f53df577599e45d2cb85ea8bc6a8ca8daf5d54bf0721c71dabf5 ;
+- aucune prerelease/release ;
+- validation téléphone Fab requise.

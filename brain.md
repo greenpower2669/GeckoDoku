@@ -566,3 +566,9 @@ Le plateau ne gère plus les transitions vidéo :
 
 Invariant durable :
 aucun ordonnanceur, aucun pool, aucun lecteur partagé.
+
+
+### GECKO-055 — build
+CI #257 verte sur 135ec82888e8d01494f74bd56adcea86f5dae490.
+APK Phone 0.15.15-dev SHA-256 671776186328f53df577599e45d2cb85ea8bc6a8ca8daf5d54bf0721c71dabf5.
+Validation téléphone encore requise.

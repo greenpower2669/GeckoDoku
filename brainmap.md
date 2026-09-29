@@ -652,3 +652,6 @@ flowchart TD
 
 Le GLSurfaceView n'est plus enfant du même FrameLayout que le PNG.
 Les deux couches restent détenues par la même Presence et reçoivent la même géométrie.
+
+
+GECKO-055 validé techniquement par CI #257 ; validation composition réelle reste téléphone.

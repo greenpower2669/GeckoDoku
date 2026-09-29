@@ -607,3 +607,6 @@ PNG interne pendant l'attente et la préparation, vidéo à partir de sa premiè
 
 L'apparition est l'exception : le PNG interne reste caché afin d'obtenir vide → vidéo d'apparition → vivant.
 Aucun lecteur n'est partagé et aucun ordonnanceur n'existe.
+
+
+Build 0.15.15-dev : CI #257 verte. APK Phone SHA-256 : 671776186328f53df577599e45d2cb85ea8bc6a8ca8daf5d54bf0721c71dabf5. Validation appareil en attente.

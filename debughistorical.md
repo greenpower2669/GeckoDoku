@@ -343,3 +343,18 @@ Correction 0.15.15-dev :
 - apparition = seule phase où PNG interne reste volontairement caché.
 
 Aucun retour d'ordonnanceur.
+
+
+## GECKO-055 — CI #257 VERTE
+
+Commit testé :
+135ec82888e8d01494f74bd56adcea86f5dae490
+
+Résultat :
+- tests unitaires OK ;
+- compilation Phone OK ;
+- artifact 0.15.15-dev produit ;
+- aucune release/prerelease ;
+- SHA-256 APK : 671776186328f53df577599e45d2cb85ea8bc6a8ca8daf5d54bf0721c71dabf5.
+
+Le verdict téléphone doit confirmer que la séparation pngContainer / videoContainer empêche le plateau vide.

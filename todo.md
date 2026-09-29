@@ -181,10 +181,12 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] entre clips : PNG interne, jamais l'ancien PNG du plateau ;
 - [x] vraie apparition : PNG interne caché jusqu'à la vidéo ;
 - [x] drag Plante déplace PNG + vidéo ensemble ;
-- [ ] CI 0.15.15-dev ;
+- [x] CI #257 0.15.15-dev entièrement verte ;
 - [ ] téléphone : vérifier qu'aucune grille n'est vide ;
 - [ ] téléphone : Classic / Sudoku / Gomoku / Abeilles & Geckos ;
 - [ ] téléphone : map initiale Bee/Gecko ;
 - [ ] téléphone : apparition ;
 - [ ] téléphone : retour Mail/Messages ;
 - [ ] release seulement après validation Fab.
+
+- [x] artifact Phone 0.15.15-dev produit ; SHA-256 APK 671776186328f53df577599e45d2cb85ea8bc6a8ca8daf5d54bf0721c71dabf5.
