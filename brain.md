@@ -821,3 +821,34 @@ CI #309 a déjà confirmé compilation/tests du nouveau backend avant bump. Vers
 
 ### GECKO-066 — build final
 CI #310 / run 36641153646 SUCCESS sur 4bf3c696a8dbee1d90f3136c8594684025e4a381. APK Phone 0.15.27-dev produit, 248574081 octets, SHA-256 e5de07cea97ca736108d644298ab56b2ad16689d695e357ef0a1d4cd280afe3f. Archive artifact SHA-256 e3cc39a3d9821b4894cd5244f7c0994e0b8fc09c2c45fa2c82723beaaf0479ac. Aucune release/prerelease. Validation téléphone ciblée Bee/Gecko + Gomoku requise.
+
+
+## 39 — GECKO-067 : TextureView pour la couche, OpenGL pour la couleur
+
+Retour téléphone 0.15.27-dev : l'intuition TextureView est bonne pour la hiérarchie et le clipping, mais le keycolor et le filtre jaune sont visuellement instables. Le point suspect est le RuntimeShader/RenderEffect appliqué comme post-effet Android sur la TextureView.
+
+Décision : conserver TextureView comme surface de composition Android, mais déplacer tout le traitement couleur dans un vrai pipeline OpenGL ES 2, identique conceptuellement au ChromaKeyVideoView historique.
+
+Pipeline par Presence :
+- TextureView fournit la SurfaceTexture de sortie ;
+- un thread GL local crée EGLDisplay/EGLContext/EGLSurface sur cette SurfaceTexture ;
+- un texture OES externe + SurfaceTexture d'entrée reçoit le décodage MediaPlayer ;
+- à chaque frame disponible : updateTexImage(), matrice SurfaceTexture, shader GLSL historique, eglSwapBuffers() vers la TextureView ;
+- le shader reprend exactement KEY_THRESHOLD, KEY_SOFTNESS, KEY_DESPILL, choix bleu/vert et yellowTint historique ;
+- fit-center reste géré par les sommets OpenGL, comme dans ChromaKeyVideoView.
+
+Première frame :
+- play -> alpha TextureView 0 ;
+- beginPlayback mémorise la génération ;
+- MEDIA_INFO_VIDEO_RENDERING_START arme la garde et fixe un baseline de frame ;
+- seule une frame OES postérieure au baseline, réellement dessinée puis eglSwapBuffers(), déclenche VIDEO_FIRST_FRAME ;
+- ensuite alpha=1, ou pause si holdOnFirstFrame.
+
+Ainsi :
+- géométrie/clipping/Z-order = TextureView Android ;
+- couleur/keycolor/jaune = OpenGL historique ;
+- aucune dépendance à RenderEffect pour les mascottes de plateau.
+
+Invariant inchangé : chaque Presence possède son propre PNG, son propre backend vidéo, son propre AliveAnimator et son callback local. Aucun ordonnanceur global ni partage de lecteur.
+
+Version test : 0.15.28-dev / versionCode 63.
