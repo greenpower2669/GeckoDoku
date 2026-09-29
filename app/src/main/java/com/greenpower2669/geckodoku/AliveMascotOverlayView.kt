@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
+import android.graphics.Rect
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -21,6 +22,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     private data class Placement(
         val ownerKey: String,
         val targetProvider: () -> RectF?,
+        val clipProvider: (() -> RectF?)?,
         val setStaticSuppressed: (Boolean) -> Unit,
         val eligible: () -> Boolean,
         val yellowTint: Boolean,
@@ -267,6 +269,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         kind: MascotKind,
         ownerKey: String,
         targetProvider: () -> RectF?,
+        clipProvider:
+            (() -> RectF?)? = null,
         setStaticSuppressed:
             (Boolean) -> Unit = {},
         eligible: () -> Boolean = {
@@ -283,6 +287,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             Placement(
                 ownerKey = ownerKey,
                 targetProvider = targetProvider,
+                clipProvider =
+                    clipProvider,
                 setStaticSuppressed =
                     setStaticSuppressed,
                 eligible = eligible,
@@ -483,6 +489,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         kind: MascotKind,
         ownerKey: String,
         targetProvider: () -> RectF?,
+        clipProvider:
+            (() -> RectF?)? = null,
         setStaticSuppressed:
             (Boolean) -> Unit = {},
         yellowTint: Boolean = false
@@ -497,6 +505,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             presence.placement.copy(
                 targetProvider =
                     targetProvider,
+                clipProvider =
+                    clipProvider,
                 setStaticSuppressed =
                     setStaticSuppressed,
                 eligible = {
@@ -1313,6 +1323,11 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             layout
         )
 
+        applyClipBounds(
+            presence,
+            target
+        )
+
         applyTint(presence)
 
         // One-time ownership handoff:
@@ -1333,6 +1348,56 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 View.INVISIBLE
             }
         return true
+    }
+
+    private fun applyClipBounds(
+        presence: Presence,
+        target: RectF
+    ) {
+        val clip =
+            presence.placement
+                .clipProvider
+                ?.invoke()
+
+        if (clip == null) {
+            presence.pngContainer.clipBounds =
+                null
+            presence.videoContainer.clipBounds =
+                null
+            return
+        }
+
+        val intersection =
+            RectF(target)
+
+        val intersects =
+            intersection.intersect(
+                clip
+            )
+
+        val localClip =
+            if (intersects) {
+                intersection.offset(
+                    -target.left,
+                    -target.top
+                )
+
+                Rect().also {
+                    intersection.roundOut(it)
+                }
+            } else {
+                Rect(
+                    0,
+                    0,
+                    0,
+                    0
+                )
+            }
+
+        presence.pngContainer.clipBounds =
+            Rect(localClip)
+        presence.videoContainer.clipBounds =
+            Rect(localClip)
     }
 
     private fun applyLayoutIfChanged(
