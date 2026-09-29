@@ -351,3 +351,11 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] aucun carré noir avant la première frame Gecko/Abeille/Plante/Prof ;
 - [ ] plante : transition PNG/vidéo alignée à ~95 % ;
 - [ ] aucune release ni merge main avant validation Fab.
+
+## Validation téléphone 0.15.23-dev — 29/09/2026 23:21
+- [x] intro : plus de plateau visible 1–2 s avant la vidéo ;
+- [x] régression carré noir avant première frame : corrigée sur les modes validés ;
+- [x] plante : PNG réduit de ~5 %, transition validée ;
+- [ ] Gomoku : reste à corriger, ne pas considérer GECKO-062/063 validés ;
+- [ ] Abeilles & Geckos : géométrie de visibilité encore incorrecte ; un Gecko du haut déborde du plateau et un Gecko du bas peut disparaître alors que sa cellule est encore partiellement visible ;
+- [ ] prochaine stratégie géométrique à valider avec Fab avant code : conserver target centré sur cellule + existence si cellule intersecte le viewport + clipping visuel strict au rectangle du plateau, au lieu du seuil sur le centre de cellule.
