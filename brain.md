@@ -752,3 +752,6 @@ Après validation de Fab, la géométrie Bee/Gecko est corrigée selon deux resp
 Le target reste centré sur la cellule sans translation ni clamp. Le clip est calculé dans l'espace root puis converti dans les coordonnées locales du conteneur : intersection(target, viewport), offsetée de -target.left/-target.top. Ainsi le sprite glisse réellement derrière la bordure du plateau pendant zoom/drag.
 
 Le grand cadre transparent/key-color ne décide jamais de l'existence de la mascotte ; il est simplement découpé au viewport comme le PNG. Version 0.15.24-dev / 59.
+
+### GECKO-064 — build
+CI #289 / run 36633302195 SUCCESS sur 65bf2f5016f9373d5804d7ece962f1c17522f2c3. APK Phone 0.15.24-dev produit, 248557697 octets, SHA-256 0792b38bc21fc8dc9f705220f2d3a11dd16a8c91ebd39a44fcacdfc2dd059e67. Validation téléphone requise ; aucune release.
