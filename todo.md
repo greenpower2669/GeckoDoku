@@ -242,3 +242,20 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] vérifier Abeille intérieure inchangée ;
 - [ ] vérifier Gecko/Abeille après zoom et drag ;
 - [ ] aucune release avant validation Fab.
+
+
+## GECKO-058 — correctif appliqué
+- [x] remplacer le rejet total des cibles de bord par un maintien dans le viewport ;
+- [x] conserver la taille/aspect de la mascotte ;
+- [x] recentrer uniquement du minimum nécessaire quand la cible dépasse ;
+- [x] continuer à retourner null si la mascotte est totalement hors écran ;
+- [x] ajouter la trace BEE_GECKO_ALIVE_TARGET_CLAMPED ;
+- [x] version 0.15.18-dev / versionCode 53 ;
+- [ ] CI verte ;
+- [ ] APK Phone produit ;
+- [ ] téléphone : Gecko bord gauche animé ;
+- [ ] téléphone : Gecko bord droit animé ;
+- [ ] téléphone : Gecko bord bas animé ;
+- [ ] téléphone : Abeille intérieure inchangée ;
+- [ ] téléphone : zoom/drag conservent les animations ;
+- [ ] aucune release avant validation explicite Fab.
