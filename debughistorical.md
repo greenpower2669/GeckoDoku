@@ -422,3 +422,20 @@ Les Gecko utilisent une cible plus grande que les Abeilles, donc les Gecko situ�
 
 Correctif attendu :
 ne plus transformer une légère intersection de bord en target=null ; conserver une cible animable visible, clippée/recentrée dans le viewport et compatible avec zoom/drag.
+
+
+## GECKO-058 — correction cibles de bord hexagonal
+
+Correctif appliqué dans MainActivity.beeGeckoAliveTarget().
+
+Avant :
+toute cible débordant d'un seul pixel du viewport renvoyait null.
+
+Après 0.15.18-dev :
+- null uniquement si aucune intersection avec le viewport ;
+- sinon maintien de la taille du rectangle ;
+- décalage X/Y minimal pour remettre la cible dans le viewport ;
+- recentrage si une dimension de cible est plus grande que le viewport ;
+- trace BEE_GECKO_ALIVE_TARGET_CLAMPED avec piece/q/r/dx/dy.
+
+Ce changement vise les Gecko de bord observés sur la capture (gauche, droite, bas) sans modifier les Abeilles déjà fonctionnelles.
