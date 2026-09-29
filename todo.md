@@ -359,3 +359,20 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] Gomoku : reste à corriger, ne pas considérer GECKO-062/063 validés ;
 - [ ] Abeilles & Geckos : géométrie de visibilité encore incorrecte ; un Gecko du haut déborde du plateau et un Gecko du bas peut disparaître alors que sa cellule est encore partiellement visible ;
 - [ ] prochaine stratégie géométrique à valider avec Fab avant code : conserver target centré sur cellule + existence si cellule intersecte le viewport + clipping visuel strict au rectangle du plateau, au lieu du seuil sur le centre de cellule.
+
+
+## GECKO-064 — clipping strict Bee/Gecko aux limites du plateau
+- [x] abandonner le seuil basé sur le centre de cellule ;
+- [x] conserver la Presence tant que la cellule logique intersecte le viewport ;
+- [x] ne jamais recentrer/décaler la mascotte ;
+- [x] ajouter un clipProvider optionnel aux Presence Alive ;
+- [x] appliquer le même clip local au conteneur PNG et au conteneur vidéo ;
+- [x] clip = intersection entre target rendu et viewport réel du plateau ;
+- [x] supprimer le handoff legacy setMediaPieceSuppressed sur disparition Bee/Gecko ;
+- [x] version 0.15.24-dev / versionCode 59 ;
+- [ ] CI verte ;
+- [ ] APK Phone produit ;
+- [ ] téléphone : Gecko haut coupé proprement à la bordure ;
+- [ ] téléphone : Gecko bas encore partiellement visible tant que sa cellule touche le plateau ;
+- [ ] zoom/drag : glissement progressif derrière les quatre bords ;
+- [ ] aucune release avant validation Fab.
