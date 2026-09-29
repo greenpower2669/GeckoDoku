@@ -619,3 +619,6 @@ Invariant : aucune coordination globale, aucun pool, aucun ordonnanceur. Une Pre
 
 ### GECKO-057 — build
 CI #263 verte sur 352c046bcc6e1af6d26794782f14189054ddcae2. APK Phone 0.15.17-dev produit. SHA-256 APK : cb50cb5e97ed9cc33ab7285982a6da7fda5e6439040fa2a195b7c59bb6fa8577. Validation téléphone Gecko + Abeilles encore requise.
+
+### GECKO-057 — validation téléphone partielle
+Fab confirme que le mode 1 / Classic est corrigé sur 0.15.17-dev : les Gecko vivants s'animent de nouveau. Les validations Sudoku, Gomoku et Abeilles & Geckos restent à faire.
