@@ -1178,10 +1178,9 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 .targetProvider()
 
         if (raw == null) {
-            setStaticSuppressed(
-                presence,
-                false
-            )
+            // Keep visual ownership in the Presence once handed off.
+            // A temporary off-board target hides both its PNG and video;
+            // it must not resurrect the board's legacy PNG renderer.
             presence.pngContainer.visibility =
                 View.INVISIBLE
             presence.videoContainer.visibility =
