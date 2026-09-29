@@ -622,3 +622,17 @@ CI #263 verte sur 352c046bcc6e1af6d26794782f14189054ddcae2. APK Phone 0.15.17-de
 
 ### GECKO-057 — validation téléphone partielle
 Fab confirme que le mode 1 / Classic est corrigé sur 0.15.17-dev : les Gecko vivants s'animent de nouveau. Les validations Sudoku, Gomoku et Abeilles & Geckos restent à faire.
+
+
+## 30 — GECKO-058 : cibles de bord hexagonal conservées
+
+Le défaut Abeilles & Geckos venait de beeGeckoAliveTarget(). Le rectangle animé d'un Gecko de bord pouvait dépasser légèrement viewportRectOnScreen(); l'ancien code retournait alors null, ce qui empêchait toute Presence vidéo pour ce Gecko. Les Abeilles, plus petites et souvent intérieures, restaient animables.
+
+Correction 0.15.18-dev :
+- si la cible n'intersecte pas du tout le viewport : null conservé ;
+- si elle intersecte mais dépasse un bord : le rectangle garde sa taille et est décalé du minimum nécessaire pour rentrer dans le viewport ;
+- si sa taille dépasse le viewport, son centre est aligné sur celui du viewport ;
+- aucun changement du pipeline AliveAnimator/ChromaKey ;
+- trace BEE_GECKO_ALIVE_TARGET_CLAMPED pour vérifier les Gecko de bord sur téléphone.
+
+But : garder les Gecko gauche/droite/bas vivants sans casser zoom, drag ni les Abeilles.
