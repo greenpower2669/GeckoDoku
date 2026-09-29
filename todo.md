@@ -261,3 +261,16 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] aucune release avant validation explicite Fab.
 
 - [x] artifact CI #265 : GeckoDoku-v0.15.18-dev-phone ; APK SHA-256 9e0ad087bc2f641ecd80010bb162cf57739ac0b0a236d2dc21cbe5d321311b77.
+
+
+## GECKO-059 — retirer la contrainte viewport non demandée
+- [x] supprimer le rejet des cadres Gecko/Abeille hors viewport ;
+- [x] supprimer le clamp/recentrage ajouté en GECKO-058 ;
+- [x] utiliser directement la cible centrée sur la cellule ;
+- [x] version 0.15.19-dev / versionCode 54 ;
+- [ ] CI verte ;
+- [ ] APK Phone produit ;
+- [ ] téléphone : Gecko de bord animés sans décalage ;
+- [ ] Abeilles inchangées ;
+- [ ] zoom/drag cohérents ;
+- [ ] aucune release avant validation Fab.
