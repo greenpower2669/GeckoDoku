@@ -344,6 +344,57 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun cellRectOnScreenUnbounded(
+        cell: HexCoord
+    ): RectF? {
+        val puzzle =
+            puzzle
+                ?: return null
+
+        if (!puzzle.contains(cell)) {
+            return null
+        }
+
+        val center =
+            cellCenter(cell)
+
+        val cx =
+            center.first *
+                camera.scale +
+                camera.offsetX
+
+        val cy =
+            center.second *
+                camera.scale +
+                camera.offsetY
+
+        val radius =
+            baseRadius *
+                camera.scale
+
+        val rect =
+            RectF(
+                cx - radius,
+                cy - radius,
+                cx + radius,
+                cy + radius
+            )
+
+        val location =
+            IntArray(2)
+
+        getLocationOnScreen(
+            location
+        )
+
+        rect.offset(
+            location[0].toFloat(),
+            location[1].toFloat()
+        )
+
+        return rect
+    }
+
     fun cellRectOnScreen(
         cell: HexCoord
     ): RectF? {
