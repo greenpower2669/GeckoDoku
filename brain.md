@@ -728,3 +728,5 @@ Plante :
 - pngScale=0.95 est distinct de renderScale ; seule l'ImageView PNG est réduite autour de son centre, vidéo et target inchangés.
 
 Version 0.15.23-dev / versionCode 58.
+
+Build GECKO-063 : CI #286 / run 36630368939 SUCCESS. Artifact GeckoDoku-v0.15.23-dev-phone, APK SHA-256 ae704b70c968030b33389d6296332c3c9d7dbe63b9479e993092f84d5b0e0661. Validation téléphone encore requise ; aucune release.
