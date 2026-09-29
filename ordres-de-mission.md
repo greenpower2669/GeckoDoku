@@ -760,3 +760,5 @@ Contrat :
 - aucune release ni merge main avant validation téléphone.
 
 Version cible : 0.15.22-dev / versionCode 57.
+
+État GECKO-062 : CI #280 verte ; APK 0.15.22-dev produit ; aucune release ; validation téléphone requise sur cap 3+3 et redistribution de fin de cycle.
