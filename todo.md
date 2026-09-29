@@ -325,3 +325,8 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] téléphone : jamais plus de 3 Gecko animés par équipe ;
 - [ ] téléphone : redistribution visible en fin de cycle ;
 - [ ] aucune release avant validation Fab.
+
+### GECKO-062 build
+- [x] CI #280 verte ;
+- [x] APK Phone 0.15.22-dev produit ;
+- [x] SHA-256 APK : 70b8cb93a180b2e0612bd445d035650537b52ae8640d46f503293ad5a3bca891.
