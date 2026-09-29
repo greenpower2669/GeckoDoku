@@ -742,3 +742,15 @@ Toutes les autres pierres restent statiques.
 Grand cycle Alive terminé -> callback -> nouvelle sélection 3+3 -> anciens owners rendus au board, nouveaux owners promus.
 
 GECKO-062 : CI #280 verte ; APK 0.15.22-dev prêt ; test téléphone = maximum 3 verts + 3 jaunes vivants, redistribution au grand cycle.
+
+
+## 31 — GECKO-063
+Gomoku move -> syncLivingMascots -> GomokuLivingSelectionPolicy -> max 3 PLAYER + 3 PROFESSOR -> seules ces Presence existent.
+GECKO_APPEARANCE legacy -X-> showGomokuLivingGecko direct.
+Long action Gomoku -> requestCute(owner sélectionné) -> même Presence, aucun second lecteur.
+
+Launch : UI construite -> launchCurtain noir topmost -> Intro acceptée -> overlay Intro noir prend le relais -> curtain GONE.
+
+Chroma : beginPlayback -> clear transparent -> texture interdite -> VIDEO_RENDERING_START (si gate) -> frame fraîche -> shader/keycolor -> VIDEO_FIRST_FRAME -> visible.
+
+Plant : target vidéo 100 % ; PNG interne 95 %, centre identique.
