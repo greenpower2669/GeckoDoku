@@ -881,3 +881,36 @@ CONTRAT ARCHITECTURE
 Version test : 0.15.27-dev / versionCode 62.
 
 État GECKO-066 : CI #310 verte ; APK 0.15.27-dev produit ; SHA-256 APK e5de07cea97ca736108d644298ab56b2ad16689d695e357ef0a1d4cd280afe3f ; validation téléphone Bee/Gecko + Gomoku requise ; aucune release/prerelease ni merge main.
+
+
+## GECKO-067 — STABILISER KEYCOLOR ET JAUNE SUR TEXTUREVIEW
+
+Validation Fab : GO.
+
+CONSTAT
+TextureView est la bonne piste pour le clipping et le Z-order, mais le keycolor et le filtre jaune du test 0.15.27-dev sont instables.
+
+MISSION
+Garder TextureView comme sortie visuelle Android, mais retirer RuntimeShader/RenderEffect et remettre le traitement chroma dans OpenGL, avec le shader historique déjà validé.
+
+PORTÉE
+- Abeilles & Geckos ;
+- Gomoku 3+3 ;
+- aucun changement Classic/Sudoku/Plante/Prof/Intro ;
+- aucun changement de règles, solveurs, IA ou sélection 3+3.
+
+ARCHITECTURE
+- 1 TextureView de sortie par Presence ;
+- 1 thread GL/EGL local par Presence ;
+- 1 SurfaceTexture OES d'entrée pour MediaPlayer ;
+- shader GLSL historique bleu/vert + despill + yellowTint ;
+- sortie EGL dans TextureView ;
+- first-frame gate après rendu GL frais et swap réussi.
+
+INTERDIT
+- RuntimeShader/RenderEffect pour ce backend ;
+- ordonnanceur global ;
+- pool ou lecteur partagé ;
+- merge main / release avant validation téléphone.
+
+Version cible : 0.15.28-dev / versionCode 63.
