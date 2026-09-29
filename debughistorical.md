@@ -587,3 +587,6 @@ Correction :
 - garde première frame basée sur une vraie frame OpenGL fraîche rendue après le signal MEDIA_INFO_VIDEO_RENDERING_START.
 
 CI #311 a validé compilation/tests de cette nouvelle architecture avant bump version.
+
+## GECKO-067 — CI #312 VERTE
+Run 36643601567 SUCCESS sur 075160c5bd45157d7c818e2e996e1518554efe95. APK 0.15.28-dev : 248574081 octets, SHA-256 296240aa14d866f101ac921887ca30c46c1eebbde946d2f7dc5797ae70d1ce79. Archive artifact SHA-256 2633430128a4fcd465bea4a559770ec3810d0f305c20eddafe30ced7b74585ae. Les étapes de publication ont été skipped. Test téléphone attendu : sources ChromaTextureGL, keycolor stable, jaune Gomoku stable et aucun débordement vidéo hors clip.
