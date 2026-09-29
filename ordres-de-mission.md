@@ -807,3 +807,5 @@ Contrat :
 
 Version cible 0.15.24-dev / versionCode 59.
 Aucun merge main ni release avant validation téléphone.
+
+État GECKO-064 : CI #289 verte ; APK 0.15.24-dev produit ; validation téléphone du clipping Bee/Gecko requise ; aucune release ni merge main.
