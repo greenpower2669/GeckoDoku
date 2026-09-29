@@ -301,6 +301,41 @@ class GomokuBoardView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun geckoRectOnScreenUnbounded(
+        cell: Cell
+    ): RectF? {
+        val local =
+            cellRectLocalUnbounded(
+                cell
+            )
+                ?: return null
+
+        val rect =
+            RectF(local).apply {
+                val insetAmount =
+                    width() * .08f
+
+                inset(
+                    insetAmount,
+                    insetAmount
+                )
+            }
+
+        val location =
+            IntArray(2)
+
+        getLocationOnScreen(
+            location
+        )
+
+        return rect.apply {
+            offset(
+                location[0].toFloat(),
+                location[1].toFloat()
+            )
+        }
+    }
+
     fun geckoRectOnScreen(
         cell: Cell
     ): RectF? {
@@ -332,6 +367,36 @@ class GomokuBoardView @JvmOverloads constructor(
                 location[1].toFloat()
             )
         }
+    }
+
+    fun viewportRectOnScreen():
+        RectF? {
+        if (
+            width <= 0 ||
+            height <= 0 ||
+            boardRect.width() <= 0f ||
+            boardRect.height() <= 0f
+        ) {
+            return null
+        }
+
+        val location =
+            IntArray(2)
+
+        getLocationOnScreen(
+            location
+        )
+
+        return RectF(
+            boardRect.left +
+                location[0],
+            boardRect.top +
+                location[1],
+            boardRect.right +
+                location[0],
+            boardRect.bottom +
+                location[1]
+        )
     }
 
     fun cellRectOnScreen(
@@ -1174,6 +1239,47 @@ class GomokuBoardView @JvmOverloads constructor(
             ).coerceAtLeast(
             1f
         )
+
+    private fun cellRectLocalUnbounded(
+        cell: Cell
+    ): RectF? {
+        if (
+            cell.row !in
+                0 until logicalSize ||
+            cell.col !in
+                0 until logicalSize
+        ) {
+            return null
+        }
+
+        val cellSize =
+            logicalCellSize()
+
+        val left =
+            boardRect.left +
+                (
+                    cell.col -
+                        viewport
+                            .originCol
+                    ) *
+                cellSize
+
+        val top =
+            boardRect.top +
+                (
+                    cell.row -
+                        viewport
+                            .originRow
+                    ) *
+                cellSize
+
+        return RectF(
+            left,
+            top,
+            left + cellSize,
+            top + cellSize
+        )
+    }
 
     private fun cellRectLocal(
         cell: Cell
