@@ -631,3 +631,24 @@ La coordination grand cycle reste un simple signal entre instances déjà autono
 
 Pierre :
 RETURN_AFTER_PAUSE → 300 RETURN → cooldown 48 h → historique 48 IDs → filtre famille récente → filtre similarité → pipeline Pierre existant.
+
+
+## 22 — GECKO-055 : Presence propriétaire, couches sœurs
+
+~~~mermaid
+flowchart TD
+    Board[plateau / ancien PNG] -->|target valide : handoff unique| P[Presence]
+    P --> PNG[pngContainer sibling]
+    P --> Video[videoContainer sibling / GLSurfaceView]
+    P --> A[AliveAnimator]
+    A --> Wait[attente : PNG visible]
+    Wait --> Prepare[prépare vidéo en gardant PNG]
+    Prepare --> First[première frame réelle]
+    First --> HidePNG[cacher PNG interne]
+    HidePNG --> Playing[vidéo]
+    Playing --> End[fin clip]
+    End --> Wait
+~~~
+
+Le GLSurfaceView n'est plus enfant du même FrameLayout que le PNG.
+Les deux couches restent détenues par la même Presence et reçoivent la même géométrie.

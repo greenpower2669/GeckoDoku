@@ -168,3 +168,23 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] release seulement après validation explicite Fab.
 
 - [x] APK 0.15.14-dev produit ; SHA-256 67cb5429d2ae188e8a5a58f09f43afa2032a96e43f1998f1265bafe96eed8abb ;
+
+
+## GECKO-055 — PNG/vidéo détenus par la même Presence
+- [x] conserver 1 Presence = 1 PNG + 1 vidéo + 1 AliveAnimator ;
+- [x] conserver zéro ordonnanceur / zéro pool ;
+- [x] sortir GLSurfaceView du même FrameLayout que l'ImageView ;
+- [x] pngContainer et videoContainer deviennent siblings détenus par la même Presence ;
+- [x] géométrie identique appliquée aux deux siblings ;
+- [x] transfert plateau → Presence uniquement quand target valide ;
+- [x] supprimer le setStaticSuppressed du cycle playDecision ;
+- [x] entre clips : PNG interne, jamais l'ancien PNG du plateau ;
+- [x] vraie apparition : PNG interne caché jusqu'à la vidéo ;
+- [x] drag Plante déplace PNG + vidéo ensemble ;
+- [ ] CI 0.15.15-dev ;
+- [ ] téléphone : vérifier qu'aucune grille n'est vide ;
+- [ ] téléphone : Classic / Sudoku / Gomoku / Abeilles & Geckos ;
+- [ ] téléphone : map initiale Bee/Gecko ;
+- [ ] téléphone : apparition ;
+- [ ] téléphone : retour Mail/Messages ;
+- [ ] release seulement après validation Fab.

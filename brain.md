@@ -8,7 +8,7 @@
 ## État de référence
 
 - Branche : gecko-039-sudoku-tap-gecko-gomoku
-- Version : 0.15.14-dev / versionCode 49
+- Version : 0.15.15-dev / versionCode 50
 - GECKO-047 : VALIDÉ FAB — grandes barres d’axes, drag/suppression hors plateau, Prof utilisant les axes, audio Android/Pierre capturable.
 - GECKO-048 : CODE + CI VERTE, validation téléphone encore attendue — prononciation Pierre et couleurs d’axes.
 - GECKO-049 : VALIDÉ FAB — géométrie canonique des axes Abeilles & Geckos.
@@ -545,3 +545,24 @@ CI #255 entièrement verte.
 APK : GeckoDoku-v0.15.14-dev.apk.
 SHA-256 : 67cb5429d2ae188e8a5a58f09f43afa2032a96e43f1998f1265bafe96eed8abb.
 Aucune release publique avant validation téléphone.
+
+
+## 27 — GECKO-055 composition interne canonique
+
+Une Presence possède :
+- pngContainer + ImageView transparent ;
+- videoContainer + ChromaKeyVideoView ;
+- AliveAnimator ;
+- target/ownerKey.
+
+pngContainer et videoContainer sont deux siblings du AliveMascotOverlayView, pas deux enfants empilés dans le même FrameLayout.
+Raison : ChromaKeyVideoView est un GLSurfaceView/surface Android séparée ; le garder comme sibling restaure une composition fiable avec le PNG normal.
+
+Le plateau ne gère plus les transitions vidéo :
+- target invalide → ancien PNG plateau reste disponible ;
+- target valide → transfert de propriété à la Presence, ancien PNG plateau supprimé ;
+- ensuite PNG interne ↔ vidéo uniquement ;
+- playDecision ne touche plus au masquage plateau.
+
+Invariant durable :
+aucun ordonnanceur, aucun pool, aucun lecteur partagé.

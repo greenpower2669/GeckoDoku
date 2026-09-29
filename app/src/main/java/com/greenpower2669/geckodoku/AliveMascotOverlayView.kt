@@ -35,8 +35,18 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         val animator =
             AliveAnimator(profile)
 
-        val container =
+        val pngContainer =
             FrameLayout(context).apply {
+                importantForAccessibility =
+                    IMPORTANT_FOR_ACCESSIBILITY_NO
+                isClickable =
+                    placement.draggable
+            }
+
+        val videoContainer =
+            FrameLayout(context).apply {
+                visibility =
+                    View.INVISIBLE
                 importantForAccessibility =
                     IMPORTANT_FOR_ACCESSIBILITY_NO
                 isClickable =
@@ -114,14 +124,15 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         var dragStartTop = 0
 
         init {
-            container.addView(
+            pngContainer.addView(
                 image,
                 LayoutParams(
                     LayoutParams.MATCH_PARENT,
                     LayoutParams.MATCH_PARENT
                 )
             )
-            container.addView(
+
+            videoContainer.addView(
                 video,
                 LayoutParams(
                     LayoutParams.MATCH_PARENT,
@@ -129,7 +140,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 )
             )
 
-            container.setOnTouchListener {
+            val dragListener =
+                OnTouchListener {
                     _,
                     event ->
                 if (placement.draggable) {
@@ -138,6 +150,13 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     false
                 }
             }
+
+            pngContainer.setOnTouchListener(
+                dragListener
+            )
+            videoContainer.setOnTouchListener(
+                dragListener
+            )
 
             cycleRunnable =
                 Runnable {
@@ -265,7 +284,9 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         if (existing != null) {
             existing.placement =
                 placement
-            existing.container.isClickable =
+            existing.pngContainer.isClickable =
+                draggable
+            existing.videoContainer.isClickable =
                 draggable
             applyTint(existing)
             val hasTarget =
@@ -309,7 +330,11 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             presence
 
         addView(
-            presence.container,
+            presence.pngContainer,
+            LayoutParams(1, 1)
+        )
+        addView(
+            presence.videoContainer,
             LayoutParams(1, 1)
         )
 
@@ -704,6 +729,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     View.VISIBLE
                 presence.video.visibility =
                     View.INVISIBLE
+                presence.videoContainer.visibility =
+                    View.INVISIBLE
                 presence.currentDecision =
                     null
                 refreshVisibility()
@@ -771,10 +798,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 View.VISIBLE
             }
 
-        setStaticSuppressed(
-            presence,
-            true
-        )
+        presence.videoContainer.visibility =
+            View.VISIBLE
 
         presence.video
             .setKeyColor(
@@ -851,6 +876,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         presence.currentDecision = null
         presence.video.visibility =
             View.INVISIBLE
+        presence.videoContainer.visibility =
+            View.INVISIBLE
 
         if (
             completed.state ==
@@ -924,6 +951,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         presence.generation += 1
         presence.video.stopPlayback()
         presence.video.visibility =
+            View.INVISIBLE
+        presence.videoContainer.visibility =
             View.INVISIBLE
         presence.videoActive = false
         presence.currentDecision = null
@@ -1100,6 +1129,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         presence.video.stopPlayback()
         presence.video.visibility =
             View.INVISIBLE
+        presence.videoContainer.visibility =
+            View.INVISIBLE
 
         presence.image.visibility =
             if (
@@ -1122,10 +1153,11 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         if (raw == null) {
             setStaticSuppressed(
                 presence,
-                presence
-                    .hideStaticUntilAppearanceEnds
+                false
             )
-            presence.container.visibility =
+            presence.pngContainer.visibility =
+                View.INVISIBLE
+            presence.videoContainer.visibility =
                 View.INVISIBLE
             return false
         }
@@ -1166,7 +1198,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 .roundToInt()
                 .coerceAtLeast(1)
 
-        presence.container.layoutParams =
+        val layout =
             LayoutParams(
                 targetWidth,
                 targetHeight
@@ -1179,13 +1211,30 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         .roundToInt()
             }
 
+        presence.pngContainer.layoutParams =
+            LayoutParams(layout)
+        presence.videoContainer.layoutParams =
+            LayoutParams(layout)
+
         applyTint(presence)
+
+        // One-time ownership handoff:
+        // once the Presence has a valid target, the board stops
+        // drawing its legacy PNG. From here, the Presence's own
+        // PNG/video pair owns the complete visual lifecycle.
         setStaticSuppressed(
             presence,
             true
         )
-        presence.container.visibility =
+
+        presence.pngContainer.visibility =
             View.VISIBLE
+        presence.videoContainer.visibility =
+            if (presence.videoActive) {
+                View.VISIBLE
+            } else {
+                View.INVISIBLE
+            }
         return true
     }
 
@@ -1216,7 +1265,10 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         )
 
         removeView(
-            presence.container
+            presence.pngContainer
+        )
+        removeView(
+            presence.videoContainer
         )
     }
 
@@ -1296,7 +1348,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     event.rawY
 
                 val params =
-                    presence.container
+                    presence.pngContainer
                         .layoutParams
                         as? LayoutParams
                         ?: return false
@@ -1322,11 +1374,11 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         presence.dragStartRawY
 
                 val childWidth =
-                    presence.container
+                    presence.pngContainer
                         .width
                         .coerceAtLeast(1)
                 val childHeight =
-                    presence.container
+                    presence.pngContainer
                         .height
                         .coerceAtLeast(1)
 
@@ -1364,7 +1416,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                             maxTop
                         )
 
-                presence.container.layoutParams =
+                val movedLayout =
                     LayoutParams(
                         childWidth,
                         childHeight
@@ -1372,6 +1424,11 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         leftMargin = left
                         topMargin = top
                     }
+
+                presence.pngContainer.layoutParams =
+                    LayoutParams(movedLayout)
+                presence.videoContainer.layoutParams =
+                    LayoutParams(movedLayout)
 
                 updateDragFractions(
                     presence,
@@ -1545,9 +1602,12 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             if (
                 presences.values
                     .any {
-                        it.container
+                        it.pngContainer
                             .visibility ==
-                            View.VISIBLE
+                            View.VISIBLE ||
+                            it.videoContainer
+                                .visibility ==
+                                View.VISIBLE
                     }
             ) {
                 View.VISIBLE

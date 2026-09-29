@@ -2,7 +2,7 @@
 
 > Documentation vivante de l'application telle qu'elle existe au 28 septembre 2026.
 >
-> **Version applicative observée :** `0.15.14-dev` — `versionCode 49`  
+> **Version applicative observée :** `0.15.15-dev` — `versionCode 50`  
 > **Branche :** `gecko-039-sudoku-tap-gecko-gomoku`  
 > **Référence code fonctionnel :** `8ccc0385c8314239976368811dab93808970e35a`  
 > Cette documentation décrit le comportement présent. Elle peut évoluer avec le logiciel. Elle n'est ni un historique de debug ni un ordre de mission.
@@ -596,3 +596,14 @@ Pour Gecko, une vraie apparition suit désormais strictement : case vide → vid
 #### Pierre — retours après pause
 
 Le moteur visuel/parole de Pierre reste séparé. La catégorie RETURN contient maintenant 300 phrases. RETURN_AFTER_PAUSE utilise exclusivement ce corpus, conserve 48 h de cooldown individuel, mémorise les 48 derniers IDs et évite autant que possible les mêmes familles d’ouverture ainsi que les formulations lexicalement proches des derniers retours.
+
+
+#### Composition PNG/vidéo d'une Presence — 0.15.15-dev
+
+Chaque mascotte vivante reste un objet autonome qui possède son PNG et son lecteur vidéo. Pour respecter la nature particulière de GLSurfaceView sous Android, ces deux représentations sont toutefois placées dans deux conteneurs siblings du même overlay plutôt que dans le même FrameLayout.
+
+Le plateau transmet la propriété visuelle à la Presence une seule fois lorsque sa target devient valide. Après ce handoff, les transitions sont internes à la Presence :
+PNG interne pendant l'attente et la préparation, vidéo à partir de sa première frame réelle, puis retour immédiat au PNG interne à la fin du clip.
+
+L'apparition est l'exception : le PNG interne reste caché afin d'obtenir vide → vidéo d'apparition → vivant.
+Aucun lecteur n'est partagé et aucun ordonnanceur n'existe.

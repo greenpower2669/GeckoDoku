@@ -323,3 +323,23 @@ Résultat :
 - SHA-256 APK : 67cb5429d2ae188e8a5a58f09f43afa2032a96e43f1998f1265bafe96eed8abb.
 
 Validation appareil attendue : quatre modes, pièces initiales Bee/Gecko, apparition, retour Mail/Messages, intros on top et variété des 300 retours Pierre.
+
+
+## GECKO-055 — 0.15.14-dev : logique gagnante, rendu vide
+
+Observation téléphone Fab :
+le jeu reste logiquement correct et peut gagner, mais les pièces disparaissent visuellement.
+
+Analyse après échange :
+le nouveau concept 1 Presence = 1 lecteur est conservé. Le défaut est dans la composition Android : 0.15.14-dev avait mis l'ImageView PNG et le ChromaKeyVideoView GLSurfaceView dans le même FrameLayout. Or le GLSurfaceView possède une surface/z-order distincts.
+
+Correction 0.15.15-dev :
+- la Presence garde son PNG et sa vidéo ;
+- pngContainer et videoContainer deviennent siblings séparés ;
+- même target/scale pour les deux ;
+- le plateau ne fait plus de hide/show au rythme de playDecision ;
+- setStaticSuppressed devient uniquement le handoff plateau → Presence lorsque la target existe ;
+- fin vidéo = videoContainer caché + PNG interne immédiatement visible ;
+- apparition = seule phase où PNG interne reste volontairement caché.
+
+Aucun retour d'ordonnanceur.

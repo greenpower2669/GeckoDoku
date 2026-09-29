@@ -597,3 +597,40 @@ Aucune publication publique avant validation téléphone.
 - SHA-256 APK : 67cb5429d2ae188e8a5a58f09f43afa2032a96e43f1998f1265bafe96eed8abb ;
 - aucune prerelease/release déclenchée ;
 - validation téléphone Fab requise avant publication.
+
+
+## GECKO-055 — retirer la vieille procédure de composition PNG/vidéo
+
+Retour téléphone Fab sur 0.15.14-dev :
+la logique fonctionne et peut déclarer la victoire, mais les pièces deviennent visuellement vides.
+
+Décision Fab :
+le concept Presence autonome est conservé, mais l'ancienne procédure de composition ne doit plus piloter PNG et vidéo comme deux systèmes concurrents.
+
+Cause architecturale ciblée :
+- 0.15.14-dev avait placé ImageView PNG et ChromaKeyVideoView dans le MÊME FrameLayout enfant ;
+- ChromaKeyVideoView est un GLSurfaceView avec surface Android séparée et z-order on-top ;
+- ce type de surface ne se compose pas comme un ImageView enfant ordinaire ;
+- le PNG interne pouvait donc ne pas jouer correctement son rôle de fond/fallback dans ce conteneur commun.
+
+Architecture corrigée 0.15.15-dev :
+- chaque Presence possède toujours exactement SON PNG et SA vidéo ;
+- mais le PNG vit dans pngContainer, vue Android normale ;
+- la vidéo vit dans videoContainer, sibling séparé, comme dans l'architecture de surface qui avait déjà fonctionné ;
+- aucun lecteur n'est partagé ;
+- aucun pool ;
+- aucun ordonnanceur ;
+- les deux siblings utilisent toujours exactement la même target et la même taille.
+
+Propriété visuelle :
+- dès qu'une Presence a une target valide, le plateau cesse UNE FOIS de dessiner son ancien PNG ;
+- ensuite le plateau ne participe plus aux transitions ;
+- attente : PNG interne visible ;
+- préparation vidéo : PNG interne reste visible ;
+- première vraie frame : vidéo visible et PNG interne caché ;
+- fin vidéo : videoContainer invisible et PNG interne visible immédiatement ;
+- apparition réelle : PNG interne caché jusqu'à la vidéo d'apparition, puis cycle normal ;
+- si aucune target n'est encore disponible, le plateau conserve son PNG historique.
+
+Version : 0.15.15-dev / versionCode 50.
+Aucune release publique avant validation téléphone.
