@@ -801,3 +801,25 @@ clamp/recentrage de mascotte ;
 masque SurfaceView global ;
 setZOrderOnTop/mediaOverlay modifié pour contourner la géométrie ;
 ordonnanceur/pool/lecteur partagé.
+
+
+## 34 — GECKO-066 / pipeline vidéo de plateau
+
+ownerKey
+→ AliveVideoBackendPolicy(owner, SDK)
+→ bee:* ou gomoku:* + SDK>=33
+  → ChromaKeyTextureView
+  → MediaPlayer -> TextureView.SurfaceTexture
+  → RuntimeShader keycolor bleu/vert + despill + yellowTint
+  → onSurfaceTextureUpdated fraîche + VIDEO_RENDERING_START
+  → VIDEO_FIRST_FRAME
+  → alpha=1
+  → clipBounds Android identique au PNG
+→ sinon
+  → ChromaKeyVideoView GLSurface historique.
+
+AliveMascotOverlayView
+→ video: View pour visibilité/layout/clip
+→ playback: ChromaKeyPlayback pour play/mute/keycolor/tint/release.
+
+Ne pas étendre TextureView à Pierre/Intro/Classic/Sudoku/Plante avant validation téléphone.
