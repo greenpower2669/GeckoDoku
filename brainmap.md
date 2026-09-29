@@ -655,3 +655,21 @@ Les deux couches restent détenues par la même Presence et reçoivent la même 
 
 
 GECKO-055 validé techniquement par CI #257 ; validation composition réelle reste téléphone.
+
+
+## 24 — GECKO-056 gate première frame partagé Gecko/Abeille
+
+~~~mermaid
+flowchart LR
+    P[Presence Gecko ou Abeille] --> V[ChromaKeyVideoView]
+    V --> S[MediaPlayer.start]
+    S --> R[MEDIA_INFO_VIDEO_RENDERING_START]
+    S --> PS[onPlayerStarted]
+    R --> G[FreshPlaybackFrameGate]
+    PS --> G
+    G -->|2 signaux reçus, ordre libre| F[frame fraîche acceptée]
+    F --> A[alpha vidéo = 1]
+    F --> H[PNG interne caché]
+~~~
+
+Avant 0.15.16-dev, R reçu avant PS était perdu. GECKO-056 mémorise R par génération ; la révélation reste impossible tant que PS n'est pas également arrivé.
