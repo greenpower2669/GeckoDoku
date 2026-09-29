@@ -3,19 +3,21 @@
 ## GECKO-050 — sérénité / mascottes vivantes
 
 ### Préparation
-- [ ] auditer tous les usages actuels Gecko/Abeille vidéo + PNG ;
-- [ ] importer/ranger sur la branche active les nouveaux assets actuellement sur main ;
-- [ ] normaliser les noms de fichiers sans modifier les contenus ;
-- [ ] confirmer les médias manquants : apparition/disparition Abeille, PNG/apparition/disparition Plante.
+- [x] auditer les principaux usages Gecko/Abeille vidéo + PNG ;
+- [x] importer/ranger sur la branche active les nouveaux assets actuellement sur main ;
+- [x] normaliser les noms de fichiers sans modifier les contenus ;
+- [x] PlanteTr.png confirmé et intégré ;
+- [x] médias manquants confirmés : pas de disparition Abeille dédiée, pas d'apparition/disparition Plante dédiée ; fallback prévu.
 
 ### Architecture
-- [ ] définir MascotAnimationProfile ;
-- [ ] implémenter AliveAnimator / MascotAliveAnimator ;
-- [ ] états HIDDEN / APPEARING / IDLE / CUTE / DISAPPEARING / STATIC_PNG ;
-- [ ] mémoire anti-répétition ;
-- [ ] update() après 4 attentes identiques ou fin d'animation longue ;
-- [ ] géométrie unique PNG/vidéo ;
-- [ ] fallback PNG animations OFF.
+- [x] définir MascotAnimationProfile ;
+- [x] implémenter AliveAnimator + MascotLifeCoordinator ;
+- [x] états HIDDEN / APPEARING / IDLE / CUTE / DISAPPEARING / STATIC_PNG ;
+- [x] mémoire anti-répétition ;
+- [x] réinterrogation après 4 attentes ou fin d'animation longue ;
+- [x] couche AliveMascotOverlayView avec masque conservé entre clips ;
+- [ ] connecter la géométrie exacte PNG/vidéo de chaque mode ;
+- [x] fallback PNG animations OFF prévu par profil.
 
 ### Intégration
 - [ ] Gecko : apparition / idle1..4 / disparition ;

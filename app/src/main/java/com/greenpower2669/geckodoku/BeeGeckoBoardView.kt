@@ -388,6 +388,23 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         return rect
     }
 
+    fun cellBackgroundColor(
+        cell: HexCoord
+    ): Int {
+        val board =
+            puzzle
+                ?: return Color.WHITE
+
+        if (!board.contains(cell)) {
+            return Color.WHITE
+        }
+
+        return GeckoBoardPalette
+            .colorFor(
+                board.regionAt(cell)
+            )
+    }
+
     fun viewportRectOnScreen():
         RectF? {
         if (

@@ -344,4 +344,15 @@ Son intégration peut être faite après Gecko/Abeille si nécessaire.
 
 ### État
 ORDRE DE MISSION OUVERT.
-Aucun code GECKO-050 n'est encore autoréalisé par ce document.
+
+Fondation technique intégrée :
+- AliveAnimator + MascotLifeCoordinator ;
+- profils Gecko / Abeille / Plante ;
+- couche AliveMascotOverlayView maintenant le masque entre deux clips pour supprimer le flash PNG ;
+- mémoire anti-répétition ;
+- réinterrogation générale après 4 attentes ou une mignonnerie ;
+- nouveaux stay rangés sur la branche active ;
+- PlanteTr.png fourni par Fab et intégré comme fallback PNG ;
+- version de travail 0.15.7-dev / versionCode 42.
+
+Intégration des appels de jeu encore en cours avant validation CI/téléphone.

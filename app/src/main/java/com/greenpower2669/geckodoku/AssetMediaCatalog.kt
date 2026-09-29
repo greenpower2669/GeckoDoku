@@ -28,11 +28,41 @@ object AssetMediaCatalog {
     const val GECKO_LONG_ACTIONS =
         "gecko/Gecko_actions_plusieurs.mp4"
 
+    val GECKO_IDLE =
+        listOf(
+            "gecko/alive/stay1.mp4",
+            "gecko/alive/stay2.mp4",
+            "gecko/alive/stay3.mp4",
+            "gecko/alive/stay4.mp4"
+        )
+
     const val BEE_PORTRAIT =
         "abeille/AbeilleTr.png"
 
     const val BEE_APPEARANCE =
         "abeille/Abeillefondvert.mp4"
+
+    val BEE_IDLE =
+        listOf(
+            "abeille/alive/stay1.mp4",
+            "abeille/alive/stay2.mp4",
+            "abeille/alive/stay3.mp4",
+            "abeille/alive/stay4.mp4"
+        )
+
+    const val PLANT_PORTRAIT =
+        "plante/alive/PlanteTr.png"
+
+    val PLANT_IDLE =
+        listOf(
+            "plante/alive/stay1.mp4",
+            "plante/alive/stay2.mp4",
+            "plante/alive/stay3.mp4",
+            "plante/alive/stay4.mp4"
+        )
+
+    const val PLANT_LONG_ACTION =
+        "plante/alive/cute.mp4"
 
     const val PROF_PORTRAIT =
         "prof/Prof.png"
