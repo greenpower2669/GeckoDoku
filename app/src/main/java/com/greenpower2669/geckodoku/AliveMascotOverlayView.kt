@@ -141,7 +141,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             )
 
             val dragListener =
-                OnTouchListener {
+                View.OnTouchListener {
                     _,
                     event ->
                 if (placement.draggable) {
