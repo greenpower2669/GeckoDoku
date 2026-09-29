@@ -268,6 +268,9 @@ class MainActivity : Activity() {
     private lateinit var richMediaOverlay:
         RichMediaOverlayView
 
+    private lateinit var launchCurtain:
+        View
+
     private lateinit var aliveMascotOverlay:
         AliveMascotOverlayView
 
@@ -1714,6 +1717,33 @@ class MainActivity : Activity() {
 
         screenRoot.addView(
             celebrationView,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+
+        launchCurtain =
+            View(this).apply {
+                setBackgroundColor(
+                    Color.BLACK
+                )
+                importantForAccessibility =
+                    View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                isClickable = true
+                visibility =
+                    if (
+                        savedInstanceState == null &&
+                        richMediaSettings.enabled
+                    ) {
+                        View.VISIBLE
+                    } else {
+                        View.GONE
+                    }
+            }
+
+        screenRoot.addView(
+            launchCurtain,
             FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
@@ -7544,6 +7574,26 @@ class MainActivity : Activity() {
                 gomokuLivingRedistributionRequested =
                     false
 
+                MediaTrace.event(
+                    source =
+                        "MainActivity",
+                    event =
+                        "GOMOKU_LIVING_SELECTION",
+                    detail =
+                        "player=" +
+                            selectedCells.count {
+                                snapshot.stones[it] ==
+                                    GomokuPlayer.PLAYER
+                            } +
+                            " professor=" +
+                            selectedCells.count {
+                                snapshot.stones[it] ==
+                                    GomokuPlayer.PROFESSOR
+                            } +
+                            " total=" +
+                            selectedCells.size
+                )
+
                 val owners =
                     selectedCells.mapTo(
                         linkedSetOf()
@@ -10491,6 +10541,13 @@ class MainActivity : Activity() {
             .show()
     }
 
+    private fun hideLaunchCurtain() {
+        if (::launchCurtain.isInitialized) {
+            launchCurtain.visibility =
+                View.GONE
+        }
+    }
+
     private fun playIntroIfEnabled() {
         if (
             !richMediaSettings.enabled ||
@@ -10505,6 +10562,7 @@ class MainActivity : Activity() {
                     IntroPhase.DONE
                 applyProfessorIntroVisibility()
             }
+            hideLaunchCurtain()
             return
         }
 
@@ -10557,6 +10615,7 @@ class MainActivity : Activity() {
             introPhase =
                 IntroPhase.DONE
             applyProfessorIntroVisibility()
+            hideLaunchCurtain()
             return
         }
 
@@ -10570,6 +10629,9 @@ class MainActivity : Activity() {
                     RichMediaKind.INTRO
                 )
         ) {
+            if (index == 0) {
+                hideLaunchCurtain()
+            }
             return
         }
 
@@ -10652,6 +10714,12 @@ class MainActivity : Activity() {
                     applyProfessorIntroVisibility()
                 }
             )
+
+        if (
+            index == 0
+        ) {
+            hideLaunchCurtain()
+        }
 
         MediaTrace.event(
             source = "MainActivity",
@@ -10755,10 +10823,12 @@ class MainActivity : Activity() {
                 RichMediaKind
                     .GECKO_APPEARANCE
         ) {
-            showGomokuLivingGecko(
-                cell,
-                player
-            )
+            // The living 3+3 selector is the only authority allowed
+            // to create Gomoku Presence instances. A newly placed
+            // stone must never bypass the cap through the legacy
+            // appearance path.
+            syncLivingMascotsForCurrentMode()
+            onFinished?.invoke()
             return
         }
 
@@ -10896,16 +10966,23 @@ class MainActivity : Activity() {
                             .isBusy
                 )
 
-        if (!shouldPlay) {
+        if (
+            !shouldPlay ||
+            cell !in gomokuLivingCells ||
+            !::aliveMascotOverlay
+                .isInitialized
+        ) {
             return
         }
 
-        playGomokuPieceAnimation(
+        aliveMascotOverlay.requestCute(
             kind =
-                RichMediaKind
-                    .GECKO_LONG_ACTION,
-            cell = cell,
-            player = player
+                MascotKind.GECKO,
+            ownerKey =
+                "gomoku:" +
+                    cell.row +
+                    ":" +
+                    cell.col
         )
     }
 
