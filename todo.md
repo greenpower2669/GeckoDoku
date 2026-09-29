@@ -437,3 +437,24 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] SHA-256 APK : e5de07cea97ca736108d644298ab56b2ad16689d695e357ef0a1d4cd280afe3f ;
 - [x] artifact archive SHA-256 : e3cc39a3d9821b4894cd5244f7c0994e0b8fc09c2c45fa2c82723beaaf0479ac ;
 - [x] release/prerelease : non déclenchées.
+
+
+## GECKO-067 — TextureView + OpenGL pour stabiliser keycolor et jaune
+- [x] conserver TextureView pour le bon clipping/Z-order Android ;
+- [x] retirer le post-filtre RuntimeShader/RenderEffect instable ;
+- [x] créer un pipeline OpenGL ES 2 dédié par Presence TextureView ;
+- [x] MediaPlayer décode vers une SurfaceTexture d'entrée OES ;
+- [x] réutiliser exactement le shader GLSL historique pour keycolor bleu/vert, despill et yellowTint ;
+- [x] rendre le résultat OpenGL dans la SurfaceTexture de sortie du TextureView via EGL ;
+- [x] conserver la première frame cachée jusqu'à MEDIA_INFO_VIDEO_RENDERING_START + frame GL fraîche réellement swapée ;
+- [x] conserver holdOnFirstFrame ;
+- [x] garder l'expérience ciblée sur bee:* et gomoku:* uniquement ;
+- [x] CI intermédiaire #311 verte avant bump ;
+- [x] version 0.15.28-dev / versionCode 63 ;
+- [ ] CI finale 0.15.28 verte ;
+- [ ] APK Phone produit ;
+- [ ] téléphone : keycolor stable pendant tout le cycle ;
+- [ ] téléphone : jaune Gomoku stable pendant tout le cycle ;
+- [ ] téléphone : aucun débordement vidéo hors cadre/boutons ;
+- [ ] téléphone : aucun carré noir avant première frame ;
+- [ ] aucune release/prerelease ni merge main avant validation Fab.
