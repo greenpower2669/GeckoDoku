@@ -330,6 +330,19 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         requestRender()
     }
 
+    fun useEmbeddedSurfaceLayer() {
+        setZOrderOnTop(false)
+        setZOrderMediaOverlay(true)
+
+        MediaTrace.event(
+            source = traceSource(),
+            event =
+                "SURFACE_POLICY_OVERRIDE",
+            detail =
+                "onTop=false mediaOverlay=true"
+        )
+    }
+
     fun setKeyColor(
         color: ChromaKeyColor
     ) {
