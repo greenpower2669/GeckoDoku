@@ -210,3 +210,21 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] aucune release avant validation explicite Fab.
 
 - [x] artifact CI #260 : GeckoDoku-v0.15.16-dev-phone ; SHA-256 archive 4fde649f9492e89ba01e12e62a4094e454e229008c930c35837b200c94308894.
+
+
+## GECKO-057 — mascottes créées mais cycles jamais lancés
+- [x] analyser le log téléphone 0.15.16-dev ;
+- [x] constater les créations ChromaKey des Presence mais zéro PLAY_REQUEST / ALIVE_PLAY Gecko-Abeille ;
+- [x] identifier la famine locale : refreshDynamicTargets reprogrammait le callback avant son exécution ;
+- [x] rendre refreshPresenceTarget idempotent sur les LayoutParams ;
+- [x] ne plus repousser un callback de Presence déjà armé ;
+- [x] conserver un callback local par Presence, zéro ordonnanceur/pool partagé ;
+- [x] tracer ALIVE_PLAY pour le prochain test téléphone ;
+- [x] faire entrer aussi le dernier Gecko de fin de partie dans la couche vivante ;
+- [x] version 0.15.17-dev / versionCode 52 ;
+- [ ] CI verte ;
+- [ ] APK Phone produit ;
+- [ ] téléphone : voir ALIVE_PLAY pour Gecko ;
+- [ ] téléphone : voir ALIVE_PLAY pour Abeille ;
+- [ ] téléphone : confirmer les stay1..4 visibles ;
+- [ ] aucune release avant validation explicite Fab.
