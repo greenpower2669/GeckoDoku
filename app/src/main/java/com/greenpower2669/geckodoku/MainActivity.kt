@@ -6958,94 +6958,12 @@ class MainActivity : Activity() {
                     )
             )
 
-        val viewport =
-            beeGeckoBoard
-                .viewportRectOnScreen()
-                ?: return null
-
-        if (
-            !RectF.intersects(
-                target,
-                viewport
-            )
-        ) {
-            return null
-        }
-
-        val adjusted =
-            RectF(target)
-
-        val offsetX =
-            when {
-                adjusted.width() >=
-                    viewport.width() ->
-                    viewport.centerX() -
-                        adjusted.centerX()
-
-                adjusted.left <
-                    viewport.left ->
-                    viewport.left -
-                        adjusted.left
-
-                adjusted.right >
-                    viewport.right ->
-                    viewport.right -
-                        adjusted.right
-
-                else ->
-                    0f
-            }
-
-        val offsetY =
-            when {
-                adjusted.height() >=
-                    viewport.height() ->
-                    viewport.centerY() -
-                        adjusted.centerY()
-
-                adjusted.top <
-                    viewport.top ->
-                    viewport.top -
-                        adjusted.top
-
-                adjusted.bottom >
-                    viewport.bottom ->
-                    viewport.bottom -
-                        adjusted.bottom
-
-                else ->
-                    0f
-            }
-
-        if (
-            offsetX != 0f ||
-            offsetY != 0f
-        ) {
-            adjusted.offset(
-                offsetX,
-                offsetY
-            )
-
-            MediaTrace.event(
-                source = "MainActivity",
-                event =
-                    "BEE_GECKO_ALIVE_TARGET_CLAMPED",
-                detail =
-                    "piece=" +
-                        piece +
-                        " q=" +
-                        cell.q +
-                        " r=" +
-                        cell.r +
-                        " dx=" +
-                        offsetX +
-                        " dy=" +
-                        offsetY
-            )
-        }
-
+        // The media frame is intentionally allowed to extend beyond
+        // the board viewport. The visible mascot is centered inside its
+        // transparent/key-color frame, so constraining the frame edges
+        // would incorrectly reject or shift valid Gecko/Bee animations.
         return screenRectToRoot(
-            adjusted
+            target
         )
     }
 
