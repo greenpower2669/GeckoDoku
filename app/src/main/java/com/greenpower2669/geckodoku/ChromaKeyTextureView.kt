@@ -11,9 +11,7 @@ import android.os.Build
 import android.util.AttributeSet
 import android.view.Surface
 import android.view.TextureView
-import androidx.annotation.RequiresApi
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class ChromaKeyTextureView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
