@@ -879,3 +879,5 @@ CONTRAT ARCHITECTURE
 - Aucun merge main ni release/prerelease avant validation téléphone.
 
 Version test : 0.15.27-dev / versionCode 62.
+
+État GECKO-066 : CI #310 verte ; APK 0.15.27-dev produit ; SHA-256 APK e5de07cea97ca736108d644298ab56b2ad16689d695e357ef0a1d4cd280afe3f ; validation téléphone Bee/Gecko + Gomoku requise ; aucune release/prerelease ni merge main.
