@@ -457,3 +457,14 @@ Commit testé : baf9743f71821032fbf88480462554eddeade1d5. Tests + assemblePhone 
 
 ## GECKO-060
 0.15.20-dev : BeeGeckoBoardView ne dessine plus les pièces. AliveMascotOverlayView possède seul le PNG et la vidéo. La visibilité hors écran est décidée par la cellule du plateau.
+
+
+## GECKO-061 — cellule presque sortie gardait sa Presence
+
+Capture 0.15.20-dev : après drag, un Gecko pouvait rester visible au-dessus du plateau. La règle précédente utilisait RectF.intersects(cellRect, viewport), donc une infime intersection suffisait à garder la Presence active.
+
+Correction 0.15.21-dev :
+- visibilité décidée par viewport.contains(cellRect.centerX, cellRect.centerY) ;
+- centre de cellule hors viewport => target null => PNG+vidéo Alive cachés ;
+- centre dedans => média autorisé, même si son grand cadre transparent dépasse ;
+- ownership Alive inchangé, aucun retour au rendu PNG legacy.
