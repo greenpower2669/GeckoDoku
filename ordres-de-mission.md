@@ -713,3 +713,10 @@ Correction 0.15.18-dev :
 Interdictions inchangées : aucun ordonnanceur/pool partagé, aucun merge main, aucune release avant validation téléphone.
 
 État GECKO-058 : CI #265 verte sur 2c20b06d2a0f699c8811cdf7cd37871a4b712f45 ; APK 0.15.18-dev produit ; SHA-256 9e0ad087bc2f641ecd80010bb162cf57739ac0b0a236d2dc21cbe5d321311b77 ; aucune release ; validation téléphone requise.
+
+
+## GECKO-059 — RETIRER LA CONTRAINTE VIEWPORT NON DEMANDÉE
+
+Validation Fab : supprimer cette règle. Les assets Gecko/Abeille sont déjà centrés dans leur cadre transparent/key-color. beeGeckoAliveTarget() doit simplement calculer la cible centrée et la convertir vers screenRoot, sans rejet ni clamp viewport.
+
+Version cible : 0.15.19-dev / versionCode 54. Aucun merge main ni release avant validation téléphone.
