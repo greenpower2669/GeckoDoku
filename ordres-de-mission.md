@@ -440,3 +440,28 @@ Publication effectuée :
 - SHA-256 GitHub : 684a40dbdc8ab91a8ca4ccdb5d4d904907279b9ad9c05c35603ae0b253ac9b46.
 
 La prochaine mission active reste le grand cycle autonome des mascottes.
+
+
+## GECKO-051 — toutes les mascottes visibles doivent vivre
+
+Observation téléphone Fab après publication 0.15.10-dev :
+en mode Classic, les Gecko présents sur la grille restent statiques ; seuls la Plante et Pierre donnent une impression de vie.
+
+Cause :
+AliveMascotOverlayView limitait le nombre de mascottes vivantes au nombre de lecteurs vidéo (3 Gecko / 2 Abeilles / 1 Plante). Les pièces déjà présentes au chargement n'étaient en plus enregistrées qu'au fil des événements d'apparition.
+
+Décision Fab :
+- corriger POUR TOUS LES MODES ;
+- toutes les mascottes visibles doivent appartenir à la classe vivante et posséder leur PNG interne ;
+- le plafond 3 Gecko / 2 Abeilles / 1 Plante concerne uniquement les vidéos simultanées ;
+- les lecteurs vidéo doivent tourner entre les mascottes visibles ;
+- une mascotte qui n'a pas le lecteur reste un PNG interne vivant, pas un retour au vieux rendu du plateau ;
+- Classique, Sudoku, Gomoku et Abeilles & Geckos doivent synchroniser les mascottes déjà présentes au chargement ;
+- update() distribue les animations de manière autonome ;
+- petites animations successives différentes ;
+- séries complètes différentes ;
+- fin de grand cycle : une autre mascotte visible avec animation cute reçoit une mignonnerie ;
+- les autres repartent sur des cycles désynchronisés.
+
+Version de travail : 0.15.11-dev / versionCode 46.
+Aucune publication publique avant validation téléphone Fab.

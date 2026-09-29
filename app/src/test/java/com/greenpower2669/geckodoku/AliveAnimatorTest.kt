@@ -11,8 +11,10 @@ class AliveAnimatorTest {
         cute: Boolean = true
     ) =
         MascotAnimationProfile(
-            kind = MascotKind.GECKO,
-            pngAsset = "gecko.png",
+            kind =
+                MascotKind.GECKO,
+            pngAsset =
+                "gecko.png",
             appearanceAsset =
                 "appear.mp4",
             disappearanceAsset =
@@ -45,7 +47,8 @@ class AliveAnimatorTest {
 
         val first =
             animator.start(
-                animationsEnabled = true,
+                animationsEnabled =
+                    true,
                 randomValue = 0
             )
 
@@ -56,7 +59,8 @@ class AliveAnimatorTest {
 
         val second =
             animator.afterCurrentClip(
-                animationsEnabled = true,
+                animationsEnabled =
+                    true,
                 randomValue = 1
             )
 
@@ -70,7 +74,7 @@ class AliveAnimatorTest {
     }
 
     @Test
-    fun oneIdleChoiceRepeatsFourCyclesThenRerollsToDifferentChoice() {
+    fun idleChangesEveryClipInsteadOfRepeatingSameSeries() {
         val animator =
             AliveAnimator(
                 profile(
@@ -79,114 +83,40 @@ class AliveAnimatorTest {
             )
 
         animator.start(
-            animationsEnabled = true,
+            animationsEnabled =
+                true,
             randomValue = 0
         )
 
-        val firstChoice =
+        var previous =
             animator.afterCurrentClip(
-                animationsEnabled = true,
+                animationsEnabled =
+                    true,
                 randomValue = 0
             )
 
-        repeat(3) {
-            val repeated =
+        repeat(8) {
+            index ->
+            val next =
                 animator.afterCurrentClip(
-                    animationsEnabled = true,
-                    randomValue = 0
+                    animationsEnabled =
+                        true,
+                    randomValue =
+                        index + 1
                 )
 
-            assertEquals(
-                firstChoice.assetPath,
-                repeated.assetPath
+            assertNotEquals(
+                previous.assetPath,
+                next.assetPath
             )
+
+            previous =
+                next
         }
-
-        val nextChoice =
-            animator.afterCurrentClip(
-                animationsEnabled = true,
-                randomValue = 0
-            )
-
-        assertNotEquals(
-            firstChoice.assetPath,
-            nextChoice.assetPath
-        )
-        assertTrue(
-            nextChoice
-                .requestGroupRefresh
-        )
     }
 
     @Test
-    fun cuteActionCannotImmediatelySelectItselfAgainWhenIdleExists() {
-        val animator =
-            AliveAnimator(
-                profile()
-            )
-
-        animator.start(
-            animationsEnabled = true,
-            randomValue = 0
-        )
-
-        val cute =
-            animator.afterCurrentClip(
-                animationsEnabled = true,
-                randomValue = 4
-            )
-
-        assertEquals(
-            AliveVisualState.CUTE,
-            cute.state
-        )
-
-        val afterCute =
-            animator.afterCurrentClip(
-                animationsEnabled = true,
-                randomValue = 4
-            )
-
-        assertNotEquals(
-            cute.assetPath,
-            afterCute.assetPath
-        )
-        assertTrue(
-            afterCute
-                .requestGroupRefresh
-        )
-    }
-
-    @Test
-    fun fifthRandomSlotCanSelectCuteAction() {
-        val animator =
-            AliveAnimator(
-                profile()
-            )
-
-        animator.start(
-            animationsEnabled = true,
-            randomValue = 0
-        )
-
-        val decision =
-            animator.afterCurrentClip(
-                animationsEnabled = true,
-                randomValue = 4
-            )
-
-        assertEquals(
-            AliveVisualState.CUTE,
-            decision.state
-        )
-        assertEquals(
-            "cute.mp4",
-            decision.assetPath
-        )
-    }
-
-    @Test
-    fun fourIdleCompletionsRequestGroupRefresh() {
+    fun completedGrandCycleRequestsFriendRefresh() {
         val animator =
             AliveAnimator(
                 profile(
@@ -195,27 +125,28 @@ class AliveAnimatorTest {
             )
 
         animator.start(
-            animationsEnabled = true,
+            animationsEnabled =
+                true,
             randomValue = 0
         )
 
-        // Finish APPEARING first: this selects the first IDLE,
-        // but it is not itself an idle completion.
         animator.afterCurrentClip(
-            animationsEnabled = true,
+            animationsEnabled =
+                true,
             randomValue = 0
         )
 
-        var refreshSeen = false
+        var refreshSeen =
+            false
 
-        repeat(4) {
+        repeat(8) {
             index ->
             val decision =
                 animator.afterCurrentClip(
                     animationsEnabled =
                         true,
                     randomValue =
-                        index
+                        index + 10
                 )
 
             refreshSeen =
@@ -226,6 +157,79 @@ class AliveAnimatorTest {
 
         assertTrue(
             refreshSeen
+        )
+        assertTrue(
+            animator.seriesHistory()
+                .isNotEmpty()
+        )
+    }
+
+    @Test
+    fun consecutiveCompletedSeriesAreNotIdenticalWhenAlternativesExist() {
+        val animator =
+            AliveAnimator(
+                profile(
+                    cute = false
+                )
+            )
+
+        animator.startAmbient(
+            animationsEnabled =
+                true,
+            randomValue = 0
+        )
+
+        repeat(18) {
+            index ->
+            animator.afterCurrentClip(
+                animationsEnabled =
+                    true,
+                randomValue =
+                    index
+            )
+        }
+
+        val history =
+            animator.seriesHistory()
+
+        history
+            .zipWithNext()
+            .forEach {
+                (first, second) ->
+                assertNotEquals(
+                    first,
+                    second
+                )
+            }
+    }
+
+    @Test
+    fun cuteCanBeExplicitlyRequestedForAFriend() {
+        val animator =
+            AliveAnimator(
+                profile()
+            )
+
+        animator.startAmbient(
+            animationsEnabled =
+                true,
+            randomValue = 0
+        )
+
+        val cute =
+            animator.requestCute(
+                animationsEnabled =
+                    true,
+                randomValue = 4
+            )
+
+        assertEquals(
+            AliveVisualState.CUTE,
+            cute.state
+        )
+        assertEquals(
+            "cute.mp4",
+            cute.assetPath
         )
     }
 
@@ -260,14 +264,12 @@ class AliveAnimatorTest {
                 .gecko
                 .keyColor
         )
-
         assertEquals(
             ChromaKeyColor.GREEN,
             MascotAnimationProfiles
                 .bee
                 .keyColor
         )
-
         assertEquals(
             ChromaKeyColor.BLUE,
             MascotAnimationProfiles

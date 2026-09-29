@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.RectF
+import android.os.SystemClock
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -30,49 +31,28 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         val draggable: Boolean
     )
 
-    private val positionPrefs =
-        context.getSharedPreferences(
-            "alive_mascot_positions",
-            Context.MODE_PRIVATE
-        )
-
-    private val bitmapCache =
-        mutableMapOf<String, Bitmap?>()
-
-    private val yellowImageFilter =
-        ColorMatrixColorFilter(
-            ColorMatrix(
-                GomokuYellowFilterPolicy
-                    .colorMatrixValues()
-            )
-        )
-
-    private var activationSerial =
-        0L
-
-    private inner class Slot(
+    private inner class Presence(
         val profile:
             MascotAnimationProfile,
-        val slotIndex: Int
+        val ownerKey: String,
+        var placement:
+            Placement
     ) {
         val animator =
-            AliveAnimator(profile)
+            AliveAnimator(
+                profile
+            )
 
         val container =
             FrameLayout(context).apply {
-                visibility =
-                    View.INVISIBLE
-                isClickable =
-                    profile.kind ==
-                        MascotKind.PLANT
                 importantForAccessibility =
                     IMPORTANT_FOR_ACCESSIBILITY_NO
+                isClickable =
+                    placement.draggable
             }
 
         val image =
             ImageView(context).apply {
-                visibility =
-                    View.GONE
                 scaleType =
                     ImageView.ScaleType
                         .FIT_CENTER
@@ -88,33 +68,27 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     }
             }
 
-        val video =
-            ChromaKeyVideoView(
-                context
-            ).apply {
-                visibility =
-                    View.INVISIBLE
-                logicalLayer =
-                    "ALIVE_" +
-                        profile.kind.name +
-                        "_" +
-                        slotIndex
-                importantForAccessibility =
-                    IMPORTANT_FOR_ACCESSIBILITY_NO
-                isClickable = false
-                setKeyColor(
-                    profile.keyColor
-                )
-            }
+        var pendingDecision:
+            AliveAnimationDecision? =
+            null
 
-        var placement:
-            Placement? = null
+        var nextAnimationAt =
+            0L
 
-        var generation = 0
-        var active = false
-        var hasRenderedFrame = false
-        var staticSuppressed = false
-        var lastActivatedOrder = 0L
+        var videoActive =
+            false
+
+        var staticSuppressed =
+            false
+
+        var removing =
+            false
+
+        var forceCute =
+            false
+
+        var lastAnimatedOrder =
+            0L
 
         var dragCenterXFraction:
             Float? =
@@ -155,6 +129,64 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     LayoutParams.MATCH_PARENT
                 )
             )
+
+            container.setOnTouchListener {
+                    _,
+                    event ->
+                if (
+                    placement.draggable
+                ) {
+                    handleDrag(
+                        this,
+                        event
+                    )
+                } else {
+                    false
+                }
+            }
+        }
+    }
+
+    private inner class VideoSlot(
+        val profile:
+            MascotAnimationProfile,
+        val slotIndex: Int
+    ) {
+        val container =
+            FrameLayout(context).apply {
+                visibility =
+                    View.INVISIBLE
+                importantForAccessibility =
+                    IMPORTANT_FOR_ACCESSIBILITY_NO
+            }
+
+        val video =
+            ChromaKeyVideoView(
+                context
+            ).apply {
+                visibility =
+                    View.INVISIBLE
+                logicalLayer =
+                    "ALIVE_" +
+                        profile.kind.name +
+                        "_" +
+                        slotIndex
+                importantForAccessibility =
+                    IMPORTANT_FOR_ACCESSIBILITY_NO
+                isClickable = false
+                setKeyColor(
+                    profile.keyColor
+                )
+            }
+
+        var presence:
+            Presence? =
+            null
+
+        var generation =
+            0
+
+        init {
             container.addView(
                 video,
                 LayoutParams(
@@ -163,17 +195,23 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 )
             )
 
-            if (
-                profile.kind ==
-                    MascotKind.PLANT
-            ) {
-                container.setOnTouchListener {
-                        _,
-                        event ->
-                    handlePlantDrag(
-                        this,
+            container.setOnTouchListener {
+                    _,
+                    event ->
+                val current =
+                    presence
+
+                if (
+                    current != null &&
+                    current.placement
+                        .draggable
+                ) {
+                    handleDrag(
+                        current,
                         event
                     )
+                } else {
+                    false
                 }
             }
 
@@ -187,8 +225,28 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         }
     }
 
-    private val slots:
-        List<Slot> =
+    private val positionPrefs =
+        context.getSharedPreferences(
+            "alive_mascot_positions",
+            Context.MODE_PRIVATE
+        )
+
+    private val bitmapCache =
+        mutableMapOf<String, Bitmap?>()
+
+    private val yellowImageFilter =
+        ColorMatrixColorFilter(
+            ColorMatrix(
+                GomokuYellowFilterPolicy
+                    .colorMatrixValues()
+            )
+        )
+
+    private val presences =
+        linkedMapOf<String, Presence>()
+
+    private val videoSlots:
+        List<VideoSlot> =
         MascotAnimationProfiles
             .all
             .flatMap {
@@ -200,59 +258,87 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         )
                 ) {
                     index ->
-                    Slot(
+                    VideoSlot(
                         profile,
                         index
                     )
                 }
             }
 
+    private var animationSerial =
+        0L
+
+    private var lastCuteOwnerKey:
+        String? =
+        null
+
+    private val updateRunnable =
+        Runnable {
+            update()
+        }
+
     var animationsEnabled =
         true
         set(value) {
-            if (field == value) {
+            if (
+                field ==
+                    value
+            ) {
                 return
             }
 
             field = value
 
-            slots
-                .filter {
-                    it.active
-                }
+            videoSlots
                 .forEach {
-                    slot ->
-                    slot.generation += 1
-                    slot.video.stopPlayback()
-                    slot.hasRenderedFrame =
+                    unbindSlot(
+                        it,
+                        keepPresence = true
+                    )
+                }
+
+            presences.values
+                .toList()
+                .forEach {
+                    presence ->
+                    presence.forceCute =
                         false
 
-                    val placement =
-                        slot.placement
+                    presence.pendingDecision =
+                        if (value) {
+                            presence.animator
+                                .startAmbient(
+                                    animationsEnabled =
+                                        true,
+                                    randomValue =
+                                        Random.nextInt()
+                                )
+                        } else {
+                            presence.animator
+                                .start(
+                                    animationsEnabled =
+                                        false,
+                                    randomValue = 0
+                                )
+                        }
 
-                    if (
-                        placement != null &&
-                        placement.eligible()
-                    ) {
-                        setStaticSuppressed(
-                            slot,
-                            true
-                        )
-                        applyDecision(
-                            slot,
-                            slot.animator.start(
-                                animationsEnabled =
-                                    value,
-                                randomValue =
-                                    Random.nextInt()
-                            ),
-                            slot.generation
-                        )
-                    } else {
-                        retireSlot(slot)
-                    }
+                    presence.nextAnimationAt =
+                        SystemClock
+                            .uptimeMillis() +
+                            if (value) {
+                                randomPauseMs()
+                            } else {
+                                0L
+                            }
+
+                    presence.image
+                        .visibility =
+                        View.VISIBLE
                 }
 
+            scheduleUpdate(
+                40L
+            )
             refreshVisibility()
         }
 
@@ -276,80 +362,180 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 true
             },
         yellowTint: Boolean = false,
-        draggable: Boolean = false
+        draggable: Boolean = false,
+        animateAppearance: Boolean = true
     ) {
-        val existing =
-            slots.firstOrNull {
-                it.active &&
-                    it.profile.kind ==
-                        kind &&
-                    it.placement
-                        ?.ownerKey ==
-                        ownerKey
-            }
+        val id =
+            presenceId(
+                kind,
+                ownerKey
+            )
 
-        if (existing != null) {
-            existing.placement =
-                Placement(
+        val placement =
+            Placement(
+                ownerKey =
                     ownerKey,
+                targetProvider =
                     targetProvider,
+                setStaticSuppressed =
                     setStaticSuppressed,
+                eligible =
                     eligible,
+                yellowTint =
                     yellowTint,
+                draggable =
                     draggable
-                )
-            applyImageTint(existing)
+            )
+
+        val existing =
+            presences[id]
+
+        if (
+            existing != null
+        ) {
+            existing.placement =
+                placement
+            existing.container
+                .isClickable =
+                draggable
+            applyImageTint(
+                existing
+            )
             setStaticSuppressed(
                 existing,
                 true
             )
-            refreshSlotTarget(
+            refreshPresenceTarget(
                 existing
             )
+            videoSlotFor(
+                existing
+            )
+                ?.let {
+                    refreshSlotTarget(
+                        it
+                    )
+                }
             return
         }
 
-        val slot =
-            acquireSlot(kind)
-
-        retireSlot(slot)
-
-        slot.generation += 1
-        slot.active = true
-        slot.hasRenderedFrame = false
-        slot.lastActivatedOrder =
-            ++activationSerial
-        slot.placement =
-            Placement(
-                ownerKey,
-                targetProvider,
-                setStaticSuppressed,
-                eligible,
-                yellowTint,
-                draggable
+        val profile =
+            profileFor(
+                kind
             )
 
-        applyImageTint(slot)
+        val presence =
+            Presence(
+                profile =
+                    profile,
+                ownerKey =
+                    ownerKey,
+                placement =
+                    placement
+            )
+
+        presences[id] =
+            presence
+
+        addView(
+            presence.container,
+            0,
+            LayoutParams(
+                1,
+                1
+            )
+        )
+
+        applyImageTint(
+            presence
+        )
         setStaticSuppressed(
-            slot,
+            presence,
             true
         )
-        bringChildToFront(
-            slot.container
+        refreshPresenceTarget(
+            presence
         )
 
-        applyDecision(
-            slot,
-            slot.animator.start(
-                animationsEnabled =
-                    animationsEnabled,
-                randomValue =
-                    Random.nextInt()
-            ),
-            slot.generation
-        )
+        presence.pendingDecision =
+            if (
+                animationsEnabled
+            ) {
+                if (
+                    animateAppearance
+                ) {
+                    presence.animator
+                        .start(
+                            animationsEnabled =
+                                true,
+                            randomValue =
+                                Random.nextInt()
+                        )
+                } else {
+                    presence.animator
+                        .startAmbient(
+                            animationsEnabled =
+                                true,
+                            randomValue =
+                                Random.nextInt()
+                        )
+                }
+            } else {
+                presence.animator
+                    .start(
+                        animationsEnabled =
+                            false,
+                        randomValue = 0
+                    )
+            }
 
+        presence.nextAnimationAt =
+            SystemClock
+                .uptimeMillis() +
+                if (
+                    animationsEnabled &&
+                    !animateAppearance
+                ) {
+                    Random.nextLong(
+                        250L,
+                        1600L
+                    )
+                } else {
+                    0L
+                }
+
+        scheduleUpdate(
+            20L
+        )
         refreshVisibility()
+    }
+
+    fun retainOwners(
+        kind: MascotKind,
+        ownerPrefix: String,
+        ownerKeys: Set<String>
+    ) {
+        presences.values
+            .filter {
+                it.profile.kind ==
+                    kind &&
+                    it.ownerKey
+                        .startsWith(
+                            ownerPrefix
+                        ) &&
+                    it.ownerKey !in
+                        ownerKeys
+            }
+            .toList()
+            .forEach {
+                removePresence(
+                    it
+                )
+            }
+
+        scheduleUpdate(
+            20L
+        )
     }
 
     fun disappear(
@@ -361,64 +547,82 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             (Boolean) -> Unit = {},
         yellowTint: Boolean = false
     ) {
-        val slot =
-            slots.firstOrNull {
-                it.active &&
-                    it.profile.kind ==
-                        kind &&
-                    it.placement
-                        ?.ownerKey ==
-                        ownerKey
-            }
+        val presence =
+            presences[
+                presenceId(
+                    kind,
+                    ownerKey
+                )
+            ]
                 ?: return
 
-        slot.generation += 1
-        slot.video.stopPlayback()
-        slot.placement =
-            Placement(
-                ownerKey,
-                targetProvider,
-                setStaticSuppressed,
-                eligible = {
-                    false
-                },
-                yellowTint =
-                    yellowTint,
-                draggable = false
-            )
+        presence.placement =
+            presence.placement
+                .copy(
+                    targetProvider =
+                        targetProvider,
+                    setStaticSuppressed =
+                        setStaticSuppressed,
+                    eligible = {
+                        false
+                    },
+                    yellowTint =
+                        yellowTint
+                )
 
-        applyImageTint(slot)
-        setStaticSuppressed(
-            slot,
+        presence.removing =
             true
-        )
 
-        applyDecision(
-            slot,
-            slot.animator
+        videoSlotFor(
+            presence
+        )
+            ?.let {
+                unbindSlot(
+                    it,
+                    keepPresence =
+                        true
+                )
+            }
+
+        val decision =
+            presence.animator
                 .requestDisappear(
                     animationsEnabled
-                ),
-            slot.generation
-        )
+                )
 
-        refreshVisibility()
+        if (
+            decision.state ==
+                AliveVisualState
+                    .HIDDEN
+        ) {
+            removePresence(
+                presence
+            )
+        } else {
+            presence.pendingDecision =
+                decision
+            presence.nextAnimationAt =
+                SystemClock
+                    .uptimeMillis()
+            scheduleUpdate(
+                10L
+            )
+        }
     }
 
     fun stop(
         kind: MascotKind
     ) {
-        slots
+        presences.values
             .filter {
                 it.profile.kind ==
                     kind
             }
+            .toList()
             .forEach {
-                slot ->
-                    slot.generation += 1
-                    slot.animator
-                        .hideImmediately()
-                    retireSlot(slot)
+                removePresence(
+                    it
+                )
             }
 
         refreshVisibility()
@@ -441,300 +645,586 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     }
 
     fun refreshDynamicTargets() {
-        slots
-            .filter {
-                it.active
-            }
+        presences.values
+            .toList()
             .forEach {
-                refreshSlotTarget(it)
+                presence ->
+                if (
+                    presence.placement
+                        .eligible() ||
+                    presence.removing
+                ) {
+                    refreshPresenceTarget(
+                        presence
+                    )
+                } else {
+                    removePresence(
+                        presence
+                    )
+                }
             }
 
+        videoSlots
+            .filter {
+                it.presence !=
+                    null
+            }
+            .forEach {
+                refreshSlotTarget(
+                    it
+                )
+            }
+
+        refreshVisibility()
+    }
+
+    fun update() {
+        removeCallbacks(
+            updateRunnable
+        )
+
+        if (
+            !animationsEnabled
+        ) {
+            refreshVisibility()
+            return
+        }
+
+        val now =
+            SystemClock
+                .uptimeMillis()
+
+        val invalid =
+            presences.values
+                .filter {
+                    !it.removing &&
+                        !it.placement
+                            .eligible()
+                }
+                .toList()
+
+        invalid.forEach {
+            removePresence(
+                it
+            )
+        }
+
+        videoSlots
+            .filter {
+                it.presence ==
+                    null
+            }
+            .forEach {
+                slot ->
+                val candidate =
+                    nextCandidate(
+                        kind =
+                            slot.profile
+                                .kind,
+                        now =
+                            now
+                    )
+
+                if (
+                    candidate !=
+                        null
+                ) {
+                    bindAndPlay(
+                        slot,
+                        candidate
+                    )
+                }
+            }
+
+        scheduleUpdate(
+            280L
+        )
         refreshVisibility()
     }
 
     fun release() {
-        slots.forEach {
-            slot ->
-            slot.generation += 1
-            setStaticSuppressed(
-                slot,
-                false
-            )
-            slot.video.release()
-            slot.active = false
-            slot.placement = null
-        }
-
-        visibility = View.GONE
-    }
-
-    private fun acquireSlot(
-        kind: MascotKind
-    ): Slot {
-        slots.firstOrNull {
-            !it.active &&
-                it.profile.kind ==
-                    kind
-        }?.let {
-            return it
-        }
-
-        return requireNotNull(
-            slots
-                .filter {
-                    it.profile.kind ==
-                        kind
-                }
-                .minByOrNull {
-                    it.lastActivatedOrder
-                }
+        removeCallbacks(
+            updateRunnable
         )
-    }
 
-    private fun applyDecision(
-        slot: Slot,
-        decision:
-            AliveAnimationDecision,
-        generation: Int
-    ) {
-        if (
-            generation !=
-                slot.generation
-        ) {
-            return
-        }
-
-        when (decision.state) {
-            AliveVisualState.HIDDEN ->
-                retireSlot(slot)
-
-            AliveVisualState.STATIC_PNG -> {
-                slot.video.stopPlayback()
-                slot.video.visibility =
-                    View.INVISIBLE
-
-                if (
-                    decision.showPng &&
-                    slot.profile
-                        .pngAsset != null
-                ) {
-                    applyImageTint(slot)
-                    slot.image.visibility =
-                        View.VISIBLE
-                    setStaticSuppressed(
-                        slot,
-                        true
-                    )
-                    refreshSlotTarget(slot)
-                } else {
-                    retireSlot(slot)
-                }
-            }
-
-            AliveVisualState.APPEARING,
-            AliveVisualState.IDLE,
-            AliveVisualState.CUTE,
-            AliveVisualState.DISAPPEARING -> {
-                val asset =
-                    decision.assetPath
-
-                if (asset == null) {
-                    applyDecision(
-                        slot,
-                        slot.animator
-                            .fallbackToStatic(),
-                        generation
-                    )
-                    return
-                }
-
-                playClip(
-                    slot,
-                    asset,
-                    generation
+        presences.values
+            .toList()
+            .forEach {
+                removePresence(
+                    it
                 )
             }
+
+        videoSlots.forEach {
+            it.generation += 1
+            it.video.release()
+            it.presence = null
         }
 
-        refreshVisibility()
+        visibility =
+            View.GONE
     }
 
-    private fun playClip(
-        slot: Slot,
-        assetPath: String,
-        generation: Int
-    ) {
-        val placement =
-            slot.placement
-                ?: run {
-                    retireSlot(slot)
-                    return
+    private fun nextCandidate(
+        kind: MascotKind,
+        now: Long
+    ): Presence? {
+        val candidates =
+            presences.values
+                .filter {
+                    it.profile.kind ==
+                        kind &&
+                        !it.videoActive &&
+                        it.pendingDecision
+                            ?.assetPath !=
+                            null &&
+                        it.nextAnimationAt <=
+                            now &&
+                        (
+                            it.removing ||
+                                it.placement
+                                    .eligible()
+                            )
                 }
 
-        refreshSlotTarget(slot)
-        setStaticSuppressed(
-            slot,
+        if (
+            candidates.isEmpty()
+        ) {
+            return null
+        }
+
+        val removing =
+            candidates
+                .filter {
+                    it.removing
+                }
+
+        val pool =
+            if (
+                removing.isNotEmpty()
+            ) {
+                removing
+            } else {
+                candidates
+            }
+
+        val oldestOrder =
+            pool.minOf {
+                it.lastAnimatedOrder
+            }
+
+        val oldest =
+            pool.filter {
+                it.lastAnimatedOrder ==
+                    oldestOrder
+            }
+
+        return oldest[
+            Random.nextInt(
+                oldest.size
+            )
+        ]
+    }
+
+    private fun bindAndPlay(
+        slot: VideoSlot,
+        presence: Presence
+    ) {
+        val decision =
+            presence.pendingDecision
+                ?: return
+
+        val asset =
+            decision.assetPath
+                ?: return
+
+        slot.generation += 1
+        val generation =
+            slot.generation
+
+        slot.presence =
+            presence
+        presence.videoActive =
             true
+        presence.lastAnimatedOrder =
+            ++animationSerial
+        presence.pendingDecision =
+            null
+
+        refreshPresenceTarget(
+            presence
+        )
+        refreshSlotTarget(
+            slot
         )
 
-        val usePngBridge =
-            slot.profile.pngAsset !=
-                null &&
-                (
-                    slot.hasRenderedFrame ||
-                        slot.animator.state !=
-                            AliveVisualState
-                                .APPEARING
-                    )
+        val hidePngUntilFrame =
+            decision.state ==
+                AliveVisualState
+                    .APPEARING &&
+                presence.lastAnimatedOrder <=
+                    1L
 
-        applyImageTint(slot)
-        slot.image.visibility =
-            if (usePngBridge) {
-                View.VISIBLE
+        presence.image
+            .visibility =
+            if (
+                hidePngUntilFrame
+            ) {
+                View.INVISIBLE
             } else {
-                View.GONE
+                View.VISIBLE
             }
 
         slot.video
             .setKeyColor(
-                slot.profile
+                presence.profile
                     .keyColor
             )
         slot.video
             .setYellowTint(
-                placement.yellowTint
+                presence.placement
+                    .yellowTint
             )
         slot.video.visibility =
             View.VISIBLE
+        slot.container.visibility =
+            View.VISIBLE
+        bringChildToFront(
+            slot.container
+        )
 
         slot.video.play(
             assetPath =
-                assetPath,
+                asset,
             muted = true,
-            revealOnFirstFrame = true,
+            revealOnFirstFrame =
+                true,
             onFirstFrameRendered = {
                 if (
                     generation !=
-                        slot.generation
+                        slot.generation ||
+                    slot.presence !==
+                        presence
                 ) {
                     return@play
                 }
 
-                slot.hasRenderedFrame =
-                    true
-                slot.image.visibility =
-                    View.GONE
-                refreshSlotTarget(slot)
+                presence.image
+                    .visibility =
+                    View.INVISIBLE
             },
             onStarted = {},
             onCompletion = {
                 if (
                     generation !=
-                        slot.generation
+                        slot.generation ||
+                    slot.presence !==
+                        presence
                 ) {
                     return@play
                 }
 
                 handleClipCompleted(
                     slot,
-                    generation
+                    presence
                 )
             },
             onError = {
                     _ ->
                 if (
                     generation !=
-                        slot.generation
+                        slot.generation ||
+                    slot.presence !==
+                        presence
                 ) {
                     return@play
                 }
 
-                applyDecision(
+                presence.pendingDecision =
+                    presence.animator
+                        .fallbackToStatic()
+                unbindSlot(
                     slot,
-                    slot.animator
-                        .fallbackToStatic(),
-                    generation
+                    keepPresence =
+                        true
+                )
+                presence.nextAnimationAt =
+                    SystemClock
+                        .uptimeMillis() +
+                        randomPauseMs()
+                scheduleUpdate(
+                    100L
                 )
             }
         )
     }
 
     private fun handleClipCompleted(
-        slot: Slot,
-        generation: Int
+        slot: VideoSlot,
+        presence: Presence
     ) {
-        if (
-            generation !=
-                slot.generation
-        ) {
-            return
-        }
+        presence.image
+            .visibility =
+            View.VISIBLE
+
+        val completedState =
+            presence.animator
+                .state
+
+        unbindSlot(
+            slot,
+            keepPresence =
+                true
+        )
 
         if (
-            slot.animator.state !=
+            presence.removing ||
+            completedState ==
                 AliveVisualState
                     .DISAPPEARING
         ) {
-            val placement =
-                slot.placement
-
-            if (
-                placement == null ||
-                !placement.eligible()
-            ) {
-                retireSlot(slot)
-                refreshVisibility()
-                return
-            }
+            removePresence(
+                presence
+            )
+            scheduleUpdate(
+                20L
+            )
+            return
         }
 
-        val decision =
-            slot.animator
+        val randomValue =
+            Random.nextInt()
+
+        val normalDecision =
+            presence.animator
                 .afterCurrentClip(
                     animationsEnabled =
                         animationsEnabled,
                     randomValue =
-                        Random.nextInt()
+                        randomValue
                 )
 
         if (
-            decision
+            normalDecision
                 .requestGroupRefresh
         ) {
-            slots
-                .filter {
-                    it.active &&
-                        it !== slot
-                }
-                .forEach {
-                    it.animator
-                        .requestPeerRefresh()
-                }
+            handleGrandCycle(
+                presence
+            )
         }
 
-        applyDecision(
-            slot,
-            decision,
-            generation
+        presence.pendingDecision =
+            if (
+                presence.forceCute
+            ) {
+                presence.forceCute =
+                    false
+                presence.animator
+                    .requestCute(
+                        animationsEnabled =
+                            animationsEnabled,
+                        randomValue =
+                            Random.nextInt()
+                    )
+            } else {
+                normalDecision
+            }
+
+        presence.nextAnimationAt =
+            SystemClock
+                .uptimeMillis() +
+                randomPauseMs()
+
+        scheduleUpdate(
+            80L
         )
     }
 
-    private fun refreshSlotTarget(
-        slot: Slot
+    private fun handleGrandCycle(
+        origin: Presence
     ) {
-        val placement =
-            slot.placement
-                ?: return
+        val peers =
+            presences.values
+                .filter {
+                    it !== origin &&
+                        !it.removing &&
+                        it.placement
+                            .eligible()
+                }
 
+        peers.forEach {
+            peer ->
+            if (
+                peer.videoActive
+            ) {
+                peer.animator
+                    .requestPeerRefresh()
+            } else {
+                peer.pendingDecision =
+                    peer.animator
+                        .refreshAfterPeerRequest(
+                            animationsEnabled =
+                                animationsEnabled,
+                            randomValue =
+                                Random.nextInt()
+                        )
+                peer.nextAnimationAt =
+                    SystemClock
+                        .uptimeMillis() +
+                        Random.nextLong(
+                            250L,
+                            1200L
+                        )
+            }
+        }
+
+        val cuteCandidates =
+            peers.filter {
+                it.profile
+                    .cuteAssets
+                    .isNotEmpty()
+            }
+
+        if (
+            cuteCandidates.isEmpty()
+        ) {
+            return
+        }
+
+        val withoutLast =
+            cuteCandidates
+                .filter {
+                    it.ownerKey !=
+                        lastCuteOwnerKey
+                }
+
+        val pool =
+            if (
+                withoutLast
+                    .isNotEmpty()
+            ) {
+                withoutLast
+            } else {
+                cuteCandidates
+            }
+
+        val friend =
+            pool[
+                Random.nextInt(
+                    pool.size
+                )
+            ]
+
+        lastCuteOwnerKey =
+            friend.ownerKey
+
+        if (
+            friend.videoActive
+        ) {
+            friend.forceCute =
+                true
+        } else {
+            friend.pendingDecision =
+                friend.animator
+                    .requestCute(
+                        animationsEnabled =
+                            animationsEnabled,
+                        randomValue =
+                            Random.nextInt()
+                    )
+            friend.nextAnimationAt =
+                SystemClock
+                    .uptimeMillis() +
+                    Random.nextLong(
+                        100L,
+                        500L
+                    )
+        }
+    }
+
+    private fun unbindSlot(
+        slot: VideoSlot,
+        keepPresence: Boolean
+    ) {
+        val presence =
+            slot.presence
+
+        slot.generation += 1
+        slot.video.stopPlayback()
+        slot.video.visibility =
+            View.INVISIBLE
+        slot.container.visibility =
+            View.INVISIBLE
+        slot.presence =
+            null
+
+        if (
+            presence != null
+        ) {
+            presence.videoActive =
+                false
+
+            if (
+                keepPresence &&
+                presences.values
+                    .contains(
+                        presence
+                    )
+            ) {
+                presence.image
+                    .visibility =
+                    View.VISIBLE
+                refreshPresenceTarget(
+                    presence
+                )
+            }
+        }
+    }
+
+    private fun removePresence(
+        presence: Presence
+    ) {
+        videoSlotFor(
+            presence
+        )
+            ?.let {
+                unbindSlot(
+                    it,
+                    keepPresence =
+                        false
+                )
+            }
+
+        setStaticSuppressed(
+            presence,
+            false
+        )
+
+        presences.remove(
+            presenceId(
+                presence.profile
+                    .kind,
+                presence.ownerKey
+            )
+        )
+
+        removeView(
+            presence.container
+        )
+    }
+
+    private fun refreshPresenceTarget(
+        presence: Presence
+    ) {
         val raw =
-            placement
+            presence.placement
                 .targetProvider()
                 ?: run {
                     setStaticSuppressed(
-                        slot,
+                        presence,
                         false
                     )
-                    slot.container
+                    presence.container
                         .visibility =
                         View.INVISIBLE
                     return
@@ -743,22 +1233,23 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         val scaled =
             scaledRect(
                 raw,
-                slot.profile
+                presence.profile
                     .renderScale
             )
 
         val target =
             if (
-                placement.draggable &&
-                slot.dragCenterXFraction !=
+                presence.placement
+                    .draggable &&
+                presence.dragCenterXFraction !=
                     null &&
-                slot.dragCenterYFraction !=
+                presence.dragCenterYFraction !=
                     null &&
                 width > 0 &&
                 height > 0
             ) {
                 rectAtStoredDragPosition(
-                    slot,
+                    presence,
                     scaled
                 )
             } else {
@@ -774,7 +1265,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 .roundToInt()
                 .coerceAtLeast(1)
 
-        slot.container
+        presence.container
             .layoutParams =
             LayoutParams(
                 targetWidth,
@@ -788,24 +1279,83 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         .roundToInt()
             }
 
+        applyImageTint(
+            presence
+        )
         setStaticSuppressed(
-            slot,
+            presence,
             true
         )
-        slot.container.visibility =
+        presence.container
+            .visibility =
             View.VISIBLE
 
-        if (visibility != View.VISIBLE) {
-            visibility = View.VISIBLE
+        videoSlotFor(
+            presence
+        )
+            ?.let {
+                refreshSlotTarget(
+                    it
+                )
+            }
+
+        if (
+            visibility !=
+                View.VISIBLE
+        ) {
+            visibility =
+                View.VISIBLE
         }
+    }
+
+    private fun refreshSlotTarget(
+        slot: VideoSlot
+    ) {
+        val presence =
+            slot.presence
+                ?: return
+
+        val params =
+            presence.container
+                .layoutParams
+                as? LayoutParams
+                ?: return
+
+        slot.container
+            .layoutParams =
+            LayoutParams(
+                params.width,
+                params.height
+            ).apply {
+                leftMargin =
+                    params.leftMargin
+                topMargin =
+                    params.topMargin
+            }
+
+        slot.container.visibility =
+            if (
+                presence.container
+                    .visibility ==
+                    View.VISIBLE
+            ) {
+                View.VISIBLE
+            } else {
+                View.INVISIBLE
+            }
     }
 
     private fun scaledRect(
         raw: RectF,
         scale: Float
     ): RectF {
-        if (scale == 1f) {
-            return RectF(raw)
+        if (
+            scale ==
+                1f
+        ) {
+            return RectF(
+                raw
+            )
         }
 
         val halfWidth =
@@ -830,113 +1380,105 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     }
 
     private fun rectAtStoredDragPosition(
-        slot: Slot,
-        reference: RectF
+        presence: Presence,
+        template: RectF
     ): RectF {
-        val targetWidth =
-            reference.width()
-        val targetHeight =
-            reference.height()
+        val xFraction =
+            presence.dragCenterXFraction
+                ?: return template
+        val yFraction =
+            presence.dragCenterYFraction
+                ?: return template
 
         val centerX =
-            (
-                requireNotNull(
-                    slot.dragCenterXFraction
-                ) *
-                    width
-                )
-                .coerceIn(
-                    targetWidth / 2f,
-                    width -
-                        targetWidth / 2f
-                )
+            xFraction *
+                width
         val centerY =
-            (
-                requireNotNull(
-                    slot.dragCenterYFraction
-                ) *
-                    height
-                )
-                .coerceIn(
-                    targetHeight / 2f,
-                    height -
-                        targetHeight / 2f
-                )
+            yFraction *
+                height
+
+        val halfWidth =
+            template.width() /
+                2f
+        val halfHeight =
+            template.height() /
+                2f
 
         return RectF(
             centerX -
-                targetWidth / 2f,
+                halfWidth,
             centerY -
-                targetHeight / 2f,
+                halfHeight,
             centerX +
-                targetWidth / 2f,
+                halfWidth,
             centerY +
-                targetHeight / 2f
+                halfHeight
         )
     }
 
-    private fun handlePlantDrag(
-        slot: Slot,
+    private fun handleDrag(
+        presence: Presence,
         event: MotionEvent
     ): Boolean {
-        val placement =
-            slot.placement
-
         if (
-            !slot.active ||
-            placement == null ||
-            !placement.draggable
+            !presence.placement
+                .draggable
         ) {
             return false
         }
 
-        when (event.actionMasked) {
+        when (
+            event.actionMasked
+        ) {
             MotionEvent.ACTION_DOWN -> {
-                val layout =
-                    slot.container
+                presence.dragStartRawX =
+                    event.rawX
+                presence.dragStartRawY =
+                    event.rawY
+
+                val params =
+                    presence.container
                         .layoutParams
                         as? LayoutParams
                         ?: return false
 
-                slot.dragStartRawX =
-                    event.rawX
-                slot.dragStartRawY =
-                    event.rawY
-                slot.dragStartLeft =
-                    layout.leftMargin
-                slot.dragStartTop =
-                    layout.topMargin
+                presence.dragStartLeft =
+                    params.leftMargin
+                presence.dragStartTop =
+                    params.topMargin
 
-                bringChildToFront(
-                    slot.container
-                )
                 parent
                     ?.requestDisallowInterceptTouchEvent(
                         true
                     )
+
                 return true
             }
 
             MotionEvent.ACTION_MOVE -> {
                 val dx =
                     event.rawX -
-                        slot.dragStartRawX
+                        presence.dragStartRawX
                 val dy =
                     event.rawY -
-                        slot.dragStartRawY
+                        presence.dragStartRawY
 
                 val childWidth =
-                    slot.container.width
+                    presence.container
+                        .width
                         .coerceAtLeast(1)
                 val childHeight =
-                    slot.container.height
+                    presence.container
+                        .height
                         .coerceAtLeast(1)
+
                 val maxLeft =
                     (
                         width -
                             childWidth
                         )
                         .coerceAtLeast(0)
+
                 val maxTop =
                     (
                         height -
@@ -946,7 +1488,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
                 val left =
                     (
-                        slot.dragStartLeft +
+                        presence.dragStartLeft +
                             dx
                         )
                         .roundToInt()
@@ -954,9 +1496,10 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                             0,
                             maxLeft
                         )
+
                 val top =
                     (
-                        slot.dragStartTop +
+                        presence.dragStartTop +
                             dy
                         )
                         .roundToInt()
@@ -965,30 +1508,42 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                             maxTop
                         )
 
-                slot.container
+                presence.container
                     .layoutParams =
                     LayoutParams(
                         childWidth,
                         childHeight
                     ).apply {
-                        leftMargin = left
-                        topMargin = top
+                        leftMargin =
+                            left
+                        topMargin =
+                            top
                     }
 
                 updateDragFractions(
-                    slot,
+                    presence,
                     left,
                     top,
                     childWidth,
                     childHeight
                 )
+
+                videoSlotFor(
+                    presence
+                )
+                    ?.let {
+                        refreshSlotTarget(
+                            it
+                        )
+                    }
+
                 return true
             }
 
             MotionEvent.ACTION_UP,
             MotionEvent.ACTION_CANCEL -> {
                 persistPlantPosition(
-                    slot
+                    presence
                 )
                 parent
                     ?.requestDisallowInterceptTouchEvent(
@@ -1003,7 +1558,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     }
 
     private fun updateDragFractions(
-        slot: Slot,
+        presence: Presence,
         left: Int,
         top: Int,
         childWidth: Int,
@@ -1016,28 +1571,31 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             return
         }
 
-        slot.dragCenterXFraction =
+        presence.dragCenterXFraction =
             (
                 left +
-                    childWidth / 2f
+                    childWidth /
+                        2f
                 ) /
                 width
-        slot.dragCenterYFraction =
+
+        presence.dragCenterYFraction =
             (
                 top +
-                    childHeight / 2f
+                    childHeight /
+                        2f
                 ) /
                 height
     }
 
     private fun persistPlantPosition(
-        slot: Slot
+        presence: Presence
     ) {
         val x =
-            slot.dragCenterXFraction
+            presence.dragCenterXFraction
                 ?: return
         val y =
-            slot.dragCenterYFraction
+            presence.dragCenterYFraction
                 ?: return
 
         positionPrefs
@@ -1063,12 +1621,15 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         key: String
     ): Float? {
         val value =
-            positionPrefs.getFloat(
-                key,
-                Float.NaN
-            )
+            positionPrefs
+                .getFloat(
+                    key,
+                    Float.NaN
+                )
 
-        return if (value.isNaN()) {
+        return if (
+            value.isNaN()
+        ) {
             null
         } else {
             value.coerceIn(
@@ -1079,13 +1640,13 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     }
 
     private fun applyImageTint(
-        slot: Slot
+        presence: Presence
     ) {
-        slot.image.colorFilter =
+        presence.image
+            .colorFilter =
             if (
-                slot.placement
-                    ?.yellowTint ==
-                    true
+                presence.placement
+                    .yellowTint
             ) {
                 yellowImageFilter
             } else {
@@ -1094,52 +1655,91 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     }
 
     private fun setStaticSuppressed(
-        slot: Slot,
+        presence: Presence,
         suppressed: Boolean
     ) {
         if (
-            slot.staticSuppressed ==
+            presence.staticSuppressed ==
                 suppressed
         ) {
             return
         }
 
-        slot.placement
-            ?.setStaticSuppressed
-            ?.invoke(
+        presence.placement
+            .setStaticSuppressed(
                 suppressed
             )
-        slot.staticSuppressed =
+
+        presence.staticSuppressed =
             suppressed
     }
 
-    private fun retireSlot(
-        slot: Slot
-    ) {
-        setStaticSuppressed(
-            slot,
-            false
+    private fun videoSlotFor(
+        presence: Presence
+    ): VideoSlot? =
+        videoSlots
+            .firstOrNull {
+                it.presence ===
+                    presence
+            }
+
+    private fun profileFor(
+        kind: MascotKind
+    ): MascotAnimationProfile =
+        requireNotNull(
+            MascotAnimationProfiles
+                .all
+                .firstOrNull {
+                    it.kind ==
+                        kind
+                }
         )
-        slot.video.stopPlayback()
-        slot.video.visibility =
-            View.INVISIBLE
-        slot.image.visibility =
-            View.GONE
-        slot.container.visibility =
-            View.INVISIBLE
-        slot.active = false
-        slot.hasRenderedFrame = false
-        slot.placement = null
+
+    private fun presenceId(
+        kind: MascotKind,
+        ownerKey: String
+    ): String =
+        kind.name +
+            ":" +
+            ownerKey
+
+    private fun randomPauseMs():
+        Long =
+        Random.nextLong(
+            450L,
+            2100L
+        )
+
+    private fun scheduleUpdate(
+        delayMs: Long
+    ) {
+        removeCallbacks(
+            updateRunnable
+        )
+
+        if (
+            animationsEnabled
+        ) {
+            postDelayed(
+                updateRunnable,
+                delayMs
+            )
+        }
     }
 
     private fun refreshVisibility() {
         visibility =
             if (
-                slots.any {
-                    it.active &&
+                presences.values
+                    .any {
                         it.container
                             .visibility ==
                             View.VISIBLE
+                    } ||
+                videoSlots.any {
+                    it.container
+                        .visibility ==
+                        View.VISIBLE
                 }
             ) {
                 View.VISIBLE
@@ -1153,25 +1753,38 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     ): Bitmap? {
         if (
             bitmapCache
-                .containsKey(path)
+                .containsKey(
+                    path
+                )
         ) {
-            return bitmapCache[path]
+            return bitmapCache[
+                path
+            ]
         }
 
         val bitmap =
             try {
                 context.assets
-                    .open(path)
+                    .open(
+                        path
+                    )
                     .use {
                         BitmapFactory
-                            .decodeStream(it)
+                            .decodeStream(
+                                it
+                            )
                     }
-            } catch (_: Exception) {
+            } catch (
+                _: Exception
+            ) {
                 null
             }
 
-        bitmapCache[path] =
+        bitmapCache[
+            path
+        ] =
             bitmap
+
         return bitmap
     }
 

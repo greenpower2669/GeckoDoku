@@ -186,3 +186,22 @@ Après validation téléphone Fab :
 - SHA-256 : 684a40dbdc8ab91a8ca4ccdb5d4d904907279b9ad9c05c35603ae0b253ac9b46.
 
 Aucun incident de publication.
+
+
+## GECKO-051 — seuls Plante et Pierre semblaient vivants
+
+Observation téléphone Fab sur la release 0.15.10-dev :
+les Gecko visibles en Classic restent statiques ; visuellement seuls la Plante et Pierre s'animent.
+
+Cause :
+le pool 3 Gecko / 2 Abeilles / 1 Plante était utilisé comme pool d'instances vivantes au lieu d'être uniquement un pool de lecteurs vidéo. De plus, les pièces déjà présentes au chargement n'étaient pas synchronisées dans AliveMascotOverlayView.
+
+Correction 0.15.11-dev :
+- registre léger de Presence pour toutes les mascottes visibles ;
+- PNG interne par Presence ;
+- ancien PNG du plateau supprimé tant que Presence existe ;
+- pool vidéo séparé et borné ;
+- rotation update() vers les présences les moins récemment animées ;
+- synchronisation snapshot dans les quatre modes ;
+- série 3..5 stays différents + mémoire anti-série identique ;
+- grand cycle déclenche une cute chez une autre mascotte compatible.

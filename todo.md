@@ -90,3 +90,23 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] tag phone-0.15.10-dev-run-250 ;
 - [x] APK public disponible ;
 - [ ] grand cycle autonome des mascottes reste la prochaine tâche active.
+
+
+## GECKO-051 — toutes les mascottes vivantes, tous modes
+- [x] séparer présence vivante et lecteur vidéo ;
+- [x] présence légère PNG interne pour chaque Gecko/Abeille visible ;
+- [x] conserver seulement 3 lecteurs Gecko + 2 Abeille + 1 Plante ;
+- [x] rotation automatique des lecteurs entre présences ;
+- [x] synchroniser les Gecko Classic déjà présents ;
+- [x] synchroniser les marqueurs Gecko Sudoku déjà présents ;
+- [x] synchroniser toutes les pierres Gecko Gomoku déjà présentes ;
+- [x] synchroniser Gecko + Abeilles du mode hexagonal déjà présents ;
+- [x] retirer les présences devenues absentes sans fantôme ;
+- [x] update() autonome et pauses légèrement désynchronisées ;
+- [x] petites attentes différentes à chaque clip ;
+- [x] mémoire des séries complètes ;
+- [x] grand cycle → mignonnerie chez une copine compatible ;
+- [x] animations OFF = toutes les présences restent PNG internes ;
+- [ ] CI ;
+- [ ] validation téléphone Fab sur les 4 modes ;
+- [ ] release seulement après validation explicite.

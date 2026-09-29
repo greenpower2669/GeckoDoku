@@ -5,7 +5,7 @@ import org.junit.Test
 
 class MascotActivityPolicyTest {
     @Test
-    fun severalMascotsCanStayAliveWithoutUnlimitedVideoPlayers() {
+    fun videoPlayersStayBoundedEvenWhenAllMascotsStayAlive() {
         assertEquals(
             3,
             MascotActivityPolicy.capacity(

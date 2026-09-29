@@ -2,7 +2,7 @@
 
 > Documentation vivante de l'application telle qu'elle existe au 28 septembre 2026.
 >
-> **Version applicative observée :** `0.15.10-dev` — `versionCode 45`  
+> **Version applicative observée :** `0.15.11-dev` — `versionCode 46`  
 > **Branche :** `gecko-039-sudoku-tap-gecko-gomoku`  
 > **Référence code fonctionnel :** `8ccc0385c8314239976368811dab93808970e35a`  
 > Cette documentation décrit le comportement présent. Elle peut évoluer avec le logiciel. Elle n'est ni un historique de debug ni un ordre de mission.
@@ -564,3 +564,10 @@ Le PNG interne sert aussi de pont entre clips et reçoit la teinte jaune lorsqu'
 #### Nuages des placements donnés 0.15.10-dev
 
 Les placements imposés/grisés conservent une brume visuelle mais elle est désormais beaucoup plus légère. Un moteur commun construit sept petites bouffées irrégulières, avec des tailles et positions légèrement différentes et une opacité comprise entre 8 et 21. Le mouvement reste lent et déterministe par cellule, ce qui évite l'aspect de quatre ellipses géométriques superposées.
+
+
+#### Mascottes vivantes 0.15.11-dev
+
+Toutes les mascottes visibles sont désormais enregistrées comme Presence légères dans AliveMascotOverlayView, y compris celles déjà présentes lors du chargement d'une partie. Le PNG transparent appartient à la Presence. Les lecteurs vidéo sont séparés et restent bornés à 3 Gecko, 2 Abeilles et 1 Plante simultanément. Le scheduler update() fait tourner ces lecteurs entre toutes les Presence visibles, par ordre d'ancienneté d'animation avec des pauses légèrement aléatoires. Cette architecture est commune aux modes Classic, Sudoku, Gomoku et Abeilles & Geckos.
+
+AliveAnimator change de stay à chaque clip, forme des séries de 3 à 5 stays, évite de reproduire immédiatement une série complète et déclenche à la fin d'un grand cycle une animation cute chez une autre mascotte visible qui en possède une.

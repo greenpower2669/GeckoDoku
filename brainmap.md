@@ -555,3 +555,22 @@ flowchart LR
 
 Le brouillard reste déterministe pour une cellule donnée, avec mouvement doux par phase.
 Aucune géométrie de jeu n'en dépend.
+
+
+## 18 — GECKO-051 : Presence légère + pool vidéo
+
+~~~mermaid
+flowchart TD
+    Snapshot[état du mode] --> Sync[syncLivingMascotsForCurrentMode]
+    Sync --> P[Presence par mascotte visible]
+    P --> PNG[PNG transparent interne]
+    P --> A[AliveAnimator individuel]
+    Pool[3 Gecko / 2 Bee / 1 Plant lecteurs vidéo] --> Scheduler[AliveMascotOverlayView.update]
+    Scheduler --> P
+    A --> Series[cycle 3..5 stays différents]
+    Series --> Friend[mignonnerie chez une copine]
+~~~
+
+Le plafond de MascotActivityPolicy est désormais un plafond de lecteurs vidéo simultanés, pas un plafond de mascottes vivantes.
+
+Les quatre modes alimentent le même registre de Presence à partir de leur snapshot courant.

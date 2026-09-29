@@ -46,14 +46,19 @@ data class AliveAnimationDecision(
 
 class AliveAnimator(
     val profile: MascotAnimationProfile,
-    private val recentLimit: Int = 3,
-    private val refreshAfterIdleCycles: Int = 4
+    private val recentLimit: Int = 3
 ) {
     private val recentAssets =
         mutableListOf<String>()
 
-    private var idleCyclesSinceRefresh =
-        0
+    private val completedSeries =
+        mutableListOf<List<String>>()
+
+    private val currentSeries =
+        mutableListOf<String>()
+
+    private var targetSeriesLength =
+        4
 
     private var peerRefreshRequested =
         false
@@ -73,7 +78,9 @@ class AliveAnimator(
             return staticDecision()
         }
 
-        idleCyclesSinceRefresh = 0
+        resetSeries(
+            randomValue
+        )
 
         val appearance =
             profile.appearanceAsset
@@ -85,10 +92,27 @@ class AliveAnimator(
                 remember = false
             )
         } else {
-            chooseAmbient(
+            chooseIdle(
                 randomValue
             )
         }
+    }
+
+    fun startAmbient(
+        animationsEnabled: Boolean,
+        randomValue: Int
+    ): AliveAnimationDecision {
+        if (!animationsEnabled) {
+            return staticDecision()
+        }
+
+        resetSeries(
+            randomValue
+        )
+
+        return chooseIdle(
+            randomValue
+        )
     }
 
     fun afterCurrentClip(
@@ -101,54 +125,48 @@ class AliveAnimator(
 
         return when (state) {
             AliveVisualState.APPEARING ->
-                chooseAmbient(
+                chooseIdle(
                     randomValue
                 )
 
             AliveVisualState.IDLE -> {
-                idleCyclesSinceRefresh += 1
-
-                val completedBlock =
-                    idleCyclesSinceRefresh >=
-                        refreshAfterIdleCycles
-
-                val shouldReroll =
-                    completedBlock ||
-                        peerRefreshRequested
-
-                if (shouldReroll) {
-                    idleCyclesSinceRefresh = 0
-
-                    chooseAmbient(
+                if (peerRefreshRequested) {
+                    peerRefreshRequested =
+                        false
+                    finalizeSeries()
+                    resetSeries(
+                        randomValue
+                    )
+                    chooseIdle(
+                        randomValue
+                    )
+                } else if (
+                    currentSeries.size >=
+                        targetSeriesLength
+                ) {
+                    finalizeSeries()
+                    resetSeries(
+                        randomValue + 37
+                    )
+                    chooseIdle(
                         randomValue,
                         requestGroupRefresh =
-                            completedBlock
+                            true
                     )
                 } else {
-                    val asset =
-                        currentAsset
-
-                    if (asset == null) {
-                        chooseAmbient(
-                            randomValue
-                        )
-                    } else {
-                        clipDecision(
-                            state =
-                                AliveVisualState.IDLE,
-                            asset = asset,
-                            remember = false
-                        )
-                    }
+                    chooseIdle(
+                        randomValue
+                    )
                 }
             }
 
             AliveVisualState.CUTE -> {
-                idleCyclesSinceRefresh = 0
-
-                chooseAmbient(
-                    randomValue,
-                    requestGroupRefresh = true
+                finalizeSeries()
+                resetSeries(
+                    randomValue + 19
+                )
+                chooseIdle(
+                    randomValue
                 )
             }
 
@@ -161,6 +179,37 @@ class AliveAnimator(
             AliveVisualState.HIDDEN ->
                 hiddenDecision()
         }
+    }
+
+    fun requestCute(
+        animationsEnabled: Boolean,
+        randomValue: Int
+    ): AliveAnimationDecision {
+        if (!animationsEnabled) {
+            return staticDecision()
+        }
+
+        val candidates =
+            profile.cuteAssets
+
+        if (candidates.isEmpty()) {
+            return chooseIdle(
+                randomValue
+            )
+        }
+
+        val asset =
+            chooseWithoutImmediateRepeat(
+                candidates,
+                randomValue
+            )
+
+        return clipDecision(
+            state =
+                AliveVisualState.CUTE,
+            asset = asset,
+            remember = true
+        )
     }
 
     fun requestDisappear(
@@ -187,6 +236,18 @@ class AliveAnimator(
         peerRefreshRequested = true
     }
 
+    fun refreshAfterPeerRequest(
+        animationsEnabled: Boolean,
+        randomValue: Int
+    ): AliveAnimationDecision {
+        peerRefreshRequested = false
+        finalizeSeries()
+        return startAmbient(
+            animationsEnabled,
+            randomValue
+        )
+    }
+
     fun fallbackToStatic():
         AliveAnimationDecision =
         staticDecision()
@@ -201,81 +262,115 @@ class AliveAnimator(
             recentAssets.toList()
         )
 
-    private fun chooseAmbient(
+    fun seriesHistory():
+        List<List<String>> =
+        Collections.unmodifiableList(
+            completedSeries
+                .map {
+                    it.toList()
+                }
+        )
+
+    private fun chooseIdle(
         randomValue: Int,
         requestGroupRefresh:
             Boolean = false
     ): AliveAnimationDecision {
-        val preferCute =
-            profile.cuteAssets
-                .isNotEmpty() &&
-                Math.floorMod(
-                    randomValue,
-                    5
-                ) == 4
+        val candidates =
+            profile.idleAssets
 
-        val preferred =
-            if (preferCute) {
+        if (candidates.isEmpty()) {
+            return if (
                 profile.cuteAssets
-            } else {
-                profile.idleAssets
-            }
-
-        val allAmbient =
-            (
-                profile.idleAssets +
-                    profile.cuteAssets
+                    .isNotEmpty()
+            ) {
+                requestCute(
+                    animationsEnabled =
+                        true,
+                    randomValue =
+                        randomValue
                 )
-                .distinct()
+            } else {
+                staticDecision()
+            }
+        }
 
-        val fallback =
-            when {
-                preferred.isEmpty() ->
-                    allAmbient
+        val previousSeries =
+            completedSeries
+                .lastOrNull()
+                .orEmpty()
 
-                preferred.any {
-                    it != currentAsset
-                } ->
-                    preferred
-
-                allAmbient.any {
-                    it != currentAsset
-                } ->
-                    allAmbient
-
-                else ->
-                    preferred
+        var pool =
+            candidates.filter {
+                it != currentAsset
             }
 
-        if (fallback.isEmpty()) {
-            return staticDecision()
+        if (pool.isEmpty()) {
+            pool =
+                candidates
+        }
+
+        if (
+            currentSeries.isEmpty() &&
+            previousSeries.isNotEmpty()
+        ) {
+            val withoutSameStart =
+                pool.filter {
+                    it !=
+                        previousSeries
+                            .first()
+                }
+
+            if (
+                withoutSameStart
+                    .isNotEmpty()
+            ) {
+                pool =
+                    withoutSameStart
+            }
+        }
+
+        if (
+            currentSeries.size ==
+                targetSeriesLength - 1 &&
+            previousSeries.size ==
+                targetSeriesLength &&
+            currentSeries ==
+                previousSeries
+                    .take(
+                        currentSeries
+                            .size
+                    )
+        ) {
+            val withoutSameEnd =
+                pool.filter {
+                    it !=
+                        previousSeries
+                            .last()
+                }
+
+            if (
+                withoutSameEnd
+                    .isNotEmpty()
+            ) {
+                pool =
+                    withoutSameEnd
+            }
         }
 
         val asset =
             chooseWithoutImmediateRepeat(
-                candidates = fallback,
-                randomValue =
-                    if (peerRefreshRequested) {
-                        randomValue + 1
-                    } else {
-                        randomValue
-                    }
+                pool,
+                randomValue
             )
 
-        peerRefreshRequested = false
-
-        val nextState =
-            if (
-                asset in
-                    profile.cuteAssets
-            ) {
-                AliveVisualState.CUTE
-            } else {
-                AliveVisualState.IDLE
-            }
+        currentSeries.add(
+            asset
+        )
 
         return clipDecision(
-            state = nextState,
+            state =
+                AliveVisualState.IDLE,
             asset = asset,
             remember = true,
             requestGroupRefresh =
@@ -319,6 +414,39 @@ class AliveAnimator(
                 pool.size
             )
         ]
+    }
+
+    private fun finalizeSeries() {
+        if (
+            currentSeries.isEmpty()
+        ) {
+            return
+        }
+
+        completedSeries.add(
+            currentSeries.toList()
+        )
+
+        while (
+            completedSeries.size >
+                4
+        ) {
+            completedSeries.removeAt(0)
+        }
+
+        currentSeries.clear()
+    }
+
+    private fun resetSeries(
+        randomValue: Int
+    ) {
+        currentSeries.clear()
+        targetSeriesLength =
+            3 +
+                Math.floorMod(
+                    randomValue,
+                    3
+                )
     }
 
     private fun clipDecision(

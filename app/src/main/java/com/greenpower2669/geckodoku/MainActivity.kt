@@ -2267,6 +2267,7 @@ class MainActivity : Activity() {
                 GameMode.SUDOKU
         ) {
             refreshSudokuUi()
+            syncLivingMascotsForCurrentMode()
             return
         }
 
@@ -2275,6 +2276,7 @@ class MainActivity : Activity() {
                 GameMode.GOMOKU
         ) {
             refreshGomokuUi()
+            syncLivingMascotsForCurrentMode()
             return
         }
 
@@ -2283,6 +2285,7 @@ class MainActivity : Activity() {
                 GameMode.BEES_GECKOS
         ) {
             refreshBeeGeckoUi()
+            syncLivingMascotsForCurrentMode()
             return
         }
 
@@ -2426,6 +2429,8 @@ class MainActivity : Activity() {
                     "Simple = ✕, vrai double-clic = repères logiques, appui long = hypothèse."
                 }
         }
+
+        syncLivingMascotsForCurrentMode()
     }
 
     private fun handleSingleTap(
@@ -7040,7 +7045,9 @@ class MainActivity : Activity() {
     }
 
     private fun showClassicLivingGecko(
-        cell: Cell
+        cell: Cell,
+        animateAppearance:
+            Boolean = true
     ) {
         if (
             !::aliveMascotOverlay
@@ -7077,7 +7084,9 @@ class MainActivity : Activity() {
                         .contains(
                             cell
                         )
-            }
+            },
+            animateAppearance =
+                animateAppearance
         )
     }
 
@@ -7115,7 +7124,9 @@ class MainActivity : Activity() {
     }
 
     private fun showSudokuLivingGecko(
-        cell: Cell
+        cell: Cell,
+        animateAppearance:
+            Boolean = true
     ) {
         if (
             !::aliveMascotOverlay
@@ -7154,7 +7165,9 @@ class MainActivity : Activity() {
                             cell
                         ) ==
                         true
-            }
+            },
+            animateAppearance =
+                animateAppearance
         )
     }
 
@@ -7194,7 +7207,9 @@ class MainActivity : Activity() {
 
     private fun showGomokuLivingGecko(
         cell: Cell,
-        player: GomokuPlayer
+        player: GomokuPlayer,
+        animateAppearance:
+            Boolean = true
     ) {
         if (
             !::aliveMascotOverlay
@@ -7236,13 +7251,17 @@ class MainActivity : Activity() {
             },
             yellowTint =
                 player ==
-                    GomokuPlayer.PROFESSOR
+                    GomokuPlayer.PROFESSOR,
+            animateAppearance =
+                animateAppearance
         )
     }
 
     private fun showBeeGeckoLivingPiece(
         cell: HexCoord,
-        piece: BeeGeckoPiece
+        piece: BeeGeckoPiece,
+        animateAppearance:
+            Boolean = true
     ) {
         if (
             !::aliveMascotOverlay
@@ -7293,7 +7312,9 @@ class MainActivity : Activity() {
                             cell
                         ) ==
                         piece
-            }
+            },
+            animateAppearance =
+                animateAppearance
         )
     }
 
@@ -7342,6 +7363,248 @@ class MainActivity : Activity() {
                     )
             }
         )
+    }
+
+    private fun syncLivingMascotsForCurrentMode() {
+        if (
+            !::aliveMascotOverlay
+                .isInitialized
+        ) {
+            return
+        }
+
+        when (
+            selectedGameMode
+        ) {
+            GameMode.GECKODOKU -> {
+                val snapshot =
+                    engine.snapshot()
+
+                val owners =
+                    snapshot.confirmed
+                        .mapTo(
+                            linkedSetOf()
+                        ) {
+                            cell ->
+                            "classic:" +
+                                cell.row +
+                                ":" +
+                                cell.col
+                        }
+
+                aliveMascotOverlay
+                    .retainOwners(
+                        kind =
+                            MascotKind.GECKO,
+                        ownerPrefix =
+                            "classic:",
+                        ownerKeys =
+                            owners
+                    )
+
+                snapshot.confirmed
+                    .forEach {
+                        showClassicLivingGecko(
+                            cell = it,
+                            animateAppearance =
+                                false
+                        )
+                    }
+            }
+
+            GameMode.SUDOKU -> {
+                val snapshot =
+                    sudokuEngine
+                        ?.snapshot()
+                        ?: return
+
+                val cells =
+                    buildList {
+                        for (
+                            row in
+                            0 until
+                                SudokuPuzzle.SIZE
+                        ) {
+                            for (
+                                col in
+                                0 until
+                                    SudokuPuzzle.SIZE
+                            ) {
+                                val cell =
+                                    Cell(
+                                        row,
+                                        col
+                                    )
+
+                                if (
+                                    snapshot
+                                        .hasGeckoMarker(
+                                            cell
+                                        )
+                                ) {
+                                    add(
+                                        cell
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                val owners =
+                    cells.mapTo(
+                        linkedSetOf()
+                    ) {
+                        cell ->
+                        "sudoku:" +
+                            cell.row +
+                            ":" +
+                            cell.col
+                    }
+
+                aliveMascotOverlay
+                    .retainOwners(
+                        kind =
+                            MascotKind.GECKO,
+                        ownerPrefix =
+                            "sudoku:",
+                        ownerKeys =
+                            owners
+                    )
+
+                cells.forEach {
+                    showSudokuLivingGecko(
+                        cell = it,
+                        animateAppearance =
+                            false
+                    )
+                }
+            }
+
+            GameMode.GOMOKU -> {
+                val snapshot =
+                    gomokuEngine
+                        ?.snapshot()
+                        ?: return
+
+                val owners =
+                    snapshot.stones
+                        .keys
+                        .mapTo(
+                            linkedSetOf()
+                        ) {
+                            cell ->
+                            "gomoku:" +
+                                cell.row +
+                                ":" +
+                                cell.col
+                        }
+
+                aliveMascotOverlay
+                    .retainOwners(
+                        kind =
+                            MascotKind.GECKO,
+                        ownerPrefix =
+                            "gomoku:",
+                        ownerKeys =
+                            owners
+                    )
+
+                snapshot.stones
+                    .forEach {
+                        (cell, player) ->
+                        showGomokuLivingGecko(
+                            cell =
+                                cell,
+                            player =
+                                player,
+                            animateAppearance =
+                                false
+                        )
+                    }
+            }
+
+            GameMode.BEES_GECKOS -> {
+                val snapshot =
+                    beeGeckoEngine
+                        ?.snapshot()
+                        ?: return
+
+                val geckoOwners =
+                    snapshot
+                        .confirmedGeckos
+                        .mapTo(
+                            linkedSetOf()
+                        ) {
+                            cell ->
+                            "bee:GECKO:" +
+                                cell.q +
+                                ":" +
+                                cell.r
+                        }
+
+                val beeOwners =
+                    snapshot
+                        .confirmedBees
+                        .mapTo(
+                            linkedSetOf()
+                        ) {
+                            cell ->
+                            "bee:BEE:" +
+                                cell.q +
+                                ":" +
+                                cell.r
+                        }
+
+                aliveMascotOverlay
+                    .retainOwners(
+                        kind =
+                            MascotKind.GECKO,
+                        ownerPrefix =
+                            "bee:GECKO:",
+                        ownerKeys =
+                            geckoOwners
+                    )
+
+                aliveMascotOverlay
+                    .retainOwners(
+                        kind =
+                            MascotKind.BEE,
+                        ownerPrefix =
+                            "bee:BEE:",
+                        ownerKeys =
+                            beeOwners
+                    )
+
+                snapshot
+                    .confirmedGeckos
+                    .forEach {
+                        showBeeGeckoLivingPiece(
+                            cell = it,
+                            piece =
+                                BeeGeckoPiece
+                                    .GECKO,
+                            animateAppearance =
+                                false
+                        )
+                    }
+
+                snapshot
+                    .confirmedBees
+                    .forEach {
+                        showBeeGeckoLivingPiece(
+                            cell = it,
+                            piece =
+                                BeeGeckoPiece
+                                    .BEE,
+                            animateAppearance =
+                                false
+                        )
+                    }
+            }
+        }
+
+        aliveMascotOverlay
+            .refreshDynamicTargets()
     }
 
     private fun beeGeckoOverlayTarget(

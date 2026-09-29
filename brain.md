@@ -8,7 +8,7 @@
 ## État de référence
 
 - Branche : gecko-039-sudoku-tap-gecko-gomoku
-- Version : 0.15.10-dev / versionCode 45
+- Version : 0.15.11-dev / versionCode 46
 - GECKO-047 : VALIDÉ FAB — grandes barres d’axes, drag/suppression hors plateau, Prof utilisant les axes, audio Android/Pierre capturable.
 - GECKO-048 : CODE + CI VERTE, validation téléphone encore attendue — prononciation Pierre et couleurs d’axes.
 - GECKO-049 : VALIDÉ FAB — géométrie canonique des axes Abeilles & Geckos.
@@ -408,3 +408,29 @@ APK public : GeckoDoku-v0.15.10-dev.apk.
 SHA-256 : 684a40dbdc8ab91a8ca4ccdb5d4d904907279b9ad9c05c35603ae0b253ac9b46.
 
 Prochaine évolution active : grand cycle autonome des mascottes.
+
+
+## 21 — GECKO-051 présence vivante ≠ lecteur vidéo
+
+Architecture canonique :
+- chaque mascotte visible possède une Presence légère dans AliveMascotOverlayView ;
+- Presence possède PNG transparent, géométrie, suppression du PNG historique du plateau et son AliveAnimator ;
+- les lecteurs vidéo sont un pool séparé et borné : 3 Gecko, 2 Abeilles, 1 Plante ;
+- une Presence sans lecteur reste affichée par son PNG interne ;
+- update() attribue les lecteurs aux Presence les moins récemment animées ;
+- toutes les présences finissent donc par s'animer sans multiplier les GLSurfaceView.
+
+Synchronisation complète :
+- Classic : snapshot.confirmed ;
+- Sudoku : snapshot.geckoMarkers ;
+- Gomoku : snapshot.stones ;
+- Abeilles & Geckos : snapshot.confirmedGeckos + confirmedBees.
+
+Cycle :
+- changement de stay à chaque clip ;
+- grand cycle de 3 à 5 stays ;
+- séries successives non identiques ;
+- fin de grand cycle → choix d'une copine visible disposant d'une animation cute ;
+- autres Presence repartent de manière désynchronisée.
+
+Pierre reste volontairement hors de ce moteur.
