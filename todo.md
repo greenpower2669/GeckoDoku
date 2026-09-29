@@ -30,3 +30,9 @@
 - [ ] validation téléphone Fab.
 
 Voir `ordres-de-mission.md` pour le contrat complet.
+
+
+### CI fondation
+- [x] compilation Kotlin Debug/Phone atteinte en CI #242 ;
+- [x] défaut du test de compteur identifié et corrigé ;
+- [ ] nouvelle CI verte après correction.

@@ -145,6 +145,13 @@ class AliveAnimatorTest {
             randomValue = 0
         )
 
+        // Finish APPEARING first: this selects the first IDLE,
+        // but it is not itself an idle completion.
+        animator.afterCurrentClip(
+            animationsEnabled = true,
+            randomValue = 0
+        )
+
         var refreshSeen = false
 
         repeat(4) {

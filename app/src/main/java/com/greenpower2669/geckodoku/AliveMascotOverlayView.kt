@@ -376,6 +376,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     it
                 )
             }
+
+        refreshVisibility()
     }
 
     fun release() {
