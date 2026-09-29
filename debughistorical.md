@@ -380,3 +380,23 @@ Aucun ordonnanceur/pool n'est réintroduit.
 
 Commit testé : a43ef730ec77475e08b3ab7c4b897a023977057c.
 Tests unitaires + assemblePhone : succès. Artifact : GeckoDoku-v0.15.16-dev-phone. SHA-256 archive : 4fde649f9492e89ba01e12e62a4094e454e229008c930c35837b200c94308894. Aucune release/prerelease déclenchée.
+
+
+## GECKO-057 — 0.15.16-dev : le log prouve que play() n'est jamais atteint
+
+Observation du log téléphone fourni par Fab :
+- Pierre : PLAY_REQUEST, VIDEO_RENDERING_START_SIGNAL, VIDEO_FIRST_FRAME et VIDEO_VISIBLE sont présents ;
+- mascottes plateau : plusieurs ChromaKey sont créés (SURFACE_POLICY) mais aucun PLAY_REQUEST Gecko/Abeille n'apparaît ;
+- la panne est donc avant ChromaKeyVideoView.play(), pas dans le first-frame gate corrigé par GECKO-056.
+
+Cause code :
+refreshDynamicTargets() pouvait rappeler schedulePresence() de façon répétée. Celui-ci supprimait systématiquement le callback existant puis le repostait. En parallèle refreshPresenceTarget() réassignait toujours les LayoutParams des deux siblings, même inchangés, ce qui entretenait les refresh/layout. Le cycle d'une Presence pouvait rester indéfiniment pending : PNG visible ou apparition bloquée, vidéo jamais demandée.
+
+Correction 0.15.17-dev :
+- callback déjà armé = jamais replanifié par un refresh ;
+- désarmement uniquement au départ réel du runnable, cancel ou remove ;
+- géométrie idempotente : pas de layoutParams réassignés si rect identique ;
+- trace ALIVE_PLAY juste avant play() ;
+- dernier Gecko de partie inclus dans la couche vivante.
+
+Aucun ordonnanceur ou pool réintroduit.
