@@ -450,3 +450,7 @@ Commit testé : 2c20b06d2a0f699c8811cdf7cd37871a4b712f45. Tests + assemblePhone 
 Le cadre média transparent/key-color est plus large que le personnage visible et celui-ci est déjà centré. Rejeter ou déplacer le média parce que le cadre dépasse le viewport était donc une erreur de modèle et une règle non demandée.
 
 Correction 0.15.19-dev : suppression du test viewport, du clamp et de la trace BEE_GECKO_ALIVE_TARGET_CLAMPED.
+
+## GECKO-059 — CI #267 VERTE
+
+Commit testé : baf9743f71821032fbf88480462554eddeade1d5. Tests + assemblePhone : succès. APK SHA-256 : 97e3876d853dd1701f3e7f552fe38d289bf4d5344278416a1e409d7817d6ebcf. Aucune release/prerelease.
