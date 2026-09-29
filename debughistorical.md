@@ -69,3 +69,18 @@ Correctif 0.15.8-dev :
 
 Résultat attendu :
 vidéo A → image fixe cohérente très brève → vidéo B, sans phase vide.
+
+
+## GECKO-050 — CI #247 — VERTE
+
+Commit applicatif :
+d9a744fc96814ada0dda5077363c18e4a6d7517a
+
+Résultat :
+- tests OK ;
+- compilation Debug/Phone OK ;
+- APK 0.15.8-dev produit ;
+- prerelease/release non déclenchée.
+
+À valider sur téléphone :
+absence du vide entre deux clips grâce au bridge PNG, sans PNG prématuré avant la première apparition.

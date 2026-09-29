@@ -32,7 +32,8 @@
 - [x] test téléphone Fab : coupure visuelle intermittente entre deux vidéos reproduite conceptuellement ;
 - [x] cause : nouveau lecteur transparent jusqu'à sa première frame alors que le PNG plateau reste masqué ;
 - [x] correction : PNG transparent canonique utilisé uniquement comme pont entre deux clips déjà commencés ;
-- [ ] CI 0.15.8-dev ;
+- [x] CI #247 0.15.8-dev verte ;
+- [x] APK téléphone 0.15.8-dev produit ;
 - [ ] validation téléphone Fab du pont sans coupure.
 
 Voir `ordres-de-mission.md` pour le contrat complet.

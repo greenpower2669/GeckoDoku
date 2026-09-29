@@ -12,7 +12,7 @@
 - GECKO-047 : VALIDÉ FAB — grandes barres d’axes, drag/suppression hors plateau, Prof utilisant les axes, audio Android/Pierre capturable.
 - GECKO-048 : CODE + CI VERTE, validation téléphone encore attendue — prononciation Pierre et couleurs d’axes.
 - GECKO-049 : VALIDÉ FAB — géométrie canonique des axes Abeilles & Geckos.
-- GECKO-050 : CODE + CI #246 VERTE, validation téléphone attendue — moteur commun de mascottes vivantes Gecko/Abeille/Plante.
+- GECKO-050 : correctif continuité CODE + CI #247 VERTE, validation téléphone attendue — pont PNG entre clips du moteur Gecko/Abeille/Plante.
 - Titre visible dans tous les modes : GeckoDoku 🦎.
 
 ## 1 — Contrat transversal
@@ -334,4 +334,12 @@ validation téléphone Fab, notamment la popup du double-clic.
 
 CI #246 verte sur commit applicatif 92eed1b0f273a1be069994d61f91f75ab3a5bc7f.
 APK de test : GeckoDoku-v0.15.7-dev.apk.
+Aucune release publique avant validation téléphone Fab.
+
+
+## 15 — GECKO-050 continuité inter-clips
+
+Commit applicatif : d9a744fc96814ada0dda5077363c18e4a6d7517a.
+CI #247 verte.
+APK de test : GeckoDoku-v0.15.8-dev.apk.
 Aucune release publique avant validation téléphone Fab.
