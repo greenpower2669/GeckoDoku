@@ -454,3 +454,6 @@ Correction 0.15.19-dev : suppression du test viewport, du clamp et de la trace B
 ## GECKO-059 — CI #267 VERTE
 
 Commit testé : baf9743f71821032fbf88480462554eddeade1d5. Tests + assemblePhone : succès. APK SHA-256 : 97e3876d853dd1701f3e7f552fe38d289bf4d5344278416a1e409d7817d6ebcf. Aucune release/prerelease.
+
+## GECKO-060
+0.15.20-dev : BeeGeckoBoardView ne dessine plus les pièces. AliveMascotOverlayView possède seul le PNG et la vidéo. La visibilité hors écran est décidée par la cellule du plateau.
