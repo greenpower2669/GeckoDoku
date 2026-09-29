@@ -375,3 +375,8 @@ Correction 0.15.16-dev :
 - FreshPlaybackFrameGateTest couvre l'ordre inversé, les générations périmées et cancel().
 
 Aucun ordonnanceur/pool n'est réintroduit.
+
+## GECKO-056 — CI #260 VERTE
+
+Commit testé : a43ef730ec77475e08b3ab7c4b897a023977057c.
+Tests unitaires + assemblePhone : succès. Artifact : GeckoDoku-v0.15.16-dev-phone. SHA-256 archive : 4fde649f9492e89ba01e12e62a4094e454e229008c930c35837b200c94308894. Aucune release/prerelease déclenchée.
