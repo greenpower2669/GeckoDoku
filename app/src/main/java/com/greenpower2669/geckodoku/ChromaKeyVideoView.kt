@@ -188,6 +188,22 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             freshPlaybackFrameGate
                 .beginPlayback()
 
+        val gateFirstFrame =
+            firstFrameGateActivationPolicy
+                .shouldArm(
+                    revealOnFirstFrame
+                )
+
+        queueEvent {
+            chromaRenderer
+                .beginPlayback(
+                    generation =
+                        activePlaybackGeneration,
+                    gateFirstFrame =
+                        gateFirstFrame
+                )
+        }
+
         this.muted = muted
         this.revealOnFirstFrame =
             revealOnFirstFrame
@@ -242,10 +258,7 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 generation =
                     activePlaybackGeneration,
                 gateFirstFrame =
-                    firstFrameGateActivationPolicy
-                        .shouldArm(
-                            revealOnFirstFrame
-                        )
+                    gateFirstFrame
             )
 
         startPendingPlayback()
@@ -899,6 +912,21 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         private var firstFrameGeneration =
             0L
 
+        private var renderGeneration =
+            0L
+
+        private var renderBaselineSerial =
+            0L
+
+        private var renderGateRequired =
+            false
+
+        private var renderGateArmed =
+            true
+
+        private var hasRenderableFrame =
+            false
+
         private var viewWidth = 1
         private var viewHeight = 1
         private var videoWidth = 1
@@ -1061,6 +1089,22 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 }
             }
 
+            if (
+                consumedFreshFrame &&
+                renderGateArmed &&
+                consumedFrameSerial >
+                    renderBaselineSerial
+            ) {
+                hasRenderableFrame = true
+            }
+
+            // Never sample an uninitialised or stale external texture.
+            // Until the current playback has delivered a fresh frame,
+            // the Surface stays as the transparent clear performed above.
+            if (!hasRenderableFrame) {
+                return
+            }
+
             GLES20.glUseProgram(program)
 
             val positionHandle =
@@ -1212,9 +1256,42 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             }
         }
 
+        fun beginPlayback(
+            generation: Long,
+            gateFirstFrame: Boolean
+        ) {
+            renderGeneration =
+                generation
+            renderGateRequired =
+                gateFirstFrame
+            renderGateArmed =
+                !gateFirstFrame
+            renderBaselineSerial =
+                producedFrameSerial.get()
+            hasRenderableFrame = false
+
+            firstFrameNotificationArmed =
+                false
+            freshFrameSerialGate.cancel()
+
+            requestFrame()
+        }
+
         fun armFirstFrameNotification(
             generation: Long
         ) {
+            if (
+                generation !=
+                renderGeneration
+            ) {
+                return
+            }
+
+            renderGateArmed = true
+            renderBaselineSerial =
+                producedFrameSerial.get()
+            hasRenderableFrame = false
+
             firstFrameGeneration =
                 generation
             freshFrameSerialGate.arm(
@@ -1268,6 +1345,9 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         }
 
         fun releaseSurfaceTexture() {
+            hasRenderableFrame = false
+            renderGateArmed =
+                !renderGateRequired
             surfaceTexture?.release()
             surfaceTexture = null
         }
