@@ -93,6 +93,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         var hideStaticUntilAppearanceEnds = false
         var generation = 0
 
+        var cycleCallbackArmed = false
+
         lateinit var cycleRunnable:
             Runnable
 
@@ -160,6 +162,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
             cycleRunnable =
                 Runnable {
+                    cycleCallbackArmed = false
                     advancePresence(this)
                 }
         }
@@ -814,6 +817,19 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         presence.video.visibility =
             View.VISIBLE
 
+        MediaTrace.event(
+            source = "AliveMascotOverlay",
+            event = "ALIVE_PLAY",
+            assetPath = assetPath,
+            detail =
+                "kind=" +
+                    presence.profile.kind +
+                    " owner=" +
+                    presence.ownerKey +
+                    " state=" +
+                    decision.state
+        )
+
         presence.video.play(
             assetPath = assetPath,
             muted = true,
@@ -1086,10 +1102,6 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         presence: Presence,
         delayMs: Long
     ) {
-        removeCallbacks(
-            presence.cycleRunnable
-        )
-
         if (
             !animationsEnabled ||
             introSuppressed ||
@@ -1099,10 +1111,24 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             return
         }
 
-        postDelayed(
-            presence.cycleRunnable,
-            delayMs
-        )
+        // A geometry/layout refresh must never postpone an already
+        // armed mascot cycle. Each Presence owns exactly one local
+        // callback; repeated refreshes only update its target.
+        if (presence.cycleCallbackArmed) {
+            return
+        }
+
+        presence.cycleCallbackArmed = true
+
+        val posted =
+            postDelayed(
+                presence.cycleRunnable,
+                delayMs
+            )
+
+        if (!posted) {
+            presence.cycleCallbackArmed = false
+        }
     }
 
     private fun cancelPresencePlayback(
@@ -1113,6 +1139,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         removeCallbacks(
             presence.cycleRunnable
         )
+        presence.cycleCallbackArmed = false
 
         presence.generation += 1
 
@@ -1211,10 +1238,14 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         .roundToInt()
             }
 
-        presence.pngContainer.layoutParams =
-            LayoutParams(layout)
-        presence.videoContainer.layoutParams =
-            LayoutParams(layout)
+        applyLayoutIfChanged(
+            presence.pngContainer,
+            layout
+        )
+        applyLayoutIfChanged(
+            presence.videoContainer,
+            layout
+        )
 
         applyTint(presence)
 
@@ -1238,12 +1269,38 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         return true
     }
 
+    private fun applyLayoutIfChanged(
+        view: View,
+        target: LayoutParams
+    ) {
+        val current =
+            view.layoutParams
+                as? LayoutParams
+
+        val unchanged =
+            current != null &&
+                current.width ==
+                    target.width &&
+                current.height ==
+                    target.height &&
+                current.leftMargin ==
+                    target.leftMargin &&
+                current.topMargin ==
+                    target.topMargin
+
+        if (!unchanged) {
+            view.layoutParams =
+                LayoutParams(target)
+        }
+    }
+
     private fun removePresence(
         presence: Presence
     ) {
         removeCallbacks(
             presence.cycleRunnable
         )
+        presence.cycleCallbackArmed = false
 
         presence.generation += 1
         presence.video.stopPlayback()
