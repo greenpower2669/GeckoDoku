@@ -22,8 +22,7 @@ object MascotAnimationProfiles {
                         .GECKO_LONG_ACTIONS
                 ),
             keyColor =
-                ChromaKeyColor.BLUE,
-            boardOwnsStaticPng = true
+                ChromaKeyColor.BLUE
         )
 
     val bee =
@@ -42,8 +41,7 @@ object MascotAnimationProfiles {
             cuteAssets =
                 emptyList(),
             keyColor =
-                ChromaKeyColor.GREEN,
-            boardOwnsStaticPng = true
+                ChromaKeyColor.GREEN
         )
 
     val plant =
@@ -63,8 +61,7 @@ object MascotAnimationProfiles {
                         .PLANT_LONG_ACTION
                 ),
             keyColor =
-                ChromaKeyColor.BLUE,
-            boardOwnsStaticPng = false
+                ChromaKeyColor.BLUE
         )
 
     val all =

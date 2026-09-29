@@ -64,6 +64,9 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             null
         }
 
+    private val mediaSuppressedGeckos =
+        linkedSetOf<Cell>()
+
     private val boardRect =
         RectF()
 
@@ -156,6 +159,35 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         )
     }
 
+    fun setMediaGeckoSuppressed(
+        cell: Cell,
+        suppressed: Boolean
+    ) {
+        if (suppressed) {
+            mediaSuppressedGeckos.add(
+                cell
+            )
+        } else {
+            mediaSuppressedGeckos.remove(
+                cell
+            )
+        }
+
+        invalidate()
+    }
+
+    fun clearMediaGeckoSuppression() {
+        if (
+            mediaSuppressedGeckos
+                .isEmpty()
+        ) {
+            return
+        }
+
+        mediaSuppressedGeckos.clear()
+        invalidate()
+    }
+
     override fun onDraw(
         canvas: Canvas
     ) {
@@ -215,7 +247,11 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                 if (
                     state.hasGeckoMarker(
                         cell
-                    )
+                    ) &&
+                    !mediaSuppressedGeckos
+                        .contains(
+                            cell
+                        )
                 ) {
                     drawGeckoMarker(
                         canvas,

@@ -5367,6 +5367,25 @@ class MainActivity : Activity() {
                 .stopBoardMascots()
         }
 
+        if (::board.isInitialized) {
+            board.clearMediaGeckoSuppression()
+        }
+
+        if (::sudokuValueOverlay.isInitialized) {
+            sudokuValueOverlay
+                .clearMediaGeckoSuppression()
+        }
+
+        if (::gomokuBoard.isInitialized) {
+            gomokuBoard
+                .clearMediaStoneSuppression()
+        }
+
+        if (::beeGeckoBoard.isInitialized) {
+            beeGeckoBoard
+                .clearMediaPieceSuppression()
+        }
+
         selectedGameMode = mode
         gameModePreferences.gameMode =
             mode
@@ -7015,7 +7034,8 @@ class MainActivity : Activity() {
             },
             eligible = {
                 true
-            }
+            },
+            draggable = true
         )
     }
 
@@ -7042,9 +7062,11 @@ class MainActivity : Activity() {
                     cell
                 )
             },
-            maskColorProvider = {
-                board.cellBackgroundColor(
-                    cell
+            setStaticSuppressed = {
+                    suppressed ->
+                board.setMediaGeckoSuppressed(
+                    cell,
+                    suppressed
                 )
             },
             eligible = {
@@ -7082,9 +7104,11 @@ class MainActivity : Activity() {
                     cell
                 )
             },
-            maskColorProvider = {
-                board.cellBackgroundColor(
-                    cell
+            setStaticSuppressed = {
+                    suppressed ->
+                board.setMediaGeckoSuppressed(
+                    cell,
+                    suppressed
                 )
             }
         )
@@ -7113,10 +7137,12 @@ class MainActivity : Activity() {
                     cell
                 )
             },
-            maskColorProvider = {
-                sudokuBoard
-                    .cellBackgroundColor(
-                        cell
+            setStaticSuppressed = {
+                    suppressed ->
+                sudokuValueOverlay
+                    .setMediaGeckoSuppressed(
+                        cell,
+                        suppressed
                     )
             },
             eligible = {
@@ -7155,10 +7181,12 @@ class MainActivity : Activity() {
                     cell
                 )
             },
-            maskColorProvider = {
-                sudokuBoard
-                    .cellBackgroundColor(
-                        cell
+            setStaticSuppressed = {
+                    suppressed ->
+                sudokuValueOverlay
+                    .setMediaGeckoSuppressed(
+                        cell,
+                        suppressed
                     )
             }
         )
@@ -7188,9 +7216,13 @@ class MainActivity : Activity() {
                     cell
                 )
             },
-            maskColorProvider = {
+            setStaticSuppressed = {
+                    suppressed ->
                 gomokuBoard
-                    .cellBackgroundColor()
+                    .setMediaStoneSuppressed(
+                        cell,
+                        suppressed
+                    )
             },
             eligible = {
                 selectedGameMode ==
@@ -7244,10 +7276,12 @@ class MainActivity : Activity() {
                     piece
                 )
             },
-            maskColorProvider = {
+            setStaticSuppressed = {
+                    suppressed ->
                 beeGeckoBoard
-                    .cellBackgroundColor(
-                        cell
+                    .setMediaPieceSuppressed(
+                        cell,
+                        suppressed
                     )
             },
             eligible = {
@@ -7299,10 +7333,12 @@ class MainActivity : Activity() {
                     piece
                 )
             },
-            maskColorProvider = {
+            setStaticSuppressed = {
+                    suppressed ->
                 beeGeckoBoard
-                    .cellBackgroundColor(
-                        cell
+                    .setMediaPieceSuppressed(
+                        cell,
+                        suppressed
                     )
             }
         )

@@ -25,7 +25,6 @@ data class MascotAnimationProfile(
     val idleAssets: List<String>,
     val cuteAssets: List<String>,
     val keyColor: ChromaKeyColor,
-    val boardOwnsStaticPng: Boolean,
     val renderScale: Float = 1f
 ) {
     init {
@@ -362,8 +361,7 @@ class AliveAnimator(
             state =
                 AliveVisualState.STATIC_PNG,
             showPng =
-                !profile
-                    .boardOwnsStaticPng
+                profile.pngAsset != null
         )
     }
 

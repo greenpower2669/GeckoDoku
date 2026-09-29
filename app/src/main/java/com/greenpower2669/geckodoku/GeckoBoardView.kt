@@ -49,6 +49,9 @@ class GeckoBoardView @JvmOverloads constructor(
             null
         }
 
+    private val mediaSuppressedGeckos =
+        linkedSetOf<Cell>()
+
     private val boardRect = RectF()
     private var cellSize = 1f
 
@@ -844,13 +847,20 @@ class GeckoBoardView @JvmOverloads constructor(
 
                 when {
                     state.givens.contains(cell) -> {
-                        drawVictoryGecko(
-                            canvas,
-                            rect,
-                            cell,
-                            1f,
-                            false
-                        )
+                        if (
+                            !mediaSuppressedGeckos
+                                .contains(
+                                    cell
+                                )
+                        ) {
+                            drawVictoryGecko(
+                                canvas,
+                                rect,
+                                cell,
+                                1f,
+                                false
+                            )
+                        }
                         drawGivenFog(
                             canvas,
                             rect,
@@ -858,14 +868,22 @@ class GeckoBoardView @JvmOverloads constructor(
                         )
                     }
 
-                    state.confirmed.contains(cell) ->
-                        drawVictoryGecko(
-                            canvas,
-                            rect,
-                            cell,
-                            1f,
-                            false
-                        )
+                    state.confirmed.contains(cell) -> {
+                        if (
+                            !mediaSuppressedGeckos
+                                .contains(
+                                    cell
+                                )
+                        ) {
+                            drawVictoryGecko(
+                                canvas,
+                                rect,
+                                cell,
+                                1f,
+                                false
+                            )
+                        }
+                    }
 
                     state.hypotheses[cell] ==
                         HypothesisMark.ALERT_GECKO -> {
@@ -1537,6 +1555,35 @@ class GeckoBoardView @JvmOverloads constructor(
                 )
 
         return Cell(row, col)
+    }
+
+    fun setMediaGeckoSuppressed(
+        cell: Cell,
+        suppressed: Boolean
+    ) {
+        if (suppressed) {
+            mediaSuppressedGeckos.add(
+                cell
+            )
+        } else {
+            mediaSuppressedGeckos.remove(
+                cell
+            )
+        }
+
+        invalidate()
+    }
+
+    fun clearMediaGeckoSuppression() {
+        if (
+            mediaSuppressedGeckos
+                .isEmpty()
+        ) {
+            return
+        }
+
+        mediaSuppressedGeckos.clear()
+        invalidate()
     }
 
     fun cellBackgroundColor(

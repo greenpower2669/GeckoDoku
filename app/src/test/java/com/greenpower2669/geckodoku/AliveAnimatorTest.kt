@@ -8,9 +8,7 @@ import org.junit.Test
 
 class AliveAnimatorTest {
     private fun profile(
-        cute: Boolean = true,
-        boardOwnsStatic:
-            Boolean = true
+        cute: Boolean = true
     ) =
         MascotAnimationProfile(
             kind = MascotKind.GECKO,
@@ -35,9 +33,7 @@ class AliveAnimatorTest {
                     emptyList()
                 },
             keyColor =
-                ChromaKeyColor.BLUE,
-            boardOwnsStaticPng =
-                boardOwnsStatic
+                ChromaKeyColor.BLUE
         )
 
     @Test
@@ -234,17 +230,14 @@ class AliveAnimatorTest {
     }
 
     @Test
-    fun animationsOffUsesBoardPngOrOwnedPngWithoutVideo() {
-        val boardAnimator =
+    fun animationsOffAlwaysUsesAnimatorOwnedTransparentPng() {
+        val animator =
             AliveAnimator(
-                profile(
-                    boardOwnsStatic =
-                        true
-                )
+                profile()
             )
 
-        val boardDecision =
-            boardAnimator.start(
+        val decision =
+            animator.start(
                 animationsEnabled =
                     false,
                 randomValue = 0
@@ -252,30 +245,10 @@ class AliveAnimatorTest {
 
         assertEquals(
             AliveVisualState.STATIC_PNG,
-            boardDecision.state
+            decision.state
         )
-        assertFalse(
-            boardDecision.showPng
-        )
-
-        val decorationAnimator =
-            AliveAnimator(
-                profile(
-                    boardOwnsStatic =
-                        false
-                )
-            )
-
-        val decorationDecision =
-            decorationAnimator.start(
-                animationsEnabled =
-                    false,
-                randomValue = 0
-            )
-
         assertTrue(
-            decorationDecision
-                .showPng
+            decision.showPng
         )
     }
 

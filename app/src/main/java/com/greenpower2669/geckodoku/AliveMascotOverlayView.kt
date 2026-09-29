@@ -3,9 +3,11 @@ package com.greenpower2669.geckodoku
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -20,32 +22,49 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         val ownerKey: String,
         val targetProvider:
             () -> RectF?,
-        val maskColorProvider:
-            (() -> Int)?,
+        val setStaticSuppressed:
+            (Boolean) -> Unit,
         val eligible:
             () -> Boolean,
-        val yellowTint: Boolean
+        val yellowTint: Boolean,
+        val draggable: Boolean
     )
+
+    private val positionPrefs =
+        context.getSharedPreferences(
+            "alive_mascot_positions",
+            Context.MODE_PRIVATE
+        )
+
+    private val bitmapCache =
+        mutableMapOf<String, Bitmap?>()
+
+    private val yellowImageFilter =
+        ColorMatrixColorFilter(
+            ColorMatrix(
+                GomokuYellowFilterPolicy
+                    .colorMatrixValues()
+            )
+        )
+
+    private var activationSerial =
+        0L
 
     private inner class Slot(
         val profile:
             MascotAnimationProfile,
-        val animator:
-            AliveAnimator
+        val slotIndex: Int
     ) {
+        val animator =
+            AliveAnimator(profile)
+
         val container =
             FrameLayout(context).apply {
                 visibility =
                     View.INVISIBLE
-                isClickable = false
-                importantForAccessibility =
-                    IMPORTANT_FOR_ACCESSIBILITY_NO
-            }
-
-        val mask =
-            View(context).apply {
-                visibility =
-                    View.GONE
+                isClickable =
+                    profile.kind ==
+                        MascotKind.PLANT
                 importantForAccessibility =
                     IMPORTANT_FOR_ACCESSIBILITY_NO
             }
@@ -62,7 +81,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
                 profile.pngAsset
                     ?.let {
-                        loadBitmap(it)
+                        bitmapFor(it)
                     }
                     ?.let {
                         setImageBitmap(it)
@@ -77,7 +96,9 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     View.INVISIBLE
                 logicalLayer =
                     "ALIVE_" +
-                        profile.kind.name
+                        profile.kind.name +
+                        "_" +
+                        slotIndex
                 importantForAccessibility =
                     IMPORTANT_FOR_ACCESSIBILITY_NO
                 isClickable = false
@@ -91,17 +112,42 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
         var generation = 0
         var active = false
-        var maskLatched = false
+        var hasRenderedFrame = false
+        var staticSuppressed = false
+        var lastActivatedOrder = 0L
+
+        var dragCenterXFraction:
+            Float? =
+            if (
+                profile.kind ==
+                    MascotKind.PLANT
+            ) {
+                storedFraction(
+                    PLANT_X_KEY
+                )
+            } else {
+                null
+            }
+
+        var dragCenterYFraction:
+            Float? =
+            if (
+                profile.kind ==
+                    MascotKind.PLANT
+            ) {
+                storedFraction(
+                    PLANT_Y_KEY
+                )
+            } else {
+                null
+            }
+
+        var dragStartRawX = 0f
+        var dragStartRawY = 0f
+        var dragStartLeft = 0
+        var dragStartTop = 0
 
         init {
-            container.addView(
-                mask,
-                LayoutParams(
-                    LayoutParams.MATCH_PARENT,
-                    LayoutParams.MATCH_PARENT
-                )
-            )
-
             container.addView(
                 image,
                 LayoutParams(
@@ -109,7 +155,6 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     LayoutParams.MATCH_PARENT
                 )
             )
-
             container.addView(
                 video,
                 LayoutParams(
@@ -117,6 +162,20 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     LayoutParams.MATCH_PARENT
                 )
             )
+
+            if (
+                profile.kind ==
+                    MascotKind.PLANT
+            ) {
+                container.setOnTouchListener {
+                        _,
+                        event ->
+                    handlePlantDrag(
+                        this,
+                        event
+                    )
+                }
+            }
 
             addView(
                 container,
@@ -128,31 +187,25 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         }
     }
 
-    private val animators =
+    private val slots:
+        List<Slot> =
         MascotAnimationProfiles
             .all
-            .associate {
+            .flatMap {
                 profile ->
-                profile.kind to
-                    AliveAnimator(
-                        profile
+                List(
+                    MascotActivityPolicy
+                        .capacity(
+                            profile.kind
+                        )
+                ) {
+                    index ->
+                    Slot(
+                        profile,
+                        index
                     )
+                }
             }
-
-    private val coordinator =
-        MascotLifeCoordinator(
-            animators.values
-        )
-
-    private val slots =
-        animators.mapValues {
-            (_, animator) ->
-            Slot(
-                profile =
-                    animator.profile,
-                animator = animator
-            )
-        }
 
     var animationsEnabled =
         true
@@ -163,16 +216,15 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
             field = value
 
-            slots.values
+            slots
                 .filter {
                     it.active
                 }
                 .forEach {
                     slot ->
                     slot.generation += 1
-                    slot.video
-                        .stopPlayback()
-                    slot.maskLatched =
+                    slot.video.stopPlayback()
+                    slot.hasRenderedFrame =
                         false
 
                     val placement =
@@ -182,28 +234,22 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         placement != null &&
                         placement.eligible()
                     ) {
+                        setStaticSuppressed(
+                            slot,
+                            true
+                        )
                         applyDecision(
-                            slot =
-                                slot,
-                            decision =
-                                coordinator
-                                    .start(
-                                        kind =
-                                            slot
-                                                .profile
-                                                .kind,
-                                        animationsEnabled =
-                                            value,
-                                        randomValue =
-                                            Random.nextInt()
-                                    ),
-                            generation =
-                                slot.generation
+                            slot,
+                            slot.animator.start(
+                                animationsEnabled =
+                                    value,
+                                randomValue =
+                                    Random.nextInt()
+                            ),
+                            slot.generation
                         )
                     } else {
-                        finishSlot(
-                            slot
-                        )
+                        retireSlot(slot)
                     }
                 }
 
@@ -223,69 +269,84 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         ownerKey: String,
         targetProvider:
             () -> RectF?,
-        maskColorProvider:
-            (() -> Int)? = null,
+        setStaticSuppressed:
+            (Boolean) -> Unit = {},
         eligible:
             () -> Boolean = {
                 true
             },
-        yellowTint: Boolean = false
+        yellowTint: Boolean = false,
+        draggable: Boolean = false
     ) {
-        val slot =
-            requireNotNull(
-                slots[kind]
-            )
-
         val existing =
-            slot.placement
+            slots.firstOrNull {
+                it.active &&
+                    it.profile.kind ==
+                        kind &&
+                    it.placement
+                        ?.ownerKey ==
+                        ownerKey
+            }
 
-        if (
-            slot.active &&
-            existing
-                ?.ownerKey ==
-                ownerKey
-        ) {
-            slot.placement =
+        if (existing != null) {
+            existing.placement =
                 Placement(
                     ownerKey,
                     targetProvider,
-                    maskColorProvider,
+                    setStaticSuppressed,
                     eligible,
-                    yellowTint
+                    yellowTint,
+                    draggable
                 )
-
+            applyImageTint(existing)
+            setStaticSuppressed(
+                existing,
+                true
+            )
             refreshSlotTarget(
-                slot
+                existing
             )
             return
         }
 
+        val slot =
+            acquireSlot(kind)
+
+        retireSlot(slot)
+
         slot.generation += 1
-        slot.video.stopPlayback()
         slot.active = true
-        slot.maskLatched = false
+        slot.hasRenderedFrame = false
+        slot.lastActivatedOrder =
+            ++activationSerial
         slot.placement =
             Placement(
                 ownerKey,
                 targetProvider,
-                maskColorProvider,
+                setStaticSuppressed,
                 eligible,
-                yellowTint
+                yellowTint,
+                draggable
             )
 
+        applyImageTint(slot)
+        setStaticSuppressed(
+            slot,
+            true
+        )
+        bringChildToFront(
+            slot.container
+        )
+
         applyDecision(
-            slot =
-                slot,
-            decision =
-                coordinator.start(
-                    kind = kind,
-                    animationsEnabled =
-                        animationsEnabled,
-                    randomValue =
-                        Random.nextInt()
-                ),
-            generation =
-                slot.generation
+            slot,
+            slot.animator.start(
+                animationsEnabled =
+                    animationsEnabled,
+                randomValue =
+                    Random.nextInt()
+            ),
+            slot.generation
         )
 
         refreshVisibility()
@@ -296,55 +357,49 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         ownerKey: String,
         targetProvider:
             () -> RectF?,
-        maskColorProvider:
-            (() -> Int)? = null,
+        setStaticSuppressed:
+            (Boolean) -> Unit = {},
         yellowTint: Boolean = false
     ) {
         val slot =
-            requireNotNull(
-                slots[kind]
-            )
-
-        val currentOwner =
-            slot.placement
-                ?.ownerKey
-
-        if (
-            slot.active &&
-            currentOwner != null &&
-            currentOwner != ownerKey
-        ) {
-            // One live slot per mascot kind: removing an older
-            // static piece must not interrupt the newer living one.
-            return
-        }
+            slots.firstOrNull {
+                it.active &&
+                    it.profile.kind ==
+                        kind &&
+                    it.placement
+                        ?.ownerKey ==
+                        ownerKey
+            }
+                ?: return
 
         slot.generation += 1
         slot.video.stopPlayback()
-        slot.active = true
-        slot.maskLatched = false
         slot.placement =
             Placement(
                 ownerKey,
                 targetProvider,
-                maskColorProvider,
+                setStaticSuppressed,
                 eligible = {
                     false
                 },
                 yellowTint =
-                    yellowTint
+                    yellowTint,
+                draggable = false
             )
 
+        applyImageTint(slot)
+        setStaticSuppressed(
+            slot,
+            true
+        )
+
         applyDecision(
-            slot =
-                slot,
-            decision =
-                coordinator.disappear(
-                    kind,
+            slot,
+            slot.animator
+                .requestDisappear(
                     animationsEnabled
                 ),
-            generation =
-                slot.generation
+            slot.generation
         )
 
         refreshVisibility()
@@ -353,14 +408,19 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     fun stop(
         kind: MascotKind
     ) {
-        val slot =
-            requireNotNull(
-                slots[kind]
-            )
+        slots
+            .filter {
+                it.profile.kind ==
+                    kind
+            }
+            .forEach {
+                slot ->
+                    slot.generation += 1
+                    slot.animator
+                        .hideImmediately()
+                    retireSlot(slot)
+            }
 
-        slot.generation += 1
-        coordinator.hide(kind)
-        finishSlot(slot)
         refreshVisibility()
     }
 
@@ -381,30 +441,54 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     }
 
     fun refreshDynamicTargets() {
-        slots.values
+        slots
             .filter {
                 it.active
             }
             .forEach {
-                refreshSlotTarget(
-                    it
-                )
+                refreshSlotTarget(it)
             }
 
         refreshVisibility()
     }
 
     fun release() {
-        slots.values
-            .forEach {
-                slot ->
-                slot.generation += 1
-                slot.video.release()
-                slot.active = false
-                slot.placement = null
-            }
+        slots.forEach {
+            slot ->
+            slot.generation += 1
+            setStaticSuppressed(
+                slot,
+                false
+            )
+            slot.video.release()
+            slot.active = false
+            slot.placement = null
+        }
 
         visibility = View.GONE
+    }
+
+    private fun acquireSlot(
+        kind: MascotKind
+    ): Slot {
+        slots.firstOrNull {
+            !it.active &&
+                it.profile.kind ==
+                    kind
+        }?.let {
+            return it
+        }
+
+        return requireNotNull(
+            slots
+                .filter {
+                    it.profile.kind ==
+                        kind
+                }
+                .minByOrNull {
+                    it.lastActivatedOrder
+                }
+        )
     }
 
     private fun applyDecision(
@@ -421,33 +505,29 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         }
 
         when (decision.state) {
-            AliveVisualState.HIDDEN -> {
-                finishSlot(slot)
-            }
+            AliveVisualState.HIDDEN ->
+                retireSlot(slot)
 
             AliveVisualState.STATIC_PNG -> {
                 slot.video.stopPlayback()
                 slot.video.visibility =
                     View.INVISIBLE
-                slot.mask.visibility =
-                    View.GONE
 
                 if (
                     decision.showPng &&
                     slot.profile
                         .pngAsset != null
                 ) {
+                    applyImageTint(slot)
                     slot.image.visibility =
                         View.VISIBLE
-                    refreshSlotTarget(
-                        slot
+                    setStaticSuppressed(
+                        slot,
+                        true
                     )
+                    refreshSlotTarget(slot)
                 } else {
-                    slot.image.visibility =
-                        View.GONE
-                    slot.container
-                        .visibility =
-                        View.INVISIBLE
+                    retireSlot(slot)
                 }
             }
 
@@ -457,27 +537,21 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             AliveVisualState.DISAPPEARING -> {
                 val asset =
                     decision.assetPath
-                        ?: run {
-                            applyDecision(
-                                slot,
-                                coordinator
-                                    .fallback(
-                                        slot
-                                            .profile
-                                            .kind
-                                    ),
-                                generation
-                            )
-                            return
-                        }
+
+                if (asset == null) {
+                    applyDecision(
+                        slot,
+                        slot.animator
+                            .fallbackToStatic(),
+                        generation
+                    )
+                    return
+                }
 
                 playClip(
-                    slot =
-                        slot,
-                    assetPath =
-                        asset,
-                    generation =
-                        generation
+                    slot,
+                    asset,
+                    generation
                 )
             }
         }
@@ -493,54 +567,33 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         val placement =
             slot.placement
                 ?: run {
-                    finishSlot(slot)
+                    retireSlot(slot)
                     return
                 }
 
         refreshSlotTarget(slot)
+        setStaticSuppressed(
+            slot,
+            true
+        )
 
         val usePngBridge =
-            slot.maskLatched &&
-                slot.profile
-                    .pngAsset != null
+            slot.profile.pngAsset !=
+                null &&
+                (
+                    slot.hasRenderedFrame ||
+                        slot.animator.state !=
+                            AliveVisualState
+                                .APPEARING
+                    )
 
-        // Between two already-visible clips, ChromaKeyVideoView.play()
-        // stops the previous MediaPlayer and keeps the new surface at
-        // alpha=0 until its first decoded frame. Keep the canonical
-        // transparent PNG underneath during that preparation window so
-        // the mascot never disappears. This bridge is never shown before
-        // the very first appearance because maskLatched is still false.
+        applyImageTint(slot)
         slot.image.visibility =
             if (usePngBridge) {
                 View.VISIBLE
             } else {
                 View.GONE
             }
-
-        val maskColor =
-            placement
-                .maskColorProvider
-                ?.invoke()
-
-        if (maskColor != null) {
-            slot.mask.visibility =
-                View.VISIBLE
-            slot.mask
-                .setBackgroundColor(
-                    maskColor
-                )
-            slot.mask.alpha =
-                if (
-                    slot.maskLatched
-                ) {
-                    1f
-                } else {
-                    0f
-                }
-        } else {
-            slot.mask.visibility =
-                View.GONE
-        }
 
         slot.video
             .setKeyColor(
@@ -567,24 +620,11 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     return@play
                 }
 
-                slot.maskLatched =
+                slot.hasRenderedFrame =
                     true
-
-                // The new video is now genuinely visible: remove the
-                // static bridge on this exact first rendered frame.
                 slot.image.visibility =
                     View.GONE
-
-                if (
-                    slot.mask.visibility ==
-                        View.VISIBLE
-                ) {
-                    slot.mask.alpha = 1f
-                }
-
-                refreshSlotTarget(
-                    slot
-                )
+                refreshSlotTarget(slot)
             },
             onStarted = {},
             onCompletion = {
@@ -602,7 +642,6 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             },
             onError = {
                     _ ->
-
                 if (
                     generation !=
                         slot.generation
@@ -611,17 +650,10 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 }
 
                 applyDecision(
-                    slot =
-                        slot,
-                    decision =
-                        coordinator
-                            .fallback(
-                                slot
-                                    .profile
-                                    .kind
-                            ),
-                    generation =
-                        generation
+                    slot,
+                    slot.animator
+                        .fallbackToStatic(),
+                    generation
                 )
             }
         )
@@ -638,11 +670,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             return
         }
 
-        val previousState =
-            slot.animator.state
-
         if (
-            previousState !=
+            slot.animator.state !=
                 AliveVisualState
                     .DISAPPEARING
         ) {
@@ -653,29 +682,40 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 placement == null ||
                 !placement.eligible()
             ) {
-                finishSlot(slot)
+                retireSlot(slot)
                 refreshVisibility()
                 return
             }
         }
 
         val decision =
-            coordinator.afterClip(
-                kind =
-                    slot.profile.kind,
-                animationsEnabled =
-                    animationsEnabled,
-                randomValue =
-                    Random.nextInt()
-            )
+            slot.animator
+                .afterCurrentClip(
+                    animationsEnabled =
+                        animationsEnabled,
+                    randomValue =
+                        Random.nextInt()
+                )
+
+        if (
+            decision
+                .requestGroupRefresh
+        ) {
+            slots
+                .filter {
+                    it.active &&
+                        it !== slot
+                }
+                .forEach {
+                    it.animator
+                        .requestPeerRefresh()
+                }
+        }
 
         applyDecision(
-            slot =
-                slot,
-            decision =
-                decision,
-            generation =
-                generation
+            slot,
+            decision,
+            generation
         )
     }
 
@@ -690,47 +730,46 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             placement
                 .targetProvider()
                 ?: run {
+                    setStaticSuppressed(
+                        slot,
+                        false
+                    )
                     slot.container
                         .visibility =
                         View.INVISIBLE
                     return
                 }
 
-        val scale =
-            slot.profile
-                .renderScale
+        val scaled =
+            scaledRect(
+                raw,
+                slot.profile
+                    .renderScale
+            )
 
         val target =
-            if (scale == 1f) {
-                RectF(raw)
-            } else {
-                val halfWidth =
-                    raw.width() *
-                        scale /
-                        2f
-                val halfHeight =
-                    raw.height() *
-                        scale /
-                        2f
-
-                RectF(
-                    raw.centerX() -
-                        halfWidth,
-                    raw.centerY() -
-                        halfHeight,
-                    raw.centerX() +
-                        halfWidth,
-                    raw.centerY() +
-                        halfHeight
+            if (
+                placement.draggable &&
+                slot.dragCenterXFraction !=
+                    null &&
+                slot.dragCenterYFraction !=
+                    null &&
+                width > 0 &&
+                height > 0
+            ) {
+                rectAtStoredDragPosition(
+                    slot,
+                    scaled
                 )
+            } else {
+                scaled
             }
 
-        val width =
+        val targetWidth =
             target.width()
                 .roundToInt()
                 .coerceAtLeast(1)
-
-        val height =
+        val targetHeight =
             target.height()
                 .roundToInt()
                 .coerceAtLeast(1)
@@ -738,8 +777,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         slot.container
             .layoutParams =
             LayoutParams(
-                width,
-                height
+                targetWidth,
+                targetHeight
             ).apply {
                 leftMargin =
                     target.left
@@ -749,8 +788,11 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         .roundToInt()
             }
 
-        slot.container
-            .visibility =
+        setStaticSuppressed(
+            slot,
+            true
+        )
+        slot.container.visibility =
             View.VISIBLE
 
         if (visibility != View.VISIBLE) {
@@ -758,28 +800,342 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         }
     }
 
-    private fun finishSlot(
+    private fun scaledRect(
+        raw: RectF,
+        scale: Float
+    ): RectF {
+        if (scale == 1f) {
+            return RectF(raw)
+        }
+
+        val halfWidth =
+            raw.width() *
+                scale /
+                2f
+        val halfHeight =
+            raw.height() *
+                scale /
+                2f
+
+        return RectF(
+            raw.centerX() -
+                halfWidth,
+            raw.centerY() -
+                halfHeight,
+            raw.centerX() +
+                halfWidth,
+            raw.centerY() +
+                halfHeight
+        )
+    }
+
+    private fun rectAtStoredDragPosition(
+        slot: Slot,
+        reference: RectF
+    ): RectF {
+        val targetWidth =
+            reference.width()
+        val targetHeight =
+            reference.height()
+
+        val centerX =
+            (
+                requireNotNull(
+                    slot.dragCenterXFraction
+                ) *
+                    width
+                )
+                .coerceIn(
+                    targetWidth / 2f,
+                    width -
+                        targetWidth / 2f
+                )
+        val centerY =
+            (
+                requireNotNull(
+                    slot.dragCenterYFraction
+                ) *
+                    height
+                )
+                .coerceIn(
+                    targetHeight / 2f,
+                    height -
+                        targetHeight / 2f
+                )
+
+        return RectF(
+            centerX -
+                targetWidth / 2f,
+            centerY -
+                targetHeight / 2f,
+            centerX +
+                targetWidth / 2f,
+            centerY +
+                targetHeight / 2f
+        )
+    }
+
+    private fun handlePlantDrag(
+        slot: Slot,
+        event: MotionEvent
+    ): Boolean {
+        val placement =
+            slot.placement
+
+        if (
+            !slot.active ||
+            placement == null ||
+            !placement.draggable
+        ) {
+            return false
+        }
+
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                val layout =
+                    slot.container
+                        .layoutParams
+                        as? LayoutParams
+                        ?: return false
+
+                slot.dragStartRawX =
+                    event.rawX
+                slot.dragStartRawY =
+                    event.rawY
+                slot.dragStartLeft =
+                    layout.leftMargin
+                slot.dragStartTop =
+                    layout.topMargin
+
+                bringChildToFront(
+                    slot.container
+                )
+                parent
+                    ?.requestDisallowInterceptTouchEvent(
+                        true
+                    )
+                return true
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                val dx =
+                    event.rawX -
+                        slot.dragStartRawX
+                val dy =
+                    event.rawY -
+                        slot.dragStartRawY
+
+                val childWidth =
+                    slot.container.width
+                        .coerceAtLeast(1)
+                val childHeight =
+                    slot.container.height
+                        .coerceAtLeast(1)
+                val maxLeft =
+                    (
+                        width -
+                            childWidth
+                        )
+                        .coerceAtLeast(0)
+                val maxTop =
+                    (
+                        height -
+                            childHeight
+                        )
+                        .coerceAtLeast(0)
+
+                val left =
+                    (
+                        slot.dragStartLeft +
+                            dx
+                        )
+                        .roundToInt()
+                        .coerceIn(
+                            0,
+                            maxLeft
+                        )
+                val top =
+                    (
+                        slot.dragStartTop +
+                            dy
+                        )
+                        .roundToInt()
+                        .coerceIn(
+                            0,
+                            maxTop
+                        )
+
+                slot.container
+                    .layoutParams =
+                    LayoutParams(
+                        childWidth,
+                        childHeight
+                    ).apply {
+                        leftMargin = left
+                        topMargin = top
+                    }
+
+                updateDragFractions(
+                    slot,
+                    left,
+                    top,
+                    childWidth,
+                    childHeight
+                )
+                return true
+            }
+
+            MotionEvent.ACTION_UP,
+            MotionEvent.ACTION_CANCEL -> {
+                persistPlantPosition(
+                    slot
+                )
+                parent
+                    ?.requestDisallowInterceptTouchEvent(
+                        false
+                    )
+                return true
+            }
+
+            else ->
+                return true
+        }
+    }
+
+    private fun updateDragFractions(
+        slot: Slot,
+        left: Int,
+        top: Int,
+        childWidth: Int,
+        childHeight: Int
+    ) {
+        if (
+            width <= 0 ||
+            height <= 0
+        ) {
+            return
+        }
+
+        slot.dragCenterXFraction =
+            (
+                left +
+                    childWidth / 2f
+                ) /
+                width
+        slot.dragCenterYFraction =
+            (
+                top +
+                    childHeight / 2f
+                ) /
+                height
+    }
+
+    private fun persistPlantPosition(
         slot: Slot
     ) {
+        val x =
+            slot.dragCenterXFraction
+                ?: return
+        val y =
+            slot.dragCenterYFraction
+                ?: return
+
+        positionPrefs
+            .edit()
+            .putFloat(
+                PLANT_X_KEY,
+                x.coerceIn(
+                    0f,
+                    1f
+                )
+            )
+            .putFloat(
+                PLANT_Y_KEY,
+                y.coerceIn(
+                    0f,
+                    1f
+                )
+            )
+            .apply()
+    }
+
+    private fun storedFraction(
+        key: String
+    ): Float? {
+        val value =
+            positionPrefs.getFloat(
+                key,
+                Float.NaN
+            )
+
+        return if (value.isNaN()) {
+            null
+        } else {
+            value.coerceIn(
+                0f,
+                1f
+            )
+        }
+    }
+
+    private fun applyImageTint(
+        slot: Slot
+    ) {
+        slot.image.colorFilter =
+            if (
+                slot.placement
+                    ?.yellowTint ==
+                    true
+            ) {
+                yellowImageFilter
+            } else {
+                null
+            }
+    }
+
+    private fun setStaticSuppressed(
+        slot: Slot,
+        suppressed: Boolean
+    ) {
+        if (
+            slot.staticSuppressed ==
+                suppressed
+        ) {
+            return
+        }
+
+        slot.placement
+            ?.setStaticSuppressed
+            ?.invoke(
+                suppressed
+            )
+        slot.staticSuppressed =
+            suppressed
+    }
+
+    private fun retireSlot(
+        slot: Slot
+    ) {
+        setStaticSuppressed(
+            slot,
+            false
+        )
         slot.video.stopPlayback()
         slot.video.visibility =
             View.INVISIBLE
         slot.image.visibility =
             View.GONE
-        slot.mask.visibility =
-            View.GONE
-        slot.mask.alpha = 0f
-        slot.maskLatched = false
         slot.container.visibility =
             View.INVISIBLE
         slot.active = false
+        slot.hasRenderedFrame = false
         slot.placement = null
     }
 
     private fun refreshVisibility() {
         visibility =
             if (
-                slots.values.any {
+                slots.any {
                     it.active &&
                         it.container
                             .visibility ==
@@ -792,17 +1148,37 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             }
     }
 
-    private fun loadBitmap(
+    private fun bitmapFor(
         path: String
-    ): Bitmap? =
-        try {
-            context.assets
-                .open(path)
-                .use {
-                    BitmapFactory
-                        .decodeStream(it)
-                }
-        } catch (_: Exception) {
-            null
+    ): Bitmap? {
+        if (
+            bitmapCache
+                .containsKey(path)
+        ) {
+            return bitmapCache[path]
         }
+
+        val bitmap =
+            try {
+                context.assets
+                    .open(path)
+                    .use {
+                        BitmapFactory
+                            .decodeStream(it)
+                    }
+            } catch (_: Exception) {
+                null
+            }
+
+        bitmapCache[path] =
+            bitmap
+        return bitmap
+    }
+
+    companion object {
+        private const val PLANT_X_KEY =
+            "plant_center_x"
+        private const val PLANT_Y_KEY =
+            "plant_center_y"
+    }
 }

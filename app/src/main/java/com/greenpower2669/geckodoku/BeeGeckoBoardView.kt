@@ -72,6 +72,9 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 .BEE_PORTRAIT
         )
 
+    private val mediaSuppressedPieces =
+        linkedSetOf<HexCoord>()
+
     private var puzzle:
         BeeGeckoPuzzle? = null
 
@@ -309,6 +312,35 @@ class BeeGeckoBoardView @JvmOverloads constructor(
 
         clampCamera()
         notifyViewport()
+        invalidate()
+    }
+
+    fun setMediaPieceSuppressed(
+        cell: HexCoord,
+        suppressed: Boolean
+    ) {
+        if (suppressed) {
+            mediaSuppressedPieces.add(
+                cell
+            )
+        } else {
+            mediaSuppressedPieces.remove(
+                cell
+            )
+        }
+
+        invalidate()
+    }
+
+    fun clearMediaPieceSuppression() {
+        if (
+            mediaSuppressedPieces
+                .isEmpty()
+        ) {
+            return
+        }
+
+        mediaSuppressedPieces.clear()
         invalidate()
     }
 
@@ -708,6 +740,15 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 snapshot
                     .pieceAt(cell)
                     ?: continue
+
+            if (
+                mediaSuppressedPieces
+                    .contains(
+                        cell
+                    )
+            ) {
+                continue
+            }
 
             val center =
                 cellCenter(cell)
