@@ -766,3 +766,5 @@ Remplace le seuil center-in-viewport, qui masque trop tôt en bas et laisse déb
 cellRect ∩ viewport ? -> non : target null / Presence cachée ; oui : target centrée sur cellule.
 target + viewport root -> intersection -> clipBounds locale -> PNG et vidéo.
 Aucun clamp, aucun recentrage, aucun seuil center-in-viewport.
+
+GECKO-064 : CI #289 verte -> APK 0.15.24-dev -> validation téléphone clipping haut/bas/gauche/droite -> pas de release.
