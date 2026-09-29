@@ -754,3 +754,5 @@ Launch : UI construite -> launchCurtain noir topmost -> Intro acceptée -> overl
 Chroma : beginPlayback -> clear transparent -> texture interdite -> VIDEO_RENDERING_START (si gate) -> frame fraîche -> shader/keycolor -> VIDEO_FIRST_FRAME -> visible.
 
 Plant : target vidéo 100 % ; PNG interne 95 %, centre identique.
+
+GECKO-063 build -> CI #286 SUCCESS -> 0.15.23-dev -> test téléphone requis -> pas de release.
