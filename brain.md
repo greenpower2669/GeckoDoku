@@ -639,3 +639,10 @@ But : garder les Gecko gauche/droite/bas vivants sans casser zoom, drag ni les A
 
 ### GECKO-058 — build
 CI #265 verte sur 2c20b06d2a0f699c8811cdf7cd37871a4b712f45. APK Phone 0.15.18-dev produit. SHA-256 APK : 9e0ad087bc2f641ecd80010bb162cf57739ac0b0a236d2dc21cbe5d321311b77. Validation téléphone des Gecko de bord encore requise.
+
+
+## 31 — GECKO-059 : suppression de la contrainte viewport
+
+Fab précise que la règle de rejet/clamp du cadre média n'avait jamais été demandée et qu'elle est conceptuellement fausse ici : les Gecko/Abeilles sont déjà centrés dans un cadre transparent/key-color plus large que le personnage visible.
+
+Décision : beeGeckoAliveTarget() n'applique plus aucun test viewport, aucun rejet partiel et aucun recentrage. La cible centrée sur la cellule est utilisée directement.
