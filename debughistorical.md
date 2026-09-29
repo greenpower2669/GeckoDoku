@@ -404,3 +404,6 @@ Aucun ordonnanceur ou pool réintroduit.
 ## GECKO-057 — CI #263 VERTE
 
 Commit testé : 352c046bcc6e1af6d26794782f14189054ddcae2. Tests + assemblePhone : succès. APK : GeckoDoku-v0.15.17-dev.apk. SHA-256 : cb50cb5e97ed9cc33ab7285982a6da7fda5e6439040fa2a195b7c59bb6fa8577. Aucune release/prerelease.
+
+## GECKO-057 — validation téléphone mode 1
+Fab confirme : mode 1 / Classic corrigé sur 0.15.17-dev. Les Gecko du mode Classic s'animent de nouveau. Les autres modes restent à valider séparément.
