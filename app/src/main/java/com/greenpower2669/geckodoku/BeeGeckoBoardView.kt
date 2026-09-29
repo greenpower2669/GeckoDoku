@@ -732,6 +732,10 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         canvas: Canvas,
         snapshot: BeeGeckoSnapshot
     ) {
+        // AliveMascotOverlayView owns both PNG fallback and video.
+        // Do not render a second legacy Bee/Gecko representation here.
+        return
+
         val puzzle =
             snapshot.puzzle
 
