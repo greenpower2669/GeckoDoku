@@ -465,3 +465,14 @@ Décision Fab :
 
 Version de travail : 0.15.11-dev / versionCode 46.
 Aucune publication publique avant validation téléphone Fab.
+
+
+État GECKO-051 :
+- commit applicatif : 616b0dcdb808735ca0a396091aa2428ed5192034 ;
+- version : 0.15.11-dev / versionCode 46 ;
+- CI #252 entièrement verte ;
+- tests + build Phone OK ;
+- APK téléphone produit ;
+- SHA-256 APK : 9d8de7bd06a5defcbef0523cbdae293f125c077f9a628bfdb0b37357cfbf709f ;
+- aucune prerelease/release déclenchée ;
+- validation téléphone Fab requise sur les 4 modes avant publication.

@@ -434,3 +434,18 @@ Cycle :
 - autres Presence repartent de manière désynchronisée.
 
 Pierre reste volontairement hors de ce moteur.
+
+
+## 22 — Test GECKO-051 0.15.11-dev
+
+Commit applicatif : 616b0dcdb808735ca0a396091aa2428ed5192034.
+CI #252 : verte.
+APK téléphone : GeckoDoku-v0.15.11-dev.apk.
+SHA-256 : 9d8de7bd06a5defcbef0523cbdae293f125c077f9a628bfdb0b37357cfbf709f.
+
+Aucune release publique : validation téléphone Fab nécessaire, en particulier :
+- les Gecko déjà présents en Classic s'animent à tour de rôle ;
+- Sudoku/Gomoku/Bee utilisent la même rotation ;
+- aucun retour de carré de fond ;
+- pas de surcharge visible avec le pool vidéo borné ;
+- Plante drag et Pierre inchangés.

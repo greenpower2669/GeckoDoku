@@ -205,3 +205,18 @@ Correction 0.15.11-dev :
 - synchronisation snapshot dans les quatre modes ;
 - série 3..5 stays différents + mémoire anti-série identique ;
 - grand cycle déclenche une cute chez une autre mascotte compatible.
+
+
+## GECKO-051 — CI #252 — VERTE
+
+Commit :
+616b0dcdb808735ca0a396091aa2428ed5192034
+
+Résultat :
+- tests unitaires OK ;
+- compilation Debug/Phone OK ;
+- APK 0.15.11-dev produit ;
+- aucune prerelease/release déclenchée ;
+- SHA-256 APK : 9d8de7bd06a5defcbef0523cbdae293f125c077f9a628bfdb0b37357cfbf709f.
+
+Validation appareil encore requise pour confirmer la rotation réelle entre toutes les Presence visibles dans les quatre modes.

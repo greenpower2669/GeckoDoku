@@ -107,6 +107,7 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] mémoire des séries complètes ;
 - [x] grand cycle → mignonnerie chez une copine compatible ;
 - [x] animations OFF = toutes les présences restent PNG internes ;
-- [ ] CI ;
+- [x] CI #252 entièrement verte ;
+- [x] APK téléphone 0.15.11-dev produit ;
 - [ ] validation téléphone Fab sur les 4 modes ;
 - [ ] release seulement après validation explicite.
