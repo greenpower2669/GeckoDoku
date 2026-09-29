@@ -7,6 +7,7 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Rect
 import android.graphics.RectF
+import android.os.Build
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -19,6 +20,12 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
+    private data class VideoBackend(
+        val view: View,
+        val playback: ChromaKeyPlayback,
+        val name: String
+    )
+
     private data class Placement(
         val ownerKey: String,
         val targetProvider: () -> RectF?,
@@ -72,19 +79,30 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     profile.pngScale
             }
 
+        private val videoBackend =
+            createVideoBackend(
+                ownerKey
+            )
+
         val video =
-            ChromaKeyVideoView(context).apply {
+            videoBackend.view.apply {
                 visibility =
                     View.INVISIBLE
+                importantForAccessibility =
+                    IMPORTANT_FOR_ACCESSIBILITY_NO
+                isClickable = false
+            }
+
+        val playback =
+            videoBackend.playback.apply {
                 logicalLayer =
                     "ALIVE_" +
                         profile.kind.name +
                         "_" +
                         ownerKey.replace(':', '_')
-                importantForAccessibility =
-                    IMPORTANT_FOR_ACCESSIBILITY_NO
-                isClickable = false
-                setKeyColor(profile.keyColor)
+                setKeyColor(
+                    profile.keyColor
+                )
             }
 
         var pendingDecision:
@@ -256,6 +274,66 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
             refreshVisibility()
         }
+
+    private fun createVideoBackend(
+        ownerKey: String
+    ): VideoBackend {
+        val useTexture =
+            AliveVideoBackendPolicy
+                .useTextureView(
+                    ownerKey =
+                        ownerKey,
+                    sdkInt =
+                        Build.VERSION.SDK_INT
+                )
+
+        val backend =
+            if (
+                useTexture &&
+                Build.VERSION.SDK_INT >=
+                Build.VERSION_CODES.TIRAMISU
+            ) {
+                val view =
+                    ChromaKeyTextureView(
+                        context
+                    )
+
+                VideoBackend(
+                    view = view,
+                    playback = view,
+                    name =
+                        "TextureView"
+                )
+            } else {
+                val view =
+                    ChromaKeyVideoView(
+                        context
+                    )
+
+                VideoBackend(
+                    view = view,
+                    playback = view,
+                    name =
+                        "GLSurfaceView"
+                )
+            }
+
+        MediaTrace.event(
+            source =
+                "AliveMascotOverlay",
+            event =
+                "ALIVE_VIDEO_BACKEND",
+            detail =
+                "owner=" +
+                    ownerKey +
+                    " backend=" +
+                    backend.name +
+                    " sdk=" +
+                    Build.VERSION.SDK_INT
+        )
+
+        return backend
+    }
 
     init {
         clipChildren = false
@@ -863,12 +941,12 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         presence.videoContainer.visibility =
             View.VISIBLE
 
-        presence.video
+        presence.playback
             .setKeyColor(
                 presence.profile
                     .keyColor
             )
-        presence.video
+        presence.playback
             .setYellowTint(
                 presence.placement
                     .yellowTint
@@ -889,7 +967,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     decision.state
         )
 
-        presence.video.play(
+        presence.playback.play(
             assetPath = assetPath,
             muted = true,
             revealOnFirstFrame = true,
@@ -1042,7 +1120,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         presence: Presence
     ) {
         presence.generation += 1
-        presence.video.stopPlayback()
+        presence.playback.stopPlayback()
         presence.video.visibility =
             View.INVISIBLE
         presence.videoContainer.visibility =
@@ -1230,7 +1308,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
         presence.currentDecision = null
         presence.videoActive = false
-        presence.video.stopPlayback()
+        presence.playback.stopPlayback()
         presence.video.visibility =
             View.INVISIBLE
         presence.videoContainer.visibility =
@@ -1434,8 +1512,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         presence.cycleCallbackArmed = false
 
         presence.generation += 1
-        presence.video.stopPlayback()
-        presence.video.release()
+        presence.playback.stopPlayback()
+        presence.playback.release()
         presence.videoActive = false
         presence.currentDecision = null
         presence.pendingDecision = null
@@ -1727,7 +1805,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 null
             }
 
-        presence.video
+        presence.playback
             .setYellowTint(
                 presence.placement
                     .yellowTint
