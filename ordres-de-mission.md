@@ -645,3 +645,26 @@ Aucune release publique avant validation téléphone.
 - APK SHA-256 : 671776186328f53df577599e45d2cb85ea8bc6a8ca8daf5d54bf0721c71dabf5 ;
 - aucune prerelease/release ;
 - validation téléphone Fab requise.
+
+
+## GECKO-056 — CORRIGER LES ANIMATIONS GECKO ET ABEILLE QUI NE DÉMARRENT PAS
+
+Validation Fab : correction autorisée.
+
+Diagnostic :
+- Gecko et Abeille utilisent le même pipeline AliveMascotOverlayView → ChromaKeyVideoView ;
+- revealOnFirstFrame garde alpha=0 jusqu'à validation d'une frame fraîche ;
+- FreshPlaybackFrameGate exigeait playerStarted au moment de onRenderingStart ;
+- Android peut livrer MEDIA_INFO_VIDEO_RENDERING_START pendant MediaPlayer.start(), avant le retour local puis onPlayerStarted ;
+- le signal pouvait donc être perdu pour toute la génération.
+
+Correction :
+- latcher rendering-start pour la génération courante sans dépendre de l'ordre des callbacks ;
+- ne révéler une frame que lorsque playerStarted ET renderingStarted sont vrais ;
+- ignorer strictement les anciennes générations ;
+- conserver cancel() ;
+- ajouter les tests ordre inversé / génération périmée / cancel ;
+- ne réintroduire aucun ordonnanceur, pool ou lecteur partagé.
+
+Version cible : 0.15.16-dev / versionCode 51.
+Aucun merge main et aucune release avant validation téléphone.
