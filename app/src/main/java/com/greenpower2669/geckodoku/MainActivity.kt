@@ -7309,14 +7309,6 @@ class MainActivity : Activity() {
                     piece
                 )
             },
-            setStaticSuppressed = {
-                    suppressed ->
-                beeGeckoBoard
-                    .setMediaPieceSuppressed(
-                        cell,
-                        suppressed
-                    )
-            },
             eligible = {
                 selectedGameMode ==
                     GameMode.BEES_GECKOS &&
