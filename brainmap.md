@@ -693,3 +693,5 @@ flowchart LR
 ~~~
 
 Le refresh de géométrie n'est plus autorisé à réinitialiser l'horloge d'une Presence.
+
+GECKO-057 : CI #263 verte ; APK Phone 0.15.17-dev prêt ; prochain test = ALIVE_PLAY visible puis stay1..4 Gecko/Abeille à l'écran.
