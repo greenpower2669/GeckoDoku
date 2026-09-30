@@ -879,3 +879,20 @@ GECKO-069 build
 → CI #314 verte
 → GeckoDoku-v0.15.30-dev-phone
 → test téléphone : HOT_BANK_PINNED + stabilité FPS/mémoire.
+
+
+## GECKO-070 — quick-start SpriteRGBA
+
+MP4 source
+→ SpriteFrameCache
+→ 4 frames RGBA prêtes
+→ SPRITE_QUICK_READY
+→ ChromaKeySpriteView démarre
+→ boucle locale du préfixe si nécessaire
+→ fabrication continue en fond
+→ manifest complet
+→ FULL_SEQUENCE_READY
+→ séquence complète.
+
+Résolutions : 120p / 180p / 240p / 360p / 480p.
+Défaut neuf : 240p.
