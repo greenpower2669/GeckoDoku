@@ -967,3 +967,21 @@ Export :
 
 Prof/Pierre et Plante restent volontairement hors Sprite Factory car leurs backends actuels ne sont pas SpriteRGBA. Aucun ordonnanceur global n’a été recréé.
 Version : 0.15.33-dev / 68.
+
+## 2026-09-30 — GECKO-040 — Banques sprites par résolution
+
+Règle canonique :
+- une banque logique par résolution ;
+- les animations restent séparées à l'intérieur de la banque ;
+- lecture/génération à 12 images/s ;
+- progression calculée sur les frames réellement présentes, pas seulement sur le nombre de clips ;
+- états : EMPTY / IN_PROGRESS / COMPLETE / INVALID ;
+- taille disque et pourcentage visibles depuis Réglages > Banques sprites / export ;
+- export ZIP indépendant pour chaque résolution ;
+- structure d'export : `sprites/banks/<resolution>p/<bankKey>/...` avec `bank-manifest.json` global ;
+- les stable frames restent exportées séparément sous `sprites/stable-frames/`.
+
+Correction importante : un `SPRITE_BANK_DISK_HIT` ou `APK_HIT` termine maintenant immédiatement la résolution de session. Le worker ne doit plus poursuivre jusqu'au `requireNotNull(session.metadata)` après un hit prêt.
+
+Le catalogue de fond suit désormais les étapes progressives de la résolution cible. Exemple 480p : 60p > 120p > 240p > 480p.
+
