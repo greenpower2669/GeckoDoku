@@ -619,3 +619,15 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] Test téléphone : vérifier absence de faux DISK_HIT → ERROR.
 - [ ] Test téléphone : lancer export global et vérifier progression jusqu'à 100 % puis ZIP avec `sprites/banks/60p`, `120p`, `240p`, `480p`.
 
+## GECKO-041 — 240p maximum
+
+- [x] Archiver le paquet 60/120/240/480 dans la release `PackageSprites` avec SHA-256 vérifié.
+- [x] Retirer 180p / 360p / 480p des résolutions utilisateur.
+- [x] Réduire la chaîne progressive à 60p / 120p / 240p.
+- [x] Réduire l'export global à 60p / 120p / 240p.
+- [x] Supprimer automatiquement les anciennes banques locales 180p / 360p / 480p.
+- [x] Mettre l'UI export à jour pour 240p maximum.
+- [ ] Valider CI 0.15.36-dev.
+- [ ] Test téléphone : vérifier affichage de seulement 60p / 120p / 240p.
+- [ ] Test téléphone : vérifier récupération de l'espace disque après purge du 480p.
+
