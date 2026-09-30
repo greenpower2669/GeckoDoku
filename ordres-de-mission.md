@@ -1171,3 +1171,21 @@ Quand Fab choisit l'export global des banques sprites :
 
 Le rechargement d'une banque READY depuis DISK/APK est terminal : aucune génération ni validation de metadata ne doit continuer après le hit.
 
+# ADDENDUM GECKO-041 — BANQUES SPRITES 240P MAXIMUM
+
+Décision canonique Fab :
+
+Le système de banques sprites ne maintient désormais que trois niveaux :
+- 60p ;
+- 120p ;
+- 240p.
+
+240p est la résolution maximale du pipeline. Les variantes 180p, 360p et 480p sont retirées du sélecteur, du gestionnaire de banques, de la préparation et de l'export.
+
+L'export global suit exclusivement :
+`60p → 120p → 240p → ZIP`.
+
+Les anciennes banques générées en 180p, 360p et 480p sont considérées obsolètes et peuvent être supprimées automatiquement du stockage de l'application.
+
+L'ancien export 60/120/240/480 reste archivé dans la release GitHub `PackageSprites` et sert uniquement de sauvegarde historique.
+
