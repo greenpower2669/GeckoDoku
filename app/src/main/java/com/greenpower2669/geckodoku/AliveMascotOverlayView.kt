@@ -1298,10 +1298,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         }
 
         val resolution =
-            RichMediaSettings
-                .spriteResolutionFor(
-                    context
-                )
+            SpriteResolution.P240
 
         val stable =
             presence.stableFrame
