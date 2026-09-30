@@ -2,7 +2,6 @@ package com.greenpower2669.geckodoku
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SpriteProgressivePolicyTest {
@@ -29,32 +28,14 @@ class SpriteProgressivePolicyTest {
     }
 
     @Test
-    fun p180UsesIntermediate120ThenExactTarget() {
+    fun spritePipelineHasNoSecondaryResolutionAbove240() {
         assertEquals(
-            listOf(60, 120, 180),
-            SpriteProgressivePolicy
-                .stagesFor(
-                    SpriteResolution.P180
-                )
-        )
-    }
-
-    @Test
-    fun highResolutionAlwaysPassesThrough240() {
-        assertEquals(
-            listOf(60, 120, 240, 480),
-            SpriteProgressivePolicy
-                .stagesFor(
-                    SpriteResolution.P480
-                )
-        )
-        assertTrue(
-            SpriteProgressivePolicy
-                .isSecondary(480)
+            240,
+            SpriteProgressivePolicy.MAX_HEIGHT
         )
         assertFalse(
             SpriteProgressivePolicy
-                .isSecondary(240)
+                .isSecondary(480)
         )
     }
 }
