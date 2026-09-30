@@ -3,6 +3,7 @@ package com.greenpower2669.geckodoku
 import android.content.Context
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
+import android.graphics.drawable.BitmapDrawable
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
@@ -37,6 +38,8 @@ class ChromaKeySpriteView @JvmOverloads constructor(
 
     private var currentFrame = 0
     private var startedAtMs = 0L
+    private var logicalStartedAtMs = 0L
+    private var currentStageHeight = 0
     private var heldFirstFrame = false
     private var waitingForFullSequence = false
     private var performanceActive = false
@@ -79,10 +82,15 @@ class ChromaKeySpriteView @JvmOverloads constructor(
         heldFirstFrame =
             holdOnFirstFrame
 
-        val resolution =
+        val targetResolution =
             RichMediaSettings
                 .spriteResolutionFor(
                     context
+                )
+        val stages =
+            SpriteProgressivePolicy
+                .stagesFor(
+                    targetResolution
                 )
 
         MediaTrace.event(
@@ -91,8 +99,15 @@ class ChromaKeySpriteView @JvmOverloads constructor(
             assetPath = assetPath,
             detail =
                 "backend=SpriteRGBA" +
-                    " resolution=" +
-                    resolution.label +
+                    " target=" +
+                    targetResolution.label +
+                    " stages=" +
+                    stages.joinToString(
+                        separator = ">"
+                    ) {
+                        it.toString() +
+                            "p"
+                    } +
                     " key=" +
                     keyColor.name +
                     " yellow=" +
@@ -101,126 +116,371 @@ class ChromaKeySpriteView @JvmOverloads constructor(
 
         var playbackStarted =
             false
+        val requestedStages =
+            linkedSetOf<Int>()
+        val advancedStages =
+            linkedSetOf<Int>()
 
-        fun beginPlayback(
+        fun rebaseFrame(
             sequence: SpriteSequence,
-            quickStart: Boolean
+            partial: Boolean
+        ) {
+            val elapsed =
+                (
+                    SystemClock
+                        .uptimeMillis() -
+                        logicalStartedAtMs
+                    ).coerceAtLeast(
+                    0L
+                )
+            val logicalFrame =
+                (
+                    elapsed /
+                        sequence
+                            .frameDurationMs
+                    ).toInt()
+
+            currentFrame =
+                if (partial) {
+                    if (
+                        sequence.frames
+                            .isEmpty()
+                    ) {
+                        0
+                    } else {
+                        logicalFrame %
+                            sequence.frames
+                                .size
+                    }
+                } else {
+                    logicalFrame
+                        .coerceAtMost(
+                            (
+                                sequence.frames
+                                    .size -
+                                    1
+                                ).coerceAtLeast(0)
+                        )
+                }
+
+            startedAtMs =
+                if (partial) {
+                    SystemClock
+                        .uptimeMillis() -
+                        currentFrame *
+                            sequence
+                                .frameDurationMs
+                } else {
+                    logicalStartedAtMs
+                }
+        }
+
+        fun acceptStage(
+            sequence: SpriteSequence,
+            height: Int,
+            partial: Boolean
         ) {
             if (
-                playbackStarted ||
                 playGeneration !=
-                    generation
+                    generation ||
+                sequence.frames
+                    .isEmpty()
             ) {
                 return
             }
 
-            playbackStarted = true
-            waitingForFullSequence =
-                quickStart
-            currentSequence =
-                sequence
-            currentFrame = 0
-            startedAtMs =
-                SystemClock
-                    .uptimeMillis()
+            if (!playbackStarted) {
+                playbackStarted = true
+                currentSequence =
+                    sequence
+                currentFrame = 0
+                currentStageHeight =
+                    height
+                waitingForFullSequence =
+                    partial
+                logicalStartedAtMs =
+                    SystemClock
+                        .uptimeMillis()
+                startedAtMs =
+                    logicalStartedAtMs
 
-            performanceActive =
-                true
-            AnimationPerformanceMonitor
-                .spriteStarted(
-                    logicalLayer,
-                    assetPath
-                )
+                performanceActive =
+                    true
+                AnimationPerformanceMonitor
+                    .spriteStarted(
+                        logicalLayer,
+                        assetPath
+                    )
 
-            if (quickStart) {
                 MediaTrace.event(
                     source = traceSource(),
                     event =
-                        "QUICK_START",
+                        if (partial) {
+                            "QUICK_START"
+                        } else {
+                            "BANK_START"
+                        },
                     assetPath =
                         assetPath,
                     detail =
                         "frames=" +
-                            sequence
-                                .frames
-                                .size +
+                            sequence.frames.size +
                             " resolution=" +
-                            resolution.label
+                            height +
+                            "p target=" +
+                            targetResolution.label
+                )
+
+                onStarted()
+
+                renderFrame(
+                    firstFrameCallback =
+                        onFirstFrameRendered
+                )
+                return
+            }
+
+            if (
+                height <
+                    currentStageHeight
+            ) {
+                return
+            }
+
+            val previousHeight =
+                currentStageHeight
+            val qualityChanged =
+                height >
+                    previousHeight
+
+            currentSequence =
+                sequence
+            currentStageHeight =
+                height
+            waitingForFullSequence =
+                partial
+            rebaseFrame(
+                sequence,
+                partial
+            )
+
+            handler.removeCallbacks(
+                frameRunnable
+            )
+
+            if (qualityChanged) {
+                MediaTrace.event(
+                    source = traceSource(),
+                    event =
+                        "QUALITY_STAGE_SWAP",
+                    assetPath =
+                        assetPath,
+                    detail =
+                        "from=" +
+                            previousHeight +
+                            "p to=" +
+                            height +
+                            "p partial=" +
+                            partial +
+                            " frame=" +
+                            currentFrame
+                )
+            } else if (!partial) {
+                MediaTrace.event(
+                    source = traceSource(),
+                    event =
+                        "FULL_SEQUENCE_READY",
+                    assetPath =
+                        assetPath,
+                    detail =
+                        "frames=" +
+                            sequence.frames.size +
+                            " resolution=" +
+                            height +
+                            "p"
                 )
             }
 
-            onStarted()
-
-            renderFrame(
-                firstFrameCallback =
-                    onFirstFrameRendered
-            )
+            renderFrame()
         }
 
-        SpriteFrameCache.prepare(
-            context = context,
-            assetPath = assetPath,
-            keyColor = keyColor,
-            resolution = resolution,
-            onQuickReady = { partial ->
-                if (
-                    playGeneration ==
-                        generation &&
-                    !playbackStarted
-                ) {
-                    beginPlayback(
-                        sequence = partial,
-                        quickStart = true
-                    )
-                }
+        fun priorityFor(
+            height: Int
+        ): SpriteFactoryPriority =
+            when {
+                height <=
+                    SpriteProgressivePolicy
+                        .INTERNAL_LOW_HEIGHT ->
+                    SpriteFactoryPriority
+                        .VISIBLE
+
+                height <= 120 ->
+                    SpriteFactoryPriority
+                        .VISIBLE_BOOTSTRAP
+
+                SpriteProgressivePolicy
+                    .isSecondary(height) ->
+                    SpriteFactoryPriority
+                        .SECONDARY
+
+                else ->
+                    SpriteFactoryPriority
+                        .VISIBLE_UPGRADE
             }
-        ) { result ->
+
+        lateinit var requestStage:
+            (Int) -> Unit
+
+        fun advance(
+            index: Int
+        ) {
             if (
-                playGeneration !=
-                    generation
+                !advancedStages.add(
+                    index
+                )
             ) {
-                return@prepare
+                return
             }
 
-            result.fold(
-                onSuccess = { sequence ->
-                    if (!playbackStarted) {
-                        beginPlayback(
-                            sequence = sequence,
-                            quickStart = false
-                        )
-                    } else {
-                        currentSequence =
-                            sequence
-                        waitingForFullSequence =
-                            false
+            val next =
+                index + 1
 
-                        MediaTrace.event(
-                            source =
-                                traceSource(),
-                            event =
-                                "FULL_SEQUENCE_READY",
+            if (next < stages.size) {
+                requestStage(next)
+            }
+        }
+
+        requestStage = {
+                index ->
+            if (
+                index !in
+                    stages.indices
+            ) {
+                Unit
+            } else {
+                val height =
+                    stages[index]
+
+                if (
+                    requestedStages.add(
+                        height
+                    )
+                ) {
+                    MediaTrace.event(
+                        source =
+                            traceSource(),
+                        event =
+                            "QUALITY_STAGE_REQUEST",
+                        assetPath =
+                            assetPath,
+                        detail =
+                            "resolution=" +
+                                height +
+                                "p target=" +
+                                targetResolution
+                                    .label
+                    )
+
+                    SpriteBankFactory
+                        .prepare(
+                            context =
+                                context,
                             assetPath =
                                 assetPath,
-                            detail =
-                                "frames=" +
-                                    sequence
-                                        .frames
-                                        .size +
-                                    " resolution=" +
-                                    resolution
-                                        .label
-                        )
-                    }
-                },
-                onFailure = { throwable ->
-                    fail(
-                        assetPath,
-                        throwable
-                    )
+                            keyColor =
+                                keyColor,
+                            resolutionHeight =
+                                height,
+                            requestedBy =
+                                logicalLayer,
+                            priority =
+                                priorityFor(
+                                    height
+                                ),
+                            onQuickReady = {
+                                partial ->
+                                if (
+                                    playGeneration ==
+                                        generation
+                                ) {
+                                    acceptStage(
+                                        sequence =
+                                            partial,
+                                        height =
+                                            height,
+                                        partial =
+                                            true
+                                    )
+                                    advance(
+                                        index
+                                    )
+                                }
+                            }
+                        ) {
+                            result ->
+                            if (
+                                playGeneration !=
+                                    generation
+                            ) {
+                                return@prepare
+                            }
+
+                            result.fold(
+                                onSuccess = {
+                                    sequence ->
+                                    acceptStage(
+                                        sequence =
+                                            sequence,
+                                        height =
+                                            height,
+                                        partial =
+                                            false
+                                    )
+                                    advance(
+                                        index
+                                    )
+                                },
+                                onFailure = {
+                                    throwable ->
+                                    MediaTrace.event(
+                                        source =
+                                            traceSource(),
+                                        event =
+                                            "QUALITY_STAGE_ERROR",
+                                        assetPath =
+                                            assetPath,
+                                        detail =
+                                            "resolution=" +
+                                                height +
+                                                "p error=" +
+                                                throwable
+                                                    .javaClass
+                                                    .simpleName
+                                    )
+
+                                    if (
+                                        index + 1 <
+                                            stages.size
+                                    ) {
+                                        advance(
+                                            index
+                                        )
+                                    } else if (
+                                        !playbackStarted
+                                    ) {
+                                        fail(
+                                            assetPath,
+                                            throwable
+                                        )
+                                    }
+                                }
+                            )
+                        }
                 }
-            )
+            }
         }
+
+        requestStage(0)
     }
 
     private fun renderFrame(
@@ -268,6 +528,12 @@ class ChromaKeySpriteView @JvmOverloads constructor(
         }
 
         setImageBitmap(bitmap)
+
+        (
+            drawable as?
+                BitmapDrawable
+            )?.isFilterBitmap =
+            true
 
         firstFrameCallback?.invoke()
 
@@ -410,6 +676,9 @@ class ChromaKeySpriteView @JvmOverloads constructor(
         performanceActive = false
         currentSequence = null
         currentFrame = 0
+        currentStageHeight = 0
+        logicalStartedAtMs = 0L
+        startedAtMs = 0L
         heldFirstFrame = false
         waitingForFullSequence = false
         completion = null
