@@ -112,11 +112,20 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             AliveAnimationDecision? = null
 
         var videoActive = false
+        var videoFirstFrameVisible = false
         var removing = false
         var forceCute = false
         var staticSuppressed = false
         var hideStaticUntilAppearanceEnds = false
         var generation = 0
+
+        var stableFrame: Bitmap? = null
+        var stableFrameReadyHeight = -1
+        var stableFrameRequestedHeight = -1
+        var stableFrameRequestGeneration = 0
+        var stableFrameVisibleLoggedHeight = -1
+        var usingStableFrame = false
+        var legacyPngLogged = false
 
         var cycleCallbackArmed = false
 
@@ -260,8 +269,18 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                                 )
                         }
 
-                    presence.image.visibility =
-                        View.VISIBLE
+                    if (value) {
+                        presence.legacyPngLogged =
+                            false
+                    } else {
+                        presence
+                            .stableFrameVisibleLoggedHeight =
+                            -1
+                    }
+
+                    applyStaticPlaceholder(
+                        presence
+                    )
                     refreshPresenceTarget(presence)
 
                     if (value) {
@@ -489,15 +508,9 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             initialDecision.state ==
                 AliveVisualState.APPEARING
 
-        presence.image.visibility =
-            if (
-                presence
-                    .hideStaticUntilAppearanceEnds
-            ) {
-                View.INVISIBLE
-            } else {
-                View.VISIBLE
-            }
+        applyStaticPlaceholder(
+            presence
+        )
 
         val hasTarget =
             refreshPresenceTarget(presence)
@@ -693,8 +706,9 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     presence.hideStaticUntilAppearanceEnds =
                         false
                     presence.forceCute = false
-                    presence.image.visibility =
-                        View.VISIBLE
+                    applyStaticPlaceholder(
+                        presence
+                    )
                     presence.pendingDecision =
                         if (animationsEnabled) {
                             presence.animator
@@ -723,6 +737,33 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         )
                     }
                 }
+            }
+
+        refreshVisibility()
+    }
+
+    fun refreshStableFramesForResolution() {
+        presences.values
+            .toList()
+            .forEach { presence ->
+                if (
+                    StableFramePolicy
+                        .specFor(
+                            presence.profile.kind
+                        ) == null
+                ) {
+                    return@forEach
+                }
+
+                presence.stableFrame = null
+                presence.stableFrameReadyHeight = -1
+                presence.stableFrameRequestedHeight = -1
+                presence.stableFrameVisibleLoggedHeight = -1
+                presence.usingStableFrame = false
+
+                applyStaticPlaceholder(
+                    presence
+                )
             }
 
         refreshVisibility()
@@ -851,8 +892,9 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         }
 
         if (!animationsEnabled) {
-            presence.image.visibility =
-                View.VISIBLE
+            showLegacyPng(
+                presence
+            )
             refreshVisibility()
             return
         }
@@ -887,8 +929,9 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 removePresence(presence)
 
             AliveVisualState.STATIC_PNG -> {
-                presence.image.visibility =
-                    View.VISIBLE
+                applyStaticPlaceholder(
+                    presence
+                )
                 presence.video.visibility =
                     View.INVISIBLE
                 presence.videoContainer.visibility =
@@ -946,6 +989,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         presence.currentDecision =
             decision
         presence.videoActive = true
+        presence.videoFirstFrameVisible =
+            false
 
         val strictAppearance =
             decision.state ==
@@ -953,12 +998,14 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 presence
                     .hideStaticUntilAppearanceEnds
 
-        presence.image.visibility =
-            if (strictAppearance) {
+        if (strictAppearance) {
+            presence.image.visibility =
                 View.INVISIBLE
-            } else {
-                View.VISIBLE
-            }
+        } else {
+            applyStaticPlaceholder(
+                presence
+            )
+        }
 
         presence.videoContainer.visibility =
             View.VISIBLE
@@ -1001,6 +1048,47 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         .contains(presence)
                 ) {
                     return@play
+                }
+
+                presence.videoFirstFrameVisible =
+                    true
+
+                if (
+                    presence.usingStableFrame
+                ) {
+                    val spec =
+                        StableFramePolicy
+                            .specFor(
+                                presence
+                                    .profile
+                                    .kind
+                            )
+
+                    MediaTrace.event(
+                        source =
+                            "AliveMascotOverlay",
+                        event =
+                            "STABLE_FRAME_TO_SPRITE",
+                        assetPath =
+                            assetPath,
+                        detail =
+                            "stableSource=" +
+                                (
+                                    spec
+                                        ?.assetPath
+                                        ?: "none"
+                                    ) +
+                                " species=" +
+                                presence
+                                    .profile
+                                    .kind +
+                                " resolution=" +
+                                RichMediaSettings
+                                    .spriteResolutionFor(
+                                        context
+                                    )
+                                    .label
+                    )
                 }
 
                 presence.image.visibility =
@@ -1048,6 +1136,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             AliveAnimationDecision
     ) {
         presence.videoActive = false
+        presence.videoFirstFrameVisible =
+            false
         presence.currentDecision = null
         presence.video.visibility =
             View.INVISIBLE
@@ -1079,8 +1169,9 @@ class AliveMascotOverlayView @JvmOverloads constructor(
             return
         }
 
-        presence.image.visibility =
-            View.VISIBLE
+        applyStaticPlaceholder(
+            presence
+        )
 
         val normalDecision =
             presence.animator
@@ -1148,11 +1239,14 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         presence.videoContainer.visibility =
             View.INVISIBLE
         presence.videoActive = false
+        presence.videoFirstFrameVisible =
+            false
         presence.currentDecision = null
         presence.hideStaticUntilAppearanceEnds =
             false
-        presence.image.visibility =
-            View.VISIBLE
+        applyStaticPlaceholder(
+            presence
+        )
 
         if (presence.removing) {
             removePresence(presence)
@@ -1182,6 +1276,295 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         }
 
         refreshVisibility()
+    }
+
+    private fun applyStaticPlaceholder(
+        presence: Presence
+    ) {
+        val useStable =
+            StableFramePolicy
+                .useStableFrame(
+                    kind =
+                        presence.profile.kind,
+                    animationsEnabled =
+                        animationsEnabled
+                )
+
+        if (!useStable) {
+            showLegacyPng(
+                presence
+            )
+            return
+        }
+
+        val resolution =
+            RichMediaSettings
+                .spriteResolutionFor(
+                    context
+                )
+
+        val stable =
+            presence.stableFrame
+                ?.takeIf {
+                    presence
+                        .stableFrameReadyHeight ==
+                        resolution.heightPx
+                }
+
+        if (stable == null) {
+            presence.usingStableFrame =
+                false
+            presence.image.visibility =
+                View.INVISIBLE
+
+            requestStableFrame(
+                presence = presence,
+                resolution = resolution
+            )
+            return
+        }
+
+        presence.image.setImageBitmap(
+            stable
+        )
+        presence.usingStableFrame = true
+
+        val mayShow =
+            !presence
+                .hideStaticUntilAppearanceEnds &&
+                (
+                    !presence.videoActive ||
+                        !presence
+                            .videoFirstFrameVisible
+                    )
+
+        presence.image.visibility =
+            if (mayShow) {
+                View.VISIBLE
+            } else {
+                View.INVISIBLE
+            }
+
+        if (
+            mayShow &&
+            presence
+                .stableFrameVisibleLoggedHeight !=
+                resolution.heightPx
+        ) {
+            val spec =
+                StableFramePolicy
+                    .specFor(
+                        presence.profile.kind
+                    )
+
+            MediaTrace.event(
+                source =
+                    "AliveMascotOverlay",
+                event =
+                    "STABLE_FRAME_SHOW",
+                assetPath =
+                    spec?.assetPath,
+                detail =
+                    "species=" +
+                        presence.profile.kind +
+                        " resolution=" +
+                        resolution.label +
+                        " owner=" +
+                        presence.ownerKey
+            )
+
+            presence
+                .stableFrameVisibleLoggedHeight =
+                resolution.heightPx
+        }
+    }
+
+    private fun requestStableFrame(
+        presence: Presence,
+        resolution: SpriteResolution
+    ) {
+        if (
+            presence.stableFrameRequestedHeight ==
+                resolution.heightPx
+        ) {
+            return
+        }
+
+        val spec =
+            StableFramePolicy
+                .specFor(
+                    presence.profile.kind
+                )
+                ?: return
+
+        presence.stableFrameRequestedHeight =
+            resolution.heightPx
+        presence.stableFrameRequestGeneration += 1
+
+        val requestGeneration =
+            presence
+                .stableFrameRequestGeneration
+
+        MediaTrace.event(
+            source =
+                "AliveMascotOverlay",
+            event =
+                "STABLE_FRAME_REQUEST",
+            assetPath =
+                spec.assetPath,
+            detail =
+                "species=" +
+                    presence.profile.kind +
+                    " resolution=" +
+                    resolution.label +
+                    " cache=CHECK" +
+                    " owner=" +
+                    presence.ownerKey
+        )
+
+        SpriteFrameCache
+            .requestStableFrame(
+                context = context,
+                assetPath =
+                    spec.assetPath,
+                keyColor =
+                    spec.keyColor,
+                resolution =
+                    resolution
+            ) { result ->
+                if (
+                    !presences.values
+                        .contains(presence) ||
+                    requestGeneration !=
+                        presence
+                            .stableFrameRequestGeneration
+                ) {
+                    return@requestStableFrame
+                }
+
+                result.fold(
+                    onSuccess = { stable ->
+                        presence.stableFrame =
+                            stable.bitmap
+                        presence
+                            .stableFrameReadyHeight =
+                            resolution.heightPx
+
+                        MediaTrace.event(
+                            source =
+                                "AliveMascotOverlay",
+                            event =
+                                "STABLE_FRAME_READY",
+                            assetPath =
+                                spec.assetPath,
+                            detail =
+                                "species=" +
+                                    presence
+                                        .profile
+                                        .kind +
+                                    " resolution=" +
+                                    resolution
+                                        .label +
+                                    " extractionMs=" +
+                                    stable.elapsedMs +
+                                    " cache=" +
+                                    if (
+                                        stable.cacheHit
+                                    ) {
+                                        "HIT"
+                                    } else {
+                                        "MISS"
+                                    } +
+                                    " layer=" +
+                                    stable.cacheLayer +
+                                    " size=" +
+                                    stable.width +
+                                    "x" +
+                                    stable.height
+                        )
+
+                        applyStaticPlaceholder(
+                            presence
+                        )
+                        refreshVisibility()
+                    },
+                    onFailure = { error ->
+                        presence
+                            .stableFrameRequestedHeight =
+                            -1
+
+                        MediaTrace.event(
+                            source =
+                                "AliveMascotOverlay",
+                            event =
+                                "STABLE_FRAME_ERROR",
+                            assetPath =
+                                spec.assetPath,
+                            detail =
+                                "species=" +
+                                    presence
+                                        .profile
+                                        .kind +
+                                    " resolution=" +
+                                    resolution
+                                        .label +
+                                    " error=" +
+                                    error.javaClass
+                                        .simpleName
+                        )
+                    }
+                )
+            }
+    }
+
+    private fun showLegacyPng(
+        presence: Presence
+    ) {
+        presence.profile
+            .pngAsset
+            ?.let(::bitmapFor)
+            ?.let(
+                presence.image::setImageBitmap
+            )
+
+        presence.usingStableFrame = false
+
+        presence.image.visibility =
+            if (
+                presence
+                    .hideStaticUntilAppearanceEnds
+            ) {
+                View.INVISIBLE
+            } else {
+                View.VISIBLE
+            }
+
+        if (
+            !animationsEnabled &&
+            StableFramePolicy
+                .specFor(
+                    presence.profile.kind
+                ) != null &&
+            !presence.legacyPngLogged
+        ) {
+            MediaTrace.event(
+                source =
+                    "AliveMascotOverlay",
+                event =
+                    "LEGACY_PNG_SHOW",
+                assetPath =
+                    presence.profile
+                        .pngAsset,
+                detail =
+                    "reason=ANIMATIONS_DISABLED" +
+                        " species=" +
+                        presence.profile.kind +
+                        " owner=" +
+                        presence.ownerKey
+            )
+
+            presence.legacyPngLogged = true
+        }
     }
 
     private fun coordinateGrandCycle(
@@ -1330,21 +1713,17 @@ class AliveMascotOverlayView @JvmOverloads constructor(
 
         presence.currentDecision = null
         presence.videoActive = false
+        presence.videoFirstFrameVisible =
+            false
         presence.playback.stopPlayback()
         presence.video.visibility =
             View.INVISIBLE
         presence.videoContainer.visibility =
             View.INVISIBLE
 
-        presence.image.visibility =
-            if (
-                presence
-                    .hideStaticUntilAppearanceEnds
-            ) {
-                View.INVISIBLE
-            } else {
-                View.VISIBLE
-            }
+        applyStaticPlaceholder(
+            presence
+        )
     }
 
     private fun refreshPresenceTarget(
@@ -1537,6 +1916,8 @@ class AliveMascotOverlayView @JvmOverloads constructor(
         presence.playback.stopPlayback()
         presence.playback.release()
         presence.videoActive = false
+        presence.videoFirstFrameVisible =
+            false
         presence.currentDecision = null
         presence.pendingDecision = null
 
