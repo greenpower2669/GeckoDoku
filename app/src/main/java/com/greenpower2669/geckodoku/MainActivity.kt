@@ -59,6 +59,9 @@ class MainActivity : Activity() {
     private val importDataRequestCode =
         7402
 
+    private val exportSpriteBanksRequestCode =
+        7403
+
     private lateinit var board:
         GeckoBoardView
 
@@ -364,12 +367,9 @@ class MainActivity : Activity() {
 
     private val spriteWarmupRunnable =
         Runnable {
-            SpriteFrameCache
-                .prewarmLivingCore(
-                    context = this,
-                    resolution =
-                        richMediaSettings
-                            .spriteResolution
+            SpriteBankFactory
+                .startCatalogPreparation(
+                    this
                 )
         }
 
@@ -4433,6 +4433,38 @@ class MainActivity : Activity() {
         )
     }
 
+    private fun exportSpriteBanks() {
+        val stamp =
+            SimpleDateFormat(
+                "yyyyMMdd-HHmm",
+                Locale.getDefault()
+            ).format(
+                Date()
+            )
+
+        val intent =
+            Intent(
+                Intent.ACTION_CREATE_DOCUMENT
+            ).apply {
+                addCategory(
+                    Intent.CATEGORY_OPENABLE
+                )
+                type =
+                    "application/zip"
+                putExtra(
+                    Intent.EXTRA_TITLE,
+                    "GeckoDoku-sprite-banks-" +
+                        stamp +
+                        ".zip"
+                )
+            }
+
+        startActivityForResult(
+            intent,
+            exportSpriteBanksRequestCode
+        )
+    }
+
     private fun importUserData() {
         val intent =
             Intent(
@@ -4509,6 +4541,49 @@ class MainActivity : Activity() {
                                 ?: "Erreur d'écriture."
                     )
                 }
+            }
+
+            exportSpriteBanksRequestCode -> {
+                status.text =
+                    "Export des banques sprites en cours…"
+
+                Thread {
+                    try {
+                        val output =
+                            contentResolver
+                                .openOutputStream(
+                                    uri
+                                )
+                                ?: throw IllegalStateException(
+                                    "Impossible d'ouvrir le fichier de destination."
+                                )
+
+                        output.use {
+                            SpriteBankExporter
+                                .write(
+                                    this,
+                                    it
+                                )
+                        }
+
+                        runOnUiThread {
+                            status.text =
+                                "Banques sprites exportées 📦"
+                        }
+                    } catch (
+                        error: Exception
+                    ) {
+                        runOnUiThread {
+                            showDataTransferError(
+                                title =
+                                    "Export sprites impossible",
+                                message =
+                                    error.message
+                                        ?: "Erreur d'écriture."
+                            )
+                        }
+                    }
+                }.start()
             }
 
             importDataRequestCode -> {
@@ -10349,6 +10424,9 @@ class MainActivity : Activity() {
                     SettingsEntry.IMPORT_DATA ->
                         "📥 Importer mes données"
 
+                    SettingsEntry.EXPORT_SPRITE_BANKS ->
+                        "🧪 Exporter les banques sprites"
+
                     SettingsEntry.SOUND ->
                         if (fx.enabled) {
                             "🔊 Son : ON"
@@ -10465,6 +10543,11 @@ class MainActivity : Activity() {
                         importUserData()
                     }
 
+                    SettingsEntry.EXPORT_SPRITE_BANKS -> {
+                        dialog.dismiss()
+                        exportSpriteBanks()
+                    }
+
                     SettingsEntry.SOUND -> {
                         toggleSoundSetting()
                         dialog.dismiss()
@@ -10502,7 +10585,7 @@ class MainActivity : Activity() {
     }
 
     private fun scheduleSpriteWarmup(
-        delayMs: Long = 4_000L
+        delayMs: Long = 250L
     ) {
         if (!::screenRoot.isInitialized) {
             return
@@ -10517,8 +10600,8 @@ class MainActivity : Activity() {
         )
 
         MediaTrace.event(
-            source = "SpriteFrameCache",
-            event = "PREWARM_ARMED",
+            source = "SpriteBankFactory",
+            event = "SPRITE_FACTORY_ARMED",
             detail =
                 "delayMs=" +
                     delayMs +
