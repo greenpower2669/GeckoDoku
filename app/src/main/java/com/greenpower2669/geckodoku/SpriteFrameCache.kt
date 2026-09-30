@@ -8,6 +8,7 @@ import android.media.MediaMetadataRetriever
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.LruCache
 import java.io.File
 import java.io.FileOutputStream
@@ -19,6 +20,15 @@ import kotlin.math.roundToInt
 data class SpriteSequence(
     val frames: List<File>,
     val frameDurationMs: Long,
+    val width: Int,
+    val height: Int
+)
+
+data class StableFrameResult(
+    val bitmap: Bitmap,
+    val cacheHit: Boolean,
+    val cacheLayer: String,
+    val elapsedMs: Long,
     val width: Int,
     val height: Int
 )
@@ -37,9 +47,12 @@ object SpriteFrameCache {
 
     private val worker = Executors.newSingleThreadExecutor()
     private val pinWorker = Executors.newSingleThreadExecutor()
+    private val stableFrameWorker =
+        Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
     private val lock = Any()
     private val hotPinLock = Any()
+    private val stableFrameLock = Any()
 
     private var hotPinnedResolutionHeight = -1
 
@@ -59,6 +72,20 @@ object SpriteFrameCache {
         mutableMapOf<
             String,
             MutableList<(SpriteSequence) -> Unit>
+        >()
+
+    private val stableFrameMemory =
+        mutableMapOf<
+            String,
+            Bitmap
+        >()
+
+    private val stableFramePending =
+        mutableMapOf<
+            String,
+            MutableList<
+                (Result<StableFrameResult>) -> Unit
+            >
         >()
 
     private val bitmapCache =
@@ -89,6 +116,94 @@ object SpriteFrameCache {
 
         bitmapCache.put(key, decoded)
         return decoded
+    }
+
+    fun requestStableFrame(
+        context: Context,
+        assetPath: String,
+        keyColor: ChromaKeyColor,
+        resolution: SpriteResolution,
+        callback:
+            (Result<StableFrameResult>) -> Unit
+    ) {
+        val appContext =
+            context.applicationContext
+        val key =
+            cacheKey(
+                assetPath,
+                keyColor,
+                resolution
+            )
+
+        val memoryHit =
+            synchronized(stableFrameLock) {
+                stableFrameMemory[key]
+            }
+
+        if (memoryHit != null) {
+            mainHandler.post {
+                callback(
+                    Result.success(
+                        StableFrameResult(
+                            bitmap = memoryHit,
+                            cacheHit = true,
+                            cacheLayer = "MEMORY",
+                            elapsedMs = 0L,
+                            width = memoryHit.width,
+                            height = memoryHit.height
+                        )
+                    )
+                )
+            }
+            return
+        }
+
+        var shouldBuild = false
+
+        synchronized(stableFrameLock) {
+            val callbacks =
+                stableFramePending[key]
+
+            if (callbacks != null) {
+                callbacks.add(callback)
+            } else {
+                stableFramePending[key] =
+                    mutableListOf(callback)
+                shouldBuild = true
+            }
+        }
+
+        if (!shouldBuild) return
+
+        stableFrameWorker.execute {
+            val startedAt =
+                SystemClock.elapsedRealtime()
+
+            val result =
+                runCatching {
+                    loadOrExtractStableFrame(
+                        context = appContext,
+                        assetPath = assetPath,
+                        keyColor = keyColor,
+                        resolution = resolution,
+                        key = key,
+                        startedAtMs = startedAt
+                    )
+                }
+
+            val callbacks =
+                synchronized(stableFrameLock) {
+                    stableFramePending
+                        .remove(key)
+                        .orEmpty()
+                }
+
+            mainHandler.post {
+                callbacks.forEach {
+                    it(result)
+                }
+            }
+        }
     }
 
     fun prewarmLivingCore(
@@ -498,6 +613,210 @@ object SpriteFrameCache {
                     it(result)
                 }
             }
+        }
+    }
+
+    private fun loadOrExtractStableFrame(
+        context: Context,
+        assetPath: String,
+        keyColor: ChromaKeyColor,
+        resolution: SpriteResolution,
+        key: String,
+        startedAtMs: Long
+    ): StableFrameResult {
+        val extension =
+            if (
+                Build.VERSION.SDK_INT >=
+                    Build.VERSION_CODES.R
+            ) {
+                "webp"
+            } else {
+                "png"
+            }
+
+        val stableDir =
+            File(
+                context.cacheDir,
+                "stable-frames/$key"
+            )
+        stableDir.mkdirs()
+
+        val stableFile =
+            File(
+                stableDir,
+                "frame-00000.$extension"
+            )
+
+        if (stableFile.isFile) {
+            val diskBitmap =
+                BitmapFactory.decodeFile(
+                    stableFile.absolutePath
+                )
+
+            if (diskBitmap != null) {
+                synchronized(stableFrameLock) {
+                    stableFrameMemory[key] =
+                        diskBitmap
+                }
+
+                return StableFrameResult(
+                    bitmap = diskBitmap,
+                    cacheHit = true,
+                    cacheLayer = "DISK",
+                    elapsedMs =
+                        SystemClock
+                            .elapsedRealtime() -
+                            startedAtMs,
+                    width = diskBitmap.width,
+                    height = diskBitmap.height
+                )
+            }
+
+            stableFile.delete()
+        }
+
+        val spriteDir =
+            File(
+                context.cacheDir,
+                "sprites/$key"
+            )
+        val spriteFrame =
+            File(
+                spriteDir,
+                "frame-00000.$extension"
+            )
+
+        if (spriteFrame.isFile) {
+            val spriteBitmap =
+                bitmapFor(spriteFrame)
+
+            if (spriteBitmap != null) {
+                synchronized(stableFrameLock) {
+                    stableFrameMemory[key] =
+                        spriteBitmap
+                }
+
+                return StableFrameResult(
+                    bitmap = spriteBitmap,
+                    cacheHit = true,
+                    cacheLayer = "SPRITE",
+                    elapsedMs =
+                        SystemClock
+                            .elapsedRealtime() -
+                            startedAtMs,
+                    width = spriteBitmap.width,
+                    height = spriteBitmap.height
+                )
+            }
+        }
+
+        val retriever =
+            MediaMetadataRetriever()
+
+        try {
+            context.assets.openFd(assetPath).use { afd ->
+                retriever.setDataSource(
+                    afd.fileDescriptor,
+                    afd.startOffset,
+                    afd.length
+                )
+            }
+
+            val sourceWidth =
+                retriever.extractMetadata(
+                    MediaMetadataRetriever
+                        .METADATA_KEY_VIDEO_WIDTH
+                )
+                    ?.toIntOrNull()
+                    ?.coerceAtLeast(1)
+                    ?: 854
+
+            val sourceHeight =
+                retriever.extractMetadata(
+                    MediaMetadataRetriever
+                        .METADATA_KEY_VIDEO_HEIGHT
+                )
+                    ?.toIntOrNull()
+                    ?.coerceAtLeast(1)
+                    ?: 480
+
+            val targetHeight =
+                min(
+                    resolution.heightPx,
+                    sourceHeight
+                ).coerceAtLeast(1)
+
+            val targetWidth =
+                (
+                    sourceWidth.toDouble() *
+                        targetHeight.toDouble() /
+                        sourceHeight.toDouble()
+                    )
+                    .roundToInt()
+                    .coerceAtLeast(1)
+
+            val source =
+                frameAt(
+                    retriever = retriever,
+                    timeUs = 0L,
+                    width = targetWidth,
+                    height = targetHeight
+                )
+                    ?: error(
+                        "No stable frame decoded for " +
+                            assetPath
+                    )
+
+            val transparent =
+                applyChromaKey(
+                    source,
+                    keyColor
+                )
+
+            if (transparent !== source) {
+                source.recycle()
+            }
+
+            FileOutputStream(stableFile)
+                .use { stream ->
+                    val format =
+                        if (
+                            Build.VERSION.SDK_INT >=
+                                Build.VERSION_CODES.R
+                        ) {
+                            Bitmap.CompressFormat
+                                .WEBP_LOSSLESS
+                        } else {
+                            Bitmap.CompressFormat.PNG
+                        }
+
+                    check(
+                        transparent.compress(
+                            format,
+                            100,
+                            stream
+                        )
+                    )
+                }
+
+            synchronized(stableFrameLock) {
+                stableFrameMemory[key] =
+                    transparent
+            }
+
+            return StableFrameResult(
+                bitmap = transparent,
+                cacheHit = false,
+                cacheLayer = "EXTRACTED",
+                elapsedMs =
+                    SystemClock
+                        .elapsedRealtime() -
+                        startedAtMs,
+                width = transparent.width,
+                height = transparent.height
+            )
+        } finally {
+            retriever.release()
         }
     }
 
