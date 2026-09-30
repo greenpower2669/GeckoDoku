@@ -5,14 +5,11 @@ import org.junit.Test
 
 class SpriteResolutionTest {
     @Test
-    fun selectorOffersTwoLevelsBelow240p() {
+    fun selectorOffersOnly120And240() {
         assertEquals(
             listOf(
                 120,
-                180,
-                240,
-                360,
-                480
+                240
             ),
             SpriteResolution
                 .values()
@@ -28,6 +25,16 @@ class SpriteResolutionTest {
             SpriteResolution.P240,
             SpriteResolution.fromHeight(
                 -1
+            )
+        )
+    }
+
+    @Test
+    fun obsoleteStoredHeightFallsBackTo240p() {
+        assertEquals(
+            SpriteResolution.P240,
+            SpriteResolution.fromHeight(
+                480
             )
         )
     }
