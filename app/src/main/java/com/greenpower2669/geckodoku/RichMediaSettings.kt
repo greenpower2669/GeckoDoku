@@ -6,7 +6,6 @@ enum class SpriteResolution(
     val heightPx: Int,
     val label: String
 ) {
-    P120(120, "120p"),
     P240(240, "240p");
 
     companion object {
@@ -73,29 +72,13 @@ class RichMediaSettings(
 
     var spriteResolution: SpriteResolution
         get() =
-            SpriteResolution.fromHeight(
-                preferences.getInt(
-                    KEY_SPRITE_RESOLUTION,
-                    SpriteResolution.P240.heightPx
-                )
-            )
+            SpriteResolution.P240
         set(value) {
-            val previous = spriteResolution
-
-            preferences.edit()
-                .putInt(
-                    KEY_SPRITE_RESOLUTION,
-                    value.heightPx
-                )
-                .apply()
-
             MediaTrace.event(
                 source = "RichMediaSettings",
-                event = "WRITE_SPRITE_RESOLUTION",
+                event = "WRITE_SPRITE_RESOLUTION_IGNORED",
                 detail =
-                    "previous=" +
-                        previous.label +
-                        " new=" +
+                    "fixed=240p requested=" +
                         value.label
             )
         }
@@ -140,19 +123,7 @@ class RichMediaSettings(
 
         fun spriteResolutionFor(
             context: Context
-        ): SpriteResolution {
-            val preferences =
-                context.getSharedPreferences(
-                    PREFS_NAME,
-                    Context.MODE_PRIVATE
-                )
-
-            return SpriteResolution.fromHeight(
-                preferences.getInt(
-                    KEY_SPRITE_RESOLUTION,
-                    SpriteResolution.P240.heightPx
-                )
-            )
-        }
+        ): SpriteResolution =
+            SpriteResolution.P240
     }
 }
