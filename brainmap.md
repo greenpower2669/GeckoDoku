@@ -1042,3 +1042,8 @@ Banques canoniques :
 Archive historique 480p :
 GitHub Release `PackageSprites`, conservée hors pipeline actif.
 
+GECKO-041 validation
+→ old stored resolution 180/360/480 → fallback P240
+→ tests selector [120,240]
+→ CI run #388 PASS.
+
