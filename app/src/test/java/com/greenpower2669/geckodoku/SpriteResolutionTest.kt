@@ -5,12 +5,9 @@ import org.junit.Test
 
 class SpriteResolutionTest {
     @Test
-    fun selectorOffersOnly120And240() {
+    fun runtimeOffersOnly240p() {
         assertEquals(
-            listOf(
-                120,
-                240
-            ),
+            listOf(240),
             SpriteResolution
                 .values()
                 .map {
@@ -20,17 +17,13 @@ class SpriteResolutionTest {
     }
 
     @Test
-    fun unknownHeightFallsBackTo240p() {
+    fun anyStoredHeightFallsBackTo240p() {
         assertEquals(
             SpriteResolution.P240,
             SpriteResolution.fromHeight(
-                -1
+                120
             )
         )
-    }
-
-    @Test
-    fun obsoleteStoredHeightFallsBackTo240p() {
         assertEquals(
             SpriteResolution.P240,
             SpriteResolution.fromHeight(
