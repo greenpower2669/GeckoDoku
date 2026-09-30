@@ -274,6 +274,10 @@ object SpriteBankFactory {
         val appContext =
             context.applicationContext
 
+        pruneObsoleteResolutionBanks(
+            appContext
+        )
+
         factoryStartedAtMs =
             SystemClock.elapsedRealtime()
 
@@ -957,8 +961,7 @@ object SpriteBankFactory {
         listOf(
             60,
             120,
-            240,
-            480
+            240
         )
 
     fun exportPreparationProgress(
@@ -994,7 +997,7 @@ object SpriteBankFactory {
                     SpriteResolutionBankState
                         .COMPLETE
             }?.resolutionHeight
-                ?: 480
+                ?: 240
         val percentage =
             if (expectedFrames > 0) {
                 (
@@ -1028,7 +1031,7 @@ object SpriteBankFactory {
         )
     }
 
-    fun prepareExportThrough480(
+    fun prepareExportThrough240(
         context: Context,
         callback:
             (Result<Unit>) -> Unit
@@ -1097,7 +1100,7 @@ object SpriteBankFactory {
                 resolutionHeight =
                     height,
                 requestedBy =
-                    "EXPORT_480",
+                    "EXPORT_240",
                 priority =
                     SpriteFactoryPriority
                         .VISIBLE_UPGRADE,
@@ -3748,6 +3751,63 @@ object SpriteBankFactory {
         ).apply {
             mkdirs()
         }
+
+
+    private fun pruneObsoleteResolutionBanks(
+        context: Context
+    ) {
+        val obsoleteHeights =
+            setOf(
+                180,
+                360,
+                480
+            )
+        var removedBytes =
+            0L
+        var removedDirs =
+            0
+
+        rootDir(context)
+            .listFiles()
+            .orEmpty()
+            .filter {
+                dir ->
+                dir.isDirectory &&
+                    obsoleteHeights.any {
+                        height ->
+                        dir.name.endsWith(
+                            "-" +
+                                height
+                        )
+                    }
+            }
+            .forEach {
+                dir ->
+                removedBytes +=
+                    bytesRecursive(dir)
+
+                if (
+                    dir.deleteRecursively()
+                ) {
+                    removedDirs += 1
+                }
+            }
+
+        if (removedDirs > 0) {
+            MediaTrace.event(
+                source =
+                    "SpriteBankFactory",
+                event =
+                    "SPRITE_BANK_OBSOLETE_PRUNED",
+                detail =
+                    "dirs=" +
+                        removedDirs +
+                        " bytes=" +
+                        removedBytes +
+                        " maxResolution=240p"
+            )
+        }
+    }
 
     private fun currentBankKeys(
         context: Context,
