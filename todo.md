@@ -607,3 +607,15 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] Test téléphone : redémarrage avec banques READY, vérifier absence totale de `Required value was null`.
 - [ ] Test téléphone : vérifier pourcentages / tailles / exports 60p, 120p, 240p et 480p.
 
+## GECKO-040B — Export global 480p
+
+- [x] Bouton « Tout préparer + exporter ».
+- [x] Forcer la préparation des banques 60p / 120p / 240p / 480p avant export.
+- [x] Reprendre les banques partielles existantes.
+- [x] Barre de progression sur frames générées / attendues.
+- [x] Export ZIP global seulement après préparation complète.
+- [x] Durcir le chemin DISK/APK READY avec état terminal explicite.
+- [ ] Valider CI 0.15.35-dev.
+- [ ] Test téléphone : vérifier absence de faux DISK_HIT → ERROR.
+- [ ] Test téléphone : lancer export global et vérifier progression jusqu'à 100 % puis ZIP avec `sprites/banks/60p`, `120p`, `240p`, `480p`.
+
