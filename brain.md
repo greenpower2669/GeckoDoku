@@ -993,3 +993,16 @@ La préparation export donne priorité aux jobs EXPORT_480 sans annuler la gén�
 
 Le chemin READY a été durci : initialisation retourne explicitement READY ou BUILD_REQUIRED, les sessions terminées portent un drapeau terminal, et les tâches obsolètes quittent sans accéder à metadata. Les métriques post-completion ne peuvent plus transformer un hit disque réussi en erreur.
 
+## 2026-09-30 — GECKO-041 — Trois banques seulement, maximum 240p
+
+Décision canonique de Fab après validation téléphone et export complet :
+- conserver uniquement les banques 60p, 120p et 240p ;
+- 60p reste la banque interne rapide ;
+- 120p est la banque intermédiaire ;
+- 240p est la qualité maximale ;
+- supprimer 180p, 360p et 480p de la sélection, de l'UI banques et de l'export ;
+- au démarrage de la factory, supprimer les anciens répertoires générés suffixés -180, -360 ou -480 afin de récupérer l'espace disque ;
+- l'export global prépare et exporte seulement 60p → 120p → 240p.
+
+Le paquet historique complet 60/120/240/480 est archivé dans la release GitHub `PackageSprites`, asset `GeckoDoku-sprite-banks-60-120-240-480-20260930-2058.zip`, SHA-256 `b108331d259d6d03aa6832028327a76fb31cf3bcb882738f759121cfeafad296`.
+
