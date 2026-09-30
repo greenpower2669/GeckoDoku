@@ -12,7 +12,9 @@ import android.os.SystemClock
 import android.util.LruCache
 import java.io.File
 import java.io.FileOutputStream
+import java.security.MessageDigest
 import java.util.concurrent.Executors
+import org.json.JSONObject
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -166,6 +168,19 @@ object SpriteFrameCache {
 
             if (callbacks != null) {
                 callbacks.add(callback)
+                SpriteBankFactory
+                    .recordStableCoalesced()
+
+                MediaTrace.event(
+                    source = "SpriteFrameCache",
+                    event = "STABLE_FRAME_COALESCED",
+                    assetPath = assetPath,
+                    detail =
+                        "resolution=" +
+                            resolution.label +
+                            " key=" +
+                            keyColor.name
+                )
             } else {
                 stableFramePending[key] =
                     mutableListOf(callback)
@@ -636,7 +651,7 @@ object SpriteFrameCache {
 
         val stableDir =
             File(
-                context.cacheDir,
+                context.filesDir,
                 "stable-frames/$key"
             )
         stableDir.mkdirs()
@@ -654,6 +669,15 @@ object SpriteFrameCache {
                 )
 
             if (diskBitmap != null) {
+                ensureStableManifest(
+                    dir = stableDir,
+                    frameFile = stableFile,
+                    assetPath = assetPath,
+                    keyColor = keyColor,
+                    resolution = resolution,
+                    bitmap = diskBitmap
+                )
+
                 synchronized(stableFrameLock) {
                     stableFrameMemory[key] =
                         diskBitmap
@@ -691,6 +715,22 @@ object SpriteFrameCache {
                 bitmapFor(spriteFrame)
 
             if (spriteBitmap != null) {
+                runCatching {
+                    spriteFrame.copyTo(
+                        stableFile,
+                        overwrite = true
+                    )
+                }
+
+                ensureStableManifest(
+                    dir = stableDir,
+                    frameFile = stableFile,
+                    assetPath = assetPath,
+                    keyColor = keyColor,
+                    resolution = resolution,
+                    bitmap = spriteBitmap
+                )
+
                 synchronized(stableFrameLock) {
                     stableFrameMemory[key] =
                         spriteBitmap
@@ -798,6 +838,15 @@ object SpriteFrameCache {
                         )
                     )
                 }
+
+            ensureStableManifest(
+                dir = stableDir,
+                frameFile = stableFile,
+                assetPath = assetPath,
+                keyColor = keyColor,
+                resolution = resolution,
+                bitmap = transparent
+            )
 
             synchronized(stableFrameLock) {
                 stableFrameMemory[key] =
@@ -1113,7 +1162,7 @@ object SpriteFrameCache {
         }
     }
 
-    private fun frameAt(
+    internal fun frameAt(
         retriever: MediaMetadataRetriever,
         timeUs: Long,
         width: Int,
@@ -1159,7 +1208,7 @@ object SpriteFrameCache {
         }
     }
 
-    private fun applyChromaKey(
+    internal fun applyChromaKey(
         source: Bitmap,
         keyColor: ChromaKeyColor
     ): Bitmap {
@@ -1488,6 +1537,126 @@ object SpriteFrameCache {
             width = width,
             height = height
         )
+    }
+
+    private fun ensureStableManifest(
+        dir: File,
+        frameFile: File,
+        assetPath: String,
+        keyColor: ChromaKeyColor,
+        resolution: SpriteResolution,
+        bitmap: Bitmap
+    ) {
+        if (!frameFile.isFile) {
+            return
+        }
+
+        val manifest =
+            File(
+                dir,
+                "manifest.json"
+            )
+
+        val hash =
+            sha256(frameFile)
+
+        manifest.writeText(
+            JSONObject()
+                .apply {
+                    put(
+                        "status",
+                        "READY"
+                    )
+                    put(
+                        "generatorVersion",
+                        "stable-frame-v2"
+                    )
+                    put(
+                        "assetPath",
+                        assetPath
+                    )
+                    put(
+                        "keyColor",
+                        keyColor.name
+                    )
+                    put(
+                        "resolutionHeight",
+                        resolution.heightPx
+                    )
+                    put(
+                        "width",
+                        bitmap.width
+                    )
+                    put(
+                        "height",
+                        bitmap.height
+                    )
+                    put(
+                        "frameFile",
+                        frameFile.name
+                    )
+                    put(
+                        "frameSha256",
+                        hash
+                    )
+                    put(
+                        "keyThreshold",
+                        AssetMediaCatalog
+                            .KEY_THRESHOLD
+                    )
+                    put(
+                        "keySoftness",
+                        AssetMediaCatalog
+                            .KEY_SOFTNESS
+                    )
+                    put(
+                        "keyDespill",
+                        AssetMediaCatalog
+                            .KEY_DESPILL
+                    )
+                }
+                .toString(2)
+        )
+    }
+
+    private fun sha256(
+        file: File
+    ): String {
+        val digest =
+            MessageDigest
+                .getInstance(
+                    "SHA-256"
+                )
+        val buffer =
+            ByteArray(
+                64 * 1024
+            )
+
+        file.inputStream()
+            .use {
+                input ->
+                while (true) {
+                    val read =
+                        input.read(
+                            buffer
+                        )
+
+                    if (read <= 0) {
+                        break
+                    }
+
+                    digest.update(
+                        buffer,
+                        0,
+                        read
+                    )
+                }
+            }
+
+        return digest.digest()
+            .joinToString("") {
+                "%02x".format(it)
+            }
     }
 
     private fun cacheKey(
