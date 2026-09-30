@@ -985,3 +985,11 @@ Correction importante : un `SPRITE_BANK_DISK_HIT` ou `APK_HIT` termine maintenan
 
 Le catalogue de fond suit désormais les étapes progressives de la résolution cible. Exemple 480p : 60p > 120p > 240p > 480p.
 
+## 2026-09-30 — GECKO-040B — Export complet jusqu'à 480p
+
+Décision Fab : le bouton d'export global ne doit pas exporter des banques incomplètes. Il doit d'abord terminer les banques canoniques 60p, 120p, 240p et 480p, afficher une barre de progression calculée sur les frames réellement présentes, puis ouvrir la création du ZIP complet.
+
+La préparation export donne priorité aux jobs EXPORT_480 sans annuler la génération déjà commencée. Les banques partielles sont reprises.
+
+Le chemin READY a été durci : initialisation retourne explicitement READY ou BUILD_REQUIRED, les sessions terminées portent un drapeau terminal, et les tâches obsolètes quittent sans accéder à metadata. Les métriques post-completion ne peuvent plus transformer un hit disque réussi en erreur.
+
