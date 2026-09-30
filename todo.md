@@ -490,9 +490,11 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] retirer apparition/disparition/Gecko_actions_plusieurs du préwarm de démarrage ;
 - [x] ajouter tests de politique de warmup ;
 - [x] version 0.15.30-dev / versionCode 65 ;
-- [ ] CI tests + assemblePhone verte ;
+- [x] CI tests + assemblePhone verte — run #314 ;
 - [ ] téléphone : confirmer HOT_BANK_PINNED GECKO_SHARED + BEE en 240p ;
 - [ ] téléphone : confirmer que jaune partage la banque Gecko et reste visuellement correct ;
 - [ ] téléphone : vérifier qu'un CUTE construit Gecko_actions_plusieurs uniquement à la première vraie demande ;
 - [ ] téléphone : comparer temps de chauffe et FPS au démarrage avec 0.15.29-dev ;
 - [ ] aucune prerelease/release ni merge main avant validation explicite Fab.
+
+- [x] artifact GeckoDoku-v0.15.30-dev-phone produit ; digest sha256:3245421691fdc4857ee7d1dee1978cb9ff198a2d21380fbece526630b6ca795b ;

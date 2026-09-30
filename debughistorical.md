@@ -613,3 +613,7 @@ Correctif GECKO-069 :
 - exclure les gros clips CUTE et transitions du préwarm.
 
 Ce correctif optimise la politique de cache, pas le solveur, le gameplay ni l'ordonnancement Alive local.
+
+
+### GECKO-069 — validation CI
+Le pipeline GitHub Actions #314 a terminé SUCCESS sur 522802e5712ee5005850a033577f5fc143d00bb8 : tests unitaires, compilation et APK Phone OK. Aucun échec de compilation lié au cache chaud, au partage Gecko vert/jaune ni au lifecycle du warmup.

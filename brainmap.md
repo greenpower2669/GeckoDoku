@@ -872,3 +872,10 @@ MainActivity
 → warmup secondaire = seulement stay2/stay3/stay4 Gecko/Abeille, un par un
 → apparition/disparition/CUTE = on-demand
 → aucun changement AliveAnimator / aucune coordination globale des mascottes.
+
+
+GECKO-069 build
+→ commit 522802e5712ee5005850a033577f5fc143d00bb8
+→ CI #314 verte
+→ GeckoDoku-v0.15.30-dev-phone
+→ test téléphone : HOT_BANK_PINNED + stabilité FPS/mémoire.

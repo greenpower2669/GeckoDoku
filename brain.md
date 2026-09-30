@@ -880,3 +880,11 @@ Architecture retenue après test 240p :
 - les clips apparition/disparition et surtout Gecko_actions_plusieurs.mp4 (360 frames) sont désormais strictement on-demand et ne font plus partie du préwarm de démarrage.
 
 Indicateurs téléphone attendus : HOT_BANK_PINNED role=GECKO_SHARED/BEE, yellow=shared, absence de SPRITE_BUILD_START Gecko_actions_plusieurs sans demande CUTE, et maintien des FPS lors du remplissage progressif.
+
+
+### GECKO-069 — build
+Commit : 522802e5712ee5005850a033577f5fc143d00bb8.
+CI #314 : SUCCESS (tests unitaires + assemblePhone).
+Artifact : GeckoDoku-v0.15.30-dev-phone.
+Digest archive artifact : sha256:3245421691fdc4857ee7d1dee1978cb9ff198a2d21380fbece526630b6ca795b.
+Aucune publication ; prochaine étape = test téléphone 240p du warmup chaud.
