@@ -7,10 +7,7 @@ enum class SpriteResolution(
     val label: String
 ) {
     P120(120, "120p"),
-    P180(180, "180p"),
-    P240(240, "240p"),
-    P360(360, "360p"),
-    P480(480, "480p");
+    P240(240, "240p");
 
     companion object {
         fun fromHeight(value: Int): SpriteResolution =
