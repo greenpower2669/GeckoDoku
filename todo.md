@@ -521,3 +521,30 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] HOT_BANK_PINNED BEE observé : 24/24, ~5,27 MiB ;
 - [x] yellow=shared observé et rendu jaune visuellement propre ;
 - [x] Gecko_actions_plusieurs reste on-demand : construction observée après demande CUTE ;
+
+
+## GECKO-071 — STABLE_FRAME stay1/frame 1
+- [x] définir Gecko STABLE_FRAME = frame 1 de GECKO_IDLE[0] ;
+- [x] définir Abeille STABLE_FRAME = frame 1 de BEE_IDLE[0] ;
+- [x] partager physiquement la frame Gecko avec la variante jaune ;
+- [x] ne pas utiliser stay2/stay3/stay4 ni apparition/disparition comme source statique ;
+- [x] extraire une seule frame avec scaling/chroma-key identiques au SpriteRGBA ;
+- [x] cache mémoire léger ;
+- [x] cache disque léger ;
+- [x] réutiliser frame-00000 SpriteRGBA déjà présente si possible ;
+- [x] Animations ON : ne plus afficher le PNG historique comme placeholder Gecko/Abeille ;
+- [x] STABLE_FRAME affichée via ImageView simple, sans SPRITE_ACTIVE ;
+- [x] transition STABLE_FRAME_TO_SPRITE sur première frame animée ;
+- [x] Animations OFF : restaurer le PNG historique ;
+- [x] logs STABLE_FRAME_REQUEST/READY/SHOW/TO_SPRITE + LEGACY_PNG_SHOW ;
+- [x] ne pas toucher la plante, Pierre, gameplay, apparition/disparition ;
+- [x] rafraîchir la STABLE_FRAME lors d'un changement de résolution ;
+- [x] tests StableFramePolicy ;
+- [x] version 0.15.32-dev / versionCode 67 ;
+- [ ] CI tests + assemblePhone verte ;
+- [ ] téléphone 240p à froid : STABLE_FRAME_READY très rapide pour Gecko et Abeille ;
+- [ ] téléphone : vérifier activeAnimations=0 tant que seule la STABLE_FRAME est visible ;
+- [ ] téléphone : vérifier transition visuellement invisible STABLE_FRAME_TO_SPRITE ;
+- [ ] téléphone : animations OFF → LEGACY_PNG_SHOW et PNG historiques visibles ;
+- [ ] mesurer séparément la latence restante QUICK_READY des animations visibles ; si nécessaire, traiter ensuite la priorité de file de build sans confondre avec GECKO-071 ;
+- [ ] aucune prerelease/release ni merge main avant validation explicite Fab.
