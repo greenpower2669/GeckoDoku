@@ -328,8 +328,9 @@ class ChromaKeySpriteView @JvmOverloads constructor(
                         .VISIBLE_UPGRADE
             }
 
-        lateinit var requestStage:
-            (Int) -> Unit
+        var requestStage:
+            ((Int) -> Unit)? =
+            null
 
         fun advance(
             index: Int
@@ -346,7 +347,8 @@ class ChromaKeySpriteView @JvmOverloads constructor(
                 index + 1
 
             if (next < stages.size) {
-                requestStage(next)
+                requestStage
+                    ?.invoke(next)
             }
         }
 
@@ -480,7 +482,8 @@ class ChromaKeySpriteView @JvmOverloads constructor(
             }
         }
 
-        requestStage(0)
+        requestStage
+            ?.invoke(0)
     }
 
     private fun renderFrame(
