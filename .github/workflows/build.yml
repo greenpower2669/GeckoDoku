@@ -156,3 +156,4 @@ jobs:
             --latest \
             --title "GeckoDoku ${APP_VERSION} • téléphone validé" \
             --notes "APK téléphone validé. Variante phone non débogable, signée avec la clé de test Android ; ne pas utiliser comme signature Google Play."
+# GECKO-043: 240p-only sprite runtime
