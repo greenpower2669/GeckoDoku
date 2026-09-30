@@ -2,33 +2,28 @@ package com.greenpower2669.geckodoku
 
 object SpriteProgressivePolicy {
     const val INTERNAL_LOW_HEIGHT = 60
+    const val MAX_HEIGHT = 240
 
     fun stagesFor(
         target: SpriteResolution
     ): List<Int> =
-        buildList {
-            add(INTERNAL_LOW_HEIGHT)
+        when (target) {
+            SpriteResolution.P120 ->
+                listOf(
+                    INTERNAL_LOW_HEIGHT,
+                    120
+                )
 
-            if (target.heightPx >= 120) {
-                add(120)
-            }
-
-            when {
-                target.heightPx <= 120 -> Unit
-                target.heightPx < 240 ->
-                    add(target.heightPx)
-                else -> {
-                    add(240)
-
-                    if (target.heightPx > 240) {
-                        add(target.heightPx)
-                    }
-                }
-            }
-        }.distinct()
+            SpriteResolution.P240 ->
+                listOf(
+                    INTERNAL_LOW_HEIGHT,
+                    120,
+                    MAX_HEIGHT
+                )
+        }
 
     fun isSecondary(
         heightPx: Int
     ): Boolean =
-        heightPx > 240
+        false
 }
