@@ -31,6 +31,25 @@ enum class SpriteBankState {
     INVALID
 }
 
+enum class SpriteResolutionBankState {
+    EMPTY,
+    IN_PROGRESS,
+    COMPLETE,
+    INVALID
+}
+
+data class SpriteResolutionBankSummary(
+    val resolutionHeight: Int,
+    val expectedAssets: Int,
+    val readyAssets: Int,
+    val expectedFrames: Int,
+    val generatedFrames: Int,
+    val invalidAssets: Int,
+    val sizeBytes: Long,
+    val percentage: Double,
+    val state: SpriteResolutionBankState
+)
+
 enum class SpriteFactoryPriority(
     val value: Int
 ) {
@@ -146,6 +165,12 @@ object SpriteBankFactory {
     private var firstAnimationVisibleAtMs = -1L
     private val workerBusyMs =
         linkedMapOf<String, Long>()
+
+    private val expectedFrameCountLock =
+        Any()
+
+    private val expectedFrameCountByAsset =
+        mutableMapOf<String, Int>()
 
     private data class BankMetadata(
         val frameCount: Int,
@@ -866,34 +891,536 @@ object SpriteBankFactory {
                     "report",
                     reportJson(context)
                 )
+                put(
+                    "resolutionBanks",
+                    JSONArray().apply {
+                        resolutionBankSummaries(
+                            context
+                        ).forEach {
+                            summary ->
+                            put(
+                                JSONObject()
+                                    .apply {
+                                        put(
+                                            "resolutionHeight",
+                                            summary
+                                                .resolutionHeight
+                                        )
+                                        put(
+                                            "percentage",
+                                            summary
+                                                .percentage
+                                        )
+                                        put(
+                                            "sizeBytes",
+                                            summary
+                                                .sizeBytes
+                                        )
+                                        put(
+                                            "state",
+                                            summary
+                                                .state
+                                                .name
+                                        )
+                                    }
+                            )
+                        }
+                    }
+                )
             }
     }
 
     fun validatedBankDirectories(
-        context: Context
-    ): List<File> =
-        rootDir(
+        context: Context,
+        resolutionHeight: Int? = null
+    ): List<File> {
+        val appContext =
             context.applicationContext
-        )
+
+        val expectedKeys =
+            resolutionHeight?.let {
+                height ->
+                currentBankKeys(
+                    appContext,
+                    height
+                )
+            }
+
+        return rootDir(appContext)
             .listFiles()
             .orEmpty()
             .filter {
                 dir ->
-                dir.isDirectory &&
+                if (!dir.isDirectory) {
+                    false
+                } else if (
+                    expectedKeys != null &&
+                    dir.name !in expectedKeys
+                ) {
+                    false
+                } else {
+                    runCatching {
+                        val manifest =
+                            JSONObject(
+                                File(
+                                    dir,
+                                    MANIFEST_FILE
+                                ).readText()
+                            )
+
+                        manifest.optString(
+                            "status"
+                        ) == "READY" &&
+                            manifest.optInt(
+                                "formatVersion",
+                                -1
+                            ) ==
+                            FORMAT_VERSION &&
+                            manifest.optString(
+                                "generatorVersion"
+                            ) ==
+                            GENERATOR_VERSION &&
+                            (
+                                resolutionHeight ==
+                                    null ||
+                                    manifest.optInt(
+                                        "resolutionHeight",
+                                        -1
+                                    ) ==
+                                    resolutionHeight
+                                )
+                    }.getOrDefault(false)
+                }
+            }
+            .sortedBy {
+                it.name
+            }
+    }
+
+    fun resolutionBankDirectories(
+        context: Context,
+        resolutionHeight: Int
+    ): List<File> {
+        val appContext =
+            context.applicationContext
+        val keys =
+            currentBankKeys(
+                appContext,
+                resolutionHeight
+            )
+
+        return rootDir(appContext)
+            .listFiles()
+            .orEmpty()
+            .filter {
+                it.isDirectory &&
+                    it.name in keys
+            }
+            .sortedBy {
+                it.name
+            }
+    }
+
+    fun knownResolutionBankHeights():
+        List<Int> =
+        (
+            listOf(
+                SpriteProgressivePolicy
+                    .INTERNAL_LOW_HEIGHT
+            ) +
+                SpriteResolution
+                    .values()
+                    .map {
+                        it.heightPx
+                    }
+            )
+            .distinct()
+            .sorted()
+
+    fun resolutionBankSummaries(
+        context: Context
+    ): List<SpriteResolutionBankSummary> =
+        knownResolutionBankHeights()
+            .map {
+                resolutionBankSummary(
+                    context,
+                    it
+                )
+            }
+
+    fun resolutionBankSummary(
+        context: Context,
+        resolutionHeight: Int
+    ): SpriteResolutionBankSummary {
+        val appContext =
+            context.applicationContext
+        var expectedFrames = 0
+        var generatedFrames = 0
+        var readyAssets = 0
+        var invalidAssets = 0
+        var sizeBytes = 0L
+
+        SpriteCatalog.entries
+            .forEach {
+                entry ->
+                val expected =
+                    expectedFrameCount(
+                        appContext,
+                        entry.assetPath
+                    )
+
+                expectedFrames +=
+                    expected
+
+                val assetSha =
+                    sourceHash(
+                        appContext,
+                        entry.assetPath
+                    )
+                val key =
+                    bankKey(
+                        entry.assetPath,
+                        entry.keyColor,
+                        resolutionHeight,
+                        assetSha
+                    )
+                val dir =
+                    File(
+                        rootDir(appContext),
+                        key
+                    )
+
+                if (!dir.isDirectory) {
+                    return@forEach
+                }
+
+                sizeBytes +=
+                    bytesRecursive(dir)
+
+                val session =
+                    BuildSession(
+                        context =
+                            appContext,
+                        requestKey =
+                            requestKey(
+                                entry.assetPath,
+                                entry.keyColor,
+                                resolutionHeight
+                            ),
+                        assetPath =
+                            entry.assetPath,
+                        keyColor =
+                            entry.keyColor,
+                        resolutionHeight =
+                            resolutionHeight,
+                        requestedBy =
+                            "BANK_SUMMARY",
+                        priority =
+                            SpriteFactoryPriority
+                                .SECONDARY
+                                .value
+                    ).apply {
+                        assetSha256 =
+                            assetSha
+                    }
+
+                val ready =
+                    readReadyBank(
+                        session,
+                        dir
+                    )
+
+                if (ready != null) {
+                    readyAssets += 1
+                    generatedFrames +=
+                        ready.frames.size
+                } else {
+                    val partial =
+                        partialFrameCount(
+                            entry =
+                                entry,
+                            assetSha =
+                                assetSha,
+                            resolutionHeight =
+                                resolutionHeight,
+                            dir =
+                                dir
+                        )
+
+                    generatedFrames +=
+                        partial
+
+                    if (
+                        File(
+                            dir,
+                            MANIFEST_FILE
+                        ).isFile
+                    ) {
+                        invalidAssets += 1
+                    }
+                }
+            }
+
+        val percentage =
+            if (expectedFrames > 0) {
+                (
+                    generatedFrames
+                        .toDouble() *
+                        100.0 /
+                        expectedFrames
+                            .toDouble()
+                    )
+                    .coerceIn(
+                        0.0,
+                        100.0
+                    )
+            } else {
+                0.0
+            }
+
+        val state =
+            when {
+                invalidAssets > 0 ->
+                    SpriteResolutionBankState
+                        .INVALID
+
+                readyAssets ==
+                    SpriteCatalog.entries.size &&
+                    generatedFrames >=
+                    expectedFrames ->
+                    SpriteResolutionBankState
+                        .COMPLETE
+
+                generatedFrames > 0 ->
+                    SpriteResolutionBankState
+                        .IN_PROGRESS
+
+                else ->
+                    SpriteResolutionBankState
+                        .EMPTY
+            }
+
+        return SpriteResolutionBankSummary(
+            resolutionHeight =
+                resolutionHeight,
+            expectedAssets =
+                SpriteCatalog.entries.size,
+            readyAssets =
+                readyAssets,
+            expectedFrames =
+                expectedFrames,
+            generatedFrames =
+                generatedFrames,
+            invalidAssets =
+                invalidAssets,
+            sizeBytes =
+                sizeBytes,
+            percentage =
+                percentage,
+            state =
+                state
+        )
+    }
+
+    fun resolutionBankManifestJson(
+        context: Context,
+        resolutionHeight: Int
+    ): JSONObject {
+        val appContext =
+            context.applicationContext
+        val summary =
+            resolutionBankSummary(
+                appContext,
+                resolutionHeight
+            )
+        val assets =
+            JSONArray()
+
+        SpriteCatalog.entries
+            .forEach {
+                entry ->
+                val assetSha =
+                    sourceHash(
+                        appContext,
+                        entry.assetPath
+                    )
+                val key =
+                    bankKey(
+                        entry.assetPath,
+                        entry.keyColor,
+                        resolutionHeight,
+                        assetSha
+                    )
+                val dir =
+                    File(
+                        rootDir(appContext),
+                        key
+                    )
+                val manifest =
                     runCatching {
                         JSONObject(
                             File(
                                 dir,
                                 MANIFEST_FILE
                             ).readText()
-                        ).optString(
-                            "status"
-                        ) == "READY"
-                    }.getOrDefault(false)
+                        )
+                    }.getOrNull()
+                val building =
+                    runCatching {
+                        JSONObject(
+                            File(
+                                dir,
+                                BUILDING_FILE
+                            ).readText()
+                        )
+                    }.getOrNull()
+                val expected =
+                    expectedFrameCount(
+                        appContext,
+                        entry.assetPath
+                    )
+                val generated =
+                    when {
+                        manifest != null &&
+                            manifest.optString(
+                                "status"
+                            ) ==
+                            "READY" ->
+                            manifest.optInt(
+                                "frameCount",
+                                0
+                            )
+
+                        building != null ->
+                            partialFrameCount(
+                                entry =
+                                    entry,
+                                assetSha =
+                                    assetSha,
+                                resolutionHeight =
+                                    resolutionHeight,
+                                dir =
+                                    dir
+                            )
+
+                        else ->
+                            0
+                    }
+
+                assets.put(
+                    JSONObject()
+                        .apply {
+                            put(
+                                "assetPath",
+                                entry.assetPath
+                            )
+                            put(
+                                "keyColor",
+                                entry.keyColor.name
+                            )
+                            put(
+                                "bankKey",
+                                key
+                            )
+                            put(
+                                "expectedFrames",
+                                expected
+                            )
+                            put(
+                                "generatedFrames",
+                                generated
+                            )
+                            put(
+                                "status",
+                                when {
+                                    manifest !=
+                                        null &&
+                                        manifest.optString(
+                                            "status"
+                                        ) ==
+                                        "READY" ->
+                                        "READY"
+
+                                    building !=
+                                        null ->
+                                        "BUILDING"
+
+                                    else ->
+                                        "MISSING"
+                                }
+                            )
+                            put(
+                                "bankSha256",
+                                manifest
+                                    ?.optString(
+                                        "bankSha256"
+                                    )
+                                    ?: ""
+                            )
+                        }
+                )
             }
-            .sortedBy {
-                it.name
+
+        return JSONObject()
+            .apply {
+                put(
+                    "status",
+                    summary.state.name
+                )
+                put(
+                    "formatVersion",
+                    FORMAT_VERSION
+                )
+                put(
+                    "generatorVersion",
+                    GENERATOR_VERSION
+                )
+                put(
+                    "resolutionHeight",
+                    resolutionHeight
+                )
+                put(
+                    "fps",
+                    FPS
+                )
+                put(
+                    "expectedAssets",
+                    summary.expectedAssets
+                )
+                put(
+                    "readyAssets",
+                    summary.readyAssets
+                )
+                put(
+                    "expectedFrames",
+                    summary.expectedFrames
+                )
+                put(
+                    "generatedFrames",
+                    summary.generatedFrames
+                )
+                put(
+                    "percentage",
+                    summary.percentage
+                )
+                put(
+                    "sizeBytes",
+                    summary.sizeBytes
+                )
+                put(
+                    "invalidAssets",
+                    summary.invalidAssets
+                )
+                put(
+                    "generatedAt",
+                    System.currentTimeMillis()
+                )
+                put(
+                    "assets",
+                    assets
+                )
             }
+    }
 
     fun stableRoot(
         context: Context
@@ -926,18 +1453,40 @@ object SpriteBankFactory {
     private fun enqueueCatalog(
         context: Context
     ) {
+        val target =
+            RichMediaSettings
+                .spriteResolutionFor(
+                    context
+                )
+
         val stages =
-            listOf(
-                60 to
-                    SpriteFactoryPriority
-                        .CATALOG_LOW,
-                120 to
-                    SpriteFactoryPriority
-                        .CATALOG_120,
-                240 to
-                    SpriteFactoryPriority
-                        .CATALOG_240
-            )
+            SpriteProgressivePolicy
+                .stagesFor(target)
+                .map {
+                    height ->
+                    height to
+                        catalogPriorityFor(
+                            height
+                        )
+                }
+
+        MediaTrace.event(
+            source =
+                "SpriteBankFactory",
+            event =
+                "SPRITE_FACTORY_CATALOG_PLAN",
+            detail =
+                "target=" +
+                    target.label +
+                    " stages=" +
+                    stages.joinToString(
+                        ">"
+                    ) {
+                        it.first
+                            .toString() +
+                            "p"
+                    }
+        )
 
         stages.forEach {
                 (height, priority) ->
@@ -985,6 +1534,27 @@ object SpriteBankFactory {
                 }
         }
     }
+
+    private fun catalogPriorityFor(
+        height: Int
+    ): SpriteFactoryPriority =
+        when (height) {
+            60 ->
+                SpriteFactoryPriority
+                    .CATALOG_LOW
+
+            120 ->
+                SpriteFactoryPriority
+                    .CATALOG_120
+
+            240 ->
+                SpriteFactoryPriority
+                    .CATALOG_240
+
+            else ->
+                SpriteFactoryPriority
+                    .SECONDARY
+        }
 
     private fun enqueueSession(
         session: BuildSession
@@ -1091,6 +1661,17 @@ object SpriteBankFactory {
                     session.bankKey ==
                         null
                 ) {
+                    return
+                }
+
+                val completedDuringInitialize =
+                    synchronized(lock) {
+                        sessions[
+                            session.requestKey
+                        ] !== session
+                    }
+
+                if (completedDuringInitialize) {
                     return
                 }
             }
@@ -2044,29 +2625,57 @@ object SpriteBankFactory {
         bankKey: String,
         localDir: File
     ): SpriteSequence? {
+        val bases =
+            listOf(
+                "sprites/banks/" +
+                    session.resolutionHeight +
+                    "p/" +
+                    bankKey,
+                "sprites/" +
+                    bankKey
+            )
+
+        var selectedBase:
+            String? = null
+        var manifestText:
+            String? = null
+
+        for (candidate in bases) {
+            val value =
+                runCatching {
+                    session.context
+                        .assets
+                        .open(
+                            candidate +
+                                "/" +
+                                MANIFEST_FILE
+                        )
+                        .bufferedReader()
+                        .use {
+                            it.readText()
+                        }
+                }.getOrNull()
+
+            if (value != null) {
+                selectedBase =
+                    candidate
+                manifestText =
+                    value
+                break
+            }
+        }
+
         val base =
-            "sprites/" +
-                bankKey
-        val manifestText =
-            runCatching {
-                session.context
-                    .assets
-                    .open(
-                        base +
-                            "/" +
-                            MANIFEST_FILE
-                    )
-                    .bufferedReader()
-                    .use {
-                        it.readText()
-                    }
-            }.getOrNull()
+            selectedBase
+                ?: return null
+        val readyManifestText =
+            manifestText
                 ?: return null
 
         val manifest =
             runCatching {
                 JSONObject(
-                    manifestText
+                    readyManifestText
                 )
             }.getOrNull()
                 ?: return null
@@ -2146,7 +2755,7 @@ object SpriteBankFactory {
                 localDir,
                 MANIFEST_FILE
             ).writeText(
-                manifestText
+                readyManifestText
             )
         } catch (
             error: Throwable
@@ -2872,6 +3481,189 @@ object SpriteBankFactory {
         ).apply {
             mkdirs()
         }
+
+    private fun currentBankKeys(
+        context: Context,
+        resolutionHeight: Int
+    ): Set<String> =
+        SpriteCatalog.entries
+            .map {
+                entry ->
+                val assetSha =
+                    sourceHash(
+                        context,
+                        entry.assetPath
+                    )
+
+                bankKey(
+                    entry.assetPath,
+                    entry.keyColor,
+                    resolutionHeight,
+                    assetSha
+                )
+            }
+            .toSet()
+
+    private fun expectedFrameCount(
+        context: Context,
+        assetPath: String
+    ): Int {
+        synchronized(
+            expectedFrameCountLock
+        ) {
+            expectedFrameCountByAsset[
+                assetPath
+            ]?.let {
+                return it
+            }
+        }
+
+        val retriever =
+            MediaMetadataRetriever()
+
+        val count =
+            try {
+                context.assets
+                    .openFd(
+                        assetPath
+                    )
+                    .use {
+                        afd ->
+                        retriever.setDataSource(
+                            afd.fileDescriptor,
+                            afd.startOffset,
+                            afd.length
+                        )
+                    }
+
+                val durationMs =
+                    retriever
+                        .extractMetadata(
+                            MediaMetadataRetriever
+                                .METADATA_KEY_DURATION
+                        )
+                        ?.toLongOrNull()
+                        ?.coerceAtLeast(1L)
+                        ?: 1L
+
+                max(
+                    1,
+                    (
+                        durationMs *
+                            FPS /
+                            1000L
+                        ).toInt()
+                )
+            } finally {
+                retriever.release()
+            }
+
+        synchronized(
+            expectedFrameCountLock
+        ) {
+            expectedFrameCountByAsset[
+                assetPath
+            ] =
+                count
+        }
+
+        return count
+    }
+
+    private fun partialFrameCount(
+        entry: SpriteCatalogEntry,
+        assetSha: String,
+        resolutionHeight: Int,
+        dir: File
+    ): Int {
+        val building =
+            File(
+                dir,
+                BUILDING_FILE
+            )
+
+        if (!building.isFile) {
+            return 0
+        }
+
+        val json =
+            runCatching {
+                JSONObject(
+                    building.readText()
+                )
+            }.getOrNull()
+                ?: return 0
+
+        if (
+            json.optInt(
+                "formatVersion",
+                -1
+            ) !=
+                FORMAT_VERSION ||
+            json.optString(
+                "generatorVersion"
+            ) !=
+                GENERATOR_VERSION ||
+            json.optString(
+                "assetPath"
+            ) !=
+                entry.assetPath ||
+            json.optString(
+                "assetSha256"
+            ) !=
+                assetSha ||
+            json.optString(
+                "keyColor"
+            ) !=
+                entry.keyColor.name ||
+            json.optInt(
+                "resolutionHeight",
+                -1
+            ) !=
+                resolutionHeight
+        ) {
+            return 0
+        }
+
+        val expected =
+            json.optInt(
+                "frameCount",
+                0
+            )
+        val extension =
+            json.optString(
+                "extension"
+            )
+
+        if (
+            expected <= 0 ||
+            extension.isBlank()
+        ) {
+            return 0
+        }
+
+        var count = 0
+
+        while (count < expected) {
+            val frame =
+                frameFile(
+                    dir,
+                    count,
+                    extension
+                )
+
+            if (
+                !frame.isFile ||
+                frame.length() <= 0L
+            ) {
+                break
+            }
+
+            count += 1
+        }
+
+        return count
+    }
 
     private fun clearDirectory(
         dir: File
