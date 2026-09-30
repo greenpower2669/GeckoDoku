@@ -62,6 +62,9 @@ class MainActivity : Activity() {
     private val exportSpriteBanksRequestCode =
         7403
 
+    private var pendingSpriteBankExportHeight:
+        Int? = null
+
     private lateinit var board:
         GeckoBoardView
 
@@ -4433,7 +4436,156 @@ class MainActivity : Activity() {
         )
     }
 
-    private fun exportSpriteBanks() {
+    private fun showSpriteBankManager() {
+        val summaries =
+            SpriteBankFactory
+                .resolutionBankSummaries(
+                    this
+                )
+
+        val labels =
+            summaries.map {
+                summary ->
+                val state =
+                    when (summary.state) {
+                        SpriteResolutionBankState
+                            .COMPLETE ->
+                            "Complète"
+
+                        SpriteResolutionBankState
+                            .IN_PROGRESS ->
+                            "En cours"
+
+                        SpriteResolutionBankState
+                            .INVALID ->
+                            "Erreur"
+
+                        SpriteResolutionBankState
+                            .EMPTY ->
+                            "Vide"
+                    }
+
+                summary.resolutionHeight
+                    .toString() +
+                    "p — " +
+                    String.format(
+                        Locale.getDefault(),
+                        "%.1f %%",
+                        summary.percentage
+                    ) +
+                    " — " +
+                    formatSpriteBankSize(
+                        summary.sizeBytes
+                    ) +
+                    " — " +
+                    state
+            }.toTypedArray()
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "📦 Banques de sprites"
+            )
+            .setItems(
+                labels
+            ) {
+                    dialog,
+                    which ->
+                dialog.dismiss()
+                showSpriteBankDetails(
+                    summaries[which]
+                )
+            }
+            .setNegativeButton(
+                "Fermer",
+                null
+            )
+            .show()
+    }
+
+    private fun showSpriteBankDetails(
+        summary: SpriteResolutionBankSummary
+    ) {
+        val state =
+            when (summary.state) {
+                SpriteResolutionBankState
+                    .COMPLETE ->
+                    "Complète"
+
+                SpriteResolutionBankState
+                    .IN_PROGRESS ->
+                    "En cours"
+
+                SpriteResolutionBankState
+                    .INVALID ->
+                    "Erreur à vérifier"
+
+                SpriteResolutionBankState
+                    .EMPTY ->
+                    "Vide"
+            }
+
+        val message =
+            "État : " +
+                state +
+                "\nProgression : " +
+                String.format(
+                    Locale.getDefault(),
+                    "%.1f %%",
+                    summary.percentage
+                ) +
+                "\nImages : " +
+                summary.generatedFrames +
+                " / " +
+                summary.expectedFrames +
+                "\nAnimations complètes : " +
+                summary.readyAssets +
+                " / " +
+                summary.expectedAssets +
+                "\nTaille : " +
+                formatSpriteBankSize(
+                    summary.sizeBytes
+                ) +
+                if (
+                    summary.invalidAssets > 0
+                ) {
+                    "\nÉléments invalides : " +
+                        summary.invalidAssets
+                } else {
+                    ""
+                }
+
+        val builder =
+            AlertDialog.Builder(this)
+                .setTitle(
+                    "Banque " +
+                        summary
+                            .resolutionHeight +
+                        "p"
+                )
+                .setMessage(message)
+                .setNegativeButton(
+                    "Fermer",
+                    null
+                )
+
+        if (summary.generatedFrames > 0) {
+            builder.setPositiveButton(
+                "Exporter"
+            ) {
+                    _,
+                    _ ->
+                exportSpriteBank(
+                    summary.resolutionHeight
+                )
+            }
+        }
+
+        builder.show()
+    }
+
+    private fun exportSpriteBank(
+        resolutionHeight: Int
+    ) {
         val stamp =
             SimpleDateFormat(
                 "yyyyMMdd-HHmm",
@@ -4441,6 +4593,9 @@ class MainActivity : Activity() {
             ).format(
                 Date()
             )
+
+        pendingSpriteBankExportHeight =
+            resolutionHeight
 
         val intent =
             Intent(
@@ -4453,7 +4608,9 @@ class MainActivity : Activity() {
                     "application/zip"
                 putExtra(
                     Intent.EXTRA_TITLE,
-                    "GeckoDoku-sprite-banks-" +
+                    "GeckoDoku-sprite-bank-" +
+                        resolutionHeight +
+                        "p-" +
                         stamp +
                         ".zip"
                 )
@@ -4463,6 +4620,28 @@ class MainActivity : Activity() {
             intent,
             exportSpriteBanksRequestCode
         )
+    }
+
+    private fun formatSpriteBankSize(
+        bytes: Long
+    ): String {
+        val mb =
+            bytes.toDouble() /
+                (1024.0 * 1024.0)
+
+        return if (mb < 1.0) {
+            String.format(
+                Locale.getDefault(),
+                "%.0f Ko",
+                bytes / 1024.0
+            )
+        } else {
+            String.format(
+                Locale.getDefault(),
+                "%.1f Mo",
+                mb
+            )
+        }
     }
 
     private fun importUserData() {
@@ -4544,8 +4723,26 @@ class MainActivity : Activity() {
             }
 
             exportSpriteBanksRequestCode -> {
+                val resolutionHeight =
+                    pendingSpriteBankExportHeight
+
+                pendingSpriteBankExportHeight =
+                    null
+
+                if (resolutionHeight == null) {
+                    showDataTransferError(
+                        title =
+                            "Export sprites impossible",
+                        message =
+                            "Résolution de banque absente."
+                    )
+                    return
+                }
+
                 status.text =
-                    "Export des banques sprites en cours…"
+                    "Export banque " +
+                        resolutionHeight +
+                        "p en cours…"
 
                 Thread {
                     try {
@@ -4562,13 +4759,16 @@ class MainActivity : Activity() {
                             SpriteBankExporter
                                 .write(
                                     this,
-                                    it
+                                    it,
+                                    resolutionHeight
                                 )
                         }
 
                         runOnUiThread {
                             status.text =
-                                "Banques sprites exportées 📦"
+                                "Banque " +
+                                    resolutionHeight +
+                                    "p exportée 📦"
                         }
                     } catch (
                         error: Exception
@@ -10425,7 +10625,7 @@ class MainActivity : Activity() {
                         "📥 Importer mes données"
 
                     SettingsEntry.EXPORT_SPRITE_BANKS ->
-                        "🧪 Exporter les banques sprites"
+                        "📦 Banques sprites / export"
 
                     SettingsEntry.SOUND ->
                         if (fx.enabled) {
@@ -10545,7 +10745,7 @@ class MainActivity : Activity() {
 
                     SettingsEntry.EXPORT_SPRITE_BANKS -> {
                         dialog.dismiss()
-                        exportSpriteBanks()
+                        showSpriteBankManager()
                     }
 
                     SettingsEntry.SOUND -> {
