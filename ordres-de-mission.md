@@ -1013,3 +1013,114 @@ LOGS
 
 Version cible : 0.15.32-dev / versionCode 67.
 Aucun merge main ni release/prerelease sans validation explicite Fab.
+
+
+# GECKO-072 — SPRITE BANK FACTORY / CACHE PERSISTANT / QUALITÉ PROGRESSIVE / EXPORT
+
+Date : 2026-09-30
+Statut : implémenté sur branche active ; CI + validation téléphone en cours.
+Version cible : 0.15.33-dev / versionCode 68.
+
+## Contrat
+- STABLE_FRAME reste la priorité absolue et est désormais canonique en 240p, frame 1 de stay1 pour Gecko/Abeille.
+- La Sprite Factory ne couvre que le pipeline réellement SpriteRGBA : catalogue Gecko + Abeille. Prof/Pierre et Plante restent sur leurs backends vidéo actuels ; aucune conversion artificielle.
+- Aucun ordonnanceur global de mascottes n’est ajouté. Le pool/scheduler appartient uniquement à la fabrique de banques.
+- 3 workers maximum.
+- 60p est interne au moteur, jamais ajouté au sélecteur utilisateur.
+- 240p reste le défaut utilisateur et la cible normale du bootstrap.
+- 360p/480p restent on-demand et passent après la préparation essentielle.
+- Aucun merge main ni release/prerelease avant validation explicite Fab.
+
+## Pipeline visible
+Animations ON :
+STABLE_FRAME 240p
+→ banque 60p QUICK_READY
+→ 120p
+→ 240p
+→ résolution utilisateur >240p seulement si demandée.
+
+Le changement de banque conserve le temps logique de l’animation et ne repart pas volontairement de la frame zéro.
+L’upscale basse résolution utilise le filtrage bitmap du rendu ; les fichiers natifs ne sont pas floutés.
+
+## Catalogue canonique SpriteRGBA
+12 assets connus :
+- Gecko : stay1..4, apparition, disparition, action longue ;
+- Abeille : stay1..4, apparition.
+
+Chaque banque est produite en fond pour 60p, 120p, 240p.
+Les demandes hors catalogue journalisent SPRITE_CATALOG_MISS.
+
+## Scheduling
+Priorités de la fabrique :
+1. visible ;
+2. bootstrap visible ;
+3. upgrade visible ;
+4. catalogue 60p ;
+5. catalogue 120p ;
+6. catalogue 240p ;
+7. >240p secondaire.
+
+Chaque job cède après un chunk de 4 frames. Les chunks sont réinsérés dans une PriorityBlockingQueue, ce qui permet à plusieurs assets visibles d’obtenir QUICK_READY avant qu’un seul asset soit entièrement terminé.
+Une demande visible peut promouvoir un job catalogue déjà en attente ; les tâches de priorité précédente deviennent obsolètes via epoch de scheduling.
+Le worker Android tourne en priorité BACKGROUND.
+
+## Cache sûr
+Racine persistante : filesDir/sprite-banks-v2.
+État disque :
+BUILDING → frames .tmp atomiques → digest banque → manifest.tmp → manifest READY.
+Une banque interrompue peut reprendre depuis la suite contiguë de frames si building.json correspond toujours à la source et au générateur.
+Le manifest READY contient notamment :
+assetPath, SHA-256 source, keyColor, résolution, frameCount, FPS, frameDuration, dimensions, format, version générateur, paramètres chroma-key, SHA-256 banque, temps de génération.
+Une banque obsolète/manifest incompatible est INVALID et reconstruite.
+
+## Coalescence
+Une seule BuildSession physique par asset × keycolor × résolution.
+Les callbacks supplémentaires rejoignent la session existante.
+La STABLE_FRAME conserve aussi sa coalescence dédiée.
+
+## Ordre futur APK / local / génération
+Le moteur tente :
+1. assets/sprites/<bankKey>/manifest.json dans l’APK ;
+2. banque persistante locale ;
+3. session de construction déjà active ;
+4. génération MP4.
+
+Une banque embarquée valide est matérialisée dans le stockage persistant une fois afin de conserver le contrat actuel SpriteSequence<File>.
+
+## Export développeur
+Réglages → « 🧪 Exporter les banques sprites ».
+Sortie ZIP :
+- sprites/index.json ;
+- sprites/sprite-factory-report.json ;
+- toutes les banques READY + manifests + frames ;
+- sprites/stable-frames/ ;
+- sprites/export-manifest.json.
+
+Le dossier sprites/ exporté est conçu pour être réintégré ultérieurement sous assets/sprites/.
+
+## Reporting
+Traces principales :
+SPRITE_FACTORY_START
+SPRITE_FACTORY_STABLE_DONE
+SPRITE_BANK_BUILD_START / RESUME / READY
+SPRITE_QUICK_READY
+SPRITE_BANK_MEMORY_HIT / DISK_HIT / APK_HIT
+SPRITE_BANK_COALESCED
+SPRITE_BANK_INVALID
+SPRITE_CATALOG_MISS
+QUALITY_STAGE_REQUEST / QUALITY_STAGE_SWAP
+SPRITE_FACTORY_STAGE_COMPLETE
+SPRITE_FACTORY_FIRST_VISIBLE
+SPRITE_FACTORY_REPORT.
+
+Rapport JSON : progression stable/60/120/240, expected/missing, temps par étage, premier QUICK_READY, première animation visible, temps total, tailles disque, RAM pic, workers peak + temps occupé par worker, FPS UI min/moyen, hits, générations, coalescences, invalides et misses.
+
+## Validation téléphone requise
+- démarrage froid en Abeilles & Geckos ;
+- STABLE_FRAME visible avant toute animation lourde ;
+- 60p QUICK_READY puis 120p puis 240p sans redémarrage apparent de l’animation ;
+- au plus 3 workers ;
+- plusieurs assets visibles obtiennent leurs 4 frames sans attendre qu’un clip de 102/360 frames se termine ;
+- après préparation complète et relance : DISK_HIT/APK_HIT, aucune reconstruction des banques READY ;
+- export ZIP récupérable et exhaustif ;
+- vérifier FPS et absence de jank pendant intro/Pierre/plateau.
