@@ -603,7 +603,7 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] Produire un `bank-manifest.json` par résolution.
 - [x] Rendre le loader APK compatible avec `sprites/banks/<resolution>p/<bankKey>` et l'ancien chemin.
 - [x] Faire suivre au catalogue de fond la chaîne progressive jusqu'à la résolution cible, y compris 480p.
-- [ ] Valider CI Android GECKO-040.
+- [x] Valider CI Android GECKO-040 — run #362 vert (tests + assemblePhone).
 - [ ] Test téléphone : redémarrage avec banques READY, vérifier absence totale de `Required value was null`.
 - [ ] Test téléphone : vérifier pourcentages / tailles / exports 60p, 120p, 240p et 480p.
 
