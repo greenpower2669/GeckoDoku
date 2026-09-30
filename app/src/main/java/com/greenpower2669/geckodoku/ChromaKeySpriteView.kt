@@ -38,6 +38,7 @@ class ChromaKeySpriteView @JvmOverloads constructor(
     private var currentFrame = 0
     private var startedAtMs = 0L
     private var heldFirstFrame = false
+    private var waitingForFullSequence = false
     private var performanceActive = false
     private var completion:
         (() -> Unit)? = null
@@ -98,11 +99,81 @@ class ChromaKeySpriteView @JvmOverloads constructor(
                     yellowTint
         )
 
+        var playbackStarted =
+            false
+
+        fun beginPlayback(
+            sequence: SpriteSequence,
+            quickStart: Boolean
+        ) {
+            if (
+                playbackStarted ||
+                playGeneration !=
+                    generation
+            ) {
+                return
+            }
+
+            playbackStarted = true
+            waitingForFullSequence =
+                quickStart
+            currentSequence =
+                sequence
+            currentFrame = 0
+            startedAtMs =
+                SystemClock
+                    .uptimeMillis()
+
+            performanceActive =
+                true
+            AnimationPerformanceMonitor
+                .spriteStarted(
+                    logicalLayer,
+                    assetPath
+                )
+
+            if (quickStart) {
+                MediaTrace.event(
+                    source = traceSource(),
+                    event =
+                        "QUICK_START",
+                    assetPath =
+                        assetPath,
+                    detail =
+                        "frames=" +
+                            sequence
+                                .frames
+                                .size +
+                            " resolution=" +
+                            resolution.label
+                )
+            }
+
+            onStarted()
+
+            renderFrame(
+                firstFrameCallback =
+                    onFirstFrameRendered
+            )
+        }
+
         SpriteFrameCache.prepare(
             context = context,
             assetPath = assetPath,
             keyColor = keyColor,
-            resolution = resolution
+            resolution = resolution,
+            onQuickReady = { partial ->
+                if (
+                    playGeneration ==
+                        generation &&
+                    !playbackStarted
+                ) {
+                    beginPlayback(
+                        sequence = partial,
+                        quickStart = true
+                    )
+                }
+            }
         ) { result ->
             if (
                 playGeneration !=
@@ -113,27 +184,34 @@ class ChromaKeySpriteView @JvmOverloads constructor(
 
             result.fold(
                 onSuccess = { sequence ->
-                    currentSequence =
-                        sequence
-                    currentFrame = 0
-                    startedAtMs =
-                        SystemClock
-                            .uptimeMillis()
-
-                    performanceActive =
-                        true
-                    AnimationPerformanceMonitor
-                        .spriteStarted(
-                            logicalLayer,
-                            assetPath
+                    if (!playbackStarted) {
+                        beginPlayback(
+                            sequence = sequence,
+                            quickStart = false
                         )
+                    } else {
+                        currentSequence =
+                            sequence
+                        waitingForFullSequence =
+                            false
 
-                    onStarted()
-
-                    renderFrame(
-                        firstFrameCallback =
-                            onFirstFrameRendered
-                    )
+                        MediaTrace.event(
+                            source =
+                                traceSource(),
+                            event =
+                                "FULL_SEQUENCE_READY",
+                            assetPath =
+                                assetPath,
+                            detail =
+                                "frames=" +
+                                    sequence
+                                        .frames
+                                        .size +
+                                    " resolution=" +
+                                    resolution
+                                        .label
+                        )
+                    }
                 },
                 onFailure = { throwable ->
                     fail(
@@ -157,7 +235,13 @@ class ChromaKeySpriteView @JvmOverloads constructor(
             currentFrame >=
                 sequence.frames.size
         ) {
-            finishPlayback()
+            if (waitingForFullSequence) {
+                loopPartialSequence(
+                    sequence
+                )
+            } else {
+                finishPlayback()
+            }
             return
         }
 
@@ -206,11 +290,31 @@ class ChromaKeySpriteView @JvmOverloads constructor(
             currentFrame >=
                 sequence.frames.size
         ) {
-            finishPlayback()
+            if (waitingForFullSequence) {
+                loopPartialSequence(
+                    sequence
+                )
+            } else {
+                finishPlayback()
+            }
             return
         }
 
         scheduleNextFrame(sequence)
+    }
+
+    private fun loopPartialSequence(
+        sequence: SpriteSequence
+    ) {
+        currentFrame = 0
+        startedAtMs =
+            SystemClock
+                .uptimeMillis()
+
+        handler.postDelayed(
+            frameRunnable,
+            sequence.frameDurationMs
+        )
     }
 
     private fun scheduleNextFrame(
@@ -307,6 +411,7 @@ class ChromaKeySpriteView @JvmOverloads constructor(
         currentSequence = null
         currentFrame = 0
         heldFirstFrame = false
+        waitingForFullSequence = false
         completion = null
         error = null
         setImageBitmap(null)
@@ -332,6 +437,7 @@ class ChromaKeySpriteView @JvmOverloads constructor(
 
         performanceActive = false
         currentSequence = null
+        waitingForFullSequence = false
         completion = null
         error = null
         callback?.invoke()
