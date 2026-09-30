@@ -496,7 +496,9 @@ object SpriteBankFactory {
         }
 
         sessionToBoost?.let {
-            enqueueSession(it)
+            if (stableBarrierReady) {
+                enqueueSession(it)
+            }
         }
 
         newSession?.let {
