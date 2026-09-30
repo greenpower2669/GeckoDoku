@@ -195,6 +195,11 @@ object AnimationPerformanceMonitor :
                 0.0
             }
 
+        SpriteBankFactory
+            .recordUiFps(
+                uiFps
+            )
+
         val spriteFrames =
             spriteFrameCount.get()
 
