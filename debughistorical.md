@@ -624,3 +624,12 @@ Le pipeline GitHub Actions #314 a terminé SUCCESS sur 522802e5712ee5005850a0335
 Mesure téléphone 240p : le rendu est propre et les banques chaudes finissent correctement, mais BEE n'est visible qu'après construction complète de ses 24 frames. Le backend SpriteRGBA lui-même n'est pas lent à l'affichage ; l'attente vient du contrat de SpriteFrameCache.prepare(), qui ne rendait la séquence qu'après le manifest final.
 
 Correction : publication d'un préfixe de 4 frames dès qu'elles sont écrites, démarrage immédiat du renderer, boucle temporaire locale de ce préfixe puis remplacement par la séquence complète. Ce chemin est générique Gecko/Abeille et ne change ni AliveAnimator, ni gameplay, ni règles de sélection.
+
+
+## 2026-09-30 — GECKO-071 / placeholder statique
+
+Le test 0.15.31-dev confirme que QUICK_START fonctionne techniquement : abeille stay1 produit 4/24 frames puis démarre, et les FPS restent ~116–119 une fois le build lancé. Le délai perceptible vient toutefois du temps avant que la construction d'un asset soit servie dans la file.
+
+GECKO-071 ne transforme pas ce délai en faux lecteur : il supprime la zone vide / le saut PNG en donnant immédiatement à chaque Gecko/Abeille une image statique canonique extraite de stay1 frame 1. Cette extraction utilise un worker et un cache indépendants du build complet. La présence statique ne déclenche aucun SPRITE_ACTIVE.
+
+Le PNG historique reste intact et n'est utilisé que quand les animations sont volontairement désactivées. La plante reste sur son chemin historique.
