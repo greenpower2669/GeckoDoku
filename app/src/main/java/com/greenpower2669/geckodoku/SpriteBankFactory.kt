@@ -199,6 +199,11 @@ object SpriteBankFactory {
         val extension: String
     )
 
+    private data class EmbeddedBankEntry(
+        val bankKey: String,
+        val assetSha256: String
+    )
+
     private data class BuildSession(
         val context: Context,
         val requestKey: String,
@@ -2075,19 +2080,31 @@ object SpriteBankFactory {
     private fun initializeSession(
         session: BuildSession
     ): SessionInitializationResult {
-        val assetSha =
-            sourceHash(
-                session.context,
-                session.assetPath
+        val embedded =
+            embeddedBankEntry(
+                context = session.context,
+                assetPath = session.assetPath,
+                resolutionHeight =
+                    session.resolutionHeight
             )
 
+        val assetSha =
+            embedded
+                ?.assetSha256
+                ?: sourceHash(
+                    session.context,
+                    session.assetPath
+                )
+
         val bankKey =
-            bankKey(
-                session.assetPath,
-                session.keyColor,
-                session.resolutionHeight,
-                assetSha
-            )
+            embedded
+                ?.bankKey
+                ?: bankKey(
+                    session.assetPath,
+                    session.keyColor,
+                    session.resolutionHeight,
+                    assetSha
+                )
 
         val dir =
             File(
@@ -3042,6 +3059,64 @@ object SpriteBankFactory {
         )
     }
 
+    private fun embeddedBankEntry(
+        context: Context,
+        assetPath: String,
+        resolutionHeight: Int
+    ): EmbeddedBankEntry? {
+        val index =
+            runCatching {
+                JSONObject(
+                    context.assets
+                        .open("sprites/index.json")
+                        .bufferedReader()
+                        .use {
+                            it.readText()
+                        }
+                )
+            }.getOrNull()
+                ?: return null
+
+        val banks =
+            index.optJSONArray("banks")
+                ?: return null
+
+        for (indexValue in 0 until banks.length()) {
+            val bank =
+                banks.optJSONObject(indexValue)
+                    ?: continue
+
+            if (
+                bank.optString("asset") ==
+                    assetPath &&
+                bank.optInt(
+                    "resolution",
+                    -1
+                ) ==
+                    resolutionHeight
+            ) {
+                val key =
+                    bank.optString("bankKey")
+                val sha =
+                    bank.optString(
+                        "assetSha256"
+                    )
+
+                if (
+                    key.isNotBlank() &&
+                    sha.isNotBlank()
+                ) {
+                    return EmbeddedBankEntry(
+                        bankKey = key,
+                        assetSha256 = sha
+                    )
+                }
+            }
+        }
+
+        return null
+    }
+
     private fun validManifest(
         session: BuildSession,
         json: JSONObject
@@ -3758,6 +3833,8 @@ object SpriteBankFactory {
     ) {
         val obsoleteHeights =
             setOf(
+                60,
+                120,
                 180,
                 360,
                 480
