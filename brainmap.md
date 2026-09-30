@@ -1021,3 +1021,24 @@ initializeSession() → READY | BUILD_REQUIRED
 → aucune tâche stale ne peut relancer requireNotNull(metadata)
 → erreurs de métriques post-completion = warning non fatal.
 
+## GECKO-041 — Sprite banks canonical set
+
+Banques canoniques :
+60p → 120p → 240p STOP
+
+`SpriteResolution`
+→ 120p / 240p seulement côté utilisateur
+
+`SpriteProgressivePolicy`
+→ cible 120 : 60 > 120
+→ cible 240 : 60 > 120 > 240
+→ aucune résolution secondaire >240
+
+`SpriteBankFactory`
+→ prune anciens dossiers *-180, *-360, *-480
+→ exportBankHeights = [60,120,240]
+→ préparation export max 240p
+
+Archive historique 480p :
+GitHub Release `PackageSprites`, conservée hors pipeline actif.
+
