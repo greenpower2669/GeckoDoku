@@ -9,8 +9,15 @@ object GomokuLivingSelectionPolicy {
         stones: Map<Cell, GomokuPlayer>,
         previous: Set<Cell>,
         redistribute: Boolean,
-        randomValue: Int
+        randomValue: Int,
+        limitPerTeam: Boolean = true
     ): LinkedHashSet<Cell> {
+        if (!limitPerTeam) {
+            return LinkedHashSet(
+                stones.keys
+            )
+        }
+
         val selected =
             linkedSetOf<Cell>()
 

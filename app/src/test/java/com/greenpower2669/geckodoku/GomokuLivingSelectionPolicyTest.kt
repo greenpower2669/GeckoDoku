@@ -47,6 +47,37 @@ class GomokuLivingSelectionPolicyTest {
     }
 
     @Test
+    fun noLimitSelectsEveryStoneForPerformanceTest() {
+        val stones =
+            linkedMapOf<Cell, GomokuPlayer>().apply {
+                repeat(12) {
+                    put(
+                        Cell(0, it),
+                        GomokuPlayer.PLAYER
+                    )
+                    put(
+                        Cell(1, it),
+                        GomokuPlayer.PROFESSOR
+                    )
+                }
+            }
+
+        val selected =
+            GomokuLivingSelectionPolicy.select(
+                stones = stones,
+                previous = emptySet(),
+                redistribute = true,
+                randomValue = 12,
+                limitPerTeam = false
+            )
+
+        assertEquals(
+            stones.keys,
+            selected
+        )
+    }
+
+    @Test
     fun keepsSelectionStableBetweenGrandCycles() {
         val stones =
             (0 until 8)

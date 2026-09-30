@@ -855,3 +855,14 @@ Version test : 0.15.28-dev / versionCode 63.
 
 ### GECKO-067 — build final
 CI #312 / run 36643601567 SUCCESS sur 075160c5bd45157d7c818e2e996e1518554efe95. APK Phone 0.15.28-dev produit, 248574081 octets, SHA-256 296240aa14d866f101ac921887ca30c46c1eebbde946d2f7dc5797ae70d1ce79. Archive artifact SHA-256 2633430128a4fcd465bea4a559770ec3810d0f305c20eddafe30ced7b74585ae. Aucune release/prerelease. Validation téléphone keycolor/jaune/clipping requise.
+
+
+## GECKO-068 — Sprites RGBA expérimentaux pour Gomoku / Abeilles (2026-09-30)
+
+- Remplacement expérimental du backend TextureView des mascottes de plateau par un backend SpriteRGBA.
+- Les MP4 restent les sources maîtres. Un cache hors écran extrait 12 images/s, applique le chroma-key bleu/vert et stocke des frames RGBA transparentes.
+- Le filtre jaune du Prof reste dynamique au rendu : aucun doublon de sprites jaunes.
+- Résolution réglable : 240p / 360p / 480p, défaut 480p.
+- Limite Gomoku 3 animations par camp désormais optionnelle et désactivée par défaut pour le test de charge.
+- Journal performance toutes les ~5 s : FPS UI, moyenne/max frame UI, animations sprite actives, pic simultané, coût moyen de décodage frame, mémoire bitmap sprite et mémoire JVM.
+- Le cache 480p est volontairement un test de qualité/performance ; surveiller taille cache, mémoire et temps de préchauffage avant toute généralisation.

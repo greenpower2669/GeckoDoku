@@ -15,6 +15,8 @@ enum class SettingsEntry {
     IMPORT_DATA,
     SOUND,
     ANIMATIONS,
+    SPRITE_RESOLUTION,
+    GOMOKU_ANIMATION_LIMIT,
     MEDIA_LOG
 }
 
@@ -61,10 +63,25 @@ class SettingsMenuPolicy {
                     SettingsEntry.IMPORT_DATA,
                     SettingsEntry.SOUND,
                     SettingsEntry.ANIMATIONS,
+                    SettingsEntry.SPRITE_RESOLUTION,
                     SettingsEntry.MEDIA_LOG
                 )
 
-            GameMode.SUDOKU,
+            GameMode.SUDOKU ->
+                listOf(
+                    SettingsEntry.GAME_MODE,
+                    SettingsEntry.DIFFICULTY,
+                    SettingsEntry.STATS,
+                    SettingsEntry.PLAYER_NAME,
+                    SettingsEntry.HALL_OF_FAME,
+                    SettingsEntry.CLEAR_HISTORY,
+                    SettingsEntry.EXPORT_DATA,
+                    SettingsEntry.IMPORT_DATA,
+                    SettingsEntry.SOUND,
+                    SettingsEntry.ANIMATIONS,
+                    SettingsEntry.MEDIA_LOG
+                )
+
             GameMode.GOMOKU ->
                 listOf(
                     SettingsEntry.GAME_MODE,
@@ -77,6 +94,8 @@ class SettingsMenuPolicy {
                     SettingsEntry.IMPORT_DATA,
                     SettingsEntry.SOUND,
                     SettingsEntry.ANIMATIONS,
+                    SettingsEntry.SPRITE_RESOLUTION,
+                    SettingsEntry.GOMOKU_ANIMATION_LIMIT,
                     SettingsEntry.MEDIA_LOG
                 )
         }

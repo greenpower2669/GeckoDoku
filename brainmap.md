@@ -852,3 +852,8 @@ PLAY alpha=0
 Portée : bee:* + gomoku:* seulement.
 
 GECKO-067 -> CI #312 SUCCESS -> APK 0.15.28-dev -> téléphone : ChromaTextureGL@... + keycolor stable + yellowTint stable + clip identique PNG/vidéo -> aucune release.
+
+
+## GECKO-068
+MP4 480p @ 12 fps -> SpriteFrameCache -> chroma-key RGBA -> ChromaKeySpriteView -> AliveMascotOverlayView.
+Options: résolution 240/360/480 (480 défaut), limite 3/camp OFF défaut. PerfMonitor mesure activeAnimations/peakAnimations + FPS/mémoire.

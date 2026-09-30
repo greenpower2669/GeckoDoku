@@ -408,6 +408,7 @@ class MainActivity : Activity() {
         )
 
         MediaTrace.install(this)
+        AnimationPerformanceMonitor.start()
 
         AudioCapturePolicy
             .applyApplicationPolicy(
@@ -422,6 +423,13 @@ class MainActivity : Activity() {
 
         richMediaSettings =
             RichMediaSettings(this)
+
+        SpriteFrameCache.prewarmGecko(
+            context = this,
+            resolution =
+                richMediaSettings
+                    .spriteResolution
+        )
 
         introPhase =
             if (
@@ -7566,7 +7574,10 @@ class MainActivity : Activity() {
                             redistribute =
                                 gomokuLivingRedistributionRequested,
                             randomValue =
-                                Random.nextInt()
+                                Random.nextInt(),
+                            limitPerTeam =
+                                richMediaSettings
+                                    .limitGomokuAnimationsPerTeam
                         )
 
                 gomokuLivingCells.clear()
@@ -7593,7 +7604,14 @@ class MainActivity : Activity() {
                                     GomokuPlayer.PROFESSOR
                             } +
                             " total=" +
-                            selectedCells.size
+                            selectedCells.size +
+                            " limit3PerTeam=" +
+                            richMediaSettings
+                                .limitGomokuAnimationsPerTeam +
+                            " spriteResolution=" +
+                            richMediaSettings
+                                .spriteResolution
+                                .label
                 )
 
                 val owners =
@@ -10339,6 +10357,22 @@ class MainActivity : Activity() {
                             "🎬 Animations : OFF"
                         }
 
+                    SettingsEntry.SPRITE_RESOLUTION ->
+                        "🧩 Sprites : " +
+                            richMediaSettings
+                                .spriteResolution
+                                .label
+
+                    SettingsEntry.GOMOKU_ANIMATION_LIMIT ->
+                        if (
+                            richMediaSettings
+                                .limitGomokuAnimationsPerTeam
+                        ) {
+                            "🦎 Limite animations : 3 par camp"
+                        } else {
+                            "🦎 Limite animations : aucune (test perf)"
+                        }
+
                     SettingsEntry.MEDIA_LOG ->
                         "📋 Journal vidéo"
                 }
@@ -10437,6 +10471,17 @@ class MainActivity : Activity() {
                         showSettings()
                     }
 
+                    SettingsEntry.SPRITE_RESOLUTION -> {
+                        dialog.dismiss()
+                        showSpriteResolutionChooser()
+                    }
+
+                    SettingsEntry.GOMOKU_ANIMATION_LIMIT -> {
+                        toggleGomokuAnimationLimit()
+                        dialog.dismiss()
+                        showSettings()
+                    }
+
                     SettingsEntry.MEDIA_LOG -> {
                         dialog.dismiss()
                         showMediaLog()
@@ -10448,6 +10493,104 @@ class MainActivity : Activity() {
                 null
             )
             .show()
+    }
+
+    private fun showSpriteResolutionChooser() {
+        val values =
+            SpriteResolution.values()
+
+        val labels =
+            values.map {
+                it.label
+            }.toTypedArray()
+
+        val selectedIndex =
+            values.indexOf(
+                richMediaSettings
+                    .spriteResolution
+            )
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "🧩 Résolution des sprites"
+            )
+            .setSingleChoiceItems(
+                labels,
+                selectedIndex
+            ) {
+                    dialog,
+                    which ->
+
+                val selected =
+                    values[which]
+
+                richMediaSettings
+                    .spriteResolution =
+                    selected
+
+                SpriteFrameCache
+                    .prewarmGecko(
+                        context = this,
+                        resolution =
+                            selected
+                    )
+
+                if (
+                    selectedGameMode ==
+                        GameMode.GOMOKU ||
+                    selectedGameMode ==
+                        GameMode.BEES_GECKOS
+                ) {
+                    aliveMascotOverlay
+                        .stopBoardMascots()
+                    gomokuLivingCells
+                        .clear()
+                    gomokuLivingRedistributionRequested =
+                        true
+                    syncLivingMascotsForCurrentMode()
+                }
+
+                status.text =
+                    "Sprites " +
+                        selected.label +
+                        " sélectionnés."
+
+                dialog.dismiss()
+                showSettings()
+            }
+            .setNegativeButton(
+                "Annuler",
+                null
+            )
+            .show()
+    }
+
+    private fun toggleGomokuAnimationLimit() {
+        richMediaSettings
+            .limitGomokuAnimationsPerTeam =
+            !richMediaSettings
+                .limitGomokuAnimationsPerTeam
+
+        gomokuLivingCells.clear()
+        gomokuLivingRedistributionRequested =
+            true
+
+        if (
+            selectedGameMode ==
+                GameMode.GOMOKU
+        ) {
+            syncLivingMascotsForCurrentMode()
+        }
+
+        status.text =
+            if (
+                richMediaSettings
+                    .limitGomokuAnimationsPerTeam
+            ) {
+                "Limite 3 animations par camp activée."
+            } else {
+                "Limite retirée : test performances actif."
+            }
     }
 
     private fun showMediaLog() {
@@ -12594,6 +12737,7 @@ class MainActivity : Activity() {
         }
 
         fx.release()
+        AnimationPerformanceMonitor.stop()
         super.onDestroy()
     }
 

@@ -278,6 +278,12 @@ class AliveMascotOverlayView @JvmOverloads constructor(
     private fun createVideoBackend(
         ownerKey: String
     ): VideoBackend {
+        val useSprite =
+            AliveVideoBackendPolicy
+                .useSpritePlayback(
+                    ownerKey
+                )
+
         val useTexture =
             AliveVideoBackendPolicy
                 .useTextureView(
@@ -288,34 +294,50 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                 )
 
         val backend =
-            if (
+            when {
+                useSprite -> {
+                    val view =
+                        ChromaKeySpriteView(
+                            context
+                        )
+
+                    VideoBackend(
+                        view = view,
+                        playback = view,
+                        name =
+                            "SpriteRGBA"
+                    )
+                }
+
                 useTexture &&
-                Build.VERSION.SDK_INT >=
-                Build.VERSION_CODES.TIRAMISU
-            ) {
-                val view =
-                    ChromaKeyTextureView(
-                        context
-                    )
+                    Build.VERSION.SDK_INT >=
+                        Build.VERSION_CODES.TIRAMISU -> {
+                    val view =
+                        ChromaKeyTextureView(
+                            context
+                        )
 
-                VideoBackend(
-                    view = view,
-                    playback = view,
-                    name =
-                        "TextureView"
-                )
-            } else {
-                val view =
-                    ChromaKeyVideoView(
-                        context
+                    VideoBackend(
+                        view = view,
+                        playback = view,
+                        name =
+                            "TextureView"
                     )
+                }
 
-                VideoBackend(
-                    view = view,
-                    playback = view,
-                    name =
-                        "GLSurfaceView"
-                )
+                else -> {
+                    val view =
+                        ChromaKeyVideoView(
+                            context
+                        )
+
+                    VideoBackend(
+                        view = view,
+                        playback = view,
+                        name =
+                            "GLSurfaceView"
+                    )
+                }
             }
 
         MediaTrace.event(

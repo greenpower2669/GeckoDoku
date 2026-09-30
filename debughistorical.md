@@ -590,3 +590,7 @@ CI #311 a validé compilation/tests de cette nouvelle architecture avant bump ve
 
 ## GECKO-067 — CI #312 VERTE
 Run 36643601567 SUCCESS sur 075160c5bd45157d7c818e2e996e1518554efe95. APK 0.15.28-dev : 248574081 octets, SHA-256 296240aa14d866f101ac921887ca30c46c1eebbde946d2f7dc5797ae70d1ce79. Archive artifact SHA-256 2633430128a4fcd465bea4a559770ec3810d0f305c20eddafe30ced7b74585ae. Les étapes de publication ont été skipped. Test téléphone attendu : sources ChromaTextureGL, keycolor stable, jaune Gomoku stable et aucun débordement vidéo hors clip.
+
+
+## 2026-09-30 — GECKO-068
+Hypothèse testée : les multiples TextureView+OpenGL de Gomoku provoquent les retards/absences de VIDEO_FIRST_FRAME. Nouveau chemin expérimental SpriteRGBA afin de supprimer les surfaces vidéo simultanées. Instrumentation ajoutée pour corréler FPS, mémoire et nombre d'animations simultanées. Ne pas conclure avant test téléphone.

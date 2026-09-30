@@ -6,6 +6,30 @@ import org.junit.Test
 
 class AliveVideoBackendPolicyTest {
     @Test
+    fun exploratoryBoardsPreferSpritePlayback() {
+        assertTrue(
+            AliveVideoBackendPolicy
+                .useSpritePlayback(
+                    "gomoku:10:11"
+                )
+        )
+
+        assertTrue(
+            AliveVideoBackendPolicy
+                .useSpritePlayback(
+                    "bee:GECKO:1:-1"
+                )
+        )
+
+        assertFalse(
+            AliveVideoBackendPolicy
+                .useSpritePlayback(
+                    "classic:4:4"
+                )
+        )
+    }
+
+    @Test
     fun boardModesUseTextureViewOnModernAndroid() {
         assertTrue(
             AliveVideoBackendPolicy

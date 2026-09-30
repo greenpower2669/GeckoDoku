@@ -28,6 +28,16 @@ interface ChromaKeyPlayback {
 }
 
 object AliveVideoBackendPolicy {
+    fun useSpritePlayback(
+        ownerKey: String
+    ): Boolean =
+        ownerKey.startsWith(
+            "bee:"
+        ) ||
+            ownerKey.startsWith(
+                "gomoku:"
+            )
+
     fun useTextureView(
         ownerKey: String,
         sdkInt: Int

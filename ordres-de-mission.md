@@ -916,3 +916,16 @@ INTERDIT
 Version cible : 0.15.28-dev / versionCode 63.
 
 État GECKO-067 : CI #312 verte ; APK 0.15.28-dev produit ; SHA-256 APK 296240aa14d866f101ac921887ca30c46c1eebbde946d2f7dc5797ae70d1ce79 ; validation téléphone requise ; aucune release/prerelease ni merge main.
+
+
+# GECKO-068 — TEST SPRITES RGBA / PERFORMANCE
+
+STATUT : implémentation expérimentale, à valider sur téléphone.
+
+OBJECTIFS :
+1. Produire hors écran des sprites RGBA à 12 i/s depuis les MP4, chroma-key inclus.
+2. Conserver le filtre jaune du Prof dynamique.
+3. Ajouter 240p/360p/480p dans les réglages, 480p par défaut.
+4. Rendre la limite 3 animations par camp optionnelle, OFF par défaut.
+5. Mesurer FPS UI, temps de frame, mémoire, nombre d'animations simultanées et pic.
+6. Ne pas fusionner main ni publier de release avant validation téléphone.

@@ -467,3 +467,14 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] SHA-256 APK : 296240aa14d866f101ac921887ca30c46c1eebbde946d2f7dc5797ae70d1ce79 ;
 - [x] SHA-256 archive : 2633430128a4fcd465bea4a559770ec3810d0f305c20eddafe30ced7b74585ae ;
 - [x] release/prerelease : non déclenchées.
+
+
+## GECKO-068 — TODO validation téléphone
+- [ ] Vérifier génération du cache SpriteRGBA en 480p.
+- [ ] Vérifier disparition complète du fond bleu/vert.
+- [ ] Vérifier filtre jaune Prof sur sprites transparents.
+- [ ] Tester Gomoku avec limite 3/camp OFF et relever activeAnimations / peakAnimations.
+- [ ] Comparer FPS UI et mémoire en 240p, 360p, 480p.
+- [ ] Vérifier qu'aucun petit PNG parasite ne réapparaît entre deux clips.
+- [ ] Décider après mesures si le cache doit rester runtime ou être pré-généré en CI.
+- [ ] Aucun merge main / aucune release avant validation Fab.
