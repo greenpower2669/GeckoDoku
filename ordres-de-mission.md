@@ -1159,3 +1159,15 @@ Le loader APK doit reconnaître cette structure tout en conservant la compatibil
 
 Après un hit disque ou APK validé, la session est terminée. Le worker doit sortir immédiatement et ne jamais tenter d'accéder à `session.metadata` pour lancer une génération inutile.
 
+## ADDENDUM GECKO-040B — EXPORT GLOBAL OBLIGATOIREMENT COMPLET
+
+Quand Fab choisit l'export global des banques sprites :
+1. ne pas exporter immédiatement une banque incomplète ;
+2. terminer/résumer toutes les banques canoniques 60p, 120p, 240p et 480p ;
+3. afficher une barre de progression réelle basée sur les frames générées / attendues ;
+4. conserver les banques déjà présentes et reprendre les partielles ;
+5. seulement à 100 %, ouvrir le choix de destination et écrire un ZIP global ;
+6. le ZIP global contient les quatre répertoires `sprites/banks/<resolution>p/` avec leurs manifests.
+
+Le rechargement d'une banque READY depuis DISK/APK est terminal : aucune génération ni validation de metadata ne doit continuer après le hit.
+
