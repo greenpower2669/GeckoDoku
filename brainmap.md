@@ -857,3 +857,18 @@ GECKO-067 -> CI #312 SUCCESS -> APK 0.15.28-dev -> téléphone : ChromaTextureGL
 ## GECKO-068
 MP4 480p @ 12 fps -> SpriteFrameCache -> chroma-key RGBA -> ChromaKeySpriteView -> AliveMascotOverlayView.
 Options: résolution 240/360/480 (480 défaut), limite 3/camp OFF défaut. PerfMonitor mesure activeAnimations/peakAnimations + FPS/mémoire.
+
+
+## GECKO-069 — carte cache chaud SpriteRGBA
+
+MainActivity
+→ PREWARM_ARMED (4 s au lancement ; 2,5 s résolution/reprise)
+→ SpriteFrameCache.prewarmLivingCore()
+→ SpriteWarmupPolicy
+→ 3 rôles logiques = Gecko vert + Gecko jaune + Abeille
+→ 2 banques physiques = GECKO_SHARED + BEE
+→ jaune = même frame Gecko + ColorMatrix dynamique
+→ pin asynchrone (max 16 MiB/rôle)
+→ warmup secondaire = seulement stay2/stay3/stay4 Gecko/Abeille, un par un
+→ apparition/disparition/CUTE = on-demand
+→ aucun changement AliveAnimator / aucune coordination globale des mascottes.

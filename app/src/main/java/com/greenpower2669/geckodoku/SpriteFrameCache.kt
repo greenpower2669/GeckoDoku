@@ -27,10 +27,24 @@ object SpriteFrameCache {
     private const val FPS = 12
     private const val FRAME_DURATION_MS = 1000L / FPS
     private const val CACHE_VERSION = "rgba-v1"
+    private const val HOT_PIN_BUDGET_PER_ROLE_BYTES =
+        16 * 1024 * 1024
+    private const val BACKGROUND_IDLE_DELAY_MS =
+        1_500L
 
     private val worker = Executors.newSingleThreadExecutor()
+    private val pinWorker = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
     private val lock = Any()
+    private val hotPinLock = Any()
+
+    private var hotPinnedResolutionHeight = -1
+
+    private val hotPinnedBitmaps =
+        linkedMapOf<
+            SpriteWarmRole,
+            List<Bitmap>
+        >()
 
     private val pending =
         mutableMapOf<
@@ -68,47 +82,297 @@ object SpriteFrameCache {
         return decoded
     }
 
-    fun prewarmGecko(
+    fun prewarmLivingCore(
         context: Context,
         resolution: SpriteResolution
     ) {
-        val profile = MascotAnimationProfiles.gecko
+        val appContext =
+            context.applicationContext
+        val plan =
+            SpriteWarmupPolicy.plan()
 
-        val assets =
-            buildList {
-                profile.appearanceAsset?.let(::add)
-                profile.disappearanceAsset?.let(::add)
-                addAll(profile.idleAssets)
-                addAll(profile.cuteAssets)
-            }.distinct()
+        resetHotPinsFor(
+            resolution
+        )
 
         MediaTrace.event(
             source = "SpriteFrameCache",
             event = "PREWARM_REQUEST",
             detail =
-                "assets=" + assets.size +
+                "hotPhysicalBanks=" +
+                    plan.hot.size +
+                    " logicalSlots=3" +
+                    " yellow=shared-gecko" +
+                    " backgroundIdle=" +
+                    plan.backgroundIdle.size +
                     " resolution=" +
                     resolution.label
         )
 
-        assets.forEach { asset ->
+        var remainingHot =
+            plan.hot.size
+
+        fun hotFinished() {
+            remainingHot -= 1
+
+            if (remainingHot <= 0) {
+                prewarmBackgroundIdle(
+                    context = appContext,
+                    resolution = resolution,
+                    assets =
+                        plan.backgroundIdle,
+                    index = 0
+                )
+            }
+        }
+
+        plan.hot.forEach { asset ->
             prepare(
-                context = context,
-                assetPath = asset,
-                keyColor = profile.keyColor,
+                context = appContext,
+                assetPath = asset.assetPath,
+                keyColor = asset.keyColor,
                 resolution = resolution
             ) { result ->
-                result.exceptionOrNull()?.let { error ->
-                    MediaTrace.event(
-                        source = "SpriteFrameCache",
-                        event = "PREWARM_ERROR",
-                        assetPath = asset,
-                        detail =
-                            "error=" +
-                                error.javaClass.simpleName
+                result.fold(
+                    onSuccess = { sequence ->
+                        pinHotBankAsync(
+                            role = asset.role,
+                            sequence = sequence,
+                            resolution =
+                                resolution
+                        )
+                    },
+                    onFailure = { error ->
+                        MediaTrace.event(
+                            source =
+                                "SpriteFrameCache",
+                            event =
+                                "PREWARM_ERROR",
+                            assetPath =
+                                asset.assetPath,
+                            detail =
+                                "role=" +
+                                    asset.role +
+                                    " error=" +
+                                    error.javaClass
+                                        .simpleName
+                        )
+                    }
+                )
+
+                hotFinished()
+            }
+        }
+    }
+
+    fun prewarmGecko(
+        context: Context,
+        resolution: SpriteResolution
+    ) {
+        // Compatibility entry point. The old eager seven-asset
+        // warmup is intentionally replaced by the living-core plan.
+        prewarmLivingCore(
+            context = context,
+            resolution = resolution
+        )
+    }
+
+    private fun prewarmBackgroundIdle(
+        context: Context,
+        resolution: SpriteResolution,
+        assets: List<SpriteWarmAsset>,
+        index: Int
+    ) {
+        if (index >= assets.size) {
+            MediaTrace.event(
+                source = "SpriteFrameCache",
+                event = "PREWARM_IDLE_DONE",
+                detail =
+                    "assets=" +
+                        assets.size +
+                        " resolution=" +
+                        resolution.label
+            )
+            return
+        }
+
+        val currentResolution =
+            RichMediaSettings
+                .spriteResolutionFor(
+                    context
+                )
+
+        if (currentResolution != resolution) {
+            MediaTrace.event(
+                source = "SpriteFrameCache",
+                event =
+                    "PREWARM_ABORT_RESOLUTION_CHANGED",
+                detail =
+                    "expected=" +
+                        resolution.label +
+                        " actual=" +
+                        currentResolution.label
+            )
+            return
+        }
+
+        val asset =
+            assets[index]
+
+        mainHandler.postDelayed(
+            {
+                prepare(
+                    context = context,
+                    assetPath =
+                        asset.assetPath,
+                    keyColor =
+                        asset.keyColor,
+                    resolution =
+                        resolution
+                ) { result ->
+                    result.exceptionOrNull()
+                        ?.let { error ->
+                            MediaTrace.event(
+                                source =
+                                    "SpriteFrameCache",
+                                event =
+                                    "PREWARM_ERROR",
+                                assetPath =
+                                    asset.assetPath,
+                                detail =
+                                    "role=" +
+                                        asset.role +
+                                        " error=" +
+                                        error.javaClass
+                                            .simpleName
+                            )
+                        }
+
+                    prewarmBackgroundIdle(
+                        context = context,
+                        resolution =
+                            resolution,
+                        assets = assets,
+                        index = index + 1
                     )
                 }
+            },
+            BACKGROUND_IDLE_DELAY_MS
+        )
+    }
+
+    private fun resetHotPinsFor(
+        resolution: SpriteResolution
+    ) {
+        synchronized(hotPinLock) {
+            if (
+                hotPinnedResolutionHeight ==
+                    resolution.heightPx
+            ) {
+                return
             }
+
+            hotPinnedBitmaps.clear()
+            hotPinnedResolutionHeight =
+                resolution.heightPx
+
+            MediaTrace.event(
+                source = "SpriteFrameCache",
+                event = "HOT_BANK_RESET",
+                detail =
+                    "resolution=" +
+                        resolution.label
+            )
+        }
+    }
+
+    private fun pinHotBankAsync(
+        role: SpriteWarmRole,
+        sequence: SpriteSequence,
+        resolution: SpriteResolution
+    ) {
+        pinWorker.execute {
+            val stillCurrent =
+                synchronized(hotPinLock) {
+                    hotPinnedResolutionHeight ==
+                        resolution.heightPx
+                }
+
+            if (!stillCurrent) {
+                return@execute
+            }
+
+            var bytes = 0
+            val pinned =
+                mutableListOf<Bitmap>()
+
+            for (file in sequence.frames) {
+                val bitmap =
+                    bitmapFor(file)
+                        ?: continue
+
+                val nextBytes =
+                    bytes +
+                        bitmap.allocationByteCount
+
+                if (
+                    nextBytes >
+                        HOT_PIN_BUDGET_PER_ROLE_BYTES
+                ) {
+                    break
+                }
+
+                pinned.add(bitmap)
+                bytes = nextBytes
+            }
+
+            val accepted =
+                synchronized(hotPinLock) {
+                    if (
+                        hotPinnedResolutionHeight ==
+                            resolution.heightPx
+                    ) {
+                        hotPinnedBitmaps[role] =
+                            pinned.toList()
+                        true
+                    } else {
+                        false
+                    }
+                }
+
+            if (!accepted) {
+                return@execute
+            }
+
+            MediaTrace.event(
+                source = "SpriteFrameCache",
+                event = "HOT_BANK_PINNED",
+                detail =
+                    "role=" +
+                        role +
+                        " frames=" +
+                        pinned.size +
+                        "/" +
+                        sequence.frames.size +
+                        " resolution=" +
+                        resolution.label +
+                        " memMb=" +
+                        String.format(
+                            java.util.Locale.US,
+                            "%.2f",
+                            bytes /
+                                (1024f * 1024f)
+                        ) +
+                        if (
+                            role ==
+                                SpriteWarmRole
+                                    .GECKO_SHARED
+                        ) {
+                            " yellow=shared"
+                        } else {
+                            ""
+                        }
+            )
         }
     }
 

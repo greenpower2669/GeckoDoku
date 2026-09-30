@@ -478,3 +478,21 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] Vérifier qu'aucun petit PNG parasite ne réapparaît entre deux clips.
 - [ ] Décider après mesures si le cache doit rester runtime ou être pré-généré en CI.
 - [ ] Aucun merge main / aucune release avant validation Fab.
+
+
+## GECKO-069 — cache chaud SpriteRGBA
+- [x] remplacer le préwarm eager Gecko 7 assets par un plan vivant ciblé ;
+- [x] conserver 3 rôles logiques mais seulement 2 banques physiques (Gecko vert+jaune partagés, Abeille) ;
+- [x] conserver le filtre jaune au rendu, sans seconde copie RGBA ;
+- [x] épingler les frames chaudes hors thread UI, plafond 16 MiB par rôle ;
+- [x] différer le warmup après les premières demandes visibles ;
+- [x] compléter progressivement uniquement les autres clips IDLE Gecko/Abeille ;
+- [x] retirer apparition/disparition/Gecko_actions_plusieurs du préwarm de démarrage ;
+- [x] ajouter tests de politique de warmup ;
+- [x] version 0.15.30-dev / versionCode 65 ;
+- [ ] CI tests + assemblePhone verte ;
+- [ ] téléphone : confirmer HOT_BANK_PINNED GECKO_SHARED + BEE en 240p ;
+- [ ] téléphone : confirmer que jaune partage la banque Gecko et reste visuellement correct ;
+- [ ] téléphone : vérifier qu'un CUTE construit Gecko_actions_plusieurs uniquement à la première vraie demande ;
+- [ ] téléphone : comparer temps de chauffe et FPS au démarrage avec 0.15.29-dev ;
+- [ ] aucune prerelease/release ni merge main avant validation explicite Fab.

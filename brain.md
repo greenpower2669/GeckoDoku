@@ -866,3 +866,17 @@ CI #312 / run 36643601567 SUCCESS sur 075160c5bd45157d7c818e2e996e1518554efe95. 
 - Limite Gomoku 3 animations par camp désormais optionnelle et désactivée par défaut pour le test de charge.
 - Journal performance toutes les ~5 s : FPS UI, moyenne/max frame UI, animations sprite actives, pic simultané, coût moyen de décodage frame, mémoire bitmap sprite et mémoire JVM.
 - Le cache 480p est volontairement un test de qualité/performance ; surveiller taille cache, mémoire et temps de préchauffage avant toute généralisation.
+
+
+## 2026-09-30 — GECKO-069 : banques SpriteRGBA chaudes
+
+Architecture retenue après test 240p :
+- les Presence restent totalement autonomes ; aucun ordonnanceur de mascottes n'est réintroduit ;
+- SpriteFrameCache possède deux banques physiques chaudes : GECKO_SHARED et BEE ;
+- GECKO_SHARED sert à la fois le vert et le jaune ; le jaune continue d'être appliqué dynamiquement par ColorMatrix, donc zéro duplication des frames ;
+- les bitmaps des banques chaudes sont gardés par références fortes dans une limite de 16 MiB par rôle, en plus du LRU existant ;
+- le warmup n'est plus lancé avant la construction de l'UI : il est armé après 4 s (2,5 s après changement de résolution / retour d'application), afin que les demandes réellement visibles puissent entrer d'abord ;
+- une fois les deux banques chaudes prêtes, les autres stay Gecko/Abeille sont produits un par un avec temporisation ;
+- les clips apparition/disparition et surtout Gecko_actions_plusieurs.mp4 (360 frames) sont désormais strictement on-demand et ne font plus partie du préwarm de démarrage.
+
+Indicateurs téléphone attendus : HOT_BANK_PINNED role=GECKO_SHARED/BEE, yellow=shared, absence de SPRITE_BUILD_START Gecko_actions_plusieurs sans demande CUTE, et maintien des FPS lors du remplissage progressif.

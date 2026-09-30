@@ -929,3 +929,27 @@ OBJECTIFS :
 4. Rendre la limite 3 animations par camp optionnelle, OFF par défaut.
 5. Mesurer FPS UI, temps de frame, mémoire, nombre d'animations simultanées et pic.
 6. Ne pas fusionner main ni publier de release avant validation téléphone.
+
+
+# GECKO-069 — CACHE CHAUD SPRITERGBA SANS NOUVEL ORDONNANCEUR
+
+STATUT : implémentation autorisée par Fab le 2026-09-30, validation téléphone requise.
+
+## Décision
+
+Optimiser la création/lecture des sprites à partir du constat téléphone : 240p est visuellement suffisant et la lecture simultanée est fluide ; le coût principal reste la fabrication initiale des banques.
+
+Contrat :
+- conserver trois rôles logiques chauds : Gecko vert, Gecko jaune et Abeille ;
+- Gecko vert + Gecko jaune partagent physiquement la même banque RGBA ; le jaune reste un filtre ColorMatrix au dessin ;
+- conserver une banque Gecko et une banque Abeille épinglées en mémoire, sans créer de lecteurs/mascottes cachés ;
+- différer le warmup après les premières demandes visibles afin que le jeu réel passe avant le chauffage du cache ;
+- remplir ensuite progressivement uniquement les autres clips IDLE Gecko/Abeille ;
+- ne plus préchauffer au démarrage apparition/disparition ni Gecko_actions_plusieurs.mp4 ;
+- aucune modification d'AliveAnimator, aucune réintroduction d'ordonnanceur de mascottes, aucun pool de lecteurs vidéo ;
+- changement de résolution invalide seulement les pins chauds de l'ancienne résolution ;
+- journaliser PREWARM_ARMED / PREWARM_REQUEST / HOT_BANK_PINNED / PREWARM_IDLE_DONE.
+
+Version test : 0.15.30-dev / versionCode 65.
+
+Aucun merge main, aucune prerelease/release avant validation téléphone Fab.

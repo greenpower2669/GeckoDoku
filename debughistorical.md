@@ -594,3 +594,22 @@ Run 36643601567 SUCCESS sur 075160c5bd45157d7c818e2e996e1518554efe95. APK 0.15.2
 
 ## 2026-09-30 — GECKO-068
 Hypothèse testée : les multiples TextureView+OpenGL de Gomoku provoquent les retards/absences de VIDEO_FIRST_FRAME. Nouveau chemin expérimental SpriteRGBA afin de supprimer les surfaces vidéo simultanées. Instrumentation ajoutée pour corréler FPS, mémoire et nombre d'animations simultanées. Ne pas conclure avant test téléphone.
+
+
+## 2026-09-30 — GECKO-069 / diagnostic warmup SpriteRGBA
+
+Mesures téléphone fournies par Fab :
+- à 240p, 6 à 8 sprites simultanés restent autour de 114–119 FPS UI ;
+- spriteAvgDecodeMs tombe typiquement sous 0,3 ms une fois les banques produites ;
+- spriteMemMb observé ~53,83 MiB sur la séquence test ;
+- le goulet est la fabrication initiale : MediaMetadataRetriever construit encore les frames une à une ;
+- le préwarm 0.15.29-dev lançait 7 assets Gecko et finissait par Gecko_actions_plusieurs.mp4 (360 frames), avec de très longues périodes de construction alors qu'aucune animation visible ne le demandait.
+
+Correctif GECKO-069 :
+- supprimer le préwarm eager avant UI ;
+- chauffer plus tard deux banques physiques seulement (Gecko partagé vert/jaune + Abeille) ;
+- garder leurs bitmaps chauds par références fortes plafonnées ;
+- compléter ensuite uniquement les IDLE ;
+- exclure les gros clips CUTE et transitions du préwarm.
+
+Ce correctif optimise la politique de cache, pas le solveur, le gameplay ni l'ordonnancement Alive local.

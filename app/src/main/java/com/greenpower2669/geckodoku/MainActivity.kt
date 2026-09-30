@@ -362,6 +362,17 @@ class MainActivity : Activity() {
             runProfessorIdleAnimation()
         }
 
+    private val spriteWarmupRunnable =
+        Runnable {
+            SpriteFrameCache
+                .prewarmLivingCore(
+                    context = this,
+                    resolution =
+                        richMediaSettings
+                            .spriteResolution
+                )
+        }
+
     private var selectedSize = 5
 
     @Volatile
@@ -423,13 +434,6 @@ class MainActivity : Activity() {
 
         richMediaSettings =
             RichMediaSettings(this)
-
-        SpriteFrameCache.prewarmGecko(
-            context = this,
-            resolution =
-                richMediaSettings
-                    .spriteResolution
-        )
 
         introPhase =
             if (
@@ -1761,6 +1765,8 @@ class MainActivity : Activity() {
         setContentView(
             screenRoot
         )
+
+        scheduleSpriteWarmup()
 
         screenRoot.post {
             ensurePlantMascot()
@@ -10495,6 +10501,42 @@ class MainActivity : Activity() {
             .show()
     }
 
+    private fun scheduleSpriteWarmup(
+        delayMs: Long = 4_000L
+    ) {
+        if (!::screenRoot.isInitialized) {
+            return
+        }
+
+        screenRoot.removeCallbacks(
+            spriteWarmupRunnable
+        )
+        screenRoot.postDelayed(
+            spriteWarmupRunnable,
+            delayMs
+        )
+
+        MediaTrace.event(
+            source = "SpriteFrameCache",
+            event = "PREWARM_ARMED",
+            detail =
+                "delayMs=" +
+                    delayMs +
+                    " resolution=" +
+                    richMediaSettings
+                        .spriteResolution
+                        .label
+        )
+    }
+
+    private fun cancelSpriteWarmup() {
+        if (::screenRoot.isInitialized) {
+            screenRoot.removeCallbacks(
+                spriteWarmupRunnable
+            )
+        }
+    }
+
     private fun showSpriteResolutionChooser() {
         val values =
             SpriteResolution.values()
@@ -10528,13 +10570,6 @@ class MainActivity : Activity() {
                     .spriteResolution =
                     selected
 
-                SpriteFrameCache
-                    .prewarmGecko(
-                        context = this,
-                        resolution =
-                            selected
-                    )
-
                 if (
                     selectedGameMode ==
                         GameMode.GOMOKU ||
@@ -10549,6 +10584,10 @@ class MainActivity : Activity() {
                         true
                     syncLivingMascotsForCurrentMode()
                 }
+
+                scheduleSpriteWarmup(
+                    delayMs = 2_500L
+                )
 
                 status.text =
                     "Sprites " +
@@ -12595,8 +12634,11 @@ class MainActivity : Activity() {
         val now =
             SystemClock.elapsedRealtime()
 
+        val returningFromPause =
+            professorPausedAtMs > 0L
+
         val awayMs =
-            if (professorPausedAtMs > 0L) {
+            if (returningFromPause) {
                 now - professorPausedAtMs
             } else {
                 0L
@@ -12641,6 +12683,12 @@ class MainActivity : Activity() {
                 ensurePlantMascot()
                 syncLivingMascotsForCurrentMode()
             }
+
+            if (returningFromPause) {
+                scheduleSpriteWarmup(
+                    delayMs = 2_500L
+                )
+            }
         }
     }
 
@@ -12663,6 +12711,7 @@ class MainActivity : Activity() {
 
         cancelProfessorIdleAnimation()
         cancelProfessorAmbientTick()
+        cancelSpriteWarmup()
         stopTitleIdentityAnimation()
         stopProfessorButtonVideo()
 
@@ -12709,6 +12758,7 @@ class MainActivity : Activity() {
 
         cancelProfessorIdleAnimation()
         cancelProfessorAmbientTick()
+        cancelSpriteWarmup()
         stopTitleIdentityAnimation()
         stopProfessorButtonVideo()
 
