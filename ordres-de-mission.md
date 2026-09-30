@@ -976,3 +976,40 @@ CONTRAT
 - Aucun merge main ni release/prerelease sans validation explicite Fab.
 
 Version cible : 0.15.31-dev / versionCode 66.
+
+
+# GECKO-071 — STABLE_FRAME issue de stay1/frame 1
+
+STATUT : GO Fab, implémenté ; validation CI et téléphone requise.
+
+OBJECTIF
+Supprimer le petit saut visuel PNG historique → animation et rendre Gecko/Abeille visibles immédiatement pendant la préparation SpriteRGBA.
+
+CONTRAT CANONIQUE
+- GECKO_STABLE_FRAME = frame 1 de gecko/alive/stay1.mp4 uniquement.
+- BEE_STABLE_FRAME = frame 1 de abeille/alive/stay1.mp4 uniquement.
+- Gecko jaune = exactement la même STABLE_FRAME Gecko physique, avec le tint jaune existant au rendu.
+- Ne jamais chercher la STABLE_FRAME dans stay2/stay3/stay4, apparition ou disparition.
+- La STABLE_FRAME est un Bitmap statique simple : aucune boucle, playhead, timer, lecteur vidéo ou instance SpriteRGBA active.
+- Animations ON : STABLE_FRAME → SpriteRGBA dès QUICK_READY/first frame.
+- Animations OFF : PNG historique.
+- Conserver intégralement les PNG historiques, leur chargement et les structures existantes.
+- La plante est hors mission ; Pierre, gameplay, probabilités idle, apparition/disparition restent inchangés.
+- Résolutions restent 120p/180p/240p/360p/480p ; 240p reste le défaut neuf.
+
+CACHE
+- extraction indépendante d'une seule frame à t=0 depuis stay1 ;
+- même scaling et même chroma-key que SpriteFrameCache ;
+- cache mémoire + cache disque léger ;
+- si frame-00000 SpriteRGBA existe déjà, elle peut être réutilisée directement ;
+- aucun build de séquence complète n'est nécessaire pour obtenir la STABLE_FRAME.
+
+LOGS
+- STABLE_FRAME_REQUEST
+- STABLE_FRAME_READY
+- STABLE_FRAME_SHOW
+- STABLE_FRAME_TO_SPRITE
+- LEGACY_PNG_SHOW reason=ANIMATIONS_DISABLED
+
+Version cible : 0.15.32-dev / versionCode 67.
+Aucun merge main ni release/prerelease sans validation explicite Fab.
