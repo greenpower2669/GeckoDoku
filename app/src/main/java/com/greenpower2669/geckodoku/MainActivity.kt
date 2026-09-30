@@ -24,11 +24,13 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import android.widget.ProgressBar
 import android.widget.ScrollView
 import android.widget.TextView
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.random.Random
 
 class MainActivity : Activity() {
@@ -64,6 +66,9 @@ class MainActivity : Activity() {
 
     private var pendingSpriteBankExportHeight:
         Int? = null
+
+    private var pendingSpriteBankExportAll =
+        false
 
     private lateinit var board:
         GeckoBoardView
@@ -4495,6 +4500,13 @@ class MainActivity : Activity() {
                     summaries[which]
                 )
             }
+            .setPositiveButton(
+                "Tout préparer + exporter"
+            ) {
+                    _,
+                    _ ->
+                prepareAndExportAllSpriteBanks()
+            }
             .setNegativeButton(
                 "Fermer",
                 null
@@ -4581,6 +4593,244 @@ class MainActivity : Activity() {
         }
 
         builder.show()
+    }
+
+    private fun prepareAndExportAllSpriteBanks() {
+        val progressBar =
+            ProgressBar(
+                this,
+                null,
+                android.R.attr
+                    .progressBarStyleHorizontal
+            ).apply {
+                max = 1000
+                progress = 0
+            }
+
+        val progressText =
+            TextView(this).apply {
+                textSize = 17f
+                setPadding(
+                    0,
+                    dp(10),
+                    0,
+                    0
+                )
+                text =
+                    "Préparation des banques 60p → 120p → 240p → 480p…"
+            }
+
+        val detailText =
+            TextView(this).apply {
+                textSize = 15f
+                setPadding(
+                    0,
+                    dp(8),
+                    0,
+                    0
+                )
+            }
+
+        val container =
+            LinearLayout(this).apply {
+                orientation =
+                    LinearLayout.VERTICAL
+                setPadding(
+                    dp(24),
+                    dp(16),
+                    dp(24),
+                    dp(8)
+                )
+                addView(
+                    progressBar,
+                    LinearLayout.LayoutParams(
+                        LinearLayout
+                            .LayoutParams
+                            .MATCH_PARENT,
+                        dp(18)
+                    )
+                )
+                addView(progressText)
+                addView(detailText)
+            }
+
+        val dialog =
+            AlertDialog.Builder(this)
+                .setTitle(
+                    "📦 Préparation export 480p"
+                )
+                .setMessage(
+                    "GeckoDoku termine toutes les banques avant de créer le ZIP."
+                )
+                .setView(container)
+                .setNegativeButton(
+                    "Masquer",
+                    null
+                )
+                .create()
+
+        dialog.show()
+
+        val finished =
+            AtomicBoolean(false)
+
+        fun applyProgress(
+            progress:
+                SpriteExportPreparationProgress
+        ) {
+            progressBar.progress =
+                (
+                    progress.percentage *
+                        10.0
+                    )
+                    .toInt()
+                    .coerceIn(
+                        0,
+                        1000
+                    )
+
+            progressText.text =
+                String.format(
+                    Locale.getDefault(),
+                    "%.1f %% • %d / %d banques",
+                    progress.percentage,
+                    progress.completeBanks,
+                    progress.totalBanks
+                )
+
+            detailText.text =
+                "Résolution en cours : " +
+                    progress
+                        .currentResolutionHeight +
+                    "p\nImages : " +
+                    progress.generatedFrames +
+                    " / " +
+                    progress.expectedFrames
+        }
+
+        Thread {
+            while (!finished.get()) {
+                val progress =
+                    runCatching {
+                        SpriteBankFactory
+                            .exportPreparationProgress(
+                                this
+                            )
+                    }.getOrNull()
+
+                if (progress != null) {
+                    runOnUiThread {
+                        applyProgress(
+                            progress
+                        )
+                    }
+                }
+
+                try {
+                    Thread.sleep(
+                        750L
+                    )
+                } catch (
+                    _: InterruptedException
+                ) {
+                    break
+                }
+            }
+        }.start()
+
+        status.text =
+            "Préparation des banques jusqu'à 480p…"
+
+        SpriteBankFactory
+            .prepareExportThrough480(
+                this
+            ) {
+                result ->
+                finished.set(true)
+
+                if (result.isSuccess) {
+                    val finalProgress =
+                        runCatching {
+                            SpriteBankFactory
+                                .exportPreparationProgress(
+                                    this
+                                )
+                        }.getOrNull()
+
+                    if (finalProgress != null) {
+                        applyProgress(
+                            finalProgress
+                        )
+                    }
+
+                    progressBar.progress =
+                        progressBar.max
+                    progressText.text =
+                        "100 % • banques prêtes jusqu'à 480p"
+                    detailText.text =
+                        "Création du ZIP…"
+
+                    if (dialog.isShowing) {
+                        dialog.dismiss()
+                    }
+
+                    status.text =
+                        "Banques 60p/120p/240p/480p prêtes. Choisis où enregistrer le ZIP."
+
+                    exportAllSpriteBanks()
+                } else {
+                    if (dialog.isShowing) {
+                        dialog.dismiss()
+                    }
+
+                    showDataTransferError(
+                        title =
+                            "Préparation sprites incomplète",
+                        message =
+                            result
+                                .exceptionOrNull()
+                                ?.message
+                                ?: "Une banque n'a pas pu être terminée."
+                    )
+                }
+            }
+    }
+
+    private fun exportAllSpriteBanks() {
+        val stamp =
+            SimpleDateFormat(
+                "yyyyMMdd-HHmm",
+                Locale.getDefault()
+            ).format(
+                Date()
+            )
+
+        pendingSpriteBankExportHeight =
+            null
+        pendingSpriteBankExportAll =
+            true
+
+        val intent =
+            Intent(
+                Intent.ACTION_CREATE_DOCUMENT
+            ).apply {
+                addCategory(
+                    Intent.CATEGORY_OPENABLE
+                )
+                type =
+                    "application/zip"
+                putExtra(
+                    Intent.EXTRA_TITLE,
+                    "GeckoDoku-sprite-banks-60-120-240-480-" +
+                        stamp +
+                        ".zip"
+                )
+            }
+
+        startActivityForResult(
+            intent,
+            exportSpriteBanksRequestCode
+        )
     }
 
     private fun exportSpriteBank(
@@ -4723,26 +4973,38 @@ class MainActivity : Activity() {
             }
 
             exportSpriteBanksRequestCode -> {
+                val exportAll =
+                    pendingSpriteBankExportAll
                 val resolutionHeight =
                     pendingSpriteBankExportHeight
 
+                pendingSpriteBankExportAll =
+                    false
                 pendingSpriteBankExportHeight =
                     null
 
-                if (resolutionHeight == null) {
+                if (
+                    !exportAll &&
+                    resolutionHeight ==
+                        null
+                ) {
                     showDataTransferError(
                         title =
                             "Export sprites impossible",
                         message =
-                            "Résolution de banque absente."
+                            "Banque à exporter absente."
                     )
                     return
                 }
 
                 status.text =
-                    "Export banque " +
-                        resolutionHeight +
-                        "p en cours…"
+                    if (exportAll) {
+                        "Export complet 60p/120p/240p/480p en cours…"
+                    } else {
+                        "Export banque " +
+                            resolutionHeight +
+                            "p en cours…"
+                    }
 
                 Thread {
                     try {
@@ -4756,19 +5018,33 @@ class MainActivity : Activity() {
                                 )
 
                         output.use {
-                            SpriteBankExporter
-                                .write(
-                                    this,
-                                    it,
-                                    resolutionHeight
-                                )
+                            if (exportAll) {
+                                SpriteBankExporter
+                                    .write(
+                                        this,
+                                        it
+                                    )
+                            } else {
+                                SpriteBankExporter
+                                    .write(
+                                        this,
+                                        it,
+                                        requireNotNull(
+                                            resolutionHeight
+                                        )
+                                    )
+                            }
                         }
 
                         runOnUiThread {
                             status.text =
-                                "Banque " +
-                                    resolutionHeight +
-                                    "p exportée 📦"
+                                if (exportAll) {
+                                    "Banques 60p/120p/240p/480p exportées 📦"
+                                } else {
+                                    "Banque " +
+                                        resolutionHeight +
+                                        "p exportée 📦"
+                                }
                         }
                     } catch (
                         error: Exception
