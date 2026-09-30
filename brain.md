@@ -911,3 +911,24 @@ Implémentation :
 - la fabrication continue sur le worker existant ; les MP4 restent les sources maîtres.
 
 Version test : 0.15.31-dev / versionCode 66.
+
+
+## 2026-09-30 — GECKO-071 : STABLE_FRAME canonique
+
+Décision Fab : quand les animations sont actives, ne plus utiliser le PNG historique comme placeholder Gecko/Abeille. Utiliser une image statique réellement issue de l'animation :
+- Gecko : frame 1 de gecko/alive/stay1.mp4 ;
+- Abeille : frame 1 de abeille/alive/stay1.mp4 ;
+- Gecko jaune : même Bitmap Gecko, tint jaune dynamique.
+
+Implémentation :
+- StableFramePolicy définit uniquement ces deux sources canoniques ; PLANT retourne null ;
+- SpriteFrameCache.requestStableFrame() extrait une seule frame à t=0 avec exactement le scaling/chroma-key SpriteRGBA ;
+- cache mémoire + disque stable-frames/ ; réutilisation possible de sprites/<key>/frame-00000 ;
+- AliveMascotOverlayView masque le PNG historique en mode animations ON, demande la STABLE_FRAME puis l'affiche comme ImageView simple ;
+- aucune animation n'est comptée active tant que seule cette image est affichée ;
+- au premier frame rendu par le backend animé, STABLE_FRAME_TO_SPRITE masque l'image ;
+- entre deux clips, la STABLE_FRAME revient ;
+- animations OFF restaure explicitement le PNG historique et journalise LEGACY_PNG_SHOW ;
+- changement de résolution invalide seulement la référence locale de chaque Presence et redemande la frame de la nouvelle résolution.
+
+Version : 0.15.32-dev / 67.
