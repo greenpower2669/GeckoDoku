@@ -888,3 +888,26 @@ CI #314 : SUCCESS (tests unitaires + assemblePhone).
 Artifact : GeckoDoku-v0.15.30-dev-phone.
 Digest archive artifact : sha256:3245421691fdc4857ee7d1dee1978cb9ff198a2d21380fbece526630b6ca795b.
 Aucune publication ; prochaine étape = test téléphone 240p du warmup chaud.
+
+
+## 2026-09-30 — GECKO-070 : quick-start SpriteRGBA + résolutions basses
+
+Retour téléphone 0.15.30-dev :
+- le rendu 240p est visuellement propre ;
+- le cache chaud est bien épinglé : GECKO_SHARED 61/61 (~13,40 MiB) et BEE 24/24 (~5,27 MiB) ;
+- le jaune continue de partager physiquement la banque Gecko ;
+- le coût restant perceptible concerne surtout la première construction, notamment l'Abeille avant sa première animation.
+
+Décision Fab :
+- ajouter 120p et 180p sous 240p ; conserver 360p et 480p ;
+- 240p devient la résolution par défaut pour une configuration neuve ;
+- ne plus attendre la banque complète avant de démarrer une animation SpriteRGBA.
+
+Implémentation :
+- SpriteFrameCache publie un préfixe dès 4 frames RGBA prêtes (SPRITE_QUICK_READY) ;
+- ChromaKeySpriteView démarre immédiatement sur ce préfixe (QUICK_START) ;
+- si les 4 frames sont consommées avant la fin de fabrication, elles bouclent localement sans recréer la Presence ;
+- quand la banque complète arrive, le renderer bascule sur la séquence complète (FULL_SEQUENCE_READY) sans second lecteur vidéo ni nouvel ordonnanceur ;
+- la fabrication continue sur le worker existant ; les MP4 restent les sources maîtres.
+
+Version test : 0.15.31-dev / versionCode 66.
