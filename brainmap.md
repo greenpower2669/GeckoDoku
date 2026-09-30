@@ -896,3 +896,30 @@ MP4 source
 
 Résolutions : 120p / 180p / 240p / 360p / 480p.
 Défaut neuf : 240p.
+
+
+## GECKO-071 — chemin visuel statique/animé
+
+Animations ON
+→ StableFramePolicy
+→ stay1 / frame 1 uniquement
+→ requestStableFrame()
+→ cache mémoire HIT
+   ou cache disque HIT
+   ou sprite frame-00000 HIT
+   ou extraction unique MISS
+→ ImageView simple STABLE_FRAME
+→ QUICK_READY / première frame animée
+→ STABLE_FRAME_TO_SPRITE
+→ SpriteRGBA / backend animé.
+
+Animations OFF
+→ PNG historique
+→ LEGACY_PNG_SHOW.
+
+Partage :
+GECKO_STABLE_FRAME
+├─ Gecko vert
+└─ Gecko jaune + tint
+BEE_STABLE_FRAME
+└─ Abeille.
