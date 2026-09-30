@@ -653,7 +653,7 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] STABLE_FRAME depuis la banque 240p embarquée.
 - [x] Supprimer les 12 MP4 Gecko/Abeille remplacés par sprites.
 - [x] Conserver Plante, Pierre/Prof et intros en vidéo.
-- [ ] CI verte sur 0.15.38-dev.
+- [x] CI #395 verte sur 0.15.38-dev ; artifact phone produit.
 - [ ] Test téléphone : aucun QUALITY_STAGE_REQUEST 60p/120p, uniquement 240p.
 - [ ] Test téléphone : MEMORY_HIT 240p après warmup, aucune génération MP4.
 - [ ] Test téléphone : Classic, Sudoku, Gomoku, Abeilles & Geckos sans régression visuelle.
