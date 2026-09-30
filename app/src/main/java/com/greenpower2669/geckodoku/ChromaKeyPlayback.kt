@@ -36,6 +36,12 @@ object AliveVideoBackendPolicy {
         ) ||
             ownerKey.startsWith(
                 "gomoku:"
+            ) ||
+            ownerKey.startsWith(
+                "classic:"
+            ) ||
+            ownerKey.startsWith(
+                "sudoku:"
             )
 
     fun useTextureView(
