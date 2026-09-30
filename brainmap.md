@@ -923,3 +923,60 @@ GECKO_STABLE_FRAME
 └─ Gecko jaune + tint
 BEE_STABLE_FRAME
 └─ Abeille.
+
+
+## GECKO-072 — Sprite Bank Factory
+
+BOOT
+→ STABLE_FRAME Gecko stay1/frame1 @240p
+→ STABLE_FRAME Abeille stay1/frame1 @240p
+→ stable barrier OPEN
+→ SpriteCatalog (12 assets Gecko/Abeille)
+
+VISIBLE REQUEST
+→ catalog check
+→ MEMORY HIT ?
+→ coalesce session ?
+→ APK HIT ?
+→ DISK HIT ?
+→ BUILDING resume ?
+→ generation MP4
+
+GENERATION
+→ PriorityBlockingQueue
+→ max 3 workers
+→ 4 frames/chunk
+→ QUICK_READY
+→ requeue
+→ READY manifest atomique.
+
+QUALITY
+60p internal
+→ 120p
+→ 240p normal
+→ 360/480 only on demand.
+
+Playback swap
+→ logicalStartedAtMs conservé
+→ frame équivalente calculée
+→ qualité change, AliveAnimator ne redémarre pas.
+
+Storage
+filesDir/sprite-banks-v2/<bankKey>/
+├─ building.json pendant génération
+├─ frame-xxxxx.webp/png
+└─ manifest.json READY + sourceSha256 + bankSha256.
+
+APK future
+assets/sprites/<bankKey>/
+→ APK HIT
+→ materialisation locale
+→ lecture.
+
+Developer export
+Réglages
+→ GeckoDoku-sprite-banks-*.zip
+→ sprites/index.json
+→ sprites/sprite-factory-report.json
+→ banques READY
+→ stable-frames.
