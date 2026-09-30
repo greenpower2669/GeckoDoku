@@ -31,6 +31,9 @@ object SpriteFrameCache {
         16 * 1024 * 1024
     private const val BACKGROUND_IDLE_DELAY_MS =
         1_500L
+    private const val QUICK_START_FRAMES = 4
+    private const val BUILDING_MANIFEST =
+        "building.txt"
 
     private val worker = Executors.newSingleThreadExecutor()
     private val pinWorker = Executors.newSingleThreadExecutor()
@@ -50,6 +53,12 @@ object SpriteFrameCache {
         mutableMapOf<
             String,
             MutableList<(Result<SpriteSequence>) -> Unit>
+        >()
+
+    private val pendingQuickStart =
+        mutableMapOf<
+            String,
+            MutableList<(SpriteSequence) -> Unit>
         >()
 
     private val bitmapCache =
@@ -381,6 +390,8 @@ object SpriteFrameCache {
         assetPath: String,
         keyColor: ChromaKeyColor,
         resolution: SpriteResolution,
+        onQuickReady:
+            ((SpriteSequence) -> Unit)? = null,
         callback: (Result<SpriteSequence>) -> Unit
     ) {
         val appContext = context.applicationContext
@@ -404,9 +415,33 @@ object SpriteFrameCache {
             return
         }
 
+        var quickAlreadyDelivered = false
+
+        if (onQuickReady != null) {
+            readBuildingSequence(dir)
+                ?.let { partial ->
+                    quickAlreadyDelivered = true
+
+                    mainHandler.post {
+                        onQuickReady(partial)
+                    }
+                }
+        }
+
         var shouldBuild = false
 
         synchronized(lock) {
+            if (
+                !quickAlreadyDelivered &&
+                onQuickReady != null
+            ) {
+                pendingQuickStart
+                    .getOrPut(key) {
+                        mutableListOf()
+                    }
+                    .add(onQuickReady)
+            }
+
             val callbacks = pending[key]
 
             if (callbacks != null) {
@@ -428,12 +463,33 @@ object SpriteFrameCache {
                         assetPath = assetPath,
                         keyColor = keyColor,
                         resolution = resolution,
-                        dir = dir
+                        dir = dir,
+                        onQuickReady = { partial ->
+                            val quickCallbacks =
+                                synchronized(lock) {
+                                    pendingQuickStart
+                                        .remove(key)
+                                        .orEmpty()
+                                }
+
+                            if (
+                                quickCallbacks
+                                    .isNotEmpty()
+                            ) {
+                                mainHandler.post {
+                                    quickCallbacks
+                                        .forEach {
+                                            it(partial)
+                                        }
+                                }
+                            }
+                        }
                     )
                 }
 
             val callbacks =
                 synchronized(lock) {
+                    pendingQuickStart.remove(key)
                     pending.remove(key).orEmpty()
                 }
 
@@ -450,7 +506,9 @@ object SpriteFrameCache {
         assetPath: String,
         keyColor: ChromaKeyColor,
         resolution: SpriteResolution,
-        dir: File
+        dir: File,
+        onQuickReady:
+            (SpriteSequence) -> Unit
     ): SpriteSequence {
         dir.mkdirs()
         dir.listFiles()?.forEach { it.delete() }
@@ -540,6 +598,24 @@ object SpriteFrameCache {
                     "png"
                 }
 
+            val buildingManifest =
+                File(
+                    dir,
+                    BUILDING_MANIFEST
+                )
+
+            buildingManifest.writeText(
+                requestedFrames.toString() +
+                    "|" +
+                    FRAME_DURATION_MS +
+                    "|" +
+                    targetWidth +
+                    "|" +
+                    targetHeight +
+                    "|" +
+                    extension
+            )
+
             val frames =
                 mutableListOf<File>()
 
@@ -607,6 +683,45 @@ object SpriteFrameCache {
                 transparent.recycle()
                 frames.add(frameFile)
 
+                val quickThreshold =
+                    min(
+                        QUICK_START_FRAMES,
+                        requestedFrames
+                    )
+
+                if (
+                    frames.size ==
+                        quickThreshold
+                ) {
+                    val partial =
+                        SpriteSequence(
+                            frames =
+                                frames.toList(),
+                            frameDurationMs =
+                                FRAME_DURATION_MS,
+                            width = targetWidth,
+                            height = targetHeight
+                        )
+
+                    MediaTrace.event(
+                        source =
+                            "SpriteFrameCache",
+                        event =
+                            "SPRITE_QUICK_READY",
+                        assetPath =
+                            assetPath,
+                        detail =
+                            "frames=" +
+                                partial.frames.size +
+                                "/" +
+                                requestedFrames +
+                                " resolution=" +
+                                resolution.label
+                    )
+
+                    onQuickReady(partial)
+                }
+
                 if (frames.size % 60 == 0) {
                     MediaTrace.event(
                         source = "SpriteFrameCache",
@@ -638,6 +753,8 @@ object SpriteFrameCache {
                         extension
                 )
 
+            buildingManifest.delete()
+
             MediaTrace.event(
                 source = "SpriteFrameCache",
                 event = "SPRITE_BUILD_DONE",
@@ -662,6 +779,18 @@ object SpriteFrameCache {
             )
         } finally {
             retriever.release()
+
+            if (
+                !File(
+                    dir,
+                    "manifest.txt"
+                ).isFile
+            ) {
+                File(
+                    dir,
+                    BUILDING_MANIFEST
+                ).delete()
+            }
         }
     }
 
@@ -902,6 +1031,86 @@ object SpriteFrameCache {
                 0f,
                 1f
             )
+
+    private fun readBuildingSequence(
+        dir: File
+    ): SpriteSequence? {
+        val manifest =
+            File(
+                dir,
+                BUILDING_MANIFEST
+            )
+
+        if (!manifest.isFile) return null
+
+        val parts =
+            manifest.readText()
+                .trim()
+                .split("|")
+
+        if (parts.size != 5) return null
+
+        val expectedCount =
+            parts[0].toIntOrNull()
+                ?: return null
+        val frameDuration =
+            parts[1].toLongOrNull()
+                ?: return null
+        val width =
+            parts[2].toIntOrNull()
+                ?: return null
+        val height =
+            parts[3].toIntOrNull()
+                ?: return null
+        val extension =
+            parts[4]
+
+        val minimum =
+            min(
+                QUICK_START_FRAMES,
+                expectedCount
+            )
+
+        val frames =
+            mutableListOf<File>()
+
+        for (
+            index in
+                0 until expectedCount
+        ) {
+            val frame =
+                File(
+                    dir,
+                    "frame-" +
+                        index
+                            .toString()
+                            .padStart(
+                                5,
+                                '0'
+                            ) +
+                        "." +
+                        extension
+                )
+
+            if (!frame.isFile) {
+                break
+            }
+
+            frames.add(frame)
+        }
+
+        if (frames.size < minimum) {
+            return null
+        }
+
+        return SpriteSequence(
+            frames = frames.toList(),
+            frameDurationMs =
+                frameDuration,
+            width = width,
+            height = height
+        )
+    }
 
     private fun readSequence(
         dir: File
