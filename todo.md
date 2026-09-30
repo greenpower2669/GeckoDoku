@@ -1,3 +1,13 @@
+# TODO — GeckoDoku
+
+## PRIORITÉ — finir le passage 100 % sprites préfabriqués
+
+- [x] Brancher la release `PackageSprites` dans la CI et extraire seulement 60p/120p/240p.
+- [x] Masquer l’option « Banques sprites / export » du menu utilisateur.
+- [ ] Étendre le lot préfabriqué aux 9 MP4 encore non couverts : 2 intros Gecko, 5 Plante, 2 Prof.
+- [ ] Vérifier sur téléphone que ces 9 médias jouent depuis les banques sans fallback vidéo.
+- [ ] Supprimer alors tous les `.mp4` du paquet et retirer définitivement le code de fabrication/export devenu mort.
+
 # GeckoDoku — TODO actif
 
 ## GECKO-050 — sérénité / mascottes vivantes

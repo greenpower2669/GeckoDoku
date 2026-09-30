@@ -696,3 +696,8 @@ Décision : le coût disque du 480p n'apporte pas assez de valeur pour le pipeli
 
 Premier passage a révélé un test historique attendant encore [120,180,240,360,480]. Ce n'était pas un défaut du code runtime mais un oracle de test obsolète. `SpriteResolutionTest` a été corrigé pour [120,240] avec test de migration 480→240. Run #388 : vert.
 
+
+
+## GECKO-042 — transition vers banques préfabriquées
+
+Décision Fab : la release `PackageSprites` devient la source des banques embarquées. Le build ne prend que 60p/120p/240p. L’option d’export est masquée. La suppression de tous les MP4 est volontairement différée : l’audit du code montre que 9 vidéos ne figurent pas dans le `SpriteCatalog` exporté et seraient cassées si elles étaient supprimées immédiatement.

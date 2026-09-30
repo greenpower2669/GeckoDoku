@@ -59,6 +59,40 @@ jobs:
 
           du -sh assets/tts/piper/pierre
 
+      - name: Prepare prebuilt sprite banks 60p 120p 240p
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          asset="GeckoDoku-sprite-banks-60-120-240-480-20260930-2058.zip"
+
+          gh release download PackageSprites \
+            --repo "${GITHUB_REPOSITORY}" \
+            --pattern "$asset" \
+            --dir "$work"
+
+          archive="$work/$asset"
+          echo "b108331d259d6d03aa6832028327a76fb31cf3bcb882738f759121cfeafad296  $archive" | sha256sum -c -
+
+          rm -rf assets/sprites
+          mkdir -p assets
+          unzip -q "$archive" \
+            "sprites/index.json" \
+            "sprites/sprite-factory-report.json" \
+            "sprites/export-manifest.json" \
+            "sprites/banks/60p/*" \
+            "sprites/banks/120p/*" \
+            "sprites/banks/240p/*" \
+            -d assets
+
+          test -f assets/sprites/banks/60p/bank-manifest.json
+          test -f assets/sprites/banks/120p/bank-manifest.json
+          test -f assets/sprites/banks/240p/bank-manifest.json
+          test ! -d assets/sprites/banks/480p
+          du -sh assets/sprites/banks/60p assets/sprites/banks/120p assets/sprites/banks/240p
+
       - name: Test and build phone APK
         run: gradle :app:testDebugUnitTest :app:assemblePhone --no-daemon
 

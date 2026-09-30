@@ -1047,3 +1047,13 @@ GECKO-041 validation
 → tests selector [120,240]
 → CI run #388 PASS.
 
+
+
+## GECKO-042 — banques préfabriquées depuis la release PackageSprites
+
+- Branche : `gecko-042-prebuilt-sprite-runtime`.
+- Référence immuable : `PackageSprites/GeckoDoku-sprite-banks-60-120-240-480-20260930-2058.zip`, SHA-256 `b108331d259d6d03aa6832028327a76fb31cf3bcb882738f759121cfeafad296`.
+- La CI injecte uniquement `sprites/banks/60p`, `120p` et `240p` dans les assets de l’APK ; 480p n’est pas embarqué.
+- L’entrée visible « Banques sprites / export » est retirée du menu ; la fabrication/export devient un outil transitoire non exposé.
+- Important : le `SpriteCatalog` ayant servi à l’export ne couvre que 12 clips Gecko/Abeille. Ne pas supprimer encore les 9 MP4 non couverts : `gecko/IntroGeckoGD.mp4`, `gecko/Gecko_Intro.mp4`, les 5 clips Plante, `prof/Prof_actions.mp4` et `prof/ProfParle.mp4`.
+- Étape suivante avant suppression totale des MP4 : fabriquer/valider les banques 60/120/240 de ces 9 clips, puis basculer leur lecture sur sprites embarqués.

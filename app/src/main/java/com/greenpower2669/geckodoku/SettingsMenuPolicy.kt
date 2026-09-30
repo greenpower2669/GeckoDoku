@@ -45,7 +45,6 @@ class SettingsMenuPolicy {
                     SettingsEntry.CLEAR_HISTORY,
                     SettingsEntry.EXPORT_DATA,
                     SettingsEntry.IMPORT_DATA,
-                    SettingsEntry.EXPORT_SPRITE_BANKS,
                     SettingsEntry.SOUND,
                     SettingsEntry.ANIMATIONS,
                     SettingsEntry.MEDIA_LOG
@@ -63,7 +62,6 @@ class SettingsMenuPolicy {
                     SettingsEntry.CLEAR_HISTORY,
                     SettingsEntry.EXPORT_DATA,
                     SettingsEntry.IMPORT_DATA,
-                    SettingsEntry.EXPORT_SPRITE_BANKS,
                     SettingsEntry.SOUND,
                     SettingsEntry.ANIMATIONS,
                     SettingsEntry.SPRITE_RESOLUTION,
@@ -80,7 +78,6 @@ class SettingsMenuPolicy {
                     SettingsEntry.CLEAR_HISTORY,
                     SettingsEntry.EXPORT_DATA,
                     SettingsEntry.IMPORT_DATA,
-                    SettingsEntry.EXPORT_SPRITE_BANKS,
                     SettingsEntry.SOUND,
                     SettingsEntry.ANIMATIONS,
                     SettingsEntry.MEDIA_LOG
@@ -96,7 +93,6 @@ class SettingsMenuPolicy {
                     SettingsEntry.CLEAR_HISTORY,
                     SettingsEntry.EXPORT_DATA,
                     SettingsEntry.IMPORT_DATA,
-                    SettingsEntry.EXPORT_SPRITE_BANKS,
                     SettingsEntry.SOUND,
                     SettingsEntry.ANIMATIONS,
                     SettingsEntry.SPRITE_RESOLUTION,
