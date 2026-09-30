@@ -633,3 +633,23 @@ Le test 0.15.31-dev confirme que QUICK_START fonctionne techniquement : abeille 
 GECKO-071 ne transforme pas ce délai en faux lecteur : il supprime la zone vide / le saut PNG en donnant immédiatement à chaque Gecko/Abeille une image statique canonique extraite de stay1 frame 1. Cette extraction utilise un worker et un cache indépendants du build complet. La présence statique ne déclenche aucun SPRITE_ACTIVE.
 
 Le PNG historique reste intact et n'est utilisé que quand les animations sont volontairement désactivées. La plante reste sur son chemin historique.
+
+
+## 2026-09-30 — GECKO-072 / cause structurelle de l’attente SpriteRGBA
+
+Avant GECKO-072, QUICK_READY existait mais la construction reposait encore sur une file mono-worker où un clip pouvait conserver le worker jusqu’à 24/61/83/102/360 frames. Le test Abeille 240p montrait bien 4/24 QUICK_READY, mais seulement après que la construction de stay1 Gecko et l’ordre FIFO précédent avaient libéré le worker.
+
+Correction structurelle :
+- la nouvelle SpriteBankFactory ne monopolise plus un worker jusqu’à la banque complète ;
+- chaque passage fabrique au plus 4 frames puis rend la main ;
+- 3 workers au maximum ;
+- les demandes visibles ont priorité sur les chunks de catalogue ;
+- les requêtes identiques rejoignent une seule session ;
+- 60p permet un bootstrap plus court, puis 120p/240p remplacent la banque sans repartir volontairement au début ;
+- cache déplacé vers filesDir pour survivre aux relances et ne plus dépendre du cache Android ;
+- banque READY uniquement après manifest atomique, avec hashes/version/chroma-key ;
+- les caches interrompus restent BUILDING et peuvent reprendre.
+
+GECKO-071 reste le pont statique : frame 1 de stay1 à 240p, simple Bitmap. La Sprite Factory attend cette préparation avant de lancer les conversions lourdes.
+
+La prochaine validation doit être faite sur téléphone : priorité inter-assets, temps QUICK_READY 60p, swaps 60→120→240, FPS intro/plateau, relance DISK_HIT sans SPRITE_BANK_BUILD_START, puis export ZIP.
