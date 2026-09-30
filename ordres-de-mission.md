@@ -956,3 +956,23 @@ Aucun merge main, aucune prerelease/release avant validation téléphone Fab.
 
 
 État GECKO-069 : commit applicatif 522802e5712ee5005850a033577f5fc143d00bb8 ; CI #314 entièrement verte ; artifact GeckoDoku-v0.15.30-dev-phone produit ; digest artifact sha256:3245421691fdc4857ee7d1dee1978cb9ff198a2d21380fbece526630b6ca795b ; aucune prerelease/release ; validation téléphone Fab requise.
+
+
+# GECKO-070 — QUICK-START SPRITERGBA + RÉSOLUTIONS SOUS 240P
+
+STATUT : GO Fab, implémenté ; validation CI/téléphone requise.
+
+CONTRAT
+- Ajouter 120p et 180p au sélecteur existant.
+- Ordre du sélecteur : 120p, 180p, 240p, 360p, 480p.
+- 240p = valeur par défaut si aucune préférence n'est encore enregistrée.
+- Une animation SpriteRGBA ne doit plus attendre la fabrication complète de sa banque.
+- Dès 4 frames RGBA valides, autoriser l'animation.
+- Pendant la fabrication restante, le préfixe peut boucler localement.
+- Dès que la banque complète est prête, la même Presence adopte la séquence complète sans recréation.
+- Appliquer au moteur SpriteRGBA générique, donc Gecko et Abeille.
+- Conserver filtre jaune dynamique, keycolor, AliveAnimator local, warmup chaud et limite Gomoku optionnelle.
+- Aucun ordonnanceur global, aucun pool vidéo, aucune modification solveur/gameplay.
+- Aucun merge main ni release/prerelease sans validation explicite Fab.
+
+Version cible : 0.15.31-dev / versionCode 66.
