@@ -6,31 +6,41 @@ import org.junit.Test
 
 class AliveVideoBackendPolicyTest {
     @Test
-    fun exploratoryBoardsPreferSpritePlayback() {
+    fun allBoardGeckosAndBeesUseSpritePlayback() {
         assertTrue(
             AliveVideoBackendPolicy
                 .useSpritePlayback(
                     "gomoku:10:11"
                 )
         )
-
         assertTrue(
             AliveVideoBackendPolicy
                 .useSpritePlayback(
                     "bee:GECKO:1:-1"
                 )
         )
-
-        assertFalse(
+        assertTrue(
             AliveVideoBackendPolicy
                 .useSpritePlayback(
                     "classic:4:4"
                 )
         )
+        assertTrue(
+            AliveVideoBackendPolicy
+                .useSpritePlayback(
+                    "sudoku:4:4"
+                )
+        )
+        assertFalse(
+            AliveVideoBackendPolicy
+                .useSpritePlayback(
+                    "plant:decoration"
+                )
+        )
     }
 
     @Test
-    fun boardModesUseTextureViewOnModernAndroid() {
+    fun legacyTexturePolicyRemainsAvailableButIsBypassedBySprites() {
         assertTrue(
             AliveVideoBackendPolicy
                 .useTextureView(
@@ -39,64 +49,12 @@ class AliveVideoBackendPolicyTest {
                     sdkInt = 33
                 )
         )
-
-        assertTrue(
-            AliveVideoBackendPolicy
-                .useTextureView(
-                    ownerKey =
-                        "gomoku:10:11",
-                    sdkInt = 36
-                )
-        )
-    }
-
-    @Test
-    fun legacyAliveModesKeepGlSurfaceBackend() {
-        assertFalse(
-            AliveVideoBackendPolicy
-                .useTextureView(
-                    ownerKey =
-                        "classic:4:4",
-                    sdkInt = 36
-                )
-        )
-
-        assertFalse(
-            AliveVideoBackendPolicy
-                .useTextureView(
-                    ownerKey =
-                        "sudoku:4:4",
-                    sdkInt = 36
-                )
-        )
-
         assertFalse(
             AliveVideoBackendPolicy
                 .useTextureView(
                     ownerKey =
                         "plant:decoration",
                     sdkInt = 36
-                )
-        )
-    }
-
-    @Test
-    fun oldAndroidFallsBackEvenForBoardModes() {
-        assertFalse(
-            AliveVideoBackendPolicy
-                .useTextureView(
-                    ownerKey =
-                        "bee:BEE:0:0",
-                    sdkInt = 32
-                )
-        )
-
-        assertFalse(
-            AliveVideoBackendPolicy
-                .useTextureView(
-                    ownerKey =
-                        "gomoku:5:5",
-                    sdkInt = 31
                 )
         )
     }
