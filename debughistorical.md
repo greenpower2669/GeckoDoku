@@ -705,3 +705,5 @@ Décision Fab : la release `PackageSprites` devient la source des banques embarq
 
 ## 2026-09-30 — GECKO-043
 Le test téléphone de GECKO-042 a confirmé SpriteRGBA fluide jusqu'à 16 animations mais montrait encore la chaîne 60p→120p→240p et ~96 Mo de cache bitmap. GECKO-043 supprime les deux étages inférieurs, route Classic/Sudoku vers SpriteRGBA, rend le loader indépendant des MP4 via l'index embarqué, source la stable frame depuis la banque 240p, et retire les 12 MP4 Gecko/Abeille désormais redondants. Plante, Pierre/Prof et intros restent vidéo. Validation CI/téléphone en attente.
+
+GECKO-043 CI #395 : SUCCESS sur commit 204f9c4202382b8382eb167611a030680077ec18. Préparation banque 240p seule, tests Kotlin et assemblePhone verts. Artifact GeckoDoku-v0.15.38-dev-phone, 219092725 octets, digest sha256:718f131ec117a9af1d14dd4fe1bb1749a0370c23fb4ccdc3668c1fd849a844ef. Étapes prerelease et release explicitement skipped. Validation téléphone reste requise.
