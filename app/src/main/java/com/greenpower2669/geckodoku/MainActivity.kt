@@ -10570,6 +10570,9 @@ class MainActivity : Activity() {
                     .spriteResolution =
                     selected
 
+                aliveMascotOverlay
+                    .refreshStableFramesForResolution()
+
                 if (
                     selectedGameMode ==
                         GameMode.GOMOKU ||
