@@ -13,23 +13,12 @@ object SpriteBankExporter {
         context: Context,
         output: OutputStream
     ) {
-        val heights =
-            SpriteBankFactory
-                .resolutionBankSummaries(
-                    context
-                )
-                .filter {
-                    it.generatedFrames > 0
-                }
-                .map {
-                    it.resolutionHeight
-                }
-
         writeInternal(
             context = context,
             output = output,
             resolutionHeights =
-                heights
+                SpriteBankFactory
+                    .exportBankHeights()
         )
     }
 
