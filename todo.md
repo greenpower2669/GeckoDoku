@@ -592,3 +592,18 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] exporter GeckoDoku-sprite-banks-*.zip et vérifier l’exhaustivité ;
 - [ ] intégrer ultérieurement l’export sous assets/sprites/ puis valider APK_HIT réel ;
 - [ ] aucune release/prerelease ni merge main avant validation explicite Fab.
+
+## GECKO-040 — Banques par résolution
+
+- [x] Corriger le faux échec après `SPRITE_BANK_DISK_HIT/APK_HIT`.
+- [x] Regrouper logiquement les banques par résolution sans fusionner les animations dans un fichier monolithique.
+- [x] Calculer progression par frames, taille, état et nombre d'animations complètes.
+- [x] Afficher ces informations dans Réglages.
+- [x] Exporter une résolution à la fois.
+- [x] Produire un `bank-manifest.json` par résolution.
+- [x] Rendre le loader APK compatible avec `sprites/banks/<resolution>p/<bankKey>` et l'ancien chemin.
+- [x] Faire suivre au catalogue de fond la chaîne progressive jusqu'à la résolution cible, y compris 480p.
+- [ ] Valider CI Android GECKO-040.
+- [ ] Test téléphone : redémarrage avec banques READY, vérifier absence totale de `Required value was null`.
+- [ ] Test téléphone : vérifier pourcentages / tailles / exports 60p, 120p, 240p et 480p.
+
