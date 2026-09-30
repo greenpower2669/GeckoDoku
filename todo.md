@@ -615,7 +615,7 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] Barre de progression sur frames générées / attendues.
 - [x] Export ZIP global seulement après préparation complète.
 - [x] Durcir le chemin DISK/APK READY avec état terminal explicite.
-- [ ] Valider CI 0.15.35-dev.
+- [x] Valider CI 0.15.35-dev — run #372 vert (tests + assemblePhone).
 - [ ] Test téléphone : vérifier absence de faux DISK_HIT → ERROR.
 - [ ] Test téléphone : lancer export global et vérifier progression jusqu'à 100 % puis ZIP avec `sprites/banks/60p`, `120p`, `240p`, `480p`.
 
