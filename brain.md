@@ -1020,3 +1020,19 @@ Le test `SpriteResolutionTest` a été aligné sur la règle finale : seules 120
 - L’entrée visible « Banques sprites / export » est retirée du menu ; la fabrication/export devient un outil transitoire non exposé.
 - Important : le `SpriteCatalog` ayant servi à l’export ne couvre que 12 clips Gecko/Abeille. Ne pas supprimer encore les 9 MP4 non couverts : `gecko/IntroGeckoGD.mp4`, `gecko/Gecko_Intro.mp4`, les 5 clips Plante, `prof/Prof_actions.mp4` et `prof/ProfParle.mp4`.
 - Étape suivante avant suppression totale des MP4 : fabriquer/valider les banques 60/120/240 de ces 9 clips, puis basculer leur lecture sur sprites embarqués.
+
+
+# GECKO-043 — RUNTIME SPRITES 240P UNIQUEMENT / NETTOYAGE MP4
+
+Décision Fab du 2026-09-30.
+
+- Runtime SpriteRGBA fixé à 240p : suppression des étages 60p/120p et des swaps progressifs.
+- Le build n'embarque plus que `sprites/banks/240p`; 60p/120p/180p/360p/480p sont obsolètes et les caches locaux correspondants sont purgés.
+- Les 12 MP4 sources désormais couverts par SpriteCatalog sont supprimés : Gecko stay1..4 + apparition + disparition + action longue ; Abeille stay1..4 + apparition.
+- Les intros Gecko, la Plante et Pierre/Prof restent en vidéo et ne sont pas touchés.
+- Classic, Sudoku, Gomoku et Abeilles & Geckos routent désormais Gecko/Abeille vers SpriteRGBA.
+- Le loader résout les banques 240p via `sprites/index.json` avant tout accès au MP4 source ; une installation neuve n'a donc plus besoin des vidéos supprimées.
+- La STABLE_FRAME Gecko/Abeille peut être lue directement depuis `frame-00000` de la banque 240p embarquée.
+- Le catalogue 240p est préparé en arrière-plan et conservé dans `readyMemory`; les frames restent sous LRU bitmap borné pour éviter une explosion RAM.
+- Version test : 0.15.38-dev / versionCode 73.
+- Aucun merge main ni release/prerelease avant validation téléphone Fab.
