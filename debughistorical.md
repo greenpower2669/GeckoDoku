@@ -701,3 +701,7 @@ Premier passage a révélé un test historique attendant encore [120,180,240,360
 ## GECKO-042 — transition vers banques préfabriquées
 
 Décision Fab : la release `PackageSprites` devient la source des banques embarquées. Le build ne prend que 60p/120p/240p. L’option d’export est masquée. La suppression de tous les MP4 est volontairement différée : l’audit du code montre que 9 vidéos ne figurent pas dans le `SpriteCatalog` exporté et seraient cassées si elles étaient supprimées immédiatement.
+
+
+## 2026-09-30 — GECKO-043
+Le test téléphone de GECKO-042 a confirmé SpriteRGBA fluide jusqu'à 16 animations mais montrait encore la chaîne 60p→120p→240p et ~96 Mo de cache bitmap. GECKO-043 supprime les deux étages inférieurs, route Classic/Sudoku vers SpriteRGBA, rend le loader indépendant des MP4 via l'index embarqué, source la stable frame depuis la banque 240p, et retire les 12 MP4 Gecko/Abeille désormais redondants. Plante, Pierre/Prof et intros restent vidéo. Validation CI/téléphone en attente.
