@@ -174,7 +174,9 @@ object SpriteBankFactory {
         @Volatile var generationStartedAtMs:
             Long = 0L,
         @Volatile var generationCounted:
-            Boolean = false
+            Boolean = false,
+        @Volatile var scheduleEpoch:
+            Long = 0L
     )
 
     private class FactoryTask(
@@ -380,6 +382,8 @@ object SpriteBankFactory {
 
         var newSession:
             BuildSession? = null
+        var sessionToBoost:
+            BuildSession? = null
         var quickForLateJoin:
             SpriteSequence? = null
 
@@ -388,11 +392,22 @@ object SpriteBankFactory {
                 sessions[requestKey]
 
             if (existing != null) {
+                val previousPriority =
+                    existing.priority
                 existing.priority =
                     min(
                         existing.priority,
                         priority.value
                     )
+
+                if (
+                    existing.priority <
+                        previousPriority
+                ) {
+                    sessionToBoost =
+                        existing
+                }
+
                 existing.completeCallbacks
                     .add(callback)
 
@@ -464,6 +479,10 @@ object SpriteBankFactory {
                     onQuickReady(quick)
                 }
             }
+        }
+
+        sessionToBoost?.let {
+            enqueueSession(it)
         }
 
         newSession?.let {
@@ -880,9 +899,23 @@ object SpriteBankFactory {
     private fun enqueueSession(
         session: BuildSession
     ) {
+        val epoch =
+            synchronized(session) {
+                session.scheduleEpoch +=
+                    1L
+                session.scheduleEpoch
+            }
+
         enqueueTask(
             session.priority
         ) {
+            if (
+                epoch !=
+                    session.scheduleEpoch
+            ) {
+                return@enqueueTask
+            }
+
             resolveOrBuildChunk(
                 session
             )
