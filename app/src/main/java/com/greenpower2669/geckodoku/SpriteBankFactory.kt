@@ -99,6 +99,10 @@ object SpriteBankFactory {
     private val started =
         AtomicBoolean(false)
 
+    @Volatile
+    private var stableBarrierReady =
+        false
+
     private val activeWorkers =
         AtomicInteger(0)
     private val workersPeak =
@@ -138,6 +142,10 @@ object SpriteBankFactory {
         Double.POSITIVE_INFINITY
     private var uiFpsTotal = 0.0
     private var uiFpsSamples = 0L
+    private var firstQuickReadyAtMs = -1L
+    private var firstAnimationVisibleAtMs = -1L
+    private val workerBusyMs =
+        linkedMapOf<String, Long>()
 
     private data class BankMetadata(
         val frameCount: Int,
@@ -249,7 +257,9 @@ object SpriteBankFactory {
 
         if (stableSpecs.isEmpty()) {
             stableCompletedAtMs = 0L
-            enqueueCatalog(appContext)
+            releaseStableBarrier(
+                appContext
+            )
             return
         }
 
@@ -295,7 +305,7 @@ object SpriteBankFactory {
                                     stableCompletedAtMs
                         )
 
-                        enqueueCatalog(
+                        releaseStableBarrier(
                             appContext
                         )
                     }
@@ -317,6 +327,10 @@ object SpriteBankFactory {
     ) {
         val appContext =
             context.applicationContext
+
+        startCatalogPreparation(
+            appContext
+        )
 
         if (
             !SpriteCatalog.contains(
@@ -486,12 +500,47 @@ object SpriteBankFactory {
         }
 
         newSession?.let {
-            enqueueSession(it)
+            if (stableBarrierReady) {
+                enqueueSession(it)
+            }
         }
     }
 
     fun recordStableCoalesced() {
         stableCoalesced.incrementAndGet()
+    }
+
+    fun recordAnimationVisible(
+        assetPath: String,
+        resolutionHeight: Int
+    ) {
+        synchronized(metricsLock) {
+            if (
+                firstAnimationVisibleAtMs <
+                    0L &&
+                factoryStartedAtMs >
+                    0L
+            ) {
+                firstAnimationVisibleAtMs =
+                    SystemClock
+                        .elapsedRealtime() -
+                        factoryStartedAtMs
+
+                MediaTrace.event(
+                    source =
+                        "SpriteBankFactory",
+                    event =
+                        "SPRITE_FACTORY_FIRST_VISIBLE",
+                    assetPath =
+                        assetPath,
+                    detail =
+                        "resolution=" +
+                            resolutionHeight +
+                            "p elapsedMs=" +
+                            firstAnimationVisibleAtMs
+                )
+            }
+        }
     }
 
     fun recordUiFps(
@@ -647,6 +696,14 @@ object SpriteBankFactory {
                         ?: 0L
                 )
                 put(
+                    "firstQuickReadyMs",
+                    firstQuickReadyAtMs
+                )
+                put(
+                    "firstAnimationVisibleMs",
+                    firstAnimationVisibleAtMs
+                )
+                put(
                     "totalGenerationMs",
                     if (
                         factoryStartedAtMs > 0L
@@ -710,6 +767,18 @@ object SpriteBankFactory {
                 put(
                     "catalogMisses",
                     catalogMisses.get()
+                )
+                put(
+                    "workerBusyMs",
+                    JSONObject().apply {
+                        synchronized(metricsLock) {
+                            workerBusyMs
+                                .forEach {
+                                    (name, value) ->
+                                    put(name, value)
+                                }
+                        }
+                    }
                 )
             }
     }
@@ -833,6 +902,25 @@ object SpriteBankFactory {
             "stable-frames"
         )
 
+    private fun releaseStableBarrier(
+        context: Context
+    ) {
+        stableBarrierReady =
+            true
+
+        val waiting =
+            synchronized(lock) {
+                sessions.values
+                    .toList()
+            }
+
+        waiting.forEach {
+            enqueueSession(it)
+        }
+
+        enqueueCatalog(context)
+    }
+
     private fun enqueueCatalog(
         context: Context
     ) {
@@ -934,6 +1022,9 @@ object SpriteBankFactory {
                     taskSequence
                         .incrementAndGet()
             ) {
+                val workerStartedAt =
+                    SystemClock
+                        .elapsedRealtime()
                 val active =
                     activeWorkers
                         .incrementAndGet()
@@ -953,6 +1044,26 @@ object SpriteBankFactory {
                 try {
                     action()
                 } finally {
+                    val elapsed =
+                        SystemClock
+                            .elapsedRealtime() -
+                            workerStartedAt
+
+                    synchronized(metricsLock) {
+                        val name =
+                            Thread
+                                .currentThread()
+                                .name
+
+                        workerBusyMs[name] =
+                            (
+                                workerBusyMs[
+                                    name
+                                ] ?: 0L
+                                ) +
+                                elapsed
+                    }
+
                     activeWorkers
                         .decrementAndGet()
                     sampleRam()
@@ -1452,6 +1563,20 @@ object SpriteBankFactory {
                     }
             }
 
+        synchronized(metricsLock) {
+            if (
+                firstQuickReadyAtMs <
+                    0L &&
+                factoryStartedAtMs >
+                    0L
+            ) {
+                firstQuickReadyAtMs =
+                    SystemClock
+                        .elapsedRealtime() -
+                        factoryStartedAtMs
+            }
+        }
+
         MediaTrace.event(
             source =
                 "SpriteBankFactory",
@@ -1513,6 +1638,19 @@ object SpriteBankFactory {
 
         val bankDigest =
             digestFiles(frames)
+
+        val generationElapsedMs =
+            if (
+                session.generationStartedAtMs >
+                    0L
+            ) {
+                SystemClock
+                    .elapsedRealtime() -
+                    session
+                        .generationStartedAtMs
+            } else {
+                0L
+            }
 
         val manifest =
             JSONObject()
@@ -1600,6 +1738,10 @@ object SpriteBankFactory {
                         bankDigest
                     )
                     put(
+                        "generationMs",
+                        generationElapsedMs
+                    )
+                    put(
                         "completedAt",
                         System
                             .currentTimeMillis()
@@ -1652,12 +1794,6 @@ object SpriteBankFactory {
             session.generationStartedAtMs >
                 0L
         ) {
-            val elapsed =
-                SystemClock
-                    .elapsedRealtime() -
-                    session
-                        .generationStartedAtMs
-
             synchronized(metricsLock) {
                 generationMsByHeight[
                     session
@@ -1669,7 +1805,7 @@ object SpriteBankFactory {
                                 .resolutionHeight
                         ] ?: 0L
                         ) +
-                        elapsed
+                        generationElapsedMs
             }
         }
 
