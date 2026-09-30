@@ -681,3 +681,14 @@ Durcissement :
 
 Objectif téléphone : après `SPRITE_BANK_DISK_HIT`, aucun `SPRITE_BANK_ERROR Required value was null`.
 
+## 2026-09-30 — GECKO-041 — Réduction volontaire des résolutions
+
+Le test réel a produit :
+- 60p : 100 %, ~6.0 Mo
+- 120p : 100 %, ~18.3 Mo
+- 240p : 100 %, ~58.4 Mo
+- 480p : 100 %, ~167.7 Mo
+- 180p/360p : non utilisés.
+
+Décision : le coût disque du 480p n'apporte pas assez de valeur pour le pipeline courant. La chaîne est donc volontairement plafonnée à 240p. Les banques 180/360/480 deviennent obsolètes et sont supprimées automatiquement du stockage local par GECKO-041.
+
