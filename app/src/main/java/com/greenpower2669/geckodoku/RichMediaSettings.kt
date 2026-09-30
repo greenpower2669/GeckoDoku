@@ -6,13 +6,15 @@ enum class SpriteResolution(
     val heightPx: Int,
     val label: String
 ) {
+    P120(120, "120p"),
+    P180(180, "180p"),
     P240(240, "240p"),
     P360(360, "360p"),
     P480(480, "480p");
 
     companion object {
         fun fromHeight(value: Int): SpriteResolution =
-            values().firstOrNull { it.heightPx == value } ?: P480
+            values().firstOrNull { it.heightPx == value } ?: P240
     }
 }
 
@@ -77,7 +79,7 @@ class RichMediaSettings(
             SpriteResolution.fromHeight(
                 preferences.getInt(
                     KEY_SPRITE_RESOLUTION,
-                    SpriteResolution.P480.heightPx
+                    SpriteResolution.P240.heightPx
                 )
             )
         set(value) {
@@ -151,7 +153,7 @@ class RichMediaSettings(
             return SpriteResolution.fromHeight(
                 preferences.getInt(
                     KEY_SPRITE_RESOLUTION,
-                    SpriteResolution.P480.heightPx
+                    SpriteResolution.P240.heightPx
                 )
             )
         }
