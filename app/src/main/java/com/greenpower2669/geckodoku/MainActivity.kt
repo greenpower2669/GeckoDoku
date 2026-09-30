@@ -4617,7 +4617,7 @@ class MainActivity : Activity() {
                     0
                 )
                 text =
-                    "Préparation des banques 60p → 120p → 240p → 480p…"
+                    "Préparation des banques 60p → 120p → 240p…"
             }
 
         val detailText =
@@ -4657,7 +4657,7 @@ class MainActivity : Activity() {
         val dialog =
             AlertDialog.Builder(this)
                 .setTitle(
-                    "📦 Préparation export 480p"
+                    "📦 Préparation export 240p"
                 )
                 .setMessage(
                     "GeckoDoku termine toutes les banques avant de créer le ZIP."
@@ -4739,10 +4739,10 @@ class MainActivity : Activity() {
         }.start()
 
         status.text =
-            "Préparation des banques jusqu'à 480p…"
+            "Préparation des banques jusqu'à 240p…"
 
         SpriteBankFactory
-            .prepareExportThrough480(
+            .prepareExportThrough240(
                 this
             ) {
                 result ->
@@ -4766,7 +4766,7 @@ class MainActivity : Activity() {
                     progressBar.progress =
                         progressBar.max
                     progressText.text =
-                        "100 % • banques prêtes jusqu'à 480p"
+                        "100 % • banques prêtes jusqu'à 240p"
                     detailText.text =
                         "Création du ZIP…"
 
@@ -4775,7 +4775,7 @@ class MainActivity : Activity() {
                     }
 
                     status.text =
-                        "Banques 60p/120p/240p/480p prêtes. Choisis où enregistrer le ZIP."
+                        "Banques 60p/120p/240p prêtes. Choisis où enregistrer le ZIP."
 
                     exportAllSpriteBanks()
                 } else {
@@ -4821,7 +4821,7 @@ class MainActivity : Activity() {
                     "application/zip"
                 putExtra(
                     Intent.EXTRA_TITLE,
-                    "GeckoDoku-sprite-banks-60-120-240-480-" +
+                    "GeckoDoku-sprite-banks-60-120-240-" +
                         stamp +
                         ".zip"
                 )
@@ -4999,7 +4999,7 @@ class MainActivity : Activity() {
 
                 status.text =
                     if (exportAll) {
-                        "Export complet 60p/120p/240p/480p en cours…"
+                        "Export complet 60p/120p/240p en cours…"
                     } else {
                         "Export banque " +
                             resolutionHeight +
@@ -5039,7 +5039,7 @@ class MainActivity : Activity() {
                         runOnUiThread {
                             status.text =
                                 if (exportAll) {
-                                    "Banques 60p/120p/240p/480p exportées 📦"
+                                    "Banques 60p/120p/240p exportées 📦"
                                 } else {
                                     "Banque " +
                                         resolutionHeight +
