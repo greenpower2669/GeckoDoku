@@ -653,3 +653,17 @@ Correction structurelle :
 GECKO-071 reste le pont statique : frame 1 de stay1 à 240p, simple Bitmap. La Sprite Factory attend cette préparation avant de lancer les conversions lourdes.
 
 La prochaine validation doit être faite sur téléphone : priorité inter-assets, temps QUICK_READY 60p, swaps 60→120→240, FPS intro/plateau, relance DISK_HIT sans SPRITE_BANK_BUILD_START, puis export ZIP.
+
+## 2026-09-30 — GECKO-040 — Cause du DISK_HIT suivi de Required value was null
+
+Symptôme téléphone :
+`SPRITE_BANK_DISK_HIT` puis immédiatement `SPRITE_BANK_ERROR IllegalArgumentException: Required value was null`.
+
+Cause établie dans `SpriteBankFactory.resolveOrBuildChunk()` :
+`initializeSession()` trouvait une banque READY, appelait `completeSession(..., hit = "DISK")` puis revenait seulement dans `resolveOrBuildChunk()`. Le worker continuait ensuite et exécutait `requireNotNull(session.metadata)`. Or `metadata` n'est volontairement pas construit lors d'un hit READY.
+
+Correction GECKO-040 :
+après `initializeSession()`, vérifier que la session est encore active dans `sessions`. Si elle a été retirée par `completeSession()`, sortir immédiatement du worker. Même protection pour les hits APK.
+
+Conclusion : le manifeste READY n'avait pas de champ manquant ; le défaut était un flux de contrôle après rechargement réussi.
+
