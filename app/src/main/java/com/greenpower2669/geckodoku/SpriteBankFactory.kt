@@ -50,6 +50,26 @@ data class SpriteResolutionBankSummary(
     val state: SpriteResolutionBankState
 )
 
+data class SpriteExportPreparationProgress(
+    val generatedFrames: Int,
+    val expectedFrames: Int,
+    val completeBanks: Int,
+    val totalBanks: Int,
+    val currentResolutionHeight: Int,
+    val percentage: Double
+) {
+    val complete: Boolean
+        get() =
+            totalBanks > 0 &&
+                completeBanks == totalBanks &&
+                generatedFrames >= expectedFrames
+}
+
+private enum class SessionInitializationResult {
+    READY,
+    BUILD_REQUIRED
+}
+
 enum class SpriteFactoryPriority(
     val value: Int
 ) {
@@ -209,7 +229,9 @@ object SpriteBankFactory {
         @Volatile var generationCounted:
             Boolean = false,
         @Volatile var scheduleEpoch:
-            Long = 0L
+            Long = 0L,
+        @Volatile var terminal:
+            Boolean = false
     )
 
     private class FactoryTask(
@@ -928,6 +950,211 @@ object SpriteBankFactory {
                     }
                 )
             }
+    }
+
+    fun exportBankHeights():
+        List<Int> =
+        listOf(
+            60,
+            120,
+            240,
+            480
+        )
+
+    fun exportPreparationProgress(
+        context: Context
+    ): SpriteExportPreparationProgress {
+        val summaries =
+            exportBankHeights()
+                .map {
+                    height ->
+                    resolutionBankSummary(
+                        context,
+                        height
+                    )
+                }
+
+        val expectedFrames =
+            summaries.sumOf {
+                it.expectedFrames
+            }
+        val generatedFrames =
+            summaries.sumOf {
+                it.generatedFrames
+            }
+        val completeBanks =
+            summaries.count {
+                it.state ==
+                    SpriteResolutionBankState
+                        .COMPLETE
+            }
+        val current =
+            summaries.firstOrNull {
+                it.state !=
+                    SpriteResolutionBankState
+                        .COMPLETE
+            }?.resolutionHeight
+                ?: 480
+        val percentage =
+            if (expectedFrames > 0) {
+                (
+                    generatedFrames
+                        .toDouble() *
+                        100.0 /
+                        expectedFrames
+                            .toDouble()
+                    )
+                    .coerceIn(
+                        0.0,
+                        100.0
+                    )
+            } else {
+                0.0
+            }
+
+        return SpriteExportPreparationProgress(
+            generatedFrames =
+                generatedFrames,
+            expectedFrames =
+                expectedFrames,
+            completeBanks =
+                completeBanks,
+            totalBanks =
+                summaries.size,
+            currentResolutionHeight =
+                current,
+            percentage =
+                percentage
+        )
+    }
+
+    fun prepareExportThrough480(
+        context: Context,
+        callback:
+            (Result<Unit>) -> Unit
+    ) {
+        val appContext =
+            context.applicationContext
+        val jobs =
+            exportBankHeights()
+                .flatMap {
+                    height ->
+                    SpriteCatalog.entries.map {
+                        entry ->
+                        Pair(
+                            height,
+                            entry
+                        )
+                    }
+                }
+
+        if (jobs.isEmpty()) {
+            mainHandler.post {
+                callback(
+                    Result.success(Unit)
+                )
+            }
+            return
+        }
+
+        val remaining =
+            AtomicInteger(
+                jobs.size
+            )
+        val failed =
+            AtomicInteger(0)
+
+        MediaTrace.event(
+            source =
+                "SpriteBankFactory",
+            event =
+                "SPRITE_EXPORT_PREPARE_START",
+            detail =
+                "banks=" +
+                    exportBankHeights()
+                        .joinToString(
+                            ">"
+                        ) {
+                            it.toString() +
+                                "p"
+                        } +
+                    " assets=" +
+                    SpriteCatalog.entries
+                        .size +
+                    " jobs=" +
+                    jobs.size
+        )
+
+        jobs.forEach {
+                (height, entry) ->
+            prepare(
+                context =
+                    appContext,
+                assetPath =
+                    entry.assetPath,
+                keyColor =
+                    entry.keyColor,
+                resolutionHeight =
+                    height,
+                requestedBy =
+                    "EXPORT_480",
+                priority =
+                    SpriteFactoryPriority
+                        .VISIBLE_UPGRADE,
+                callback = {
+                    result ->
+                    if (result.isFailure) {
+                        failed.incrementAndGet()
+                    }
+
+                    if (
+                        remaining
+                            .decrementAndGet() ==
+                            0
+                    ) {
+                        val failures =
+                            failed.get()
+
+                        MediaTrace.event(
+                            source =
+                                "SpriteBankFactory",
+                            event =
+                                if (
+                                    failures ==
+                                        0
+                                ) {
+                                    "SPRITE_EXPORT_PREPARE_COMPLETE"
+                                } else {
+                                    "SPRITE_EXPORT_PREPARE_ERROR"
+                                },
+                            detail =
+                                "failures=" +
+                                    failures +
+                                    " jobs=" +
+                                    jobs.size
+                        )
+
+                        if (failures == 0) {
+                            callback(
+                                Result.success(
+                                    Unit
+                                )
+                            )
+                        } else {
+                            callback(
+                                Result.failure(
+                                    IllegalStateException(
+                                        failures
+                                            .toString() +
+                                            " banque(s) n'ont pas pu être préparées."
+                                    )
+                                )
+                            )
+                        }
+                    }
+                }
+            )
+        }
     }
 
     fun validatedBankDirectories(
@@ -1649,31 +1876,31 @@ object SpriteBankFactory {
         session: BuildSession
     ) {
         try {
-            if (
-                session.bankKey ==
-                    null
-            ) {
-                initializeSession(
-                    session
-                )
-
-                if (
-                    session.bankKey ==
-                        null
-                ) {
-                    return
-                }
-
-                val completedDuringInitialize =
-                    synchronized(lock) {
-                        sessions[
-                            session.requestKey
-                        ] !== session
+            val initialization =
+                synchronized(session) {
+                    if (session.terminal) {
+                        SessionInitializationResult
+                            .READY
+                    } else if (
+                        session.metadata ==
+                            null
+                    ) {
+                        initializeSession(
+                            session
+                        )
+                    } else {
+                        SessionInitializationResult
+                            .BUILD_REQUIRED
                     }
-
-                if (completedDuringInitialize) {
-                    return
                 }
+
+            if (
+                initialization ==
+                    SessionInitializationResult
+                        .READY ||
+                session.terminal
+            ) {
+                return
             }
 
             val metadata =
@@ -1844,7 +2071,7 @@ object SpriteBankFactory {
 
     private fun initializeSession(
         session: BuildSession
-    ) {
+    ): SessionInitializationResult {
         val assetSha =
             sourceHash(
                 session.context,
@@ -1885,7 +2112,8 @@ object SpriteBankFactory {
                 it,
                 hit = "APK"
             )
-            return
+            return SessionInitializationResult
+                .READY
         }
 
         val local =
@@ -1901,7 +2129,8 @@ object SpriteBankFactory {
                 local,
                 hit = "DISK"
             )
-            return
+            return SessionInitializationResult
+                .READY
         }
 
         val manifest =
@@ -2068,6 +2297,9 @@ object SpriteBankFactory {
         maybeDeliverQuick(
             session
         )
+
+        return SessionInitializationResult
+            .BUILD_REQUIRED
     }
 
     private fun maybeDeliverQuick(
@@ -2422,6 +2654,8 @@ object SpriteBankFactory {
     ) {
         val callbacks =
             synchronized(lock) {
+                session.terminal =
+                    true
                 readyMemory[
                     session.requestKey
                 ] =
@@ -2455,14 +2689,6 @@ object SpriteBankFactory {
             )
         }
 
-        updateStageCompletion(
-            session.resolutionHeight
-        )
-
-        maybeLogFinalReport(
-            session.context
-        )
-
         mainHandler.post {
             callbacks.forEach {
                 it(
@@ -2472,14 +2698,55 @@ object SpriteBankFactory {
                 )
             }
         }
+
+        runCatching {
+            updateStageCompletion(
+                session.resolutionHeight
+            )
+
+            maybeLogFinalReport(
+                session.context
+            )
+        }.onFailure {
+            error ->
+            MediaTrace.event(
+                source =
+                    "SpriteBankFactory",
+                event =
+                    "SPRITE_BANK_POST_COMPLETE_WARNING",
+                assetPath =
+                    session.assetPath,
+                detail =
+                    "resolution=" +
+                        session.resolutionHeight +
+                        "p error=" +
+                        error.javaClass
+                            .simpleName +
+                        ":" +
+                        (
+                            error.message
+                                ?: ""
+                            )
+            )
+        }
     }
 
     private fun failSession(
         session: BuildSession,
         error: Throwable
     ) {
+        if (session.terminal) {
+            return
+        }
+
         val callbacks =
             synchronized(lock) {
+                if (session.terminal) {
+                    return
+                }
+
+                session.terminal =
+                    true
                 sessions.remove(
                     session.requestKey
                 )
