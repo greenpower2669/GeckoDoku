@@ -750,6 +750,30 @@ object SpriteFrameCache {
             }
         }
 
+        loadEmbeddedStableFrame(
+            context = context,
+            assetPath = assetPath,
+            resolution = resolution
+        )?.let {
+            embedded ->
+            synchronized(stableFrameLock) {
+                stableFrameMemory[key] =
+                    embedded
+            }
+
+            return StableFrameResult(
+                bitmap = embedded,
+                cacheHit = true,
+                cacheLayer = "APK",
+                elapsedMs =
+                    SystemClock
+                        .elapsedRealtime() -
+                        startedAtMs,
+                width = embedded.width,
+                height = embedded.height
+            )
+        }
+
         val retriever =
             MediaMetadataRetriever()
 
@@ -1657,6 +1681,105 @@ object SpriteFrameCache {
             .joinToString("") {
                 "%02x".format(it)
             }
+    }
+
+    private fun loadEmbeddedStableFrame(
+        context: Context,
+        assetPath: String,
+        resolution: SpriteResolution
+    ): Bitmap? {
+        val index =
+            runCatching {
+                JSONObject(
+                    context.assets
+                        .open("sprites/index.json")
+                        .bufferedReader()
+                        .use {
+                            it.readText()
+                        }
+                )
+            }.getOrNull()
+                ?: return null
+
+        val banks =
+            index.optJSONArray("banks")
+                ?: return null
+
+        var bankKey:
+            String? = null
+
+        for (indexValue in 0 until banks.length()) {
+            val bank =
+                banks.optJSONObject(indexValue)
+                    ?: continue
+
+            if (
+                bank.optString("asset") ==
+                    assetPath &&
+                bank.optInt(
+                    "resolution",
+                    -1
+                ) ==
+                    resolution.heightPx
+            ) {
+                bankKey =
+                    bank.optString(
+                        "bankKey"
+                    )
+                break
+            }
+        }
+
+        val resolvedKey =
+            bankKey
+                ?.takeIf {
+                    it.isNotBlank()
+                }
+                ?: return null
+
+        val base =
+            "sprites/banks/" +
+                resolution.heightPx +
+                "p/" +
+                resolvedKey
+
+        val manifest =
+            runCatching {
+                JSONObject(
+                    context.assets
+                        .open(
+                            base +
+                                "/manifest.json"
+                        )
+                        .bufferedReader()
+                        .use {
+                            it.readText()
+                        }
+                )
+            }.getOrNull()
+                ?: return null
+
+        val extension =
+            manifest.optString(
+                "extension"
+            )
+
+        if (extension.isBlank()) {
+            return null
+        }
+
+        return runCatching {
+            context.assets
+                .open(
+                    base +
+                        "/frame-00000." +
+                        extension
+                )
+                .use {
+                    BitmapFactory
+                        .decodeStream(it)
+                }
+        }.getOrNull()
     }
 
     private fun cacheKey(
