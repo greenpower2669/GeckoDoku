@@ -1431,7 +1431,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                     spec.keyColor,
                 resolution =
                     resolution
-            ) { result ->
+            ) stableCallback@ { result ->
                 if (
                     !presences.values
                         .contains(presence) ||
@@ -1439,7 +1439,7 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                         presence
                             .stableFrameRequestGeneration
                 ) {
-                    return@requestStableFrame
+                    return@stableCallback
                 }
 
                 result.fold(
@@ -1468,13 +1468,15 @@ class AliveMascotOverlayView @JvmOverloads constructor(
                                     " extractionMs=" +
                                     stable.elapsedMs +
                                     " cache=" +
-                                    if (
-                                        stable.cacheHit
-                                    ) {
-                                        "HIT"
-                                    } else {
-                                        "MISS"
-                                    } +
+                                    (
+                                        if (
+                                            stable.cacheHit
+                                        ) {
+                                            "HIT"
+                                        } else {
+                                            "MISS"
+                                        }
+                                    ) +
                                     " layer=" +
                                     stable.cacheLayer +
                                     " size=" +
