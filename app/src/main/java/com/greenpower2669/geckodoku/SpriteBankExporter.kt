@@ -1,10 +1,10 @@
 package com.greenpower2669.geckodoku
 
 import android.content.Context
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.OutputStream
-import java.security.MessageDigest
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -13,8 +13,52 @@ object SpriteBankExporter {
         context: Context,
         output: OutputStream
     ) {
+        val heights =
+            SpriteBankFactory
+                .resolutionBankSummaries(
+                    context
+                )
+                .filter {
+                    it.generatedFrames > 0
+                }
+                .map {
+                    it.resolutionHeight
+                }
+
+        writeInternal(
+            context = context,
+            output = output,
+            resolutionHeights =
+                heights
+        )
+    }
+
+    fun write(
+        context: Context,
+        output: OutputStream,
+        resolutionHeight: Int
+    ) {
+        writeInternal(
+            context = context,
+            output = output,
+            resolutionHeights =
+                listOf(
+                    resolutionHeight
+                )
+        )
+    }
+
+    private fun writeInternal(
+        context: Context,
+        output: OutputStream,
+        resolutionHeights: List<Int>
+    ) {
         val appContext =
             context.applicationContext
+        val selected =
+            resolutionHeights
+                .distinct()
+                .sorted()
 
         ZipOutputStream(
             output.buffered()
@@ -40,21 +84,85 @@ object SpriteBankExporter {
                     .toString(2)
             )
 
-            val exportedBanks =
-                SpriteBankFactory
-                    .validatedBankDirectories(
-                        appContext
-                    )
+            val exported =
+                JSONArray()
 
-            exportedBanks.forEach {
-                dir ->
-                addDirectory(
-                    zip = zip,
-                    source = dir,
-                    prefix =
-                        "sprites/" +
-                            dir.name +
-                            "/"
+            selected.forEach {
+                height ->
+                val summary =
+                    SpriteBankFactory
+                        .resolutionBankSummary(
+                            appContext,
+                            height
+                        )
+                val prefix =
+                    "sprites/banks/" +
+                        height +
+                        "p/"
+
+                putText(
+                    zip,
+                    prefix +
+                        "bank-manifest.json",
+                    SpriteBankFactory
+                        .resolutionBankManifestJson(
+                            appContext,
+                            height
+                        )
+                        .toString(2)
+                )
+
+                val directories =
+                    SpriteBankFactory
+                        .resolutionBankDirectories(
+                            appContext,
+                            height
+                        )
+
+                directories.forEach {
+                    dir ->
+                    addDirectory(
+                        zip = zip,
+                        source = dir,
+                        prefix =
+                            prefix +
+                                dir.name +
+                                "/"
+                    )
+                }
+
+                exported.put(
+                    JSONObject()
+                        .apply {
+                            put(
+                                "resolutionHeight",
+                                height
+                            )
+                            put(
+                                "state",
+                                summary.state.name
+                            )
+                            put(
+                                "percentage",
+                                summary.percentage
+                            )
+                            put(
+                                "generatedFrames",
+                                summary.generatedFrames
+                            )
+                            put(
+                                "expectedFrames",
+                                summary.expectedFrames
+                            )
+                            put(
+                                "sizeBytes",
+                                summary.sizeBytes
+                            )
+                            put(
+                                "directories",
+                                directories.size
+                            )
+                        }
                 )
             }
 
@@ -78,8 +186,14 @@ object SpriteBankExporter {
                 JSONObject()
                     .apply {
                         put(
-                            "exportedBanks",
-                            exportedBanks.size
+                            "formatVersion",
+                            SpriteBankFactory
+                                .FORMAT_VERSION
+                        )
+                        put(
+                            "generatorVersion",
+                            SpriteBankFactory
+                                .GENERATOR_VERSION
                         )
                         put(
                             "generatedAt",
@@ -87,8 +201,12 @@ object SpriteBankExporter {
                                 .currentTimeMillis()
                         )
                         put(
+                            "resolutionBanks",
+                            exported
+                        )
+                        put(
                             "note",
-                            "Place the exported sprites/ directory under app assets for APK integration."
+                            "Each sprites/banks/<resolution>p directory is an independent logical bank. Complete banks can be copied directly under app assets."
                         )
                     }
 
@@ -124,9 +242,7 @@ object SpriteBankExporter {
                     !file.name
                         .endsWith(
                             ".tmp"
-                        ) &&
-                    file.name !=
-                        "building.json"
+                        )
                 ) {
                     addFile(
                         zip,
