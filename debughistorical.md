@@ -667,3 +667,17 @@ après `initializeSession()`, vérifier que la session est encore active dans `s
 
 Conclusion : le manifeste READY n'avait pas de champ manquant ; le défaut était un flux de contrôle après rechargement réussi.
 
+## 2026-09-30 — GECKO-040B — DISK_HIT encore suivi d'une erreur
+
+Les tests téléphone ont montré qu'un simple contrôle de présence dans `sessions` n'était pas suffisant : une tâche déjà planifiée pouvait entrer avec `bankKey` non nul et `metadata` nul, ou une exception non essentielle après `completeSession` pouvait remonter.
+
+Durcissement :
+- `initializeSession()` retourne explicitement `READY` ou `BUILD_REQUIRED` ;
+- initialisation sérialisée par session ;
+- drapeau `terminal` posé dès `completeSession` ;
+- tâches stale quittent immédiatement ;
+- `failSession` ignore une session déjà terminale ;
+- métriques post-completion enfermées dans `runCatching` et loggées en warning.
+
+Objectif téléphone : après `SPRITE_BANK_DISK_HIT`, aucun `SPRITE_BANK_ERROR Required value was null`.
+
