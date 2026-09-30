@@ -980,3 +980,26 @@ Réglages
 → sprites/sprite-factory-report.json
 → banques READY
 → stable-frames.
+
+## GECKO-040 — Sprite banks by resolution
+
+`SpriteBankFactory`
+→ stable barrier
+→ progressive catalog plan according to target resolution
+→ per-asset physical bank files
+→ logical aggregation by resolution
+→ frame-level progress + size + state
+→ disk/APK ready hit exits worker immediately
+
+`MainActivity > Réglages > Banques sprites / export`
+→ list 60p / 120p / 180p / 240p / 360p / 480p
+→ percentage + size + state
+→ details: generated frames / expected frames, complete assets / expected assets
+→ one export action per resolution
+
+`SpriteBankExporter`
+→ `sprites/banks/<height>p/bank-manifest.json`
+→ asset-bank directories for that resolution
+→ stable frames alongside export package
+→ embedded loader accepts new grouped APK path and legacy flat path.
+
