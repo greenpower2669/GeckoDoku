@@ -548,3 +548,47 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] téléphone : animations OFF → LEGACY_PNG_SHOW et PNG historiques visibles ;
 - [ ] mesurer séparément la latence restante QUICK_READY des animations visibles ; si nécessaire, traiter ensuite la priorité de file de build sans confondre avec GECKO-071 ;
 - [ ] aucune prerelease/release ni merge main avant validation explicite Fab.
+
+
+## GECKO-072 — Sprite Bank Factory
+- [x] STABLE_FRAME prioritaire et fixée à 240p ;
+- [x] barrière empêchant les builds lourds avant les STABLE_FRAME ;
+- [x] catalogue canonique des 12 assets Gecko/Abeille SpriteRGBA ;
+- [x] SPRITE_CATALOG_MISS sur asset non prévu ;
+- [x] 60p interne, absent du sélecteur ;
+- [x] pipeline visible 60p → 120p → 240p → target >240 si demandé ;
+- [x] 240p reste résolution utilisateur par défaut ;
+- [x] aucune préfabrication automatique 360/480 ;
+- [x] max 3 workers ;
+- [x] workers Android en priorité background ;
+- [x] file de priorité dédiée Sprite Factory uniquement ;
+- [x] chunks coopératifs de 4 frames ;
+- [x] promotion d’un job catalogue lorsqu’il devient visible ;
+- [x] coalescence des demandes identiques ;
+- [x] coalescence STABLE_FRAME conservée et mesurée ;
+- [x] cache banques dans filesDir persistant ;
+- [x] état BUILDING + reprise des frames contiguës ;
+- [x] publication atomique manifest READY ;
+- [x] SHA-256 asset source dans la clé/manifest ;
+- [x] SHA-256 banque dans le manifest ;
+- [x] invalidation version générateur/chroma-key/source/résolution ;
+- [x] APK lookup assets/sprites/<bankKey>/ avant génération ;
+- [x] DISK/MEMORY/APK hits ;
+- [x] swap de qualité sans remise volontaire à frame zéro ;
+- [x] upscale filtré au rendu sans flouter les banques ;
+- [x] reporting stable/60/120/240, temps, workers, FPS, RAM, hits, misses ;
+- [x] bouton développeur d’export ZIP ;
+- [x] export index global + rapport + banques READY + STABLE_FRAME ;
+- [x] tests catalogue et progression de résolution ;
+- [x] version 0.15.33-dev / versionCode 68 ;
+- [ ] CI finale de tous les commits GECKO-072 verte ;
+- [ ] téléphone : démarrage froid Abeilles & Geckos, mesurer STABLE_FRAME puis premier 60p QUICK_READY ;
+- [ ] téléphone : confirmer ordre de qualité 60→120→240 sans restart visuel ;
+- [ ] téléphone : confirmer workersPeak <= 3 ;
+- [ ] téléphone : provoquer plusieurs assets manquants et vérifier « tout le monde vit d’abord » ;
+- [ ] téléphone : laisser la fabrique finir 100 % puis tuer/reprendre l’app ;
+- [ ] téléphone : confirmer aucune reconstruction d’une banque READY, uniquement DISK_HIT/APK_HIT ;
+- [ ] téléphone : contrôler uiMinFps/uiAvgFps pendant intro, Pierre et plateau ;
+- [ ] exporter GeckoDoku-sprite-banks-*.zip et vérifier l’exhaustivité ;
+- [ ] intégrer ultérieurement l’export sous assets/sprites/ puis valider APK_HIT réel ;
+- [ ] aucune release/prerelease ni merge main avant validation explicite Fab.
