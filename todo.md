@@ -641,3 +641,5 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] Test téléphone : vérifier affichage de seulement 60p / 120p / 240p.
 - [ ] Test téléphone : vérifier récupération de l'espace disque après purge du 480p.
 
+
+- [x] Commit de bascule initial : `659ddd5e7f4f0a81a93bac5f46e8a0ded90e1dfc`.
