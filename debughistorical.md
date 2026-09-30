@@ -617,3 +617,10 @@ Ce correctif optimise la politique de cache, pas le solveur, le gameplay ni l'or
 
 ### GECKO-069 — validation CI
 Le pipeline GitHub Actions #314 a terminé SUCCESS sur 522802e5712ee5005850a033577f5fc143d00bb8 : tests unitaires, compilation et APK Phone OK. Aucun échec de compilation lié au cache chaud, au partage Gecko vert/jaune ni au lifecycle du warmup.
+
+
+## 2026-09-30 — GECKO-070 / délai première animation Abeille
+
+Mesure téléphone 240p : le rendu est propre et les banques chaudes finissent correctement, mais BEE n'est visible qu'après construction complète de ses 24 frames. Le backend SpriteRGBA lui-même n'est pas lent à l'affichage ; l'attente vient du contrat de SpriteFrameCache.prepare(), qui ne rendait la séquence qu'après le manifest final.
+
+Correction : publication d'un préfixe de 4 frames dès qu'elles sont écrites, démarrage immédiat du renderer, boucle temporaire locale de ce préfixe puis remplacement par la séquence complète. Ce chemin est générique Gecko/Abeille et ne change ni AliveAnimator, ni gameplay, ni règles de sélection.
