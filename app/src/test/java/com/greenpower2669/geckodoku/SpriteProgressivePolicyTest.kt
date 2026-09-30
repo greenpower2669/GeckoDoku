@@ -6,9 +6,9 @@ import org.junit.Test
 
 class SpriteProgressivePolicyTest {
     @Test
-    fun p240UsesInternal60Then120Then240() {
+    fun p240UsesOnlyPackaged240Bank() {
         assertEquals(
-            listOf(60, 120, 240),
+            listOf(240),
             SpriteProgressivePolicy
                 .stagesFor(
                     SpriteResolution.P240
@@ -17,18 +17,11 @@ class SpriteProgressivePolicyTest {
     }
 
     @Test
-    fun p120StopsAt120() {
+    fun spritePipelineIsFixedAt240() {
         assertEquals(
-            listOf(60, 120),
-            SpriteProgressivePolicy
-                .stagesFor(
-                    SpriteResolution.P120
-                )
+            240,
+            SpriteProgressivePolicy.INTERNAL_LOW_HEIGHT
         )
-    }
-
-    @Test
-    fun spritePipelineHasNoSecondaryResolutionAbove240() {
         assertEquals(
             240,
             SpriteProgressivePolicy.MAX_HEIGHT
