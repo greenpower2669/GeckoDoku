@@ -643,3 +643,18 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 
 
 - [x] Commit de bascule initial : `659ddd5e7f4f0a81a93bac5f46e8a0ded90e1dfc`.
+
+
+## GECKO-043 — validation
+- [x] Runtime fixé à 240p uniquement.
+- [x] Retirer 60p/120p du package et purger anciens caches bas niveau.
+- [x] Router Gecko/Abeille de Classic + Sudoku vers SpriteRGBA comme Gomoku + Abeilles & Geckos.
+- [x] Loader APK indépendant des MP4 source via sprites/index.json.
+- [x] STABLE_FRAME depuis la banque 240p embarquée.
+- [x] Supprimer les 12 MP4 Gecko/Abeille remplacés par sprites.
+- [x] Conserver Plante, Pierre/Prof et intros en vidéo.
+- [ ] CI verte sur 0.15.38-dev.
+- [ ] Test téléphone : aucun QUALITY_STAGE_REQUEST 60p/120p, uniquement 240p.
+- [ ] Test téléphone : MEMORY_HIT 240p après warmup, aucune génération MP4.
+- [ ] Test téléphone : Classic, Sudoku, Gomoku, Abeilles & Geckos sans régression visuelle.
+- [ ] Mesurer FPS/RAM après suppression 60p/120p.
