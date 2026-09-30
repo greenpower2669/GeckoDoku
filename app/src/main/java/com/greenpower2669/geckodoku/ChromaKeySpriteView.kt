@@ -212,6 +212,14 @@ class ChromaKeySpriteView @JvmOverloads constructor(
                         assetPath
                     )
 
+                SpriteBankFactory
+                    .recordAnimationVisible(
+                        assetPath =
+                            assetPath,
+                        resolutionHeight =
+                            height
+                    )
+
                 MediaTrace.event(
                     source = traceSource(),
                     event =
