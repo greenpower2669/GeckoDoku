@@ -932,3 +932,38 @@ Implémentation :
 - changement de résolution invalide seulement la référence locale de chaque Presence et redemande la frame de la nouvelle résolution.
 
 Version : 0.15.32-dev / 67.
+
+
+## 2026-09-30 — GECKO-072 Sprite Bank Factory
+
+Architecture installée pour rendre la conversion MP4→RGBA exceptionnelle après une première préparation.
+
+SpriteBankFactory :
+- ThreadPoolExecutor borné à 3 workers et PriorityBlockingQueue ;
+- sessions coopératives de 4 frames, requeue après chaque chunk ;
+- promotion des demandes visibles par rapport au catalogue via priorité + scheduleEpoch ;
+- coalescence par asset/keycolor/résolution ;
+- barrière STABLE_FRAME : les banques lourdes ne démarrent qu’après préparation des STABLE_FRAME Gecko/Abeille en 240p ;
+- workers en THREAD_PRIORITY_BACKGROUND ;
+- cache persistant filesDir/sprite-banks-v2 ;
+- reprise BUILDING sûre, publication atomique READY, source SHA-256 + bank SHA-256 ;
+- catalogue exhaustif des 12 assets Gecko/Abeille réellement compatibles SpriteRGBA ;
+- préfabrique 60p puis 120p puis 240p ; >240p uniquement on-demand.
+
+ChromaKeySpriteView :
+- lecture progressive 60→120→240→target ;
+- le changement de banque rebascule sur la frame correspondant au temps logique écoulé au lieu de repartir de zéro ;
+- filtre bitmap activé pour l’upscale des petites banques ;
+- la première animation visible est comptée une seule fois par lecture et les changements de qualité ne créent pas une nouvelle instance AliveAnimator.
+
+Persistance future APK :
+- recherche d’une banque exportée sous assets/sprites/<bankKey>/manifest.json avant le disque/génération ;
+- copie locale une fois pour conserver SpriteSequence<File>.
+
+Export :
+- nouvelle entrée réglages « Exporter les banques sprites » ;
+- ZIP compatible future intégration assets/sprites ;
+- index + manifests + frames + stable frames + rapport.
+
+Prof/Pierre et Plante restent volontairement hors Sprite Factory car leurs backends actuels ne sont pas SpriteRGBA. Aucun ordonnanceur global n’a été recréé.
+Version : 0.15.33-dev / 68.
