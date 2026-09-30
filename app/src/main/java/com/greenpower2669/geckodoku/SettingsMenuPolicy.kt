@@ -64,7 +64,6 @@ class SettingsMenuPolicy {
                     SettingsEntry.IMPORT_DATA,
                     SettingsEntry.SOUND,
                     SettingsEntry.ANIMATIONS,
-                    SettingsEntry.SPRITE_RESOLUTION,
                     SettingsEntry.MEDIA_LOG
                 )
 
@@ -95,7 +94,6 @@ class SettingsMenuPolicy {
                     SettingsEntry.IMPORT_DATA,
                     SettingsEntry.SOUND,
                     SettingsEntry.ANIMATIONS,
-                    SettingsEntry.SPRITE_RESOLUTION,
                     SettingsEntry.GOMOKU_ANIMATION_LIMIT,
                     SettingsEntry.MEDIA_LOG
                 )
