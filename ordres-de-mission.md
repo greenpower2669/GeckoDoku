@@ -1189,3 +1189,8 @@ Les anciennes banques générées en 180p, 360p et 480p sont considérées obsol
 
 L'ancien export 60/120/240/480 reste archivé dans la release GitHub `PackageSprites` et sert uniquement de sauvegarde historique.
 
+
+
+# GECKO-043 — ORDRE DE MISSION 240P FINAL
+
+Fab valide un runtime préfabriqué 240p uniquement. Supprimer les banques 60p/120p du produit, supprimer les MP4 Gecko/Abeille couverts par les banques, et rendre le loader indépendant de ces sources. Gecko/Abeille doivent utiliser SpriteRGBA dans tous les modes. Plante, Pierre/Prof et intros restent vidéo. Les séquences 240p sont préchargées dans le cache logique en arrière-plan ; le cache bitmap reste borné. Aucun merge main ni release avant validation téléphone.
