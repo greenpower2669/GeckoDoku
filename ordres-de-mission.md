@@ -1124,3 +1124,38 @@ Rapport JSON : progression stable/60/120/240, expected/missing, temps par étage
 - après préparation complète et relance : DISK_HIT/APK_HIT, aucune reconstruction des banques READY ;
 - export ZIP récupérable et exhaustif ;
 - vérifier FPS et absence de jank pendant intro/Pierre/plateau.
+
+# GECKODOKU — GECKO-040 — BANQUES SPRITES PAR RÉSOLUTION
+
+## Décision canonique
+
+Une banque logique correspond à une résolution. Les animations restent des sous-banques/fichiers indépendants à l'intérieur ; aucun fichier géant monolithique.
+
+Résolutions connues : 60p interne puis résolutions configurables 120p, 180p, 240p, 360p, 480p. La génération progressive suit uniquement les étapes nécessaires à la cible. Exemple cible 480p : 60p > 120p > 240p > 480p.
+
+Cadence canonique : 12 images/s.
+
+## Réglages
+
+Ajouter « Banques sprites / export ». Pour chaque banque afficher :
+- résolution ;
+- pourcentage réel calculé sur les frames générées / frames attendues ;
+- taille disque ;
+- état Vide / En cours / Complète / Erreur.
+
+Le détail d'une banque montre aussi les frames et le nombre d'animations complètes. Chaque banque dispose de son propre export.
+
+## Export
+
+Un ZIP par résolution, structure :
+`sprites/banks/<resolution>p/bank-manifest.json`
+`sprites/banks/<resolution>p/<bankKey>/...`
+
+Le manifeste global de résolution contient état, pourcentage, frames attendues/générées, taille, inventaire des assets et hashes disponibles. Les stable frames restent exportées sous `sprites/stable-frames/`.
+
+Le loader APK doit reconnaître cette structure tout en conservant la compatibilité avec l'ancien chemin plat.
+
+## Correctif cache READY
+
+Après un hit disque ou APK validé, la session est terminée. Le worker doit sortir immédiatement et ne jamais tenter d'accéder à `session.metadata` pour lancer une génération inutile.
+
