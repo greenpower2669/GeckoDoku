@@ -1006,3 +1006,7 @@ Décision canonique de Fab après validation téléphone et export complet :
 
 Le paquet historique complet 60/120/240/480 est archivé dans la release GitHub `PackageSprites`, asset `GeckoDoku-sprite-banks-60-120-240-480-20260930-2058.zip`, SHA-256 `b108331d259d6d03aa6832028327a76fb31cf3bcb882738f759121cfeafad296`.
 
+### Validation GECKO-041
+
+Le test `SpriteResolutionTest` a été aligné sur la règle finale : seules 120p et 240p sont sélectionnables ; toute ancienne préférence (ex. 480) retombe automatiquement sur 240p. CI Android run #388 verte.
+
