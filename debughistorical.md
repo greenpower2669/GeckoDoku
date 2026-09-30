@@ -692,3 +692,7 @@ Le test réel a produit :
 
 Décision : le coût disque du 480p n'apporte pas assez de valeur pour le pipeline courant. La chaîne est donc volontairement plafonnée à 240p. Les banques 180/360/480 deviennent obsolètes et sont supprimées automatiquement du stockage local par GECKO-041.
 
+### CI GECKO-041
+
+Premier passage a révélé un test historique attendant encore [120,180,240,360,480]. Ce n'était pas un défaut du code runtime mais un oracle de test obsolète. `SpriteResolutionTest` a été corrigé pour [120,240] avec test de migration 480→240. Run #388 : vert.
+
