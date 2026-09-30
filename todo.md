@@ -627,7 +627,7 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] Réduire l'export global à 60p / 120p / 240p.
 - [x] Supprimer automatiquement les anciennes banques locales 180p / 360p / 480p.
 - [x] Mettre l'UI export à jour pour 240p maximum.
-- [ ] Valider CI 0.15.36-dev.
+- [x] Valider CI 0.15.36-dev — run #388 vert (tests + assemblePhone).
 - [ ] Test téléphone : vérifier affichage de seulement 60p / 120p / 240p.
 - [ ] Test téléphone : vérifier récupération de l'espace disque après purge du 480p.
 
