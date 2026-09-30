@@ -1003,3 +1003,21 @@ Réglages
 → stable frames alongside export package
 → embedded loader accepts new grouped APK path and legacy flat path.
 
+## GECKO-040B — Export button flow
+
+Réglages > Banques de sprites
+→ Tout préparer + exporter
+→ SpriteBankFactory.prepareExportThrough480()
+→ 60p → 120p → 240p → 480p
+→ barre de progression = frames générées / frames attendues
+→ 4/4 banques complètes
+→ ACTION_CREATE_DOCUMENT
+→ SpriteBankExporter.write()
+→ ZIP unique structuré par résolution.
+
+READY reload:
+initializeSession() → READY | BUILD_REQUIRED
+→ terminal=true sur completeSession
+→ aucune tâche stale ne peut relancer requireNotNull(metadata)
+→ erreurs de métriques post-completion = warning non fatal.
+
