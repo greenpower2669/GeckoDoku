@@ -498,3 +498,26 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] aucune prerelease/release ni merge main avant validation explicite Fab.
 
 - [x] artifact GeckoDoku-v0.15.30-dev-phone produit ; digest sha256:3245421691fdc4857ee7d1dee1978cb9ff198a2d21380fbece526630b6ca795b ;
+
+
+## GECKO-070 — quick-start + résolutions basses
+- [x] ajouter 120p et 180p au sélecteur ;
+- [x] garder 240p/360p/480p ;
+- [x] passer le défaut neuf de 480p à 240p ;
+- [x] publier une séquence partielle dès 4 frames prêtes ;
+- [x] démarrer ChromaKeySpriteView sur le préfixe sans attendre la banque complète ;
+- [x] boucler localement le préfixe pendant la fin de construction ;
+- [x] basculer vers la séquence complète sans recréer la Presence ;
+- [x] ajouter un test des résolutions exposées et du fallback 240p ;
+- [x] version 0.15.31-dev / versionCode 66 ;
+- [ ] CI tests + assemblePhone verte ;
+- [ ] téléphone : mesurer délai Abeille jusqu'à QUICK_START en 120p, 180p et 240p ;
+- [ ] téléphone : vérifier absence de saut visible au passage FULL_SEQUENCE_READY ;
+- [ ] téléphone : comparer mémoire/FPS 120p vs 180p vs 240p ;
+- [ ] aucune prerelease/release ni merge main avant validation explicite Fab.
+
+### GECKO-069 — éléments confirmés par le test téléphone 240p
+- [x] HOT_BANK_PINNED GECKO_SHARED observé : 61/61, ~13,40 MiB ;
+- [x] HOT_BANK_PINNED BEE observé : 24/24, ~5,27 MiB ;
+- [x] yellow=shared observé et rendu jaune visuellement propre ;
+- [x] Gecko_actions_plusieurs reste on-demand : construction observée après demande CUTE ;
