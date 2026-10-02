@@ -100,6 +100,9 @@ class MainActivity : Activity() {
     private var sudokuPalettePopup:
         PopupWindow? = null
 
+    private var sudokuPaletteView:
+        SudokuQuickPaletteView? = null
+
     private val sudokuPopupPlacementPolicy =
         SudokuPopupPlacementPolicy()
 
@@ -774,38 +777,21 @@ class MainActivity : Activity() {
                         cell
                     )
 
-                    val snapshot =
-                        sudokuEngine
-                            ?.snapshot()
+                    sudokuValueOverlay
+                        .invalidate()
 
                     if (
-                        snapshot != null &&
-                        sudokuCellTapPolicy
+                        sudokuGesturePolicy
                             .actionFor(
-                                snapshot,
-                                cell
+                                SudokuGesture
+                                    .SINGLE_TAP
                             ) ==
-                            SudokuCellTapAction
-                                .TOGGLE_GECKO_MARKER
+                            SudokuGestureAction
+                                .OPEN_INPUT_PALETTE
                     ) {
-                        toggleSudokuGeckoMarker()
-                    } else {
-                        sudokuValueOverlay
-                            .invalidate()
-
-                        status.text =
-                            if (
-                                snapshot
-                                    ?.isGiven(cell) ==
-                                    true
-                            ) {
-                                "Ce chiffre est donné."
-                            } else {
-                                "Sudoku • case " +
-                                    (cell.row + 1) +
-                                    "," +
-                                    (cell.col + 1)
-                            }
+                        showSudokuCellPalette(
+                            cell
+                        )
                     }
                 }
 
@@ -819,9 +805,9 @@ class MainActivity : Activity() {
                                     .DOUBLE_TAP
                             ) ==
                             SudokuGestureAction
-                                .OPEN_PERSONAL_MARKERS
+                                .OPEN_INPUT_PALETTE
                     ) {
-                        showSudokuPersonalMarkerPalette(
+                        showSudokuCellPalette(
                             cell
                         )
                     }
@@ -830,9 +816,19 @@ class MainActivity : Activity() {
                 onLongPressCell = {
                         cell ->
 
-                    showSudokuCellPalette(
-                        cell
-                    )
+                    if (
+                        sudokuGesturePolicy
+                            .actionFor(
+                                SudokuGesture
+                                    .LONG_PRESS
+                            ) ==
+                            SudokuGestureAction
+                                .OPEN_PERSONAL_MARKERS
+                    ) {
+                        showSudokuPersonalMarkerPalette(
+                            cell
+                        )
+                    }
                 }
             }
 
@@ -11193,24 +11189,12 @@ class MainActivity : Activity() {
                 ?: return
 
         if (
-            engine.snapshot()
-                .isGiven(cell)
-        ) {
-            fx.blocked()
-            status.text =
-                "Ce chiffre est donné."
-            return
-        }
-
-        if (
             !::screenRoot.isInitialized ||
             screenRoot.width <= 0 ||
             screenRoot.height <= 0
         ) {
             return
         }
-
-        dismissSudokuPalette()
 
         sudokuSelectedCell =
             cell
@@ -11219,6 +11203,25 @@ class MainActivity : Activity() {
             .setSelectedCell(
                 cell
             )
+
+        if (
+            sudokuPalettePopup
+                ?.isShowing ==
+                true &&
+            sudokuPaletteView !=
+                null
+        ) {
+            refreshSudokuPersistentPalette()
+
+            status.text =
+                "Sudoku • case " +
+                    (cell.row + 1) +
+                    "," +
+                    (cell.col + 1) +
+                    " • pavé conservé."
+
+            return
+        }
 
         var popupWidth =
             minOf(
@@ -11252,18 +11255,26 @@ class MainActivity : Activity() {
             PopupWindow? =
             null
 
+        fun targetCell():
+            Cell? =
+            sudokuSelectedCell
+
         fun hypothesisVisuals():
             Map<
                 Int,
                 SudokuHypothesisDigitVisual
                 > {
+            val target =
+                targetCell()
+                    ?: return emptyMap()
+
             return engine
                 .snapshot()
                 .hypothesisTrace
                 .nodes
                 .filter {
                     it.cell.cell ==
-                        cell
+                        target
                 }
                 .associate {
                     it.cell.digit to
@@ -11283,34 +11294,6 @@ class MainActivity : Activity() {
                 visualStyle =
                     gameModePreferences
                         .sudokuVisualStyle
-
-                val initial =
-                    engine.snapshot()
-
-                setCurrentValue(
-                    initial
-                        .valueAt(
-                            cell
-                        )
-                        .takeIf {
-                            it != 0
-                        }
-                )
-
-                setActiveCandidates(
-                    initial
-                        .notesAt(
-                            cell
-                        )
-                )
-
-                setHypothesisDigits(
-                    digits =
-                        hypothesisVisuals(),
-                    nextColor =
-                        engine
-                            .nextHypothesisColor()
-                )
 
                 onValueDigit = {
                         digit ->
@@ -11334,12 +11317,7 @@ class MainActivity : Activity() {
                             true
                     )
 
-                    setActiveCandidates(
-                        engine.snapshot()
-                            .notesAt(
-                                cell
-                            )
-                    )
+                    refreshSudokuPersistentPalette()
 
                     sudokuValueOverlay
                         .invalidate()
@@ -11348,9 +11326,17 @@ class MainActivity : Activity() {
                 onHypothesisDigit = {
                         digit ->
 
+                    val target =
+                        targetCell()
+
+                    if (target == null) {
+                        fx.blocked()
+                        return@apply
+                    }
+
                     when (
                         engine.cycleHypothesis(
-                            cell,
+                            target,
                             digit
                         )
                     ) {
@@ -11365,7 +11351,7 @@ class MainActivity : Activity() {
                             val node =
                                 snapshot
                                     .hypothesisAt(
-                                        cell
+                                        target
                                     )
 
                             status.text =
@@ -11390,13 +11376,7 @@ class MainActivity : Activity() {
                                             "."
                                 }
 
-                            setHypothesisDigits(
-                                digits =
-                                    hypothesisVisuals(),
-                                nextColor =
-                                    engine
-                                        .nextHypothesisColor()
-                            )
+                            refreshSudokuPersistentPalette()
 
                             sudokuValueOverlay
                                 .invalidate()
@@ -11420,13 +11400,17 @@ class MainActivity : Activity() {
                 onConfirmValue = {
                         digit ->
 
-                    dismissSudokuPalette()
+                    setPendingValue(
+                        null
+                    )
 
                     handleSudokuDigit(
                         digit,
                         notesModeOverride =
                             false
                     )
+
+                    refreshSudokuPersistentPalette()
                 }
 
                 onRejectValue = {
@@ -11436,6 +11420,14 @@ class MainActivity : Activity() {
 
                     status.text =
                         "Prévisu annulée • aucun nombre posé."
+                }
+
+                onHelpPanel = {
+                        panel ->
+
+                    speakSudokuPaletteHelp(
+                        panel
+                    )
                 }
 
                 onClose = {
@@ -11579,12 +11571,17 @@ class MainActivity : Activity() {
                 }
             }
 
+        sudokuPaletteView =
+            palette
+
+        refreshSudokuPersistentPalette()
+
         val popup =
             PopupWindow(
                 palette,
                 popupWidth,
                 popupHeight,
-                true
+                false
             ).apply {
                 isOutsideTouchable =
                     false
@@ -11605,6 +11602,9 @@ class MainActivity : Activity() {
                             this
                     ) {
                         sudokuPalettePopup =
+                            null
+
+                        sudokuPaletteView =
                             null
                     }
                 }
@@ -11693,7 +11693,119 @@ class MainActivity : Activity() {
         )
 
         status.text =
-            "Sudoku • Choix / Candidats / Hypothèse / Prévisu • glisse le bandeau pour déplacer."
+            "Sudoku • pavé persistant • simple ou double clic pour changer de case • ? pour l'aide."
+    }
+
+    private fun refreshSudokuPersistentPalette() {
+        val palette =
+            sudokuPaletteView
+                ?: return
+
+        val engine =
+            sudokuEngine
+                ?: return
+
+        val cell =
+            sudokuSelectedCell
+                ?: return
+
+        val snapshot =
+            engine.snapshot()
+
+        palette.visualStyle =
+            gameModePreferences
+                .sudokuVisualStyle
+
+        palette.setPendingValue(
+            null
+        )
+
+        palette.setCurrentValue(
+            snapshot
+                .valueAt(
+                    cell
+                )
+                .takeIf {
+                    it != 0
+                }
+        )
+
+        palette.setActiveCandidates(
+            snapshot
+                .notesAt(
+                    cell
+                )
+        )
+
+        val hypothesisDigits =
+            snapshot
+                .hypothesisTrace
+                .nodes
+                .filter {
+                    it.cell.cell ==
+                        cell
+                }
+                .associate {
+                    it.cell.digit to
+                        SudokuHypothesisDigitVisual(
+                            color =
+                                it.color,
+                            state =
+                                it.state
+                        )
+                }
+
+        palette.setHypothesisDigits(
+            digits =
+                hypothesisDigits,
+            nextColor =
+                engine
+                    .nextHypothesisColor()
+        )
+    }
+
+    private fun speakSudokuPaletteHelp(
+        panel:
+            SudokuPalettePanel
+    ) {
+        val message =
+            when (panel) {
+                SudokuPalettePanel.VALUE ->
+                    "Choix sert à proposer la valeur définitive de la case. Je la montre d'abord dans Prévisu, puis tu confirmes Oui ou Non. Tant que tu n'as pas confirmé Oui, la grille n'est pas modifiée."
+
+                SudokuPalettePanel.CANDIDATE ->
+                    "Candidats sert uniquement à noter des chiffres possibles. Un candidat n'est ni une décision ni une hypothèse. Tu peux en garder plusieurs dans la même case pour préparer ton raisonnement."
+
+                SudokuPalettePanel.HYPOTHESIS ->
+                    "Hypothèse sert à explorer un raisonnement provisoire. Chaque branche reçoit une couleur. Une sous-hypothèse devient enfant de la précédente. Si une branche mène à contradiction, elle passe en sens interdit. Revenir en arrière supprime seulement ses descendants."
+
+                SudokuPalettePanel.PREVIEW ->
+                    "Prévisu protège des erreurs de saisie. Le chiffre choisi y apparaît avant toute validation. Oui l'inscrit réellement dans la grille. Non efface seulement la prévisualisation et laisse la case inchangée."
+            }
+
+        status.text =
+            "Aide Sudoku • " +
+                when (panel) {
+                    SudokuPalettePanel.VALUE ->
+                        "Choix"
+
+                    SudokuPalettePanel.CANDIDATE ->
+                        "Candidats"
+
+                    SudokuPalettePanel.HYPOTHESIS ->
+                        "Hypothèse"
+
+                    SudokuPalettePanel.PREVIEW ->
+                        "Prévisu"
+                }
+
+        speakSimpleProfessorBubble(
+            text =
+                message,
+            origin =
+                SpeechOrigin
+                    .QUICK_TALK
+        )
     }
 
     private fun dismissSudokuPalette() {
@@ -11701,6 +11813,7 @@ class MainActivity : Activity() {
             sudokuPalettePopup
 
         sudokuPalettePopup = null
+        sudokuPaletteView = null
 
         if (
             popup != null &&
