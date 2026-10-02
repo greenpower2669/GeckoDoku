@@ -2,7 +2,7 @@ name: Build GeckoDoku phone APK
 
 on:
   push:
-    branches: [ main, gecko-022-rich-media, gecko-024-grid-audio, gecko-025-canonical-gecko-prof, gecko-026-floating-prof-ui, gecko-027-prof-foreground, gecko-028-prof-voice-idle-mask, gecko-029-more-life-full-celebration, gecko-030-restore-prof-video, gecko-031-voice-ab-experiment, gecko-032-pierre-medium, gecko-033-identity-prof-life, gecko-038-sudoku-mode, gecko-039-sudoku-tap-gecko-gomoku, gecko-040-resolution-sprite-banks, gecko-041-sprite-banks-240-max, gecko-042-prebuilt-sprite-runtime, gecko-043-sprite-240-only-cleanup ]
+    branches: [ main, gecko-022-rich-media, gecko-024-grid-audio, gecko-025-canonical-gecko-prof, gecko-026-floating-prof-ui, gecko-027-prof-foreground, gecko-028-prof-voice-idle-mask, gecko-029-more-life-full-celebration, gecko-030-restore-prof-video, gecko-031-voice-ab-experiment, gecko-032-pierre-medium, gecko-033-identity-prof-life, gecko-038-sudoku-mode, gecko-039-sudoku-tap-gecko-gomoku, gecko-040-resolution-sprite-banks, gecko-041-sprite-banks-240-max, gecko-042-prebuilt-sprite-runtime, gecko-043-sprite-240-only-cleanup, gecko-044-hypothesis-branches ]
   workflow_dispatch:
 
 permissions:
