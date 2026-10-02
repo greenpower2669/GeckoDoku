@@ -58,6 +58,15 @@ enum class SudokuMoveOrigin {
     PROFESSOR
 }
 
+data class SudokuHypothesisChoice(
+    val cell: Cell,
+    val digit: Int
+) {
+    init {
+        require(digit in 1..9)
+    }
+}
+
 enum class SudokuActionFeedback {
     VALUE_SET,
     NOTE_TOGGLED,
@@ -70,6 +79,7 @@ enum class SudokuActionFeedback {
     COMPLETED,
     UNDONE,
     REDONE,
+    HYPOTHESIS_CHANGED,
     NOTHING_CHANGED
 }
 
@@ -84,7 +94,13 @@ data class SudokuSnapshot(
         SudokuMoveOrigin? = null,
     val customMarkers:
         Map<Cell, CustomMarker> =
-        emptyMap()
+        emptyMap(),
+    val hypothesisTrace:
+        HypothesisTraceSnapshot<
+            SudokuHypothesisChoice
+            > =
+        HypothesisTraceSnapshot
+            .empty()
 ) {
     fun valueAt(
         cell: Cell
@@ -117,6 +133,21 @@ data class SudokuSnapshot(
         cell: Cell
     ): CustomMarker? =
         customMarkers[cell]
+
+    fun hypothesisAt(
+        cell: Cell
+    ): HypothesisNode<
+        SudokuHypothesisChoice
+        >? =
+        hypothesisTrace
+            .nodes
+            .filter {
+                it.cell.cell ==
+                    cell
+            }
+            .maxByOrNull {
+                it.order
+            }
 
     fun isGiven(
         cell: Cell

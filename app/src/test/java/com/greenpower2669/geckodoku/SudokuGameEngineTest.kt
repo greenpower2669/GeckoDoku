@@ -100,4 +100,188 @@ class SudokuGameEngineTest {
             engine.snapshot().valueAt(Cell(0, 1))
         )
     }
+
+    @Test
+    fun candidatesStayIndependentFromHypothesisBranches() {
+        val engine =
+            SudokuGameEngine(
+                puzzle()
+            )
+
+        val cell =
+            Cell(
+                0,
+                1
+            )
+
+        engine.enterDigit(
+            cell =
+                cell,
+            digit =
+                3,
+            notesMode =
+                true
+        )
+
+        engine.cycleHypothesis(
+            cell =
+                cell,
+            digit =
+                4
+        )
+
+        assertTrue(
+            3 in
+                engine
+                    .snapshot()
+                    .notesAt(
+                        cell
+                    )
+        )
+
+        val node =
+            engine
+                .snapshot()
+                .hypothesisAt(
+                    cell
+                )
+
+        assertEquals(
+            4,
+            node
+                ?.cell
+                ?.digit
+        )
+
+        assertEquals(
+            HypothesisColor.YELLOW,
+            node
+                ?.color
+        )
+
+        engine.cycleHypothesis(
+            cell =
+                cell,
+            digit =
+                4
+        )
+
+        assertEquals(
+            HypothesisBranchState
+                .CONTRADICTION,
+            engine
+                .snapshot()
+                .hypothesisAt(
+                    cell
+                )
+                ?.state
+        )
+
+        engine.cycleHypothesis(
+            cell =
+                cell,
+            digit =
+                4
+        )
+
+        assertEquals(
+            null,
+            engine
+                .snapshot()
+                .hypothesisAt(
+                    cell
+                )
+        )
+
+        assertTrue(
+            3 in
+                engine
+                    .snapshot()
+                    .notesAt(
+                        cell
+                    )
+        )
+    }
+
+    @Test
+    fun sudokuHypothesesKeepParentChildColorsAndCanRewind() {
+        val engine =
+            SudokuGameEngine(
+                puzzle()
+            )
+
+        val firstCell =
+            Cell(
+                0,
+                1
+            )
+
+        val secondCell =
+            Cell(
+                0,
+                2
+            )
+
+        engine.cycleHypothesis(
+            firstCell,
+            4
+        )
+
+        val first =
+            engine
+                .snapshot()
+                .hypothesisAt(
+                    firstCell
+                )!!
+
+        engine.cycleHypothesis(
+            secondCell,
+            6
+        )
+
+        val second =
+            engine
+                .snapshot()
+                .hypothesisAt(
+                    secondCell
+                )!!
+
+        assertEquals(
+            first.id,
+            second.parentId
+        )
+
+        assertEquals(
+            HypothesisColor.YELLOW,
+            first.color
+        )
+
+        assertEquals(
+            HypothesisColor.GREEN,
+            second.color
+        )
+
+        assertTrue(
+            engine.rewindHypothesis(
+                first.id
+            )
+        )
+
+        assertEquals(
+            first.id,
+            engine
+                .snapshot()
+                .hypothesisTrace
+                .activeId
+        )
+
+        assertEquals(
+            null,
+            engine
+                .snapshot()
+                .hypothesisAt(
+                    secondCell
+                )
+        )
+    }
 }

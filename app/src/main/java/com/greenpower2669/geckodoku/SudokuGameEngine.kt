@@ -27,6 +27,11 @@ class SudokuGameEngine(
             CustomMarker
         >()
 
+    private var hypothesisTrace =
+        HypothesisBranchTrace<
+            SudokuHypothesisChoice
+            >()
+
     private val givenMask =
         BooleanArray(
             SudokuPuzzle.CELL_COUNT
@@ -73,8 +78,16 @@ class SudokuGameEngine(
                         index %
                             SudokuPuzzle.SIZE
                     )
-                }
+                },
+            hypothesisTrace =
+                hypothesisTrace
+                    .snapshot()
         )
+
+    fun nextHypothesisColor():
+        HypothesisColor =
+        hypothesisTrace
+            .nextColor()
 
     fun enterDigit(
         cell: Cell,
@@ -129,6 +142,10 @@ class SudokuGameEngine(
 
         pushUndo()
 
+        removeHypothesisAtCell(
+            cell
+        )
+
         values[index] = digit
         notes[index].clear()
         geckoMarkers[index] = false
@@ -151,6 +168,116 @@ class SudokuGameEngine(
             SudokuActionFeedback
                 .VALUE_SET
         }
+    }
+
+    fun cycleHypothesis(
+        cell: Cell,
+        digit: Int
+    ): SudokuActionFeedback {
+        require(digit in 1..9)
+
+        val index =
+            puzzle.indexOf(cell)
+
+        if (givenMask[index]) {
+            return SudokuActionFeedback
+                .GIVEN_LOCKED
+        }
+
+        if (values[index] != 0) {
+            return SudokuActionFeedback
+                .NOTHING_CHANGED
+        }
+
+        pushUndo()
+
+        val current =
+            hypothesisTrace
+                .snapshot()
+                .nodes
+                .filter {
+                    it.cell.cell ==
+                        cell
+                }
+                .maxByOrNull {
+                    it.order
+                }
+
+        val choice =
+            SudokuHypothesisChoice(
+                cell =
+                    cell,
+                digit =
+                    digit
+            )
+
+        if (
+            current != null &&
+            current.cell.digit !=
+                digit
+        ) {
+            hypothesisTrace
+                .removeBranch(
+                    current.cell
+                )
+
+            hypothesisTrace
+                .startHypothesis(
+                    choice
+                )
+        } else if (
+            current == null
+        ) {
+            hypothesisTrace
+                .startHypothesis(
+                    choice
+                )
+        } else if (
+            current.state ==
+                HypothesisBranchState
+                    .ACTIVE
+        ) {
+            hypothesisTrace
+                .markContradiction(
+                    current.cell
+                )
+        } else {
+            hypothesisTrace
+                .removeBranch(
+                    current.cell
+                )
+        }
+
+        lastMoveOrigin =
+            SudokuMoveOrigin.PLAYER
+
+        return SudokuActionFeedback
+            .HYPOTHESIS_CHANGED
+    }
+
+    fun rewindHypothesis(
+        id: Int
+    ): Boolean {
+        val snapshot =
+            hypothesisTrace
+                .snapshot()
+
+        if (
+            snapshot.nodeById(id) ==
+                null
+        ) {
+            return false
+        }
+
+        pushUndo()
+
+        hypothesisTrace
+            .rewindTo(id)
+
+        lastMoveOrigin =
+            SudokuMoveOrigin.PLAYER
+
+        return true
     }
 
     fun toggleGeckoMarker(
@@ -237,12 +364,20 @@ class SudokuGameEngine(
                 .GIVEN_LOCKED
         }
 
+        val hasHypothesis =
+            snapshot()
+                .hypothesisAt(
+                    cell
+                ) !=
+                null
+
         if (
             values[index] == 0 &&
             notes[index].isEmpty() &&
             !geckoMarkers[index] &&
             !customMarkers
-                .containsKey(index)
+                .containsKey(index) &&
+            !hasHypothesis
         ) {
             return SudokuActionFeedback
                 .NOTHING_CHANGED
@@ -253,6 +388,9 @@ class SudokuGameEngine(
         notes[index].clear()
         geckoMarkers[index] = false
         customMarkers.remove(index)
+        removeHypothesisAtCell(
+            cell
+        )
         lastMoveOrigin =
             SudokuMoveOrigin.PLAYER
 
@@ -296,6 +434,28 @@ class SudokuGameEngine(
             .REDONE
     }
 
+    private fun removeHypothesisAtCell(
+        cell: Cell
+    ) {
+        val current =
+            hypothesisTrace
+                .snapshot()
+                .nodes
+                .filter {
+                    it.cell.cell ==
+                        cell
+                }
+                .maxByOrNull {
+                    it.order
+                }
+                ?: return
+
+        hypothesisTrace
+            .removeBranch(
+                current.cell
+            )
+    }
+
     private fun pushUndo() {
         undoStack.addLast(
             capture()
@@ -322,6 +482,9 @@ class SudokuGameEngine(
                 geckoMarkers.copyOf(),
             customMarkers =
                 customMarkers.toMap(),
+            hypothesisTrace =
+                hypothesisTrace
+                    .snapshot(),
             lastMoveOrigin =
                 lastMoveOrigin
         )
@@ -347,6 +510,11 @@ class SudokuGameEngine(
                         state.customMarkers
                     )
                 }
+
+        hypothesisTrace =
+            HypothesisBranchTrace(
+                state.hypothesisTrace
+            )
 
         lastMoveOrigin =
             state.lastMoveOrigin
@@ -401,6 +569,10 @@ class SudokuGameEngine(
         val geckoMarkers: BooleanArray,
         val customMarkers:
             Map<Int, CustomMarker>,
+        val hypothesisTrace:
+            HypothesisTraceSnapshot<
+                SudokuHypothesisChoice
+                >,
         val lastMoveOrigin:
             SudokuMoveOrigin?
     )

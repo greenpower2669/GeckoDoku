@@ -236,6 +236,10 @@ class HypothesisBranchTrace<T>(
                 1
     }
 
+    fun nextColor():
+        HypothesisColor =
+        allocateColor()
+
     fun snapshot():
         HypothesisTraceSnapshot<T> =
         HypothesisTraceSnapshot(
