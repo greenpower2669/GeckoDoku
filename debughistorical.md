@@ -715,3 +715,5 @@ GECKO-044 CI FINAL : run #397 SUCCESS sur commit `3f61e64c1ce5381710b2ece6ee0cca
 
 ## 2026-10-02 — GECKO-045
 Sudoku adopte le moteur d'hypothèses parent/enfant de GECKO-044 sans confondre les candidats. Le popup local est réorganisé en quatre panneaux Choix/Candidats/Hypothèse/Prévisu, déplaçable par bandeau. Une valeur choisie doit passer par une confirmation Oui/Non ; pendant cette confirmation, la croix de fermeture est masquée. Les hypothèses (case, chiffre) ont couleur, aura, contradiction/sens-interdit et rollback. La frise permanente reste absente du Sudoku et les textes H1/H2 sont retirés de la frise des deux autres modes pour gagner de la place. CI en attente.
+
+GECKO-045 CI FINAL : run #398 SUCCESS sur commit `63e3aab45628c0e0ba9311ae3e521ded03973aa2`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.40-dev-phone`, 219118896 octets, digest `sha256:7336ff3419c30de1f7f1ba11d10aa2e35472c8714a3ab3a76c5d5b79e5db3f4f`. Prerelease et release sont restées skipped. Validation téléphone requise pour drag du pavé, confirmation Oui/Non, indépendance candidats/hypothèses et rollback parent/enfant Sudoku.
