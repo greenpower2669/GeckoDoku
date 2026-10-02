@@ -1194,3 +1194,11 @@ L'ancien export 60/120/240/480 reste archivé dans la release GitHub `PackageSpr
 # GECKO-043 — ORDRE DE MISSION 240P FINAL
 
 Fab valide un runtime préfabriqué 240p uniquement. Supprimer les banques 60p/120p du produit, supprimer les MP4 Gecko/Abeille couverts par les banques, et rendre le loader indépendant de ces sources. Gecko/Abeille doivent utiliser SpriteRGBA dans tous les modes. Plante, Pierre/Prof et intros restent vidéo. Les séquences 240p sont préchargées dans le cache logique en arrière-plan ; le cache bitmap reste borné. Aucun merge main ni release avant validation téléphone.
+
+# GECKO-044 — ORDRE DE MISSION HYPOTHÈSES RÉVERSIBLES
+
+Pour GeckoDoku classique et Abeilles & Geckos, une hypothèse manuelle possède une identité, une couleur et un parent éventuel. La palette est jaune, vert, rouge, violet, bleu, orange. Les croix créées sous une hypothèse appartiennent à cette branche et reprennent sa couleur. Une sous-hypothèse devient enfant de la branche active.
+
+Si une hypothèse mène à contradiction, elle et ses hypothèses descendantes passent visuellement en « sens interdit ». Si le joueur abandonne ou supprime une branche, toutes les marques qui lui appartiennent (croix, auras, hypothèses enfants, contradiction) sont annulées récursivement. Le retour à une étape de la frise conserve cette hypothèse et ses marques propres mais retire tous ses descendants, afin de permettre l’exploration d’une branche sœur.
+
+La frise colorée doit apparaître sous le plateau uniquement dans ces deux modes. Aucun merge main ni release avant validation Fab.

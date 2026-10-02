@@ -658,3 +658,16 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] Test téléphone : MEMORY_HIT 240p après warmup, aucune génération MP4.
 - [ ] Test téléphone : Classic, Sudoku, Gomoku, Abeilles & Geckos sans régression visuelle.
 - [ ] Mesurer FPS/RAM après suppression 60p/120p.
+
+## GECKO-044 — validation
+- [x] Moteur parent/enfant partagé GeckoDoku + Abeilles & Geckos.
+- [x] Couleurs jaune/vert/rouge/violet/bleu/orange.
+- [x] Aura d’hypothèse et croix filles de même couleur.
+- [x] Contradiction propagée en « sens interdit » aux hypothèses descendantes.
+- [x] Suppression récursive d’une branche et de toutes ses marques filles.
+- [x] Frise chronologique avec retour à un parent et suppression des descendants.
+- [x] Persistance de l’arbre Abeilles & Geckos (schema 5).
+- [ ] CI Kotlin + assemblePhone.
+- [ ] Test téléphone : création de 3+ niveaux, couleurs et lisibilité des auras.
+- [ ] Test téléphone : supprimer un parent et vérifier disparition récursive croix/auras/sens-interdit.
+- [ ] Test téléphone : revenir via la frise et explorer une branche sœur.

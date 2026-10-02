@@ -1036,3 +1036,20 @@ Décision Fab du 2026-09-30.
 - Le catalogue 240p est préparé en arrière-plan et conservé dans `readyMemory`; les frames restent sous LRU bitmap borné pour éviter une explosion RAM.
 - Version test : 0.15.38-dev / versionCode 73.
 - Aucun merge main ni release/prerelease avant validation téléphone Fab.
+
+# GECKO-044 — ARBRE D’HYPOTHÈSES COLORÉES
+
+Décision Fab du 2026-10-02.
+
+- Branche : `gecko-044-hypothesis-branches`.
+- Modes : GeckoDoku classique et Abeilles & Geckos.
+- Palette canonique des branches : jaune → vert → rouge → violet → bleu → orange.
+- Chaque Gecko hypothèse porte une aura de sa couleur ; les croix filles héritent exactement de cette couleur.
+- Une nouvelle hypothèse sous une branche active devient son enfant logique.
+- Une contradiction transforme l’hypothèse concernée et ses descendants en état visuel « sens interdit ».
+- Supprimer une hypothèse déclenche un rollback récursif : ses croix, auras, sous-hypothèses et états contradiction sont supprimés, sans toucher au parent ni aux autres branches.
+- La frise sous le plateau affiche la chronologie. Toucher une étape revient à cette hypothèse et détruit seulement ses descendants.
+- Le moteur de dépendances est partagé par les deux modes via `HypothesisBranchTrace`.
+- Abeilles & Geckos persiste/restaure l’arbre dans sa session (schema 5).
+- Version de test : 0.15.39-dev / versionCode 74.
+- Aucun merge main ni release/prerelease avant validation Fab.
