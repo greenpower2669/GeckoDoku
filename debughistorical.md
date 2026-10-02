@@ -720,3 +720,5 @@ GECKO-045 CI FINAL : run #398 SUCCESS sur commit `63e3aab45628c0e0ba9311ae3e521d
 
 ## 2026-10-02 — GECKO-046
 Refonte des statistiques pour supprimer le biais des parties simplement lancées. PlayerStatsStore conserve désormais une tentative active ; elle n'est historisée que si elle est terminée ou abandonnée avec au moins une erreur. Historique temporel JSON ajouté, tendances calculées sur les deux dernières parties terminées (temps et étoiles), nouveau graphe StatsTrendView, navigation Stats ↔ Hall of Fame par niveau. Le Prof de début ne verbalise plus les totaux globaux. Le pavé Sudoku GECKO-045 reçoit une poignée de redimensionnement en plus du drag.
+
+GECKO-046 CI FINAL : run #399 SUCCESS sur commit `2f6ec3c75118d15c8492397098e88670e2d09bf5`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.41-dev-phone`, 219132939 octets, digest `sha256:9532cb2ca9b7baa877a298cf2090d87c86aacf18ee0d906959cefef89d0e7bac`. Prerelease et release sont restées skipped. Validation téléphone requise pour le redimensionnement du pavé, les règles d'annulation/statistiques, les tendances Prof et la navigation Stats/Hall of Fame.

@@ -701,9 +701,11 @@ GECKO-045 CI FINAL : run #398 SUCCESS sur commit `63e3aab45628c0e0ba9311ae3e521d
 - [x] Prof début limité au niveau le plus difficile staté + niveau précédent.
 - [x] Menu Stats : niveaux cliquables + graphe temporel.
 - [x] Hall of Fame : navigation par mode/niveau + graphe et lien Stats.
-- [ ] CI Kotlin + assemblePhone.
+- [x] CI Kotlin + assemblePhone — run #399 vert.
 - [ ] Test téléphone : redimensionnement du pavé sans déclencher Oui/Non ou chiffre.
 - [ ] Test téléphone : annulation 0 erreur absente des stats.
 - [ ] Test téléphone : annulation après erreur présente avec compteur d'erreurs.
 - [ ] Test téléphone : tendances après deux parties terminées du même niveau.
 - [ ] Test téléphone : navigation Stats ↔ Hall of Fame et lisibilité des graphes.
+
+GECKO-046 CI FINAL : run #399 SUCCESS sur commit `2f6ec3c75118d15c8492397098e88670e2d09bf5`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.41-dev-phone`, 219132939 octets, digest `sha256:9532cb2ca9b7baa877a298cf2090d87c86aacf18ee0d906959cefef89d0e7bac`. Prerelease et release sont restées skipped. Validation téléphone requise pour le redimensionnement du pavé, les règles d'annulation/statistiques, les tendances Prof et la navigation Stats/Hall of Fame.

@@ -1131,3 +1131,5 @@ Décision Fab du 2026-10-02.
 - Le Hall of Fame est regroupé par mode+niveau ; cliquer un niveau ouvre son classement avec le même graphe, puis permet de revenir aux stats détaillées.
 - Version test : 0.15.41-dev / versionCode 76.
 - Aucun merge main ni release/prerelease avant validation Fab.
+
+GECKO-046 CI FINAL : run #399 SUCCESS sur commit `2f6ec3c75118d15c8492397098e88670e2d09bf5`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.41-dev-phone`, 219132939 octets, digest `sha256:9532cb2ca9b7baa877a298cf2090d87c86aacf18ee0d906959cefef89d0e7bac`. Prerelease et release sont restées skipped. Validation téléphone requise pour le redimensionnement du pavé, les règles d'annulation/statistiques, les tendances Prof et la navigation Stats/Hall of Fame.

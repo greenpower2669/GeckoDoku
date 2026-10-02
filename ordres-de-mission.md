@@ -1222,3 +1222,5 @@ Les statistiques doivent suivre les performances significatives, pas les simples
 Au démarrage, Prof Gecko ne lit plus de statistiques globales : il évoque au maximum le niveau le plus difficile disposant de données et le niveau immédiatement précédent, en signalant uniquement les tendances de progression utiles (plus rapide, réussites plus étoilées).
 
 Le menu Stats rend chaque niveau cliquable et affiche un graphe temporel. Le Hall of Fame est navigable par mode et niveau et réutilise le même graphe. Le pavé Sudoku 2×2 est déplaçable et redimensionnable. Aucun merge main ni release avant validation Fab.
+
+GECKO-046 CI FINAL : run #399 SUCCESS sur commit `2f6ec3c75118d15c8492397098e88670e2d09bf5`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.41-dev-phone`, 219132939 octets, digest `sha256:9532cb2ca9b7baa877a298cf2090d87c86aacf18ee0d906959cefef89d0e7bac`. Prerelease et release sont restées skipped. Validation téléphone requise pour le redimensionnement du pavé, les règles d'annulation/statistiques, les tendances Prof et la navigation Stats/Hall of Fame.
