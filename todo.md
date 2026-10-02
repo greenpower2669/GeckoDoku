@@ -725,3 +725,11 @@ GECKO-046 CI FINAL : run #399 SUCCESS sur commit `2f6ec3c75118d15c8492397098e886
 - [ ] Test téléphone : clic extérieur au pavé traverse correctement vers le Sudoku.
 
 GECKO-047 CI FINAL : run #402 SUCCESS sur commit `7425eadb8385226075d0e5b5d224c0dcc72bf8aa`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.42-dev-phone`, 219134167 octets, digest `sha256:c23ba189f1e7879e9e3d2389d0470fdd72bc87ed4b4e0b958400cf406e961a9b`. Prerelease et release sont restées skipped. Le PopupWindow Sudoku est non modal au toucher sur Android Q+ afin que les touches hors pavé traversent vers la grille pendant que le pavé reste visible. Validation téléphone requise pour confirmer le passage tactile réel sur Samsung/Android 16.
+
+## GECKO-048 — validation/release
+- [x] Minimum du pavé réduit de 280×320 à 140×160 dp.
+- [x] Bandeau minimum réduit de 28 à 14 dp.
+- [x] Version 0.15.43-dev / code 78.
+- [ ] CI Kotlin + assemblePhone.
+- [ ] Publication release téléphone finale.
+- [ ] Test téléphone de la réduction extrême et des zones tactiles.
