@@ -5,15 +5,16 @@ import org.junit.Test
 
 class SudokuGesturePolicyTest {
     @Test
-    fun doubleTapOpensPersonalMarkersAndLongPressKeepsInputPalette() {
+    fun singleAndDoubleTapOpenPersistentInputPalette() {
         val policy =
             SudokuGesturePolicy()
 
         assertEquals(
             SudokuGestureAction
-                .OPEN_PERSONAL_MARKERS,
+                .OPEN_INPUT_PALETTE,
             policy.actionFor(
-                SudokuGesture.DOUBLE_TAP
+                SudokuGesture
+                    .SINGLE_TAP
             )
         )
 
@@ -21,7 +22,23 @@ class SudokuGesturePolicyTest {
             SudokuGestureAction
                 .OPEN_INPUT_PALETTE,
             policy.actionFor(
-                SudokuGesture.LONG_PRESS
+                SudokuGesture
+                    .DOUBLE_TAP
+            )
+        )
+    }
+
+    @Test
+    fun longPressKeepsPersonalMarkersAccessible() {
+        val policy =
+            SudokuGesturePolicy()
+
+        assertEquals(
+            SudokuGestureAction
+                .OPEN_PERSONAL_MARKERS,
+            policy.actionFor(
+                SudokuGesture
+                    .LONG_PRESS
             )
         )
     }

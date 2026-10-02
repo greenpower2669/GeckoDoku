@@ -19,6 +19,9 @@ sealed class SudokuPaletteAction {
     data object ConfirmNo :
         SudokuPaletteAction()
 
+    data object Help :
+        SudokuPaletteAction()
+
     data object Close :
         SudokuPaletteAction()
 }
@@ -78,6 +81,24 @@ class SudokuPaletteLayoutPolicy {
         ) {
             return SudokuPaletteAction
                 .Close
+        }
+
+        val help =
+            helpBounds(
+                width,
+                height
+            )
+
+        if (
+            !confirmationActive &&
+            contains(
+                help,
+                x,
+                y
+            )
+        ) {
+            return SudokuPaletteAction
+                .Help
         }
 
         if (
@@ -347,6 +368,35 @@ class SudokuPaletteLayoutPolicy {
         )
     }
 
+    fun helpBounds(
+        width: Int,
+        height: Int
+    ): PixelBox {
+        val header =
+            headerHeight(
+                height
+            )
+
+        val size =
+            header
+                .coerceAtMost(
+                    width /
+                        4
+                )
+
+        return PixelBox(
+            left =
+                width -
+                    size * 2,
+            top = 0,
+            right =
+                width -
+                    size,
+            bottom =
+                header
+        )
+    }
+
     fun closeBounds(
         width: Int,
         height: Int
@@ -473,7 +523,7 @@ class SudokuPaletteLayoutPolicy {
         }
     }
 
-    private fun panelAt(
+    fun panelAt(
         x: Float,
         y: Float,
         width: Int,

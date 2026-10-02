@@ -46,6 +46,10 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
     var onClose:
         (() -> Unit)? = null
 
+    var onHelpPanel:
+        ((SudokuPalettePanel) -> Unit)? =
+        null
+
     var onDragDelta:
         ((Float, Float) -> Unit)? =
         null
@@ -73,6 +77,9 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
 
     private var currentValueDigit:
         Int? = null
+
+    private var helpMode =
+        false
 
     private var dragging =
         false
@@ -159,6 +166,22 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun setHelpMode(
+        active: Boolean
+    ) {
+        helpMode =
+            active
+
+        contentDescription =
+            if (active) {
+                "Aide Sudoku. Touchez Choix, Candidats, Hypothèse ou Prévisu pour entendre l'explication du Prof."
+            } else {
+                "Palette Sudoku persistante et déplaçable. Quatre zones : choix, candidats, hypothèse et prévisualisation."
+            }
+
+        invalidate()
+    }
+
     fun setPendingValue(
         digit: Int?
     ) {
@@ -238,7 +261,10 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                     if (
                         closeAction !=
                             SudokuPaletteAction
-                                .Close
+                                .Close &&
+                        closeAction !=
+                            SudokuPaletteAction
+                                .Help
                     ) {
                         dragging = true
                         dragMoved =
@@ -342,6 +368,33 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                     }
                 }
 
+                if (
+                    helpMode &&
+                    event.y >=
+                        headerHeight
+                ) {
+                    layoutPolicy
+                        .panelAt(
+                            x =
+                                event.x,
+                            y =
+                                event.y,
+                            width =
+                                width,
+                            height =
+                                height
+                        )
+                        ?.let {
+                            onHelpPanel
+                                ?.invoke(
+                                    it
+                                )
+                        }
+
+                    performClick()
+                    return true
+                }
+
                 when (
                     val action =
                         layoutPolicy
@@ -393,6 +446,13 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                         .ConfirmNo ->
                         onRejectValue
                             ?.invoke()
+
+                    SudokuPaletteAction
+                        .Help -> {
+                        setHelpMode(
+                            !helpMode
+                        )
+                    }
 
                     SudokuPaletteAction
                         .Close ->
@@ -517,7 +577,11 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
             Color.WHITE
 
         canvas.drawText(
-            "Sudoku • glisser ici",
+            if (helpMode) {
+                "Aide • touche une zone"
+            } else {
+                "Sudoku • glisser ici"
+            },
             header *
                 .35f,
             header /
@@ -534,6 +598,39 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
             pendingValueDigit ==
                 null
         ) {
+            val help =
+                layoutPolicy
+                    .helpBounds(
+                        width,
+                        height
+                    )
+
+            paint.textAlign =
+                Paint.Align.CENTER
+            paint.textSize =
+                header *
+                    .48f
+
+            canvas.drawText(
+                "?",
+                (
+                    help.left +
+                        help.right
+                    ) /
+                    2f,
+                (
+                    help.top +
+                        help.bottom
+                    ) /
+                    2f -
+                    (
+                        paint.ascent() +
+                            paint.descent()
+                    ) /
+                    2f,
+                paint
+            )
+
             val close =
                 layoutPolicy
                     .closeBounds(

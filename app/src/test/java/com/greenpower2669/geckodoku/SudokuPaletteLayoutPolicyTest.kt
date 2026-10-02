@@ -278,4 +278,96 @@ class SudokuPaletteLayoutPolicyTest {
                 620
         )
     }
+
+    @Test
+    fun helpButtonLivesBesideCloseAndIsDisabledDuringConfirmation() {
+        val policy =
+            SudokuPaletteLayoutPolicy()
+
+        val help =
+            policy.helpBounds(
+                360,
+                380
+            )
+
+        assertEquals(
+            SudokuPaletteAction
+                .Help,
+            policy.actionAt(
+                x =
+                    (
+                        help.left +
+                            help.right
+                        ) /
+                        2f,
+                y =
+                    (
+                        help.top +
+                            help.bottom
+                        ) /
+                        2f,
+                width = 360,
+                height = 380
+            )
+        )
+
+        assertNull(
+            policy.actionAt(
+                x =
+                    (
+                        help.left +
+                            help.right
+                        ) /
+                        2f,
+                y =
+                    (
+                        help.top +
+                            help.bottom
+                        ) /
+                        2f,
+                width = 360,
+                height = 380,
+                confirmationActive =
+                    true
+            )
+        )
+    }
+
+    @Test
+    fun panelsCanBeIdentifiedForInteractiveHelp() {
+        val policy =
+            SudokuPaletteLayoutPolicy()
+
+        for (
+            panel in
+            SudokuPalettePanel.entries
+        ) {
+            val bounds =
+                policy.panelBounds(
+                    panel,
+                    360,
+                    380
+                )
+
+            assertEquals(
+                panel,
+                policy.panelAt(
+                    x =
+                        (
+                            bounds.left +
+                                bounds.right
+                            ) /
+                            2f,
+                    y =
+                        (
+                            bounds.top +
+                                bounds.bottom
+                            ) /
+                            2f,
+                    width = 360,
+                    height = 380
+                )
+            )
+        }
+    }
 }

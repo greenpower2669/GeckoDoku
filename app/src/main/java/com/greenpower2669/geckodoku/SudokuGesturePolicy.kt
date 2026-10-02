@@ -7,7 +7,6 @@ enum class SudokuGesture {
 }
 
 enum class SudokuGestureAction {
-    SELECT_OR_TOGGLE_GECKO,
     OPEN_PERSONAL_MARKERS,
     OPEN_INPUT_PALETTE
 }
@@ -17,14 +16,13 @@ class SudokuGesturePolicy {
         gesture: SudokuGesture
     ): SudokuGestureAction =
         when (gesture) {
-            SudokuGesture.SINGLE_TAP ->
-                SudokuGestureAction
-                    .SELECT_OR_TOGGLE_GECKO
+            SudokuGesture.SINGLE_TAP,
             SudokuGesture.DOUBLE_TAP ->
                 SudokuGestureAction
-                    .OPEN_PERSONAL_MARKERS
+                    .OPEN_INPUT_PALETTE
+
             SudokuGesture.LONG_PRESS ->
                 SudokuGestureAction
-                    .OPEN_INPUT_PALETTE
+                    .OPEN_PERSONAL_MARKERS
         }
 }
