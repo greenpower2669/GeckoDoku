@@ -9,11 +9,25 @@ sealed class SudokuPaletteAction {
         val digit: Int
     ) : SudokuPaletteAction()
 
-    data object GeckoMarker :
+    data class Hypothesis(
+        val digit: Int
+    ) : SudokuPaletteAction()
+
+    data object ConfirmYes :
         SudokuPaletteAction()
 
-    data object Erase :
+    data object ConfirmNo :
         SudokuPaletteAction()
+
+    data object Close :
+        SudokuPaletteAction()
+}
+
+enum class SudokuPalettePanel {
+    VALUE,
+    CANDIDATE,
+    HYPOTHESIS,
+    PREVIEW
 }
 
 data class PixelBox(
@@ -33,7 +47,9 @@ class SudokuPaletteLayoutPolicy {
         x: Float,
         y: Float,
         width: Int,
-        height: Int
+        height: Int,
+        confirmationActive:
+            Boolean = false
     ): SudokuPaletteAction? {
         if (
             width <= 0 ||
@@ -46,148 +62,480 @@ class SudokuPaletteLayoutPolicy {
             return null
         }
 
-        val header =
-            height * HEADER_FRACTION
+        val close =
+            closeBounds(
+                width,
+                height
+            )
 
-        val footerTop =
-            height *
-                (1f - FOOTER_FRACTION)
-
-        if (y >= footerTop) {
-            return if (
-                x < width / 2f
-            ) {
-                SudokuPaletteAction
-                    .GeckoMarker
-            } else {
-                SudokuPaletteAction
-                    .Erase
-            }
+        if (
+            !confirmationActive &&
+            contains(
+                close,
+                x,
+                y
+            )
+        ) {
+            return SudokuPaletteAction
+                .Close
         }
 
-        if (y < header) {
+        if (
+            y <
+                headerHeight(
+                    height
+                )
+        ) {
             return null
         }
 
-        val gridHeight =
-            footerTop - header
+        if (confirmationActive) {
+            val yes =
+                confirmYesBounds(
+                    width,
+                    height
+                )
 
-        val row =
-            (
-                (y - header) /
-                    gridHeight *
-                    3f
-                ).toInt()
-                .coerceIn(0, 2)
-
-        val leftHalf =
-            x < width / 2f
-
-        val localX =
-            if (leftHalf) {
-                x
-            } else {
-                x - width / 2f
+            if (
+                contains(
+                    yes,
+                    x,
+                    y
+                )
+            ) {
+                return SudokuPaletteAction
+                    .ConfirmYes
             }
 
-        val halfWidth =
-            width / 2f
+            val no =
+                confirmNoBounds(
+                    width,
+                    height
+                )
 
-        val col =
-            (
-                localX /
-                    halfWidth *
-                    3f
-                ).toInt()
-                .coerceIn(0, 2)
+            if (
+                contains(
+                    no,
+                    x,
+                    y
+                )
+            ) {
+                return SudokuPaletteAction
+                    .ConfirmNo
+            }
 
-        val digit =
-            row * 3 +
-                col +
-                1
-
-        return if (leftHalf) {
-            SudokuPaletteAction
-                .Value(digit)
-        } else {
-            SudokuPaletteAction
-                .Candidate(digit)
+            return null
         }
+
+        return when (
+            val panel =
+                panelAt(
+                    x,
+                    y,
+                    width,
+                    height
+                )
+        ) {
+            SudokuPalettePanel.VALUE ->
+                digitAt(
+                    x,
+                    y,
+                    panel,
+                    width,
+                    height
+                )
+                    ?.let {
+                        SudokuPaletteAction
+                            .Value(it)
+                    }
+
+            SudokuPalettePanel.CANDIDATE ->
+                digitAt(
+                    x,
+                    y,
+                    panel,
+                    width,
+                    height
+                )
+                    ?.let {
+                        SudokuPaletteAction
+                            .Candidate(it)
+                    }
+
+            SudokuPalettePanel.HYPOTHESIS ->
+                digitAt(
+                    x,
+                    y,
+                    panel,
+                    width,
+                    height
+                )
+                    ?.let {
+                        SudokuPaletteAction
+                            .Hypothesis(it)
+                    }
+
+            SudokuPalettePanel.PREVIEW,
+            null ->
+                null
+        }
+    }
+
+    fun panelBounds(
+        panel: SudokuPalettePanel,
+        width: Int,
+        height: Int
+    ): PixelBox {
+        require(width > 0)
+        require(height > 0)
+
+        val header =
+            headerHeight(
+                height
+            )
+
+        val contentHeight =
+            (
+                height -
+                    header
+                )
+                .coerceAtLeast(1)
+
+        val halfWidth =
+            width / 2
+
+        val halfHeight =
+            contentHeight / 2
+
+        val left =
+            when (panel) {
+                SudokuPalettePanel.VALUE,
+                SudokuPalettePanel.HYPOTHESIS ->
+                    0
+
+                SudokuPalettePanel.CANDIDATE,
+                SudokuPalettePanel.PREVIEW ->
+                    halfWidth
+            }
+
+        val top =
+            when (panel) {
+                SudokuPalettePanel.VALUE,
+                SudokuPalettePanel.CANDIDATE ->
+                    header
+
+                SudokuPalettePanel.HYPOTHESIS,
+                SudokuPalettePanel.PREVIEW ->
+                    header +
+                        halfHeight
+            }
+
+        val right =
+            when (panel) {
+                SudokuPalettePanel.VALUE,
+                SudokuPalettePanel.HYPOTHESIS ->
+                    halfWidth
+
+                SudokuPalettePanel.CANDIDATE,
+                SudokuPalettePanel.PREVIEW ->
+                    width
+            }
+
+        val bottom =
+            when (panel) {
+                SudokuPalettePanel.VALUE,
+                SudokuPalettePanel.CANDIDATE ->
+                    header +
+                        halfHeight
+
+                SudokuPalettePanel.HYPOTHESIS,
+                SudokuPalettePanel.PREVIEW ->
+                    height
+            }
+
+        return PixelBox(
+            left = left,
+            top = top,
+            right = right,
+            bottom = bottom
+        )
     }
 
     fun tileBounds(
         digit: Int,
-        candidate: Boolean,
+        panel: SudokuPalettePanel,
         width: Int,
         height: Int
     ): PixelBox {
         require(digit in 1..9)
-        require(width > 0)
-        require(height > 0)
+        require(
+            panel !=
+                SudokuPalettePanel
+                    .PREVIEW
+        )
+
+        val bounds =
+            panelBounds(
+                panel,
+                width,
+                height
+            )
+
+        val titleHeight =
+            (
+                (
+                    bounds.bottom -
+                        bounds.top
+                    ) *
+                    PANEL_TITLE_FRACTION
+                )
+                .toInt()
+
+        val gridTop =
+            bounds.top +
+                titleHeight
+
+        val gridHeight =
+            (
+                bounds.bottom -
+                    gridTop
+                )
+                .coerceAtLeast(1)
+
+        val gridWidth =
+            (
+                bounds.right -
+                    bounds.left
+                )
+                .coerceAtLeast(1)
 
         val slot =
             SudokuCandidateLayout
-                .slot(digit)
-
-        val header =
-            height * HEADER_FRACTION
-
-        val footerTop =
-            height *
-                (1f - FOOTER_FRACTION)
-
-        val halfWidth =
-            width / 2f
-
-        val baseX =
-            if (candidate) {
-                halfWidth
-            } else {
-                0f
-            }
+                .slot(
+                    digit
+                )
 
         return PixelBox(
             left =
                 (
-                    baseX +
+                    bounds.left +
                         slot.left *
-                        halfWidth
-                    ).toInt(),
+                            gridWidth
+                    )
+                    .toInt(),
             top =
                 (
-                    header +
+                    gridTop +
                         slot.top *
-                        (footerTop - header)
-                    ).toInt(),
+                            gridHeight
+                    )
+                    .toInt(),
             right =
                 (
-                    baseX +
+                    bounds.left +
                         slot.right *
-                        halfWidth
-                    ).toInt(),
+                            gridWidth
+                    )
+                    .toInt(),
             bottom =
                 (
-                    header +
+                    gridTop +
                         slot.bottom *
-                        (footerTop - header)
-                    ).toInt()
+                            gridHeight
+                    )
+                    .toInt()
         )
     }
 
-    fun footerTop(
+    fun closeBounds(
+        width: Int,
+        height: Int
+    ): PixelBox {
+        val header =
+            headerHeight(
+                height
+            )
+
+        val size =
+            header
+                .coerceAtMost(
+                    width /
+                        4
+                )
+
+        return PixelBox(
+            left =
+                width -
+                    size,
+            top = 0,
+            right =
+                width,
+            bottom =
+                header
+        )
+    }
+
+    fun confirmYesBounds(
+        width: Int,
+        height: Int
+    ): PixelBox =
+        confirmBounds(
+            width,
+            height,
+            yes = true
+        )
+
+    fun confirmNoBounds(
+        width: Int,
+        height: Int
+    ): PixelBox =
+        confirmBounds(
+            width,
+            height,
+            yes = false
+        )
+
+    fun headerHeight(
         height: Int
     ): Int =
         (
             height *
-                (1f - FOOTER_FRACTION)
-            ).toInt()
+                HEADER_FRACTION
+            )
+            .toInt()
+            .coerceAtLeast(
+                28
+            )
+            .coerceAtMost(
+                (
+                    height *
+                        .18f
+                    )
+                    .toInt()
+                    .coerceAtLeast(
+                        28
+                    )
+            )
+
+    private fun confirmBounds(
+        width: Int,
+        height: Int,
+        yes: Boolean
+    ): PixelBox {
+        val panel =
+            panelBounds(
+                SudokuPalettePanel
+                    .PREVIEW,
+                width,
+                height
+            )
+
+        val center =
+            (
+                panel.left +
+                    panel.right
+                ) /
+                2
+
+        val top =
+            panel.top +
+                (
+                    (
+                        panel.bottom -
+                            panel.top
+                        ) *
+                        .62f
+                    )
+                    .toInt()
+
+        return if (yes) {
+            PixelBox(
+                left =
+                    panel.left,
+                top =
+                    top,
+                right =
+                    center,
+                bottom =
+                    panel.bottom
+            )
+        } else {
+            PixelBox(
+                left =
+                    center,
+                top =
+                    top,
+                right =
+                    panel.right,
+                bottom =
+                    panel.bottom
+            )
+        }
+    }
+
+    private fun panelAt(
+        x: Float,
+        y: Float,
+        width: Int,
+        height: Int
+    ): SudokuPalettePanel? =
+        SudokuPalettePanel
+            .entries
+            .firstOrNull {
+                contains(
+                    panelBounds(
+                        it,
+                        width,
+                        height
+                    ),
+                    x,
+                    y
+                )
+            }
+
+    private fun digitAt(
+        x: Float,
+        y: Float,
+        panel: SudokuPalettePanel,
+        width: Int,
+        height: Int
+    ): Int? =
+        (
+            1..9
+            )
+            .firstOrNull {
+                contains(
+                    tileBounds(
+                        it,
+                        panel,
+                        width,
+                        height
+                    ),
+                    x,
+                    y
+                )
+            }
+
+    private fun contains(
+        box: PixelBox,
+        x: Float,
+        y: Float
+    ): Boolean =
+        x >=
+            box.left &&
+            x <
+                box.right &&
+            y >=
+                box.top &&
+            y <
+                box.bottom
 
     companion object {
         private const val HEADER_FRACTION =
-            .13f
+            .105f
 
-        private const val FOOTER_FRACTION =
-            .17f
+        private const val PANEL_TITLE_FRACTION =
+            .20f
     }
 }
 
@@ -240,7 +588,8 @@ class SudokuPopupPlacementPolicy {
                         anchor.left +
                             anchor.right -
                             popupWidth
-                        ) / 2
+                        ) /
+                        2
             }.coerceIn(
                 margin,
                 (
@@ -268,9 +617,9 @@ class SudokuPopupPlacementPolicy {
                             margin -
                             popupHeight
                         ).coerceAtLeast(
-                        margin
-                    )
+                    margin
                 )
+            )
 
         return PixelPoint(
             x = x,

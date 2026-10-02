@@ -1,60 +1,230 @@
 package com.greenpower2669.geckodoku
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SudokuPaletteLayoutPolicyTest {
     @Test
-    fun leftGridSelectsValuesAndRightGridSelectsCandidates() {
+    fun fourPanelsSelectValueCandidateAndHypothesisDigits() {
         val policy =
             SudokuPaletteLayoutPolicy()
 
+        val value =
+            policy.tileBounds(
+                digit = 1,
+                panel =
+                    SudokuPalettePanel
+                        .VALUE,
+                width = 360,
+                height = 380
+            )
+
+        val candidate =
+            policy.tileBounds(
+                digit = 1,
+                panel =
+                    SudokuPalettePanel
+                        .CANDIDATE,
+                width = 360,
+                height = 380
+            )
+
+        val hypothesis =
+            policy.tileBounds(
+                digit = 1,
+                panel =
+                    SudokuPalettePanel
+                        .HYPOTHESIS,
+                width = 360,
+                height = 380
+            )
+
         assertEquals(
-            SudokuPaletteAction.Value(1),
+            SudokuPaletteAction
+                .Value(1),
             policy.actionAt(
-                x = 20f,
-                y = 45f,
-                width = 300,
-                height = 220
+                x =
+                    (
+                        value.left +
+                            value.right
+                        ) /
+                        2f,
+                y =
+                    (
+                        value.top +
+                            value.bottom
+                        ) /
+                        2f,
+                width = 360,
+                height = 380
             )
         )
 
         assertEquals(
-            SudokuPaletteAction.Candidate(1),
+            SudokuPaletteAction
+                .Candidate(1),
             policy.actionAt(
-                x = 170f,
-                y = 45f,
-                width = 300,
-                height = 220
+                x =
+                    (
+                        candidate.left +
+                            candidate.right
+                        ) /
+                        2f,
+                y =
+                    (
+                        candidate.top +
+                            candidate.bottom
+                        ) /
+                        2f,
+                width = 360,
+                height = 380
+            )
+        )
+
+        assertEquals(
+            SudokuPaletteAction
+                .Hypothesis(1),
+            policy.actionAt(
+                x =
+                    (
+                        hypothesis.left +
+                            hypothesis.right
+                        ) /
+                        2f,
+                y =
+                    (
+                        hypothesis.top +
+                            hypothesis.bottom
+                        ) /
+                        2f,
+                width = 360,
+                height = 380
             )
         )
     }
 
     @Test
-    fun footerOffersGeckoMarkerOnLeftAndEraseOnRight() {
+    fun confirmationModeOnlyOffersYesAndNoAndHidesCloseAction() {
         val policy =
             SudokuPaletteLayoutPolicy()
 
+        val yes =
+            policy.confirmYesBounds(
+                360,
+                380
+            )
+
+        val no =
+            policy.confirmNoBounds(
+                360,
+                380
+            )
+
+        val close =
+            policy.closeBounds(
+                360,
+                380
+            )
+
         assertEquals(
             SudokuPaletteAction
-                .GeckoMarker,
+                .ConfirmYes,
             policy.actionAt(
-                x = 40f,
-                y = 210f,
-                width = 300,
-                height = 220
+                x =
+                    (
+                        yes.left +
+                            yes.right
+                        ) /
+                        2f,
+                y =
+                    (
+                        yes.top +
+                            yes.bottom
+                        ) /
+                        2f,
+                width = 360,
+                height = 380,
+                confirmationActive =
+                    true
             )
         )
 
         assertEquals(
             SudokuPaletteAction
-                .Erase,
+                .ConfirmNo,
             policy.actionAt(
-                x = 260f,
-                y = 210f,
-                width = 300,
-                height = 220
+                x =
+                    (
+                        no.left +
+                            no.right
+                        ) /
+                        2f,
+                y =
+                    (
+                        no.top +
+                            no.bottom
+                        ) /
+                        2f,
+                width = 360,
+                height = 380,
+                confirmationActive =
+                    true
+            )
+        )
+
+        assertNull(
+            policy.actionAt(
+                x =
+                    (
+                        close.left +
+                            close.right
+                        ) /
+                        2f,
+                y =
+                    (
+                        close.top +
+                            close.bottom
+                        ) /
+                        2f,
+                width = 360,
+                height = 380,
+                confirmationActive =
+                    true
+            )
+        )
+    }
+
+    @Test
+    fun closeLivesInsideHeaderWhenNoConfirmationIsActive() {
+        val policy =
+            SudokuPaletteLayoutPolicy()
+
+        val close =
+            policy.closeBounds(
+                360,
+                380
+            )
+
+        assertEquals(
+            SudokuPaletteAction
+                .Close,
+            policy.actionAt(
+                x =
+                    (
+                        close.left +
+                            close.right
+                        ) /
+                        2f,
+                y =
+                    (
+                        close.top +
+                            close.bottom
+                        ) /
+                        2f,
+                width = 360,
+                height = 380
             )
         )
     }
@@ -79,16 +249,33 @@ class SudokuPaletteLayoutPolicyTest {
                 margin = 16
             )
 
-        assertTrue(nearRight.x >= 16)
-        assertTrue(nearRight.y >= 16)
         assertTrue(
-            nearRight.x + 560 <=
-                720 - 16
+            nearRight.x >=
+                16
         )
+
         assertTrue(
-            nearRight.y + 440 <=
-                1500 - 16
+            nearRight.y >=
+                16
         )
-        assertTrue(nearRight.x < 620)
+
+        assertTrue(
+            nearRight.x +
+                560 <=
+                720 -
+                    16
+        )
+
+        assertTrue(
+            nearRight.y +
+                440 <=
+                1500 -
+                    16
+        )
+
+        assertTrue(
+            nearRight.x <
+                620
+        )
     }
 }

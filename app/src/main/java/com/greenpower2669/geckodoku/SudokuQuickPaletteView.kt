@@ -8,6 +8,12 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import kotlin.math.abs
+
+data class SudokuHypothesisDigitVisual(
+    val color: HypothesisColor,
+    val state: HypothesisBranchState
+)
 
 class SudokuQuickPaletteView @JvmOverloads constructor(
     context: Context,
@@ -28,42 +34,78 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
     var onCandidateDigit:
         ((Int) -> Unit)? = null
 
-    var onGeckoMarker:
+    var onHypothesisDigit:
+        ((Int) -> Unit)? = null
+
+    var onConfirmValue:
+        ((Int) -> Unit)? = null
+
+    var onRejectValue:
         (() -> Unit)? = null
 
-    var onErase:
+    var onClose:
         (() -> Unit)? = null
+
+    var onDragDelta:
+        ((Float, Float) -> Unit)? =
+        null
 
     private var activeCandidates:
-        Set<Int> = emptySet()
+        Set<Int> =
+        emptySet()
 
-    private var geckoMarkerActive =
+    private var hypothesisDigits:
+        Map<
+            Int,
+            SudokuHypothesisDigitVisual
+            > =
+        emptyMap()
+
+    private var nextHypothesisColor =
+        HypothesisColor.YELLOW
+
+    private var pendingValueDigit:
+        Int? = null
+
+    private var currentValueDigit:
+        Int? = null
+
+    private var dragging =
         false
+
+    private var dragMoved =
+        false
+
+    private var lastRawX =
+        0f
+
+    private var lastRawY =
+        0f
 
     private val layoutPolicy =
         SudokuPaletteLayoutPolicy()
 
     private val renderer =
-        SudokuDigitRenderer(context)
+        SudokuDigitRenderer(
+            context
+        )
 
     private val candidateVisualPolicy =
         SudokuCandidateVisualPolicy()
 
     private val paint =
-        Paint(Paint.ANTI_ALIAS_FLAG)
+        Paint(
+            Paint.ANTI_ALIAS_FLAG
+        )
 
     init {
         isClickable = true
         isFocusable = true
-        contentDescription =
-            "Palette Sudoku. Valeurs à gauche, candidats à droite, effacer en bas."
-    }
+        importantForAccessibility =
+            IMPORTANT_FOR_ACCESSIBILITY_YES
 
-    fun setGeckoMarkerActive(
-        active: Boolean
-    ) {
-        geckoMarkerActive = active
-        invalidate()
+        contentDescription =
+            "Palette Sudoku déplaçable. Quatre zones : choix, candidats, hypothèse et prévisualisation."
     }
 
     fun setActiveCandidates(
@@ -72,7 +114,52 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
         activeCandidates =
             candidates.filter {
                 it in 1..9
-            }.toSet()
+            }
+                .toSet()
+
+        invalidate()
+    }
+
+    fun setHypothesisDigits(
+        digits:
+            Map<
+                Int,
+                SudokuHypothesisDigitVisual
+                >,
+        nextColor:
+            HypothesisColor
+    ) {
+        hypothesisDigits =
+            digits.filterKeys {
+                it in 1..9
+            }
+
+        nextHypothesisColor =
+            nextColor
+
+        invalidate()
+    }
+
+    fun setCurrentValue(
+        digit: Int?
+    ) {
+        currentValueDigit =
+            digit
+                ?.takeIf {
+                    it in 1..9
+                }
+
+        invalidate()
+    }
+
+    fun setPendingValue(
+        digit: Int?
+    ) {
+        pendingValueDigit =
+            digit
+                ?.takeIf {
+                    it in 1..9
+                }
 
         invalidate()
     }
@@ -86,199 +173,643 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
     override fun onTouchEvent(
         event: MotionEvent
     ): Boolean {
-        if (
-            event.actionMasked !=
-                MotionEvent.ACTION_UP
-        ) {
-            return event.actionMasked ==
-                MotionEvent.ACTION_DOWN ||
-                event.actionMasked ==
-                    MotionEvent.ACTION_MOVE
-        }
+        val confirmationActive =
+            pendingValueDigit !=
+                null
+
+        val headerHeight =
+            layoutPolicy
+                .headerHeight(
+                    height
+                )
 
         when (
-            val action =
-                layoutPolicy
-                    .actionAt(
-                        x = event.x,
-                        y = event.y,
-                        width = width,
-                        height = height
-                    )
+            event.actionMasked
         ) {
-            is SudokuPaletteAction
-                .Value ->
-                onValueDigit
-                    ?.invoke(
-                        action.digit
-                    )
+            MotionEvent.ACTION_DOWN -> {
+                if (
+                    !confirmationActive &&
+                    event.y <
+                        headerHeight
+                ) {
+                    val closeAction =
+                        layoutPolicy
+                            .actionAt(
+                                x =
+                                    event.x,
+                                y =
+                                    event.y,
+                                width =
+                                    width,
+                                height =
+                                    height,
+                                confirmationActive =
+                                    false
+                            )
 
-            is SudokuPaletteAction
-                .Candidate ->
-                onCandidateDigit
-                    ?.invoke(
-                        action.digit
-                    )
+                    if (
+                        closeAction !=
+                            SudokuPaletteAction
+                                .Close
+                    ) {
+                        dragging = true
+                        dragMoved =
+                            false
+                        lastRawX =
+                            event.rawX
+                        lastRawY =
+                            event.rawY
+                        parent
+                            ?.requestDisallowInterceptTouchEvent(
+                                true
+                            )
 
-            SudokuPaletteAction
-                .GeckoMarker ->
-                onGeckoMarker?.invoke()
+                        return true
+                    }
+                }
 
-            SudokuPaletteAction
-                .Erase ->
-                onErase?.invoke()
+                return true
+            }
 
-            null -> Unit
+            MotionEvent.ACTION_MOVE -> {
+                if (dragging) {
+                    val dx =
+                        event.rawX -
+                            lastRawX
+
+                    val dy =
+                        event.rawY -
+                            lastRawY
+
+                    if (
+                        abs(dx) >
+                            1f ||
+                        abs(dy) >
+                            1f
+                    ) {
+                        dragMoved =
+                            true
+                    }
+
+                    lastRawX =
+                        event.rawX
+                    lastRawY =
+                        event.rawY
+
+                    onDragDelta
+                        ?.invoke(
+                            dx,
+                            dy
+                        )
+
+                    return true
+                }
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                stopDrag()
+                return true
+            }
+
+            MotionEvent.ACTION_UP -> {
+                if (dragging) {
+                    val moved =
+                        dragMoved
+
+                    stopDrag()
+
+                    if (moved) {
+                        performClick()
+                        return true
+                    }
+                }
+
+                when (
+                    val action =
+                        layoutPolicy
+                            .actionAt(
+                                x =
+                                    event.x,
+                                y =
+                                    event.y,
+                                width =
+                                    width,
+                                height =
+                                    height,
+                                confirmationActive =
+                                    confirmationActive
+                            )
+                ) {
+                    is SudokuPaletteAction
+                        .Value ->
+                        onValueDigit
+                            ?.invoke(
+                                action.digit
+                            )
+
+                    is SudokuPaletteAction
+                        .Candidate ->
+                        onCandidateDigit
+                            ?.invoke(
+                                action.digit
+                            )
+
+                    is SudokuPaletteAction
+                        .Hypothesis ->
+                        onHypothesisDigit
+                            ?.invoke(
+                                action.digit
+                            )
+
+                    SudokuPaletteAction
+                        .ConfirmYes ->
+                        pendingValueDigit
+                            ?.let {
+                                onConfirmValue
+                                    ?.invoke(
+                                        it
+                                    )
+                            }
+
+                    SudokuPaletteAction
+                        .ConfirmNo ->
+                        onRejectValue
+                            ?.invoke()
+
+                    SudokuPaletteAction
+                        .Close ->
+                        onClose
+                            ?.invoke()
+
+                    null ->
+                        Unit
+                }
+
+                performClick()
+                return true
+            }
         }
 
-        performClick()
         return true
     }
 
     override fun onDraw(
         canvas: Canvas
     ) {
-        super.onDraw(canvas)
+        super.onDraw(
+            canvas
+        )
 
         canvas.drawColor(
             Color.rgb(
-                252,
-                252,
+                250,
+                251,
                 248
             )
         )
 
-        drawHeaders(canvas)
+        drawHeader(
+            canvas
+        )
 
-        for (digit in 1..9) {
-            drawTile(
-                canvas,
-                digit,
-                candidate = false
+        drawPanelBackgrounds(
+            canvas
+        )
+
+        for (
+            digit in
+            1..9
+        ) {
+            drawDigitTile(
+                canvas =
+                    canvas,
+                digit =
+                    digit,
+                panel =
+                    SudokuPalettePanel
+                        .VALUE
             )
 
-            drawTile(
-                canvas,
-                digit,
-                candidate = true
+            drawDigitTile(
+                canvas =
+                    canvas,
+                digit =
+                    digit,
+                panel =
+                    SudokuPalettePanel
+                        .CANDIDATE
+            )
+
+            drawDigitTile(
+                canvas =
+                    canvas,
+                digit =
+                    digit,
+                panel =
+                    SudokuPalettePanel
+                        .HYPOTHESIS
             )
         }
 
-        drawFooter(canvas)
+        drawPreview(
+            canvas
+        )
     }
 
-    private fun drawHeaders(
+    private fun drawHeader(
         canvas: Canvas
     ) {
+        val header =
+            layoutPolicy
+                .headerHeight(
+                    height
+                )
+                .toFloat()
+
         paint.style =
             Paint.Style.FILL
-        paint.textAlign =
-            Paint.Align.CENTER
-        paint.isFakeBoldText = true
-        paint.textSize =
-            height * .07f
+
         paint.color =
             Color.rgb(
-                42,
-                55,
-                45
+                57,
+                74,
+                62
             )
 
-        canvas.drawText(
-            "Valeur",
-            width * .25f,
-            height * .09f,
+        canvas.drawRect(
+            0f,
+            0f,
+            width.toFloat(),
+            header,
             paint
         )
 
+        paint.textAlign =
+            Paint.Align.LEFT
+        paint.isFakeBoldText =
+            true
+        paint.textSize =
+            header *
+                .42f
+        paint.color =
+            Color.WHITE
+
         canvas.drawText(
-            "Candidats",
-            width * .75f,
-            height * .09f,
+            "Sudoku • glisser ici",
+            header *
+                .35f,
+            header /
+                2f -
+                (
+                    paint.ascent() +
+                        paint.descent()
+                    ) /
+                    2f,
             paint
         )
 
-        paint.isFakeBoldText = false
+        if (
+            pendingValueDigit ==
+                null
+        ) {
+            val close =
+                layoutPolicy
+                    .closeBounds(
+                        width,
+                        height
+                    )
+
+            paint.textAlign =
+                Paint.Align.CENTER
+            paint.textSize =
+                header *
+                    .58f
+
+            canvas.drawText(
+                "×",
+                (
+                    close.left +
+                        close.right
+                    ) /
+                    2f,
+                (
+                    close.top +
+                        close.bottom
+                    ) /
+                    2f -
+                    (
+                        paint.ascent() +
+                            paint.descent()
+                        ) /
+                        2f,
+                paint
+            )
+        }
+
+        paint.isFakeBoldText =
+            false
     }
 
-    private fun drawTile(
+    private fun drawPanelBackgrounds(
+        canvas: Canvas
+    ) {
+        SudokuPalettePanel
+            .entries
+            .forEach {
+                panel ->
+
+                val bounds =
+                    layoutPolicy
+                        .panelBounds(
+                            panel,
+                            width,
+                            height
+                        )
+
+                val rect =
+                    RectF(
+                        bounds.left
+                            .toFloat(),
+                        bounds.top
+                            .toFloat(),
+                        bounds.right
+                            .toFloat(),
+                        bounds.bottom
+                            .toFloat()
+                    )
+
+                paint.style =
+                    Paint.Style.FILL
+
+                paint.color =
+                    when (panel) {
+                        SudokuPalettePanel
+                            .VALUE ->
+                            Color.rgb(
+                                244,
+                                248,
+                                244
+                            )
+
+                        SudokuPalettePanel
+                            .CANDIDATE ->
+                            Color.rgb(
+                                239,
+                                246,
+                                241
+                            )
+
+                        SudokuPalettePanel
+                            .HYPOTHESIS ->
+                            Color.rgb(
+                                (
+                                    nextHypothesisColor
+                                        .red +
+                                        238
+                                    ) /
+                                    2,
+                                (
+                                    nextHypothesisColor
+                                        .green +
+                                        238
+                                    ) /
+                                    2,
+                                (
+                                    nextHypothesisColor
+                                        .blue +
+                                        238
+                                    ) /
+                                    2
+                            )
+
+                        SudokuPalettePanel
+                            .PREVIEW ->
+                            Color.rgb(
+                                247,
+                                244,
+                                238
+                            )
+                    }
+
+                canvas.drawRect(
+                    rect,
+                    paint
+                )
+
+                paint.style =
+                    Paint.Style.STROKE
+                paint.strokeWidth =
+                    dp(
+                        1.2f
+                    )
+                paint.color =
+                    Color.rgb(
+                        105,
+                        112,
+                        106
+                    )
+
+                canvas.drawRect(
+                    rect,
+                    paint
+                )
+
+                paint.style =
+                    Paint.Style.FILL
+                paint.isFakeBoldText =
+                    true
+                paint.textAlign =
+                    Paint.Align.CENTER
+                paint.textSize =
+                    rect.height() *
+                        .095f
+                paint.color =
+                    Color.rgb(
+                        43,
+                        54,
+                        46
+                    )
+
+                val title =
+                    when (panel) {
+                        SudokuPalettePanel
+                            .VALUE ->
+                            "Choix"
+
+                        SudokuPalettePanel
+                            .CANDIDATE ->
+                            "Candidats"
+
+                        SudokuPalettePanel
+                            .HYPOTHESIS ->
+                            "Hypothèse • " +
+                                nextHypothesisColor
+                                    .label
+
+                        SudokuPalettePanel
+                            .PREVIEW ->
+                            "Prévisu"
+                    }
+
+                canvas.drawText(
+                    title,
+                    rect.centerX(),
+                    rect.top +
+                        rect.height() *
+                            .13f -
+                        (
+                            paint.ascent() +
+                                paint.descent()
+                            ) /
+                            2f,
+                    paint
+                )
+
+                paint.isFakeBoldText =
+                    false
+            }
+    }
+
+    private fun drawDigitTile(
         canvas: Canvas,
         digit: Int,
-        candidate: Boolean
+        panel: SudokuPalettePanel
     ) {
-        val b =
-            layoutPolicy.tileBounds(
-                digit = digit,
-                candidate =
-                    candidate,
-                width = width,
-                height = height
-            )
+        val bounds =
+            layoutPolicy
+                .tileBounds(
+                    digit =
+                        digit,
+                    panel =
+                        panel,
+                    width =
+                        width,
+                    height =
+                        height
+                )
 
         val rect =
             RectF(
-                b.left.toFloat(),
-                b.top.toFloat(),
-                b.right.toFloat(),
-                b.bottom.toFloat()
+                bounds.left
+                    .toFloat(),
+                bounds.top
+                    .toFloat(),
+                bounds.right
+                    .toFloat(),
+                bounds.bottom
+                    .toFloat()
             )
 
         val inset =
-            rect.width() * .06f
+            rect.width() *
+                .07f
 
         val inner =
             RectF(
-                rect.left + inset,
-                rect.top + inset,
-                rect.right - inset,
-                rect.bottom - inset
+                rect.left +
+                    inset,
+                rect.top +
+                    inset,
+                rect.right -
+                    inset,
+                rect.bottom -
+                    inset
             )
 
         paint.style =
             Paint.Style.FILL
 
+        val hypothesis =
+            hypothesisDigits[
+                digit
+                ]
+
         paint.color =
-            if (
-                candidate &&
-                digit in
-                    activeCandidates
-            ) {
-                Color.rgb(
-                    218,
-                    240,
-                    220
-                )
-            } else {
-                Color.rgb(
-                    242,
-                    245,
-                    241
-                )
+            when {
+                panel ==
+                    SudokuPalettePanel
+                        .CANDIDATE &&
+                    digit in
+                        activeCandidates ->
+                    Color.rgb(
+                        205,
+                        236,
+                        211
+                    )
+
+                panel ==
+                    SudokuPalettePanel
+                        .HYPOTHESIS &&
+                    hypothesis !=
+                        null ->
+                    Color.rgb(
+                        hypothesis
+                            .color
+                            .red,
+                        hypothesis
+                            .color
+                            .green,
+                        hypothesis
+                            .color
+                            .blue
+                    )
+
+                panel ==
+                    SudokuPalettePanel
+                        .HYPOTHESIS ->
+                    Color.argb(
+                        92,
+                        nextHypothesisColor
+                            .red,
+                        nextHypothesisColor
+                            .green,
+                        nextHypothesisColor
+                            .blue
+                    )
+
+                else ->
+                    Color.rgb(
+                        242,
+                        245,
+                        241
+                    )
             }
 
         canvas.drawRoundRect(
             inner,
-            inner.width() * .12f,
-            inner.width() * .12f,
+            inner.width() *
+                .12f,
+            inner.width() *
+                .12f,
             paint
         )
 
         renderer.draw(
-            canvas = canvas,
+            canvas =
+                canvas,
             target =
                 RectF(
                     inner.left +
-                        inner.width() * .12f,
+                        inner.width() *
+                            .10f,
                     inner.top +
-                        inner.height() * .12f,
+                        inner.height() *
+                            .10f,
                     inner.right -
-                        inner.width() * .12f,
+                        inner.width() *
+                            .10f,
                     inner.bottom -
-                        inner.height() * .12f
+                        inner.height() *
+                            .10f
                 ),
-            digit = digit,
+            digit =
+                digit,
             style =
-                if (candidate) {
+                if (
+                    panel ==
+                        SudokuPalettePanel
+                            .CANDIDATE
+                ) {
                     candidateVisualPolicy
                         .styleForCandidate(
                             visualStyle
@@ -286,101 +817,300 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                 } else {
                     visualStyle
                 },
-            given = false,
-            mini = candidate
+            given =
+                false,
+            mini =
+                panel !=
+                    SudokuPalettePanel
+                        .VALUE
         )
+
+        if (
+            panel ==
+                SudokuPalettePanel
+                    .HYPOTHESIS &&
+            hypothesis
+                ?.state ==
+                HypothesisBranchState
+                    .CONTRADICTION
+        ) {
+            paint.style =
+                Paint.Style.STROKE
+            paint.strokeWidth =
+                inner.width() *
+                    .10f
+            paint.color =
+                Color.rgb(
+                    156,
+                    28,
+                    28
+                )
+
+            canvas.drawLine(
+                inner.left +
+                    inner.width() *
+                        .14f,
+                inner.bottom -
+                    inner.height() *
+                        .14f,
+                inner.right -
+                    inner.width() *
+                        .14f,
+                inner.top +
+                    inner.height() *
+                        .14f,
+                paint
+            )
+        }
     }
 
-    private fun drawFooter(
+    private fun drawPreview(
         canvas: Canvas
     ) {
-        val top =
+        val bounds =
             layoutPolicy
-                .footerTop(height)
-                .toFloat()
+                .panelBounds(
+                    SudokuPalettePanel
+                        .PREVIEW,
+                    width,
+                    height
+                )
 
-        val half =
-            width / 2f
+        val rect =
+            RectF(
+                bounds.left
+                    .toFloat(),
+                bounds.top
+                    .toFloat(),
+                bounds.right
+                    .toFloat(),
+                bounds.bottom
+                    .toFloat()
+            )
+
+        val digit =
+            pendingValueDigit
+                ?: currentValueDigit
+
+        if (digit != null) {
+            renderer.draw(
+                canvas =
+                    canvas,
+                target =
+                    RectF(
+                        rect.left +
+                            rect.width() *
+                                .30f,
+                        rect.top +
+                            rect.height() *
+                                .23f,
+                        rect.right -
+                            rect.width() *
+                                .30f,
+                        rect.top +
+                            rect.height() *
+                                .58f
+                    ),
+                digit =
+                    digit,
+                style =
+                    visualStyle,
+                given =
+                    false,
+                mini =
+                    false
+            )
+        }
+
+        if (
+            pendingValueDigit ==
+                null
+        ) {
+            paint.style =
+                Paint.Style.FILL
+            paint.textAlign =
+                Paint.Align.CENTER
+            paint.textSize =
+                rect.height() *
+                    .085f
+            paint.color =
+                Color.rgb(
+                    72,
+                    77,
+                    73
+                )
+
+            canvas.drawText(
+                if (digit == null) {
+                    "Choisis un nombre"
+                } else {
+                    "Valeur actuelle"
+                },
+                rect.centerX(),
+                rect.bottom -
+                    rect.height() *
+                        .10f,
+                paint
+            )
+
+            return
+        }
 
         paint.style =
             Paint.Style.FILL
-
+        paint.textAlign =
+            Paint.Align.CENTER
+        paint.isFakeBoldText =
+            true
+        paint.textSize =
+            rect.height() *
+                .09f
         paint.color =
-            if (geckoMarkerActive) {
-                Color.rgb(
-                    215,
-                    239,
-                    220
-                )
-            } else {
-                Color.rgb(
-                    232,
-                    235,
-                    232
-                )
-            }
+            Color.rgb(
+                54,
+                58,
+                55
+            )
 
-        canvas.drawRect(
-            0f,
-            top,
-            half,
-            height.toFloat(),
+        canvas.drawText(
+            "Êtes-vous sûr ?",
+            rect.centerX(),
+            rect.top +
+                rect.height() *
+                    .60f,
             paint
         )
 
-        paint.color =
-            Color.rgb(
-                232,
-                235,
-                232
+        val yes =
+            layoutPolicy
+                .confirmYesBounds(
+                    width,
+                    height
+                )
+
+        val no =
+            layoutPolicy
+                .confirmNoBounds(
+                    width,
+                    height
+                )
+
+        drawConfirmationButton(
+            canvas =
+                canvas,
+            box =
+                yes,
+            label =
+                "Oui"
+        )
+
+        drawConfirmationButton(
+            canvas =
+                canvas,
+            box =
+                no,
+            label =
+                "Non"
+        )
+
+        paint.isFakeBoldText =
+            false
+    }
+
+    private fun drawConfirmationButton(
+        canvas: Canvas,
+        box: PixelBox,
+        label: String
+    ) {
+        val rect =
+            RectF(
+                box.left
+                    .toFloat(),
+                box.top
+                    .toFloat(),
+                box.right
+                    .toFloat(),
+                box.bottom
+                    .toFloat()
             )
 
-        canvas.drawRect(
-            half,
-            top,
-            width.toFloat(),
-            height.toFloat(),
+        val inset =
+            dp(
+                4f
+            )
+
+        val inner =
+            RectF(
+                rect.left +
+                    inset,
+                rect.top +
+                    inset,
+                rect.right -
+                    inset,
+                rect.bottom -
+                    inset
+            )
+
+        paint.style =
+            Paint.Style.FILL
+        paint.color =
+            Color.rgb(
+                225,
+                232,
+                226
+            )
+
+        canvas.drawRoundRect(
+            inner,
+            dp(
+                8f
+            ),
+            dp(
+                8f
+            ),
             paint
         )
 
         paint.textAlign =
             Paint.Align.CENTER
         paint.textSize =
-            (height - top) *
-                .36f
+            inner.height() *
+                .34f
         paint.color =
             Color.rgb(
                 42,
-                55,
-                45
+                52,
+                44
             )
 
-        val centerY =
-            (
-                top +
-                    height
-                ) / 2f
-
-        val y =
-            centerY -
+        canvas.drawText(
+            label,
+            inner.centerX(),
+            inner.centerY() -
                 (
                     paint.ascent() +
                         paint.descent()
-                    ) / 2f
-
-        canvas.drawText(
-            "🦎 Repère",
-            half / 2f,
-            y,
-            paint
-        )
-
-        canvas.drawText(
-            "⌫ Effacer",
-            half +
-                half / 2f,
-            y,
+                    ) /
+                    2f,
             paint
         )
     }
+
+    private fun stopDrag() {
+        dragging = false
+        dragMoved = false
+
+        parent
+            ?.requestDisallowInterceptTouchEvent(
+                false
+            )
+    }
+
+    private fun dp(
+        value: Float
+    ): Float =
+        value *
+            resources
+                .displayMetrics
+                .density
 }
