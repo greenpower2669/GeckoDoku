@@ -1224,3 +1224,13 @@ Au démarrage, Prof Gecko ne lit plus de statistiques globales : il évoque au m
 Le menu Stats rend chaque niveau cliquable et affiche un graphe temporel. Le Hall of Fame est navigable par mode et niveau et réutilise le même graphe. Le pavé Sudoku 2×2 est déplaçable et redimensionnable. Aucun merge main ni release avant validation Fab.
 
 GECKO-046 CI FINAL : run #399 SUCCESS sur commit `2f6ec3c75118d15c8492397098e88670e2d09bf5`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.41-dev-phone`, 219132939 octets, digest `sha256:9532cb2ca9b7baa877a298cf2090d87c86aacf18ee0d906959cefef89d0e7bac`. Prerelease et release sont restées skipped. Validation téléphone requise pour le redimensionnement du pavé, les règles d'annulation/statistiques, les tendances Prof et la navigation Stats/Hall of Fame.
+
+# GECKO-047 — ORDRE DE MISSION PAVÉ SUDOKU
+
+Le pavé Sudoku doit être un outil flottant persistant de saisie rapide. Une fois ouvert, il reste visible jusqu'à fermeture explicite par sa croix ou changement de contexte. Toucher une autre case du plateau ne le ferme pas : il devient immédiatement le pavé de cette nouvelle case. Une validation Oui ne ferme pas le pavé ; Non annule seulement la prévisualisation.
+
+Simple clic et double clic sur une case ouvrent ou reciblent le pavé. L'appui long conserve l'accès aux repères personnels.
+
+Le bouton ? du pavé active une aide interactive. En mode aide, toucher une des zones Choix, Candidats, Hypothèse ou Prévisu déclenche une explication approfondie de Prof Gecko. Cette documentation n'est pas une aide de résolution et ne doit pas modifier les étoiles ni les points d'assistance.
+
+Le pavé reste déplaçable et redimensionnable. Aucun merge main ni release avant validation Fab.

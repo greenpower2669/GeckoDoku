@@ -709,3 +709,17 @@ GECKO-045 CI FINAL : run #398 SUCCESS sur commit `63e3aab45628c0e0ba9311ae3e521d
 - [ ] Test téléphone : navigation Stats ↔ Hall of Fame et lisibilité des graphes.
 
 GECKO-046 CI FINAL : run #399 SUCCESS sur commit `2f6ec3c75118d15c8492397098e88670e2d09bf5`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.41-dev-phone`, 219132939 octets, digest `sha256:9532cb2ca9b7baa877a298cf2090d87c86aacf18ee0d906959cefef89d0e7bac`. Prerelease et release sont restées skipped. Validation téléphone requise pour le redimensionnement du pavé, les règles d'annulation/statistiques, les tendances Prof et la navigation Stats/Hall of Fame.
+
+## GECKO-047 — validation
+- [x] Pavé Sudoku persistant après Oui/Non.
+- [x] Changement de case sans fermeture du pavé.
+- [x] Simple clic + double clic ouvrent/reciblent le pavé.
+- [x] Appui long conserve l'accès aux repères personnels.
+- [x] Bouton ? d'aide interactive.
+- [x] Prof explique Choix / Candidats / Hypothèse / Prévisu sans coût d'assistance.
+- [x] Drag + redimensionnement conservés.
+- [ ] CI Kotlin + assemblePhone.
+- [ ] Test téléphone : toucher plusieurs cases à la suite sans fermeture/flicker du pavé.
+- [ ] Test téléphone : validation Oui conserve le pavé et passe immédiatement à la case suivante choisie.
+- [ ] Test téléphone : ? puis chacune des quatre zones déclenche la bonne explication.
+- [ ] Test téléphone : clic extérieur au pavé traverse correctement vers le Sudoku.
