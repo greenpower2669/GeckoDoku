@@ -11220,7 +11220,7 @@ class MainActivity : Activity() {
                 cell
             )
 
-        val popupWidth =
+        var popupWidth =
             minOf(
                 (
                     screenRoot.width -
@@ -11231,7 +11231,7 @@ class MainActivity : Activity() {
                 dp(360)
             )
 
-        val popupHeight =
+        var popupHeight =
             minOf(
                 (
                     screenRoot.height -
@@ -11492,6 +11492,89 @@ class MainActivity : Activity() {
                             popupY,
                             -1,
                             -1
+                        )
+                }
+
+                onResizeDelta = {
+                        dx,
+                        dy ->
+
+                    val minWidth =
+                        dp(280)
+
+                    val minHeight =
+                        dp(320)
+
+                    val maxWidth =
+                        (
+                            screenRoot.width -
+                                dp(8)
+                            )
+                            .coerceAtLeast(
+                                minWidth
+                            )
+
+                    val maxHeight =
+                        (
+                            screenRoot.height -
+                                dp(8)
+                            )
+                            .coerceAtLeast(
+                                minHeight
+                            )
+
+                    popupWidth =
+                        (
+                            popupWidth +
+                                dx.toInt()
+                            )
+                            .coerceIn(
+                                minWidth,
+                                maxWidth
+                            )
+
+                    popupHeight =
+                        (
+                            popupHeight +
+                                dy.toInt()
+                            )
+                            .coerceIn(
+                                minHeight,
+                                maxHeight
+                            )
+
+                    popupX =
+                        popupX.coerceIn(
+                            dp(4),
+                            (
+                                screenRoot.width -
+                                    popupWidth -
+                                    dp(4)
+                                )
+                                .coerceAtLeast(
+                                    dp(4)
+                                )
+                        )
+
+                    popupY =
+                        popupY.coerceIn(
+                            dp(4),
+                            (
+                                screenRoot.height -
+                                    popupHeight -
+                                    dp(4)
+                                )
+                                .coerceAtLeast(
+                                    dp(4)
+                                )
+                        )
+
+                    popupRef
+                        ?.update(
+                            popupX,
+                            popupY,
+                            popupWidth,
+                            popupHeight
                         )
                 }
             }
