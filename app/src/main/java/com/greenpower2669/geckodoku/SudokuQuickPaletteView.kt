@@ -50,6 +50,10 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
         ((Float, Float) -> Unit)? =
         null
 
+    var onResizeDelta:
+        ((Float, Float) -> Unit)? =
+        null
+
     private var activeCandidates:
         Set<Int> =
         emptySet()
@@ -71,6 +75,9 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
         Int? = null
 
     private var dragging =
+        false
+
+    private var resizing =
         false
 
     private var dragMoved =
@@ -188,6 +195,27 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
         ) {
             MotionEvent.ACTION_DOWN -> {
                 if (
+                    isResizeHandle(
+                        event.x,
+                        event.y
+                    )
+                ) {
+                    resizing = true
+                    dragMoved = false
+                    lastRawX =
+                        event.rawX
+                    lastRawY =
+                        event.rawY
+
+                    parent
+                        ?.requestDisallowInterceptTouchEvent(
+                            true
+                        )
+
+                    return true
+                }
+
+                if (
                     !confirmationActive &&
                     event.y <
                         headerHeight
@@ -232,6 +260,30 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_MOVE -> {
+                if (resizing) {
+                    val dx =
+                        event.rawX -
+                            lastRawX
+
+                    val dy =
+                        event.rawY -
+                            lastRawY
+
+                    lastRawX =
+                        event.rawX
+
+                    lastRawY =
+                        event.rawY
+
+                    onResizeDelta
+                        ?.invoke(
+                            dx,
+                            dy
+                        )
+
+                    return true
+                }
+
                 if (dragging) {
                     val dx =
                         event.rawX -
@@ -267,16 +319,22 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_CANCEL -> {
-                stopDrag()
+                stopInteraction()
                 return true
             }
 
             MotionEvent.ACTION_UP -> {
+                if (resizing) {
+                    stopInteraction()
+                    performClick()
+                    return true
+                }
+
                 if (dragging) {
                     val moved =
                         dragMoved
 
-                    stopDrag()
+                    stopInteraction()
 
                     if (moved) {
                         performClick()
@@ -412,6 +470,10 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
         }
 
         drawPreview(
+            canvas
+        )
+
+        drawResizeHandle(
             canvas
         )
     }
@@ -1096,8 +1158,85 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
         )
     }
 
-    private fun stopDrag() {
+    private fun drawResizeHandle(
+        canvas: Canvas
+    ) {
+        val size =
+            dp(
+                30f
+            )
+
+        val right =
+            width.toFloat() -
+                dp(
+                    5f
+                )
+
+        val bottom =
+            height.toFloat() -
+                dp(
+                    5f
+                )
+
+        paint.style =
+            Paint.Style.STROKE
+
+        paint.strokeWidth =
+            dp(
+                2f
+            )
+
+        paint.color =
+            Color.rgb(
+                92,
+                101,
+                94
+            )
+
+        for (
+            index in
+            0..2
+        ) {
+            val offset =
+                index *
+                    dp(
+                        7f
+                    )
+
+            canvas.drawLine(
+                right -
+                    size +
+                    offset,
+                bottom,
+                right,
+                bottom -
+                    size +
+                    offset,
+                paint
+            )
+        }
+    }
+
+    private fun isResizeHandle(
+        x: Float,
+        y: Float
+    ): Boolean {
+        val size =
+            dp(
+                42f
+            )
+
+        return x >=
+            width -
+                size &&
+            y >=
+                height -
+                    size
+    }
+
+    private fun stopInteraction() {
         dragging = false
+        resizing = false
         dragMoved = false
 
         parent
