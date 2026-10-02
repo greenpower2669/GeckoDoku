@@ -612,6 +612,11 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             snapshot
         )
 
+        drawHypotheses(
+            canvas,
+            snapshot
+        )
+
         drawCrosses(
             canvas,
             snapshot
@@ -788,6 +793,138 @@ class BeeGeckoBoardView @JvmOverloads constructor(
         // Its Presence selects its own PNG fallback or video.
     }
 
+    private fun drawHypotheses(
+        canvas: Canvas,
+        snapshot: BeeGeckoSnapshot
+    ) {
+        snapshot
+            .hypothesisTrace
+            .nodes
+            .forEach {
+                node ->
+
+                val center =
+                    cellCenter(
+                        node.cell
+                    )
+
+                val radius =
+                    baseRadius *
+                        .61f
+
+                paint.style =
+                    Paint.Style.STROKE
+                paint.strokeCap =
+                    Paint.Cap.ROUND
+                paint.strokeWidth =
+                    dp(4.8f) /
+                        camera.scale
+                paint.color =
+                    Color.argb(
+                        225,
+                        node.color.red,
+                        node.color.green,
+                        node.color.blue
+                    )
+
+                canvas.drawCircle(
+                    center.first,
+                    center.second,
+                    baseRadius *
+                        .72f,
+                    paint
+                )
+
+                paint.strokeWidth =
+                    dp(9f) /
+                        camera.scale
+                paint.color =
+                    Color.argb(
+                        58,
+                        node.color.red,
+                        node.color.green,
+                        node.color.blue
+                    )
+
+                canvas.drawCircle(
+                    center.first,
+                    center.second,
+                    baseRadius *
+                        .72f,
+                    paint
+                )
+
+                geckoBitmap
+                    ?.let {
+                        bitmap ->
+
+                        paint.alpha =
+                            118
+
+                        canvas.drawBitmap(
+                            bitmap,
+                            null,
+                            RectF(
+                                center.first -
+                                    radius,
+                                center.second -
+                                    radius,
+                                center.first +
+                                    radius,
+                                center.second +
+                                    radius
+                            ),
+                            paint
+                        )
+
+                        paint.alpha =
+                            255
+                    }
+
+                if (
+                    node.state ==
+                        HypothesisBranchState
+                            .CONTRADICTION
+                ) {
+                    paint.style =
+                        Paint.Style.STROKE
+                    paint.strokeWidth =
+                        dp(5.4f) /
+                            camera.scale
+                    paint.color =
+                        Color.rgb(
+                            178,
+                            28,
+                            28
+                        )
+
+                    canvas.drawCircle(
+                        center.first,
+                        center.second,
+                        baseRadius *
+                            .56f,
+                        paint
+                    )
+
+                    canvas.drawLine(
+                        center.first -
+                            baseRadius *
+                                .40f,
+                        center.second +
+                            baseRadius *
+                                .40f,
+                        center.first +
+                            baseRadius *
+                                .40f,
+                        center.second -
+                            baseRadius *
+                                .40f,
+                        paint
+                    )
+                }
+            }
+    }
+
     private fun drawCrosses(
         canvas: Canvas,
         snapshot: BeeGeckoSnapshot
@@ -806,9 +943,30 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                     }
             }
 
+        val hypothesisColors =
+            snapshot
+                .hypothesisTrace
+                .crossOwners
+                .entries
+                .mapNotNull {
+                    entry ->
+
+                    snapshot
+                        .hypothesisTrace
+                        .nodeById(
+                            entry.value
+                        )
+                        ?.let {
+                            entry.key to
+                                it.color
+                        }
+                }
+                .toMap()
+
         drawCrossStates(
             canvas,
-            states
+            states,
+            hypothesisColors
         )
     }
 
@@ -818,7 +976,13 @@ class BeeGeckoBoardView @JvmOverloads constructor(
             Map<
                 HexCoord,
                 BeeGeckoCrossState
-                >
+                >,
+        hypothesisColors:
+            Map<
+                HexCoord,
+                HypothesisColor
+                > =
+            emptyMap()
     ) {
         states.forEach {
             (cell, state) ->
@@ -870,31 +1034,39 @@ class BeeGeckoBoardView @JvmOverloads constructor(
                 }
 
             paint.color =
-                when (state) {
-                    BeeGeckoCrossState
-                        .HYPOTHESIS ->
+                hypothesisColors[cell]
+                    ?.let {
                         Color.rgb(
-                            224,
-                            166,
-                            24
+                            it.red,
+                            it.green,
+                            it.blue
                         )
+                    }
+                    ?: when (state) {
+                        BeeGeckoCrossState
+                            .HYPOTHESIS ->
+                            Color.rgb(
+                                224,
+                                166,
+                                24
+                            )
 
-                    BeeGeckoCrossState
-                        .CONFIRMED ->
-                        Color.rgb(
-                            35,
-                            150,
-                            65
-                        )
+                        BeeGeckoCrossState
+                            .CONFIRMED ->
+                            Color.rgb(
+                                35,
+                                150,
+                                65
+                            )
 
-                    BeeGeckoCrossState
-                        .IMPOSSIBLE ->
-                        Color.rgb(
-                            190,
-                            45,
-                            45
-                        )
-                }
+                        BeeGeckoCrossState
+                            .IMPOSSIBLE ->
+                            Color.rgb(
+                                190,
+                                45,
+                                45
+                            )
+                    }
 
             canvas.drawLine(
                 center.first - size,

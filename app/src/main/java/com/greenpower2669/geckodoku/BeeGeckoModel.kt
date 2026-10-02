@@ -258,7 +258,11 @@ data class BeeGeckoSnapshot(
     val markers:
         Map<HexCoord, CustomMarker>,
     val mistakes: Int,
-    val complete: Boolean
+    val complete: Boolean,
+    val hypothesisTrace:
+        HypothesisTraceSnapshot<HexCoord> =
+        HypothesisTraceSnapshot
+            .empty()
 ) {
     fun pieceAt(
         cell: HexCoord
@@ -303,7 +307,8 @@ enum class BeeGeckoActionFeedback {
     GIVEN_LOCKED,
     COMPLETED,
     MARKER_SET,
-    MARKER_CLEARED
+    MARKER_CLEARED,
+    HYPOTHESIS_CHANGED
 }
 
 class BeeGeckoGameEngine(
@@ -333,7 +338,11 @@ class BeeGeckoGameEngine(
         Map<HexCoord, CustomMarker> =
         emptyMap(),
     initialMistakes:
-        Int = 0
+        Int = 0,
+    initialHypothesisTrace:
+        HypothesisTraceSnapshot<HexCoord> =
+        HypothesisTraceSnapshot
+            .empty()
 ) {
     private val confirmedGeckos =
         linkedSetOf<HexCoord>()
@@ -433,6 +442,11 @@ class BeeGeckoGameEngine(
                     }
             }
 
+    private val hypothesisTrace =
+        HypothesisBranchTrace(
+            initialHypothesisTrace
+        )
+
     private val markers =
         linkedMapOf<
             HexCoord,
@@ -484,7 +498,10 @@ class BeeGeckoGameEngine(
                 confirmedGeckos ==
                     puzzle.solutionGeckos &&
                     confirmedBees ==
-                        puzzle.solutionBees
+                        puzzle.solutionBees,
+            hypothesisTrace =
+                hypothesisTrace
+                    .snapshot()
         )
 
     fun toggleCross(
@@ -511,32 +528,156 @@ class BeeGeckoGameEngine(
                 .CROSS_BLOCKED
         }
 
-        val current =
-            crossStates[cell]
-
-        val next =
-            current
-                ?.next()
-                ?: BeeGeckoCrossState
-                    .HYPOTHESIS
-
-        if (current ==
-            BeeGeckoCrossState
-                .IMPOSSIBLE
+        if (
+            hypothesisTrace
+                .nodeAt(cell) !=
+                null
         ) {
-            crossStates.remove(
+            removeHypothesisBranch(
                 cell
             )
 
             return BeeGeckoActionFeedback
-                .CROSS_REMOVED
+                .HYPOTHESIS_CHANGED
         }
 
-        crossStates[cell] =
-            next
+        return when (
+            hypothesisTrace
+                .toggleCross(cell)
+        ) {
+            HypothesisCrossChange
+                .ADDED -> {
+                crossStates[cell] =
+                    BeeGeckoCrossState
+                        .IMPOSSIBLE
+
+                BeeGeckoActionFeedback
+                    .CROSS_SET
+            }
+
+            HypothesisCrossChange
+                .REMOVED -> {
+                crossStates.remove(
+                    cell
+                )
+
+                BeeGeckoActionFeedback
+                    .CROSS_REMOVED
+            }
+
+            HypothesisCrossChange
+                .BLOCKED ->
+                BeeGeckoActionFeedback
+                    .CROSS_BLOCKED
+
+            HypothesisCrossChange
+                .NO_ACTIVE -> {
+                val current =
+                    crossStates[cell]
+
+                val next =
+                    current
+                        ?.next()
+                        ?: BeeGeckoCrossState
+                            .HYPOTHESIS
+
+                if (
+                    current ==
+                        BeeGeckoCrossState
+                            .IMPOSSIBLE
+                ) {
+                    crossStates.remove(
+                        cell
+                    )
+
+                    BeeGeckoActionFeedback
+                        .CROSS_REMOVED
+                } else {
+                    crossStates[cell] =
+                        next
+
+                    BeeGeckoActionFeedback
+                        .CROSS_SET
+                }
+            }
+        }
+    }
+
+    fun cycleHypothesis(
+        cell: HexCoord
+    ): BeeGeckoActionFeedback {
+        if (!puzzle.contains(cell)) {
+            return BeeGeckoActionFeedback
+                .CROSS_BLOCKED
+        }
+
+        if (
+            cell in puzzle.givenGeckos ||
+            cell in puzzle.givenBees
+        ) {
+            return BeeGeckoActionFeedback
+                .GIVEN_LOCKED
+        }
+
+        if (
+            cell in confirmedGeckos ||
+            cell in confirmedBees
+        ) {
+            return BeeGeckoActionFeedback
+                .CROSS_BLOCKED
+        }
+
+        val existing =
+            hypothesisTrace
+                .nodeAt(cell)
+
+        if (existing == null) {
+            crossStates.remove(
+                cell
+            )
+
+            hypothesisTrace
+                .removeCross(cell)
+
+            hypothesisTrace
+                .startHypothesis(
+                    cell
+                )
+        } else if (
+            existing.state ==
+                HypothesisBranchState
+                    .ACTIVE
+        ) {
+            hypothesisTrace
+                .markContradiction(
+                    cell
+                )
+        } else {
+            removeHypothesisBranch(
+                cell
+            )
+        }
 
         return BeeGeckoActionFeedback
-            .CROSS_SET
+            .HYPOTHESIS_CHANGED
+    }
+
+    fun rewindHypothesis(
+        id: Int
+    ): Boolean {
+        val prune =
+            hypothesisTrace
+                .rewindTo(id)
+                ?: return false
+
+        prune.crossCells
+            .forEach {
+                crossStates.remove(
+                    it
+                )
+            }
+
+        return true
     }
 
     fun setCrossState(
@@ -554,11 +695,17 @@ class BeeGeckoGameEngine(
         }
 
         if (state == null) {
+            hypothesisTrace
+                .removeCross(cell)
+
             crossStates.remove(cell)
 
             return BeeGeckoActionFeedback
                 .CROSS_REMOVED
         }
+
+        hypothesisTrace
+            .removeCross(cell)
 
         crossStates[cell] = state
 
@@ -743,6 +890,13 @@ class BeeGeckoGameEngine(
             return removePiece(cell)
         }
 
+        removeHypothesisBranch(
+            cell
+        )
+
+        hypothesisTrace
+            .removeCross(cell)
+
         if (
             puzzle.solutionPieceAt(
                 cell
@@ -852,6 +1006,23 @@ class BeeGeckoGameEngine(
             .MARKER_SET
     }
 
+    private fun removeHypothesisBranch(
+        cell: HexCoord
+    ) {
+        val prune =
+            hypothesisTrace
+                .removeBranch(
+                    cell
+                )
+
+        prune.crossCells
+            .forEach {
+                crossStates.remove(
+                    it
+                )
+            }
+    }
+
     fun applyProfessorStep(
         step: BeeGeckoSolveStep
     ): BeeGeckoActionFeedback {
@@ -867,6 +1038,13 @@ class BeeGeckoGameEngine(
                         confirmedBees &&
                     puzzle.contains(cell)
                 ) {
+                    removeHypothesisBranch(
+                        cell
+                    )
+
+                    hypothesisTrace
+                        .removeCross(cell)
+
                     crossStates[cell] =
                         BeeGeckoCrossState
                             .CONFIRMED
@@ -879,6 +1057,13 @@ class BeeGeckoGameEngine(
                     it in
                         puzzle.solutionGeckos
                 ) {
+                    removeHypothesisBranch(
+                        it
+                    )
+
+                    hypothesisTrace
+                        .removeCross(it)
+
                     confirmedGeckos.add(
                         it
                     )
@@ -895,6 +1080,13 @@ class BeeGeckoGameEngine(
                     it in
                         puzzle.solutionBees
                 ) {
+                    removeHypothesisBranch(
+                        it
+                    )
+
+                    hypothesisTrace
+                        .removeCross(it)
+
                     confirmedBees.add(
                         it
                     )

@@ -27,7 +27,11 @@ data class BeeGeckoSession(
     val mistakes: Int,
     val camera: BeeGeckoCamera,
     val elapsedSeconds: Long,
-    val assistancePoints: Int
+    val assistancePoints: Int,
+    val hypothesisTrace:
+        HypothesisTraceSnapshot<HexCoord> =
+        HypothesisTraceSnapshot
+            .empty()
 )
 
 class BeeGeckoSessionStore(
@@ -166,6 +170,13 @@ class BeeGeckoSessionStore(
             "logicalMarkers",
             encodeLogicalMarkers(
                 session.logicalMarkers
+            )
+        )
+
+        root.put(
+            "hypothesisTrace",
+            encodeHypothesisTrace(
+                session.hypothesisTrace
             )
         )
 
@@ -431,7 +442,14 @@ class BeeGeckoSessionStore(
                         "assistancePoints",
                         0
                     )
-                        .coerceAtLeast(0)
+                        .coerceAtLeast(0),
+                hypothesisTrace =
+                    decodeHypothesisTrace(
+                        root.optJSONObject(
+                            "hypothesisTrace"
+                        ),
+                        puzzle
+                    )
             )
         } catch (
             _: Exception
@@ -726,6 +744,271 @@ class BeeGeckoSessionStore(
             }
         }
 
+    private fun encodeHypothesisTrace(
+        trace:
+            HypothesisTraceSnapshot<
+                HexCoord
+                >
+    ): JSONObject {
+        val nodes =
+            JSONArray()
+
+        trace.nodes
+            .sortedBy {
+                it.order
+            }
+            .forEach {
+                node ->
+
+                nodes.put(
+                    JSONObject()
+                        .put(
+                            "id",
+                            node.id
+                        )
+                        .put(
+                            "parentId",
+                            node.parentId
+                                ?: JSONObject.NULL
+                        )
+                        .put(
+                            "q",
+                            node.cell.q
+                        )
+                        .put(
+                            "r",
+                            node.cell.r
+                        )
+                        .put(
+                            "depth",
+                            node.depth
+                        )
+                        .put(
+                            "color",
+                            node.color.name
+                        )
+                        .put(
+                            "state",
+                            node.state.name
+                        )
+                        .put(
+                            "order",
+                            node.order
+                        )
+                )
+            }
+
+        val crosses =
+            JSONArray()
+
+        trace.crossOwners
+            .forEach {
+                (cell, ownerId) ->
+
+                crosses.put(
+                    JSONObject()
+                        .put(
+                            "q",
+                            cell.q
+                        )
+                        .put(
+                            "r",
+                            cell.r
+                        )
+                        .put(
+                            "ownerId",
+                            ownerId
+                        )
+                )
+            }
+
+        return JSONObject()
+            .put(
+                "activeId",
+                trace.activeId
+                    ?: JSONObject.NULL
+            )
+            .put(
+                "nodes",
+                nodes
+            )
+            .put(
+                "crosses",
+                crosses
+            )
+    }
+
+    private fun decodeHypothesisTrace(
+        source: JSONObject?,
+        puzzle: BeeGeckoPuzzle
+    ): HypothesisTraceSnapshot<
+        HexCoord
+        > {
+        if (source == null) {
+            return HypothesisTraceSnapshot
+                .empty()
+        }
+
+        val nodesJson =
+            source.optJSONArray(
+                "nodes"
+            )
+                ?: JSONArray()
+
+        val nodes =
+            mutableListOf<
+                HypothesisNode<
+                    HexCoord
+                    >
+                >()
+
+        for (
+            index in
+            0 until nodesJson.length()
+        ) {
+            val item =
+                nodesJson
+                    .getJSONObject(
+                        index
+                    )
+
+            val cell =
+                HexCoord(
+                    item.getInt("q"),
+                    item.getInt("r")
+                )
+
+            if (!puzzle.contains(cell)) {
+                continue
+            }
+
+            nodes.add(
+                HypothesisNode(
+                    id =
+                        item.getInt(
+                            "id"
+                        ),
+                    cell =
+                        cell,
+                    parentId =
+                        if (
+                            item.isNull(
+                                "parentId"
+                            )
+                        ) {
+                            null
+                        } else {
+                            item.optInt(
+                                "parentId"
+                            )
+                                .takeIf {
+                                    it > 0
+                                }
+                        },
+                    depth =
+                        item.optInt(
+                            "depth",
+                            0
+                        ),
+                    color =
+                        enumValueOf<
+                            HypothesisColor
+                            >(
+                            item.getString(
+                                "color"
+                            )
+                        ),
+                    state =
+                        enumValueOf<
+                            HypothesisBranchState
+                            >(
+                            item.getString(
+                                "state"
+                            )
+                        ),
+                    order =
+                        item.optInt(
+                            "order",
+                            index +
+                                1
+                        )
+                )
+            )
+        }
+
+        val validIds =
+            nodes.map {
+                it.id
+            }
+                .toSet()
+
+        val crossesJson =
+            source.optJSONArray(
+                "crosses"
+            )
+                ?: JSONArray()
+
+        val crosses =
+            linkedMapOf<
+                HexCoord,
+                Int
+                >()
+
+        for (
+            index in
+            0 until crossesJson.length()
+        ) {
+            val item =
+                crossesJson
+                    .getJSONObject(
+                        index
+                    )
+
+            val cell =
+                HexCoord(
+                    item.getInt("q"),
+                    item.getInt("r")
+                )
+
+            val ownerId =
+                item.getInt(
+                    "ownerId"
+                )
+
+            if (
+                puzzle.contains(cell) &&
+                ownerId in validIds
+            ) {
+                crosses[cell] =
+                    ownerId
+            }
+        }
+
+        return HypothesisTraceSnapshot(
+            nodes =
+                nodes,
+            crossOwners =
+                crosses,
+            activeId =
+                if (
+                    source.isNull(
+                        "activeId"
+                    )
+                ) {
+                    null
+                } else {
+                    source
+                        .optInt(
+                            "activeId",
+                            -1
+                        )
+                        .takeIf {
+                            it in validIds
+                        }
+                }
+        )
+    }
+
     private fun encodeRegions(
         regions:
             Map<HexCoord, Int>
@@ -862,7 +1145,7 @@ class BeeGeckoSessionStore(
             "geckodoku_bee_gecko_session_v2"
 
         private const val SCHEMA =
-            4
+            5
 
         private const val KEY_SESSION =
             "active_session"
