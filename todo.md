@@ -673,3 +673,19 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [ ] Test téléphone : revenir via la frise et explorer une branche sœur.
 
 GECKO-044 CI FINAL : run #397 SUCCESS sur commit `3f61e64c1ce5381710b2ece6ee0ccac570f26a9f`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.39-dev-phone`, 219108667 octets, digest `sha256:f77cecba153d34bba27fd047309f9c77f138fd4e7f0d2beadfabb1a0f02f4882`. Les prerelease/release sont restées skipped. Le correctif final garantit qu’une croix préexistante hors hypothèse ne devient jamais rétroactivement fille/colorée d’une nouvelle branche. Validation téléphone reste à faire.
+
+## GECKO-045 — validation
+- [x] Séparer candidats et hypothèses Sudoku.
+- [x] Ajouter moteur parent/enfant Sudoku sur HypothesisBranchTrace.
+- [x] Pavé flottant 2×2 : Choix / Candidats / Hypothèse / Prévisu.
+- [x] Drag par bandeau + croix de fermeture intégrée.
+- [x] Couleur de la prochaine hypothèse visible avant création.
+- [x] Prévisu obligatoire puis « Êtes-vous sûr ? Oui / Non ».
+- [x] Non = effacer uniquement la prévisu ; Oui = validation Sudoku normale.
+- [x] Aura/chiffre coloré et sens interdit des hypothèses sur la grille.
+- [x] Retirer les libellés H1/H2 de la frise pour économiser la largeur.
+- [ ] CI Kotlin + assemblePhone.
+- [ ] Test téléphone : drag du pavé sans déclencher un chiffre.
+- [ ] Test téléphone : candidats indépendants des hypothèses.
+- [ ] Test téléphone : branches parent/enfant, contradiction et rollback Sudoku.
+- [ ] Test téléphone : confirmation Oui/Non et disparition/réapparition de la croix.

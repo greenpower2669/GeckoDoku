@@ -192,8 +192,7 @@ class HypothesisTimelineView @JvmOverloads constructor(
                 labelWidth +
                 gap
 
-        entries.forEachIndexed {
-                index,
+        entries.forEach {
                 entry ->
 
             val rect =
@@ -245,52 +244,6 @@ class HypothesisTimelineView @JvmOverloads constructor(
                 rect,
                 dp(7f),
                 dp(7f),
-                paint
-            )
-
-            paint.style =
-                Paint.Style.FILL
-            paint.color =
-                if (
-                    entry.color ==
-                        HypothesisColor
-                            .YELLOW
-                ) {
-                    Color.BLACK
-                } else {
-                    Color.WHITE
-                }
-
-            paint.textSize =
-                dp(12f)
-            paint.textAlign =
-                Paint.Align.CENTER
-            paint.isFakeBoldText =
-                true
-
-            val label =
-                if (
-                    entry.state ==
-                        HypothesisBranchState
-                            .CONTRADICTION
-                ) {
-                    "H" +
-                        (index + 1) +
-                        " ×"
-                } else {
-                    "H" +
-                        (index + 1)
-                }
-
-            canvas.drawText(
-                label,
-                rect.centerX(),
-                rect.centerY() -
-                    (
-                        paint.ascent() +
-                            paint.descent()
-                        ) /
-                        2f,
                 paint
             )
 

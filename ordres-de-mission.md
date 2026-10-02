@@ -1204,3 +1204,11 @@ Si une hypothèse mène à contradiction, elle et ses hypothèses descendantes p
 La frise colorée doit apparaître sous le plateau uniquement dans ces deux modes. Aucun merge main ni release avant validation Fab.
 
 GECKO-044 CI FINAL : run #397 SUCCESS sur commit `3f61e64c1ce5381710b2ece6ee0ccac570f26a9f`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.39-dev-phone`, 219108667 octets, digest `sha256:f77cecba153d34bba27fd047309f9c77f138fd4e7f0d2beadfabb1a0f02f4882`. Les prerelease/release sont restées skipped. Le correctif final garantit qu’une croix préexistante hors hypothèse ne devient jamais rétroactivement fille/colorée d’une nouvelle branche. Validation téléphone reste à faire.
+
+# GECKO-045 — ORDRE DE MISSION SUDOKU SIMPLIFIÉ
+
+Le Sudoku doit proposer un unique pavé local, déplaçable, composé de quatre carrés : Choix, Candidats, Hypothèse, Prévisu. Les candidats sont des notes ; une hypothèse est une branche logique distincte portant une couleur et un lien parent/enfant. Le panneau Hypothèse montre la couleur de la prochaine branche avant même sa création.
+
+Choisir une valeur ne modifie pas immédiatement la grille : la valeur passe en Prévisu, la croix de fermeture est cachée, puis l'utilisateur répond à « Êtes-vous sûr ? Oui / Non ». Oui valide par le moteur normal ; Non annule la prévisu sans modifier la grille.
+
+Les hypothèses suivent le moteur GECKO-044 : couleur, aura, enfant, contradiction/sens-interdit, suppression récursive. Sudoku ne doit pas afficher H1/H2 en permanence. La frise GeckoDoku/Abeilles-Geckos conserve ses couleurs mais sans texte H1/H2 afin de maximiser la place. Aucun merge main ni release avant validation Fab.

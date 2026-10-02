@@ -1092,3 +1092,22 @@ Décision Fab du 2026-10-02.
 - Aucun merge main ni release/prerelease avant validation Fab.
 
 GECKO-044 CI FINAL : run #397 SUCCESS sur commit `3f61e64c1ce5381710b2ece6ee0ccac570f26a9f`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.39-dev-phone`, 219108667 octets, digest `sha256:f77cecba153d34bba27fd047309f9c77f138fd4e7f0d2beadfabb1a0f02f4882`. Les prerelease/release sont restées skipped. Le correctif final garantit qu’une croix préexistante hors hypothèse ne devient jamais rétroactivement fille/colorée d’une nouvelle branche. Validation téléphone reste à faire.
+
+# GECKO-045 — SUDOKU : PAVÉ HYPOTHÈSE / PRÉVISU
+
+Décision Fab du 2026-10-02.
+
+- Branche : `gecko-045-sudoku-hypothesis-pad`.
+- Sudoku distingue désormais strictement **candidats** et **hypothèses**.
+- Le pavé flottant devient une grille 2×2 de quatre zones : **Choix**, **Candidats**, **Hypothèse**, **Prévisu**.
+- Le pavé reste déplaçable par drag via son bandeau supérieur et possède une croix de fermeture intégrée.
+- Le pavé Hypothèse annonce déjà la couleur de la prochaine branche : jaune → vert → rouge → violet → bleu → orange.
+- Une hypothèse Sudoku est le couple (case, chiffre), avec la même logique parent/enfant, contradiction et rollback récursif que GECKO-044.
+- Les candidats restent des notes indépendantes : ils ne sont ni transformés ni confondus avec les hypothèses.
+- Le chiffre choisi n'est plus posé immédiatement. Il apparaît d'abord dans Prévisu ; la croix de fermeture disparaît et la question « Êtes-vous sûr ? Oui / Non » devient obligatoire.
+- **Oui** valide ensuite par le moteur Sudoku normal ; **Non** efface uniquement la prévisu.
+- Les hypothèses Sudoku sont visibles sur la grille par aura colorée et chiffre hypothétique ; contradiction = sens interdit.
+- Sudoku n'affiche pas de frise H1/H2 permanente afin d'économiser la place.
+- Les libellés H1/H2 sont retirés de la frise GECKO-044 ; les couleurs + bord actif + sens interdit suffisent.
+- Version test : 0.15.40-dev / versionCode 75.
+- Aucun merge main ni release/prerelease avant validation Fab.
