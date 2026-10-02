@@ -718,8 +718,10 @@ GECKO-046 CI FINAL : run #399 SUCCESS sur commit `2f6ec3c75118d15c8492397098e886
 - [x] Bouton ? d'aide interactive.
 - [x] Prof explique Choix / Candidats / Hypothèse / Prévisu sans coût d'assistance.
 - [x] Drag + redimensionnement conservés.
-- [ ] CI Kotlin + assemblePhone.
+- [x] CI Kotlin + assemblePhone — run #402 vert.
 - [ ] Test téléphone : toucher plusieurs cases à la suite sans fermeture/flicker du pavé.
 - [ ] Test téléphone : validation Oui conserve le pavé et passe immédiatement à la case suivante choisie.
 - [ ] Test téléphone : ? puis chacune des quatre zones déclenche la bonne explication.
 - [ ] Test téléphone : clic extérieur au pavé traverse correctement vers le Sudoku.
+
+GECKO-047 CI FINAL : run #402 SUCCESS sur commit `7425eadb8385226075d0e5b5d224c0dcc72bf8aa`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.42-dev-phone`, 219134167 octets, digest `sha256:c23ba189f1e7879e9e3d2389d0470fdd72bc87ed4b4e0b958400cf406e961a9b`. Prerelease et release sont restées skipped. Le PopupWindow Sudoku est non modal au toucher sur Android Q+ afin que les touches hors pavé traversent vers la grille pendant que le pavé reste visible. Validation téléphone requise pour confirmer le passage tactile réel sur Samsung/Android 16.
