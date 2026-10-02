@@ -730,3 +730,5 @@ GECKO-047 CI FINAL : run #402 SUCCESS sur commit `7425eadb8385226075d0e5b5d224c0
 
 ## 2026-10-02 — GECKO-048
 Fab demande une réduction au moins deux fois plus importante du pavé Sudoku sans résistance au redimensionnement et autorise explicitement la release. Minimum popup abaissé à 140×160 dp, bandeau minimum à 14 dp. Version 0.15.43-dev / code 78. La CI doit créer la phone-release puis la promouvoir en release finale si tout est vert.
+
+GECKO-048 RELEASE FINALE : CI #403 SUCCESS sur commit `10da3008613c26973d7598211967ba64a0e18601`. Release finale publiée et promue : `phone-0.15.43-dev-run-403`, titre `GeckoDoku 0.15.43-dev • téléphone validé`. APK public : `GeckoDoku-v0.15.43-dev.apk`, 299414401 octets. Artifact CI : `GeckoDoku-v0.15.43-dev-phone`, digest `sha256:c11afe59f5ab784256edb2a39ad76dcf9b0c0d0ed93f4679bcece7c57847b661`. Aucun merge main.
