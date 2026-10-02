@@ -95,5 +95,9 @@ data class GameSnapshot(
     val complete: Boolean,
     val axisGuides:
         Set<ClassicAxisGuide> =
-        emptySet()
+        emptySet(),
+    val hypothesisTrace:
+        HypothesisTraceSnapshot<Cell> =
+        HypothesisTraceSnapshot
+            .empty()
 )

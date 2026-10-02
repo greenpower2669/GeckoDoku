@@ -887,6 +887,18 @@ class GeckoBoardView @JvmOverloads constructor(
 
                     state.hypotheses[cell] ==
                         HypothesisMark.ALERT_GECKO -> {
+                        drawHypothesisAura(
+                            canvas,
+                            rect,
+                            state
+                                .hypothesisTrace
+                                .colorForHypothesis(
+                                    cell
+                                ),
+                            contradiction =
+                                true
+                        )
+
                         val visible =
                             (
                                 SystemClock
@@ -900,27 +912,45 @@ class GeckoBoardView @JvmOverloads constructor(
                             if (visible) {
                                 1f
                             } else {
-                                .20f
+                                .36f
                             },
                             true
                         )
                     }
 
                     state.hypotheses[cell] ==
-                        HypothesisMark.GHOST_GECKO ->
+                        HypothesisMark.GHOST_GECKO -> {
+                        drawHypothesisAura(
+                            canvas,
+                            rect,
+                            state
+                                .hypothesisTrace
+                                .colorForHypothesis(
+                                    cell
+                                ),
+                            contradiction =
+                                false
+                        )
+
                         drawGecko(
                             canvas,
                             rect,
-                            .18f,
+                            .38f,
                             false
                         )
+                    }
 
                     state.manualCrosses
                         .contains(cell) ->
                         drawCross(
                             canvas,
                             rect,
-                            1f
+                            1f,
+                            state
+                                .hypothesisTrace
+                                .colorForCross(
+                                    cell
+                                )
                         )
 
                     state.autoCrosses
@@ -1162,7 +1192,9 @@ class GeckoBoardView @JvmOverloads constructor(
     private fun drawCross(
         canvas: Canvas,
         rect: RectF,
-        alpha: Float
+        alpha: Float,
+        hypothesisColor:
+            HypothesisColor? = null
     ) {
         paint.style =
             Paint.Style.STROKE
@@ -1174,13 +1206,23 @@ class GeckoBoardView @JvmOverloads constructor(
             Paint.Cap.ROUND
 
         paint.color =
-            Color.argb(
-                (255 * alpha)
-                    .toInt(),
-                45,
-                45,
-                45
-            )
+            hypothesisColor
+                ?.let {
+                    Color.argb(
+                        (255 * alpha)
+                            .toInt(),
+                        it.red,
+                        it.green,
+                        it.blue
+                    )
+                }
+                ?: Color.argb(
+                    (255 * alpha)
+                        .toInt(),
+                    45,
+                    45,
+                    45
+                )
 
         val m =
             cellSize * .29f
@@ -1200,6 +1242,95 @@ class GeckoBoardView @JvmOverloads constructor(
             rect.bottom - m,
             paint
         )
+    }
+
+    private fun drawHypothesisAura(
+        canvas: Canvas,
+        rect: RectF,
+        color: HypothesisColor?,
+        contradiction: Boolean
+    ) {
+        val selected =
+            color
+                ?: return
+
+        paint.style =
+            Paint.Style.STROKE
+        paint.strokeCap =
+            Paint.Cap.ROUND
+        paint.strokeWidth =
+            cellSize *
+                .075f
+        paint.color =
+            Color.argb(
+                225,
+                selected.red,
+                selected.green,
+                selected.blue
+            )
+
+        canvas.drawCircle(
+            rect.centerX(),
+            rect.centerY(),
+            cellSize *
+                .39f,
+            paint
+        )
+
+        paint.strokeWidth =
+            cellSize *
+                .13f
+        paint.color =
+            Color.argb(
+                58,
+                selected.red,
+                selected.green,
+                selected.blue
+            )
+
+        canvas.drawCircle(
+            rect.centerX(),
+            rect.centerY(),
+            cellSize *
+                .39f,
+            paint
+        )
+
+        if (contradiction) {
+            paint.strokeWidth =
+                cellSize *
+                    .055f
+            paint.color =
+                Color.rgb(
+                    178,
+                    28,
+                    28
+                )
+
+            canvas.drawCircle(
+                rect.centerX(),
+                rect.centerY(),
+                cellSize *
+                    .32f,
+                paint
+            )
+
+            canvas.drawLine(
+                rect.left +
+                    cellSize *
+                        .20f,
+                rect.bottom -
+                    cellSize *
+                        .20f,
+                rect.right -
+                    cellSize *
+                        .20f,
+                rect.top +
+                    cellSize *
+                        .20f,
+                paint
+            )
+        }
     }
 
     private fun drawGecko(
