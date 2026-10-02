@@ -115,6 +115,26 @@ class GameEngine(
                 .HYPOTHESIS_CHANGED
         }
 
+        val existingBranchColor =
+            hypothesisTrace
+                .snapshot()
+                .colorForCross(
+                    cell
+                )
+
+        if (
+            cell in manualCrosses &&
+            existingBranchColor ==
+                null
+        ) {
+            manualCrosses.remove(
+                cell
+            )
+
+            return ActionFeedback
+                .CROSS_REMOVED
+        }
+
         return when (
             hypothesisTrace
                 .toggleCross(cell)

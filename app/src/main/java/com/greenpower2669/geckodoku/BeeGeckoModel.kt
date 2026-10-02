@@ -541,6 +541,43 @@ class BeeGeckoGameEngine(
                 .HYPOTHESIS_CHANGED
         }
 
+        val existingBranchColor =
+            hypothesisTrace
+                .snapshot()
+                .colorForCross(
+                    cell
+                )
+
+        if (
+            crossStates.containsKey(
+                cell
+            ) &&
+            existingBranchColor ==
+                null
+        ) {
+            val current =
+                crossStates[cell]
+
+            val next =
+                current
+                    ?.next()
+
+            if (next == null) {
+                crossStates.remove(
+                    cell
+                )
+
+                return BeeGeckoActionFeedback
+                    .CROSS_REMOVED
+            }
+
+            crossStates[cell] =
+                next
+
+            return BeeGeckoActionFeedback
+                .CROSS_SET
+        }
+
         return when (
             hypothesisTrace
                 .toggleCross(cell)
