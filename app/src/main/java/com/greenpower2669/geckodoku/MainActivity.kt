@@ -4084,218 +4084,160 @@ class MainActivity : Activity() {
     }
 
     private fun showStats() {
-        val s =
-            statsStore.read()
+        val root =
+            LinearLayout(this).apply {
+                orientation =
+                    LinearLayout.VERTICAL
 
-        val text =
-            buildString {
-                append(
-                    "Joueur : "
+                setPadding(
+                    dp(12),
+                    dp(8),
+                    dp(12),
+                    dp(8)
                 )
-                append(
-                    playerProfileStore
-                        .playerName
-                )
-                append("\n\n")
+            }
 
-                append(
-                    "Statistiques locales uniquement\n\n"
+        root.addView(
+            TextView(this).apply {
+                textSize = 16f
+                setTextColor(
+                    Color.BLACK
                 )
 
-                append(
-                    "Parties lancées : "
-                )
-                append(
-                    s.gamesStarted
-                )
-                append("\n")
+                text =
+                    "Joueur : " +
+                        playerProfileStore
+                            .playerName +
+                        "\n\n" +
+                        "Une partie est statée si elle est terminée, ou si elle est annulée après au moins une erreur. " +
+                        "Une annulation sans erreur n'est pas comptée.\n\n" +
+                        "Touchez un niveau pour voir son évolution temporelle."
+            }
+        )
 
-                append(
-                    "Parties terminées : "
-                )
-                append(
-                    s.gamesCompleted
-                )
-                append("\n")
+        var levelCount =
+            0
 
-                append(
-                    "Terminées avec Prof : "
-                )
-                append(
-                    s.assistedCompleted
-                )
-                append("\n")
-
-                append(
-                    "Réussite globale : "
-                )
-                append(
-                    s.completionRate
-                )
-                append("%\n")
-
-                append(
-                    "Erreurs : "
-                )
-                append(
-                    s.mistakes
-                )
-                append("\n")
-
-                append(
-                    "Temps moyen terminé : "
-                )
-                append(
-                    formatSeconds(
-                        s.averageSeconds
+        for (
+            difficulty in
+            GameDifficulty.entries
+        ) {
+            val stats =
+                statsStore
+                    .statsForDifficulty(
+                        difficulty
                     )
-                )
-                append("\n\n")
 
-                append(
-                    "Réussite et étoiles par difficulté :\n"
-                )
+            if (
+                stats.started <= 0 &&
+                stats.completed <= 0
+            ) {
+                continue
+            }
 
-                for (
-                    d in
-                    GameDifficulty.entries
-                ) {
-                    val ds =
-                        statsStore
-                            .statsForDifficulty(
-                                d
+            levelCount += 1
+
+            root.addView(
+                Button(this).apply {
+                    isAllCaps = false
+                    textSize = 15f
+                    minHeight =
+                        dp(58)
+
+                    text =
+                        difficulty.label +
+                            "  •  " +
+                            stats.completed +
+                            " terminée" +
+                            if (
+                                stats.completed >
+                                    1
+                            ) {
+                                "s"
+                            } else {
+                                ""
+                            } +
+                            "  •  " +
+                            stats.mistakes +
+                            " erreur" +
+                            if (
+                                stats.mistakes >
+                                    1
+                            ) {
+                                "s"
+                            } else {
+                                ""
+                            } +
+                            "\n⏱ " +
+                            trendShortLabel(
+                                stats.speedTrend
+                            ) +
+                            "   ★ " +
+                            trendShortLabel(
+                                stats.starTrend
                             )
 
-                    append(d.label)
-                    append(" : ")
-
-                    if (ds.started == 0) {
-                        append(
-                            "— (0 partie)"
+                    setOnClickListener {
+                        showDifficultyStats(
+                            difficulty
                         )
-                    } else {
-                        append(
-                            ds.completionRate
-                        )
-                        append("%  •  ")
-                        append(
-                            ds.completed
-                        )
-                        append("/")
-                        append(
-                            ds.started
-                        )
-
-                        if (
-                            ds.assistedCompleted > 0
-                        ) {
-                            append(
-                                " • Prof "
-                            )
-                            append(
-                                ds.assistedCompleted
-                            )
-                        }
-
-                        if (
-                            ds.completed > 0 &&
-                            ds.bestStars > 0
-                        ) {
-                            append("\n    meilleur ")
-                            append(
-                                CompletionRatingPolicy
-                                    .symbols(
-                                        ds.bestStars
-                                    )
-                            )
-                            append(
-                                " • moyenne "
-                            )
-                            append(
-                                ds.averageStars
-                            )
-                            append("★")
-                        }
                     }
-
-                    append("\n")
+                },
+                LinearLayout.LayoutParams(
+                    LinearLayout
+                        .LayoutParams
+                        .MATCH_PARENT,
+                    LinearLayout
+                        .LayoutParams
+                        .WRAP_CONTENT
+                ).apply {
+                    topMargin =
+                        dp(6)
                 }
+            )
+        }
 
-                append(
-                    "\nDétail par mode et difficulté :\n"
-                )
-
-                for (
-                    mode in
-                    GameMode.entries
-                ) {
-                    append("\n")
-                    append(
-                        gameModeLabel(mode)
-                    )
-                    append("\n")
-
-                    for (
-                        d in
-                        GameDifficulty.entries
-                    ) {
-                        val ds =
-                            statsStore
-                                .statsForModeAndDifficulty(
-                                    mode,
-                                    d
-                                )
-
-                        if (
-                            ds.started == 0 &&
-                            ds.completed == 0
-                        ) {
-                            continue
-                        }
-
-                        append("  ")
-                        append(d.label)
-                        append(" : ")
-                        append(ds.completed)
-                        append("/")
-                        append(ds.started)
-
-                        if (
-                            ds.completed > 0
-                        ) {
-                            append(" • meilleur ")
-                            append(
-                                CompletionRatingPolicy
-                                    .symbols(
-                                        ds.bestStars
-                                    )
-                            )
-                        }
-
-                        append("\n")
-                    }
+        if (levelCount == 0) {
+            root.addView(
+                TextView(this).apply {
+                    text =
+                        "\nPas encore de partie statée."
+                    textSize = 16f
+                    gravity =
+                        Gravity.CENTER
                 }
+            )
+        }
 
-                append(
-                    "\nTerminées par taille :\n"
-                )
+        root.addView(
+            Button(this).apply {
+                text =
+                    "🏆 Hall of Fame"
+                textSize = 15f
+                minHeight =
+                    dp(52)
 
-                for (size in 5..12) {
-                    append(size)
-                    append("×")
-                    append(size)
-                    append(" : ")
-                    append(
-                        statsStore
-                            .completedForSize(
-                                size
-                            )
-                    )
-                    append("\n")
+                setOnClickListener {
+                    showHallOfFame()
                 }
+            },
+            LinearLayout.LayoutParams(
+                LinearLayout
+                    .LayoutParams
+                    .MATCH_PARENT,
+                LinearLayout
+                    .LayoutParams
+                    .WRAP_CONTENT
+            ).apply {
+                topMargin =
+                    dp(10)
+            }
+        )
 
-                append(
-                    "\n5 étoiles = sans aide et sans erreur. Une erreur coûte 3 étoiles."
+        val scroll =
+            ScrollView(this).apply {
+                addView(
+                    root
                 )
             }
 
@@ -4303,9 +4245,217 @@ class MainActivity : Activity() {
             .setTitle(
                 "Stats du joueur"
             )
-            .setMessage(text)
+            .setView(
+                scroll
+            )
             .setPositiveButton(
-                "OK",
+                "Fermer",
+                null
+            )
+            .show()
+    }
+
+    private fun showDifficultyStats(
+        difficulty:
+            GameDifficulty,
+        mode:
+            GameMode? = null
+    ) {
+        val stats =
+            if (mode == null) {
+                statsStore
+                    .statsForDifficulty(
+                        difficulty
+                    )
+            } else {
+                statsStore
+                    .statsForModeAndDifficulty(
+                        mode,
+                        difficulty
+                    )
+            }
+
+        val history =
+            if (mode == null) {
+                statsStore
+                    .eventsForDifficulty(
+                        difficulty
+                    )
+            } else {
+                statsStore
+                    .eventsForModeAndDifficulty(
+                        mode,
+                        difficulty
+                    )
+            }
+
+        val summary =
+            TextView(this).apply {
+                textSize = 16f
+                setTextColor(
+                    Color.BLACK
+                )
+
+                setPadding(
+                    dp(12),
+                    dp(10),
+                    dp(12),
+                    dp(8)
+                )
+
+                text =
+                    buildString {
+                        if (mode != null) {
+                            append(
+                                gameModeLabel(
+                                    mode
+                                )
+                            )
+                            append("\n")
+                        }
+
+                        append(
+                            difficulty.label
+                        )
+                        append("\n\n")
+
+                        append(
+                            "Parties statées : "
+                        )
+                        append(
+                            stats.started
+                        )
+                        append("\n")
+
+                        append(
+                            "Terminées : "
+                        )
+                        append(
+                            stats.completed
+                        )
+                        append("\n")
+
+                        append(
+                            "Annulées avec erreur : "
+                        )
+                        append(
+                            stats.abandonedWithMistakes
+                        )
+                        append("\n")
+
+                        append(
+                            "Erreurs : "
+                        )
+                        append(
+                            stats.mistakes
+                        )
+                        append("\n")
+
+                        if (
+                            stats.completed >
+                                0
+                        ) {
+                            append(
+                                "Temps moyen : "
+                            )
+                            append(
+                                formatSeconds(
+                                    stats.averageSeconds
+                                )
+                            )
+                            append("\n")
+
+                            append(
+                                "Étoiles moyennes : "
+                            )
+                            append(
+                                stats.averageStars
+                            )
+                            append(
+                                "★  •  meilleur "
+                            )
+                            append(
+                                CompletionRatingPolicy
+                                    .symbols(
+                                        stats.bestStars
+                                    )
+                            )
+                            append("\n")
+                        }
+
+                        append(
+                            "\nDeux dernières parties terminées :\n"
+                        )
+                        append(
+                            "⏱ "
+                        )
+                        append(
+                            trendLongLabel(
+                                stats.speedTrend,
+                                faster =
+                                    true
+                            )
+                        )
+                        append("\n★ ")
+                        append(
+                            trendLongLabel(
+                                stats.starTrend,
+                                faster =
+                                    false
+                            )
+                        )
+                    }
+            }
+
+        val graph =
+            PlayerStatsTrendView(
+                this
+            ).apply {
+                setData(
+                    difficulty =
+                        difficulty,
+                    events =
+                        history
+                )
+            }
+
+        val container =
+            LinearLayout(this).apply {
+                orientation =
+                    LinearLayout.VERTICAL
+
+                addView(
+                    summary
+                )
+
+                addView(
+                    graph,
+                    LinearLayout.LayoutParams(
+                        LinearLayout
+                            .LayoutParams
+                            .MATCH_PARENT,
+                        dp(340)
+                    )
+                )
+            }
+
+        val scroll =
+            ScrollView(this).apply {
+                addView(
+                    container
+                )
+            }
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "📈 " +
+                    difficulty.label
+            )
+            .setView(
+                scroll
+            )
+            .setPositiveButton(
+                "Fermer",
                 null
             )
             .setNeutralButton(
@@ -4313,14 +4463,23 @@ class MainActivity : Activity() {
             ) {
                     _,
                     _ ->
-                showHallOfFame()
+
+                if (mode == null) {
+                    showHallOfFame()
+                } else {
+                    showHallOfFameLevel(
+                        mode,
+                        difficulty
+                    )
+                }
             }
             .show()
     }
 
     private fun showHallOfFame() {
         val entries =
-            hallOfFameStore.entries()
+            hallOfFameStore
+                .entries()
 
         if (entries.isEmpty()) {
             AlertDialog.Builder(this)
@@ -4338,66 +4497,147 @@ class MainActivity : Activity() {
             return
         }
 
+        val groups =
+            entries
+                .map {
+                    it.mode to
+                        it.difficulty
+                }
+                .distinct()
+                .sortedWith(
+                    compareBy<
+                        Pair<
+                            GameMode,
+                            GameDifficulty
+                            >
+                        > {
+                        it.first.ordinal
+                    }.thenBy {
+                        it.second.ordinal
+                    }
+                )
+
+        val labels =
+            groups.map {
+                (mode, difficulty) ->
+
+                val count =
+                    entries.count {
+                        it.mode ==
+                            mode &&
+                            it.difficulty ==
+                                difficulty
+                    }
+
+                gameModeLabel(
+                    mode
+                ) +
+                    " • " +
+                    difficulty.label +
+                    " • " +
+                    count +
+                    " résultat" +
+                    if (count > 1) {
+                        "s"
+                    } else {
+                        ""
+                    }
+            }
+                .toTypedArray()
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "🏆 Hall of Fame • choisissez un niveau"
+            )
+            .setItems(
+                labels
+            ) {
+                    _,
+                    which ->
+
+                val pair =
+                    groups[
+                        which
+                    ]
+
+                showHallOfFameLevel(
+                    pair.first,
+                    pair.second
+                )
+            }
+            .setNegativeButton(
+                "Fermer",
+                null
+            )
+            .show()
+    }
+
+    private fun showHallOfFameLevel(
+        mode: GameMode,
+        difficulty:
+            GameDifficulty
+    ) {
+        val entries =
+            hallOfFameStore
+                .entries()
+                .filter {
+                    it.mode ==
+                        mode &&
+                        it.difficulty ==
+                            difficulty
+                }
+                .take(
+                    10
+                )
+
         val dateFormat =
             SimpleDateFormat(
                 "dd/MM/yy",
                 Locale.getDefault()
             )
 
-        val text =
-            buildString {
-                for (
-                    mode in
-                    GameMode.entries
-                ) {
-                    val modeEntries =
-                        entries.filter {
-                            it.mode == mode
-                        }
+        val ranking =
+            TextView(this).apply {
+                textSize = 16f
+                setTextColor(
+                    Color.BLACK
+                )
 
-                    if (modeEntries.isEmpty()) {
-                        continue
-                    }
+                setPadding(
+                    dp(12),
+                    dp(10),
+                    dp(12),
+                    dp(8)
+                )
 
-                    if (isNotEmpty()) {
-                        append("\n")
-                    }
-
-                    append(
-                        gameModeLabel(mode)
-                    )
-                    append("\n")
-
-                    for (
-                        difficulty in
-                        GameDifficulty.entries
-                    ) {
-                        val levelEntries =
-                            modeEntries.filter {
-                                it.difficulty ==
-                                    difficulty
-                            }
-
-                        if (levelEntries.isEmpty()) {
-                            continue
-                        }
-
+                text =
+                    buildString {
                         append(
-                            "  " +
-                                difficulty.label +
-                                "\n"
+                            gameModeLabel(
+                                mode
+                            )
+                        )
+                        append(
+                            " • "
+                        )
+                        append(
+                            difficulty.label
+                        )
+                        append(
+                            "\n\n"
                         )
 
-                        levelEntries
-                            .take(10)
+                        entries
                             .forEachIndexed {
                                     index,
                                     entry ->
 
                                 append(
-                                    "  " +
-                                        (index + 1) +
-                                        ". "
+                                    index +
+                                        1
+                                )
+                                append(
+                                    ". "
                                 )
                                 append(
                                     CompletionRatingPolicy
@@ -4405,29 +4645,43 @@ class MainActivity : Activity() {
                                             entry.stars
                                         )
                                 )
-                                append(" • ")
-                                append(entry.playerName)
+                                append(
+                                    " • "
+                                )
+                                append(
+                                    entry.playerName
+                                )
 
                                 if (
                                     entry.mode !=
-                                        GameMode.GOMOKU
+                                        GameMode
+                                            .GOMOKU
                                 ) {
-                                    append(" • ")
+                                    append(
+                                        " • "
+                                    )
                                     append(
                                         entry.size
-                                            .toString() +
-                                            "×" +
-                                            entry.size
+                                    )
+                                    append(
+                                        "×"
+                                    )
+                                    append(
+                                        entry.size
                                     )
                                 }
 
-                                append(" • ")
+                                append(
+                                    " • "
+                                )
                                 append(
                                     formatSeconds(
                                         entry.elapsedSeconds
                                     )
                                 )
-                                append(" • ")
+                                append(
+                                    " • "
+                                )
                                 append(
                                     dateFormat.format(
                                         Date(
@@ -4435,41 +4689,124 @@ class MainActivity : Activity() {
                                         )
                                     )
                                 )
-                                append("\n")
+                                append(
+                                    "\n"
+                                )
                             }
                     }
-                }
             }
 
-        val view =
-            TextView(this).apply {
-                this.text = text
-                textSize = 17f
-                setTextIsSelectable(true)
-                setPadding(
-                    dp(18),
-                    dp(12),
-                    dp(18),
-                    dp(12)
+        val graph =
+            PlayerStatsTrendView(
+                this
+            ).apply {
+                setData(
+                    difficulty =
+                        difficulty,
+                    events =
+                        statsStore
+                            .eventsForModeAndDifficulty(
+                                mode,
+                                difficulty
+                            )
+                )
+            }
+
+        val container =
+            LinearLayout(this).apply {
+                orientation =
+                    LinearLayout.VERTICAL
+
+                addView(
+                    ranking
+                )
+
+                addView(
+                    graph,
+                    LinearLayout.LayoutParams(
+                        LinearLayout
+                            .LayoutParams
+                            .MATCH_PARENT,
+                        dp(340)
+                    )
                 )
             }
 
         val scroll =
             ScrollView(this).apply {
-                addView(view)
+                addView(
+                    container
+                )
             }
 
         AlertDialog.Builder(this)
             .setTitle(
-                "🏆 Hall of Fame"
+                "🏆 " +
+                    difficulty.label
             )
-            .setView(scroll)
+            .setView(
+                scroll
+            )
             .setPositiveButton(
                 "Fermer",
                 null
             )
+            .setNeutralButton(
+                "📈 Stats du niveau"
+            ) {
+                    _,
+                    _ ->
+
+                showDifficultyStats(
+                    difficulty,
+                    mode
+                )
+            }
             .show()
     }
+
+    private fun trendShortLabel(
+        trend: StatTrend
+    ): String =
+        when (trend) {
+            StatTrend.IMPROVING ->
+                "↗ progrès"
+
+            StatTrend.STABLE ->
+                "→ stable"
+
+            StatTrend.DECLINING ->
+                "↘ recul"
+
+            StatTrend.INSUFFICIENT ->
+                "… à comparer"
+        }
+
+    private fun trendLongLabel(
+        trend: StatTrend,
+        faster: Boolean
+    ): String =
+        when (trend) {
+            StatTrend.IMPROVING ->
+                if (faster) {
+                    "tu deviens plus rapide."
+                } else {
+                    "tes réussites gagnent des étoiles."
+                }
+
+            StatTrend.STABLE ->
+                "stable sur les deux dernières."
+
+            StatTrend.DECLINING ->
+                if (faster) {
+                    "la dernière a demandé plus de temps."
+                } else {
+                    "la dernière a obtenu moins d'étoiles."
+                }
+
+            StatTrend.INSUFFICIENT ->
+                "pas encore deux parties terminées à comparer."
+        }
 
     private fun editPlayerName() {
         val input =
@@ -9881,6 +10218,7 @@ class MainActivity : Activity() {
             SudokuActionFeedback
                 .WRONG_VALUE -> {
                 fx.error()
+                statsStore.recordMistake()
 
                 val playerEvent =
                     when {
@@ -13654,7 +13992,8 @@ class MainActivity : Activity() {
 
         val narration =
             PlayerStatsNarration.build(
-                statsStore.read()
+                statsStore
+                    .professorLevels()
             )
 
         speakSimpleProfessorBubble(
