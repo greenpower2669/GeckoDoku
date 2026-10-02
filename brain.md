@@ -1126,3 +1126,5 @@ Décision Fab du 2026-10-02.
 - Version : 0.15.43-dev / versionCode 78.
 - Fab autorise explicitement la production de la release téléphone finale.
 - Aucun merge main.
+
+GECKO-048 RELEASE FINALE : CI #403 SUCCESS sur commit `10da3008613c26973d7598211967ba64a0e18601`. Release finale publiée et promue : `phone-0.15.43-dev-run-403`, titre `GeckoDoku 0.15.43-dev • téléphone validé`. APK public : `GeckoDoku-v0.15.43-dev.apk`, 299414401 octets. Artifact CI : `GeckoDoku-v0.15.43-dev-phone`, digest `sha256:c11afe59f5ab784256edb2a39ad76dcf9b0c0d0ed93f4679bcece7c57847b661`. Aucun merge main.
