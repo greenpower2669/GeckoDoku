@@ -11585,6 +11585,15 @@ class MainActivity : Activity() {
                 isOutsideTouchable =
                     false
 
+                if (
+                    android.os.Build.VERSION.SDK_INT >=
+                        android.os.Build.VERSION_CODES.Q
+                ) {
+                    setTouchModal(
+                        false
+                    )
+                }
+
                 setBackgroundDrawable(
                     ColorDrawable(
                         Color.WHITE
