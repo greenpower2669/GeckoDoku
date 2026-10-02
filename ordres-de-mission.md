@@ -1202,3 +1202,5 @@ Pour GeckoDoku classique et Abeilles & Geckos, une hypothèse manuelle possède 
 Si une hypothèse mène à contradiction, elle et ses hypothèses descendantes passent visuellement en « sens interdit ». Si le joueur abandonne ou supprime une branche, toutes les marques qui lui appartiennent (croix, auras, hypothèses enfants, contradiction) sont annulées récursivement. Le retour à une étape de la frise conserve cette hypothèse et ses marques propres mais retire tous ses descendants, afin de permettre l’exploration d’une branche sœur.
 
 La frise colorée doit apparaître sous le plateau uniquement dans ces deux modes. Aucun merge main ni release avant validation Fab.
+
+GECKO-044 CI FINAL : run #397 SUCCESS sur commit `3f61e64c1ce5381710b2ece6ee0ccac570f26a9f`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.39-dev-phone`, 219108667 octets, digest `sha256:f77cecba153d34bba27fd047309f9c77f138fd4e7f0d2beadfabb1a0f02f4882`. Les prerelease/release sont restées skipped. Le correctif final garantit qu’une croix préexistante hors hypothèse ne devient jamais rétroactivement fille/colorée d’une nouvelle branche. Validation téléphone reste à faire.

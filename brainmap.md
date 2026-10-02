@@ -1090,3 +1090,5 @@ Décision Fab du 2026-10-02.
 - Abeilles & Geckos persiste/restaure l’arbre dans sa session (schema 5).
 - Version de test : 0.15.39-dev / versionCode 74.
 - Aucun merge main ni release/prerelease avant validation Fab.
+
+GECKO-044 CI FINAL : run #397 SUCCESS sur commit `3f61e64c1ce5381710b2ece6ee0ccac570f26a9f`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.39-dev-phone`, 219108667 octets, digest `sha256:f77cecba153d34bba27fd047309f9c77f138fd4e7f0d2beadfabb1a0f02f4882`. Les prerelease/release sont restées skipped. Le correctif final garantit qu’une croix préexistante hors hypothèse ne devient jamais rétroactivement fille/colorée d’une nouvelle branche. Validation téléphone reste à faire.

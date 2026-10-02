@@ -667,7 +667,9 @@ Voir `ordres-de-mission.md` pour le contrat complet.
 - [x] Suppression récursive d’une branche et de toutes ses marques filles.
 - [x] Frise chronologique avec retour à un parent et suppression des descendants.
 - [x] Persistance de l’arbre Abeilles & Geckos (schema 5).
-- [ ] CI Kotlin + assemblePhone.
+- [x] CI Kotlin + assemblePhone — run #397 vert.
 - [ ] Test téléphone : création de 3+ niveaux, couleurs et lisibilité des auras.
 - [ ] Test téléphone : supprimer un parent et vérifier disparition récursive croix/auras/sens-interdit.
 - [ ] Test téléphone : revenir via la frise et explorer une branche sœur.
+
+GECKO-044 CI FINAL : run #397 SUCCESS sur commit `3f61e64c1ce5381710b2ece6ee0ccac570f26a9f`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.39-dev-phone`, 219108667 octets, digest `sha256:f77cecba153d34bba27fd047309f9c77f138fd4e7f0d2beadfabb1a0f02f4882`. Les prerelease/release sont restées skipped. Le correctif final garantit qu’une croix préexistante hors hypothèse ne devient jamais rétroactivement fille/colorée d’une nouvelle branche. Validation téléphone reste à faire.
