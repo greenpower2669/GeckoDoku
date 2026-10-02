@@ -11491,10 +11491,10 @@ class MainActivity : Activity() {
                         dy ->
 
                     val minWidth =
-                        dp(280)
+                        dp(140)
 
                     val minHeight =
-                        dp(320)
+                        dp(160)
 
                     val maxWidth =
                         (
