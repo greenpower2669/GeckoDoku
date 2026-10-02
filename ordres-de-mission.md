@@ -1236,3 +1236,9 @@ Le bouton ? du pavé active une aide interactive. En mode aide, toucher une des 
 Le pavé reste déplaçable et redimensionnable. Aucun merge main ni release avant validation Fab.
 
 GECKO-047 CI FINAL : run #402 SUCCESS sur commit `7425eadb8385226075d0e5b5d224c0dcc72bf8aa`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.42-dev-phone`, 219134167 octets, digest `sha256:c23ba189f1e7879e9e3d2389d0470fdd72bc87ed4b4e0b958400cf406e961a9b`. Prerelease et release sont restées skipped. Le PopupWindow Sudoku est non modal au toucher sur Android Q+ afin que les touches hors pavé traversent vers la grille pendant que le pavé reste visible. Validation téléphone requise pour confirmer le passage tactile réel sur Samsung/Android 16.
+
+# GECKO-048 — ORDRE DE MISSION COMPACT + RELEASE
+
+Le pavé Sudoku doit pouvoir être réduit au moins deux fois davantage que GECKO-047 sans blocage prématuré. Minimum : 140×160 dp ; bandeau minimum : 14 dp. Toutes les fonctions persistantes, drag, resize, aide ?, hypothèses, candidats, prévisualisation et passage tactile vers la grille restent actives.
+
+Fab autorise explicitement la production de la release téléphone de cette version après CI verte. Aucun merge main.
