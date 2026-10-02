@@ -11331,15 +11331,13 @@ class MainActivity : Activity() {
 
                     if (target == null) {
                         fx.blocked()
-                        return@apply
-                    }
-
-                    when (
-                        engine.cycleHypothesis(
-                            target,
-                            digit
-                        )
-                    ) {
+                    } else {
+                        when (
+                            engine.cycleHypothesis(
+                                target,
+                                digit
+                            )
+                        ) {
                         SudokuActionFeedback
                             .HYPOTHESIS_CHANGED -> {
                             fx.hint()
@@ -11389,10 +11387,11 @@ class MainActivity : Activity() {
                                 "Ce chiffre est donné."
                         }
 
-                        else -> {
-                            fx.blocked()
-                            status.text =
-                                "Cette case contient déjà une valeur confirmée."
+                            else -> {
+                                fx.blocked()
+                                status.text =
+                                    "Cette case contient déjà une valeur confirmée."
+                            }
                         }
                     }
                 }
