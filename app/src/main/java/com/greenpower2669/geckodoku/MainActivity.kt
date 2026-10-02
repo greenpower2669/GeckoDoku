@@ -126,6 +126,9 @@ class MainActivity : Activity() {
     private lateinit var boardAnchor:
         View
 
+    private lateinit var hypothesisTimeline:
+        HypothesisTimelineView
+
     private val boardGeometryPolicy =
         GameModeBoardGeometryPolicy()
 
@@ -920,9 +923,24 @@ class MainActivity : Activity() {
                 onLongPressCell = {
                         cell ->
 
-                    showBeeGeckoMarkerPalette(
-                        cell
-                    )
+                    val existingHypothesis =
+                        beeGeckoEngine
+                            ?.snapshot()
+                            ?.hypothesisTrace
+                            ?.nodeAt(
+                                cell
+                            ) !=
+                            null
+
+                    if (existingHypothesis) {
+                        handleBeeGeckoHypothesis(
+                            cell
+                        )
+                    } else {
+                        showBeeGeckoMarkerPalette(
+                            cell
+                        )
+                    }
                 }
 
                 onAxisGuideMoved = {
@@ -1068,6 +1086,78 @@ class MainActivity : Activity() {
                             .isInitialized
                     ) {
                         positionFloatingBoard()
+                    }
+                }
+            }
+
+        hypothesisTimeline =
+            HypothesisTimelineView(
+                this
+            ).apply {
+                timelineProvider = {
+                    when (
+                        selectedGameMode
+                    ) {
+                        GameMode.GECKODOKU ->
+                            engine
+                                .snapshot()
+                                .hypothesisTrace
+                                .timeline
+
+                        GameMode.BEES_GECKOS ->
+                            beeGeckoEngine
+                                ?.snapshot()
+                                ?.hypothesisTrace
+                                ?.timeline
+                                ?: emptyList()
+
+                        else ->
+                            emptyList()
+                    }
+                }
+
+                onEntrySelected = {
+                        id ->
+
+                    val changed =
+                        when (
+                            selectedGameMode
+                        ) {
+                            GameMode.GECKODOKU ->
+                                engine
+                                    .rewindHypothesis(
+                                        id
+                                    )
+
+                            GameMode.BEES_GECKOS ->
+                                beeGeckoEngine
+                                    ?.rewindHypothesis(
+                                        id
+                                    ) ==
+                                    true
+
+                            else ->
+                                false
+                        }
+
+                    if (changed) {
+                        clearProfessorSession()
+
+                        status.text =
+                            "Retour à cette hypothèse : les sous-branches, leurs croix et leurs auras sont annulées."
+
+                        board.invalidate()
+                        beeGeckoBoard
+                            .invalidate()
+
+                        if (
+                            selectedGameMode ==
+                                GameMode.BEES_GECKOS
+                        ) {
+                            persistBeeGeckoSession()
+                        }
+
+                        refreshHypothesisTimeline()
                     }
                 }
             }
@@ -1405,6 +1495,14 @@ class MainActivity : Activity() {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 0,
                 1f
+            )
+        )
+
+        root.addView(
+            hypothesisTimeline,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(42)
             )
         )
 
@@ -2531,8 +2629,24 @@ class MainActivity : Activity() {
         ) {
             ActionFeedback.CROSS_SET -> {
                 fx.cross()
+
+                val color =
+                    engine
+                        .snapshot()
+                        .hypothesisTrace
+                        .colorForCross(
+                            cell
+                        )
+
                 status.text =
-                    "Croix posée."
+                    if (color == null) {
+                        "Croix posée."
+                    } else {
+                        "Croix " +
+                            color.label
+                                .lowercase() +
+                            " • fille de l’hypothèse active."
+                    }
             }
 
             ActionFeedback.CROSS_REMOVED -> {
@@ -2541,10 +2655,16 @@ class MainActivity : Activity() {
                     "Croix retirée."
             }
 
+            ActionFeedback.HYPOTHESIS_CHANGED -> {
+                fx.hint()
+                status.text =
+                    "Hypothèse supprimée : croix, auras et sous-branches annulées."
+            }
+
             ActionFeedback.CROSS_BLOCKED -> {
                 fx.blocked()
                 status.text =
-                    "Case déjà impossible grâce à un gecko."
+                    "Case déjà impossible grâce à un gecko ou branche en contradiction."
             }
 
             ActionFeedback.GECKO_PRESENT -> {
@@ -2563,6 +2683,7 @@ class MainActivity : Activity() {
         }
 
         board.invalidate()
+        refreshHypothesisTimeline()
     }
 
     private fun showClassicLogicalPalette(
@@ -2876,20 +2997,30 @@ class MainActivity : Activity() {
             ActionFeedback.HYPOTHESIS_CHANGED -> {
                 fx.hint()
 
+                val node =
+                    engine
+                        .snapshot()
+                        .hypothesisTrace
+                        .nodeAt(
+                            cell
+                        )
+
                 status.text =
-                    when (
-                        engine.snapshot()
-                            .hypotheses[cell]
-                            ?: HypothesisMark.NONE
-                    ) {
-                        HypothesisMark.GHOST_GECKO ->
-                            "Gecko hypothèse discret."
+                    when {
+                        node == null ->
+                            "Hypothèse supprimée : croix, auras et sous-branches annulées."
 
-                        HypothesisMark.ALERT_GECKO ->
-                            "Gecko repère fort clignotant."
+                        node.state ==
+                            HypothesisBranchState
+                                .CONTRADICTION ->
+                            "Contradiction : ce Gecko et ses hypothèses enfants passent en sens interdit."
 
-                        HypothesisMark.NONE ->
-                            "Hypothèse retirée."
+                        else ->
+                            "Hypothèse " +
+                                node.color
+                                    .label
+                                    .lowercase() +
+                                " : les prochaines croix héritent de cette couleur."
                     }
             }
 
@@ -2909,6 +3040,7 @@ class MainActivity : Activity() {
         }
 
         board.invalidate()
+        refreshHypothesisTimeline()
     }
 
     private fun showProfessorHint() {
@@ -6546,6 +6678,16 @@ class MainActivity : Activity() {
                     } else {
                         emptyMap()
                     },
+                initialHypothesisTrace =
+                    if (restoredMatches) {
+                        restored
+                            ?.hypothesisTrace
+                            ?: HypothesisTraceSnapshot
+                                .empty()
+                    } else {
+                        HypothesisTraceSnapshot
+                            .empty()
+                    },
                 initialMarkers =
                     if (restoredMatches) {
                         restored
@@ -6740,6 +6882,9 @@ class MainActivity : Activity() {
                 logicalMarkers =
                     snapshot
                         .logicalMarkers,
+                hypothesisTrace =
+                    snapshot
+                        .hypothesisTrace,
                 markers =
                     snapshot
                         .markers,
@@ -6822,7 +6967,7 @@ class MainActivity : Activity() {
                 "\nAxes : " +
                 BeeGeckoAxisGeometry
                     .legend() +
-                " • tap = croix • double tap = pièce"
+                " • tap = croix • double tap = pièce/hypothèse"
     }
 
     private fun handleBeeGeckoSingleTap(
@@ -6844,27 +6989,45 @@ class MainActivity : Activity() {
                 .CROSS_SET -> {
                 fx.cross()
 
-                val state =
+                val snapshot =
                     engine
                         .snapshot()
+
+                val branchColor =
+                    snapshot
+                        .hypothesisTrace
+                        .colorForCross(
+                            cell
+                        )
+
+                val state =
+                    snapshot
                         .crossStates[cell]
 
                 status.text =
-                    when (state) {
-                        BeeGeckoCrossState
-                            .HYPOTHESIS ->
-                            "Croix jaune : hypothèse."
+                    if (branchColor != null) {
+                        "Croix " +
+                            branchColor
+                                .label
+                                .lowercase() +
+                            " • fille de l’hypothèse active."
+                    } else {
+                        when (state) {
+                            BeeGeckoCrossState
+                                .HYPOTHESIS ->
+                                "Croix jaune : hypothèse."
 
-                        BeeGeckoCrossState
-                            .CONFIRMED ->
-                            "Croix verte : déduction sûre."
+                            BeeGeckoCrossState
+                                .CONFIRMED ->
+                                "Croix verte : déduction sûre."
 
-                        BeeGeckoCrossState
-                            .IMPOSSIBLE ->
-                            "Croix rouge : impossible."
+                            BeeGeckoCrossState
+                                .IMPOSSIBLE ->
+                                "Croix rouge : impossible."
 
-                        null ->
-                            "Croix retirée."
+                            null ->
+                                "Croix retirée."
+                        }
                     }
             }
 
@@ -6886,7 +7049,14 @@ class MainActivity : Activity() {
                 .CROSS_BLOCKED -> {
                 fx.blocked()
                 status.text =
-                    "Cette case contient déjà une pièce."
+                    "Cette case contient déjà une pièce ou la branche est en contradiction."
+            }
+
+            BeeGeckoActionFeedback
+                .HYPOTHESIS_CHANGED -> {
+                fx.hint()
+                status.text =
+                    "Hypothèse supprimée : croix, auras et sous-branches annulées."
             }
 
             else ->
@@ -6894,6 +7064,7 @@ class MainActivity : Activity() {
         }
 
         beeGeckoBoard.invalidate()
+        refreshHypothesisTimeline()
         persistBeeGeckoSession()
     }
 
@@ -6904,6 +7075,7 @@ class MainActivity : Activity() {
             arrayOf(
                 "🟢  Gecko",
                 "🟡  Abeille",
+                "🦎  Hypothèse Gecko",
                 "🔴  Axe"
             )
 
@@ -6941,6 +7113,11 @@ class MainActivity : Activity() {
                             }
 
                     2 ->
+                        handleBeeGeckoHypothesis(
+                            cell
+                        )
+
+                    3 ->
                         showBeeGeckoAxisPalette(
                             cell
                         )
@@ -6957,6 +7134,73 @@ class MainActivity : Activity() {
                 null
             )
             .show()
+    }
+
+    private fun handleBeeGeckoHypothesis(
+        cell: HexCoord
+    ) {
+        val engine =
+            beeGeckoEngine
+                ?: return
+
+        clearProfessorSession()
+        recordBoardAction()
+
+        when (
+            engine.cycleHypothesis(
+                cell
+            )
+        ) {
+            BeeGeckoActionFeedback
+                .HYPOTHESIS_CHANGED -> {
+                fx.hint()
+
+                val node =
+                    engine
+                        .snapshot()
+                        .hypothesisTrace
+                        .nodeAt(
+                            cell
+                        )
+
+                status.text =
+                    when {
+                        node == null ->
+                            "Hypothèse supprimée : croix, auras et sous-branches annulées."
+
+                        node.state ==
+                            HypothesisBranchState
+                                .CONTRADICTION ->
+                            "Contradiction : ce Gecko et ses hypothèses enfants passent en sens interdit."
+
+                        else ->
+                            "Hypothèse " +
+                                node.color
+                                    .label
+                                    .lowercase() +
+                                " : les prochaines croix héritent de cette couleur."
+                    }
+            }
+
+            BeeGeckoActionFeedback
+                .GIVEN_LOCKED -> {
+                fx.blocked()
+                status.text =
+                    "Pièce donnée : elle est verrouillée."
+            }
+
+            else -> {
+                fx.blocked()
+                status.text =
+                    "Hypothèse impossible sur cette case."
+            }
+        }
+
+        beeGeckoBoard
+            .invalidate()
+
+        refreshHypothesisTimeline()
+        persistBeeGeckoSession()
     }
 
     private fun showBeeGeckoAxisPalette(
@@ -9402,6 +9646,8 @@ class MainActivity : Activity() {
                 }
         }
 
+        refreshHypothesisTimeline()
+
         if (
             ::sizeButton
                 .isInitialized
@@ -9484,6 +9730,29 @@ class MainActivity : Activity() {
                 positionFloatingBoard()
             }
         }
+    }
+
+    private fun refreshHypothesisTimeline() {
+        if (
+            !::hypothesisTimeline
+                .isInitialized
+        ) {
+            return
+        }
+
+        hypothesisTimeline.visibility =
+            if (
+                selectedGameMode ==
+                    GameMode.GECKODOKU ||
+                selectedGameMode ==
+                    GameMode.BEES_GECKOS
+            ) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+
+        hypothesisTimeline.invalidate()
     }
 
     private fun positionSudokuLayer(
