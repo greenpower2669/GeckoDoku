@@ -1214,3 +1214,11 @@ Choisir une valeur ne modifie pas immédiatement la grille : la valeur passe en 
 Les hypothèses suivent le moteur GECKO-044 : couleur, aura, enfant, contradiction/sens-interdit, suppression récursive. Sudoku ne doit pas afficher H1/H2 en permanence. La frise GeckoDoku/Abeilles-Geckos conserve ses couleurs mais sans texte H1/H2 afin de maximiser la place. Aucun merge main ni release avant validation Fab.
 
 GECKO-045 CI FINAL : run #398 SUCCESS sur commit `63e3aab45628c0e0ba9311ae3e521ded03973aa2`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.40-dev-phone`, 219118896 octets, digest `sha256:7336ff3419c30de1f7f1ba11d10aa2e35472c8714a3ab3a76c5d5b79e5db3f4f`. Prerelease et release sont restées skipped. Validation téléphone requise pour drag du pavé, confirmation Oui/Non, indépendance candidats/hypothèses et rollback parent/enfant Sudoku.
+
+# GECKO-046 — ORDRE DE MISSION STATS
+
+Les statistiques doivent suivre les performances significatives, pas les simples lancements. Une partie terminée est enregistrée. Une partie annulée sans erreur ne laisse aucune trace statistique. Une partie annulée avec au moins une erreur est conservée avec son nombre d'erreurs. Les statistiques sont ventilées par difficulté et leur tendance temporelle compare les deux dernières parties terminées pour le temps et les étoiles.
+
+Au démarrage, Prof Gecko ne lit plus de statistiques globales : il évoque au maximum le niveau le plus difficile disposant de données et le niveau immédiatement précédent, en signalant uniquement les tendances de progression utiles (plus rapide, réussites plus étoilées).
+
+Le menu Stats rend chaque niveau cliquable et affiche un graphe temporel. Le Hall of Fame est navigable par mode et niveau et réutilise le même graphe. Le pavé Sudoku 2×2 est déplaçable et redimensionnable. Aucun merge main ni release avant validation Fab.

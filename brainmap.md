@@ -1113,3 +1113,21 @@ Décision Fab du 2026-10-02.
 - Aucun merge main ni release/prerelease avant validation Fab.
 
 GECKO-045 CI FINAL : run #398 SUCCESS sur commit `63e3aab45628c0e0ba9311ae3e521ded03973aa2`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.40-dev-phone`, 219118896 octets, digest `sha256:7336ff3419c30de1f7f1ba11d10aa2e35472c8714a3ab3a76c5d5b79e5db3f4f`. Prerelease et release sont restées skipped. Validation téléphone requise pour drag du pavé, confirmation Oui/Non, indépendance candidats/hypothèses et rollback parent/enfant Sudoku.
+
+# GECKO-046 — STATS TEMPORELLES + PAVÉ SUDOKU REDIMENSIONNABLE
+
+Décision Fab du 2026-10-02.
+
+- Le pavé Sudoku 2×2 reste déplaçable et devient redimensionnable par poignée d'angle.
+- Les statistiques ne comptent plus une partie au simple lancement.
+- Une partie terminée est toujours statée.
+- Une partie annulée sans erreur n'est pas statée.
+- Une partie annulée après au moins une erreur est statée comme tentative abandonnée avec erreurs.
+- Les erreurs sont présentées par niveau de difficulté.
+- Les tendances vitesse et étoiles comparent les deux dernières parties terminées du niveau.
+- Le Prof au démarrage ne récite plus les statistiques globales : il parle uniquement du niveau le plus difficile ayant des données et du niveau juste précédent, et signale seulement les tendances de progression vitesse/étoiles.
+- Le menu Stats présente les niveaux de la même manière avec tendance temps/étoiles et ouvre un graphe temporel au clic.
+- Le graphe temporel montre l'évolution du temps et des étoiles ; les abandons avec erreurs sont signalés.
+- Le Hall of Fame est regroupé par mode+niveau ; cliquer un niveau ouvre son classement avec le même graphe, puis permet de revenir aux stats détaillées.
+- Version test : 0.15.41-dev / versionCode 76.
+- Aucun merge main ni release/prerelease avant validation Fab.

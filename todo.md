@@ -691,3 +691,19 @@ GECKO-044 CI FINAL : run #397 SUCCESS sur commit `3f61e64c1ce5381710b2ece6ee0cca
 - [ ] Test téléphone : confirmation Oui/Non et disparition/réapparition de la croix.
 
 GECKO-045 CI FINAL : run #398 SUCCESS sur commit `63e3aab45628c0e0ba9311ae3e521ded03973aa2`. Tests Kotlin + assemblePhone verts. Artifact `GeckoDoku-v0.15.40-dev-phone`, 219118896 octets, digest `sha256:7336ff3419c30de1f7f1ba11d10aa2e35472c8714a3ab3a76c5d5b79e5db3f4f`. Prerelease et release sont restées skipped. Validation téléphone requise pour drag du pavé, confirmation Oui/Non, indépendance candidats/hypothèses et rollback parent/enfant Sudoku.
+
+## GECKO-046 — validation
+- [x] Pavé Sudoku redimensionnable + drag conservé.
+- [x] Partie annulée sans erreur ignorée par les nouvelles stats.
+- [x] Partie annulée avec erreur enregistrée comme tentative statistique.
+- [x] Erreurs agrégées par niveau.
+- [x] Tendances sur les deux dernières parties terminées : vitesse et étoiles.
+- [x] Prof début limité au niveau le plus difficile staté + niveau précédent.
+- [x] Menu Stats : niveaux cliquables + graphe temporel.
+- [x] Hall of Fame : navigation par mode/niveau + graphe et lien Stats.
+- [ ] CI Kotlin + assemblePhone.
+- [ ] Test téléphone : redimensionnement du pavé sans déclencher Oui/Non ou chiffre.
+- [ ] Test téléphone : annulation 0 erreur absente des stats.
+- [ ] Test téléphone : annulation après erreur présente avec compteur d'erreurs.
+- [ ] Test téléphone : tendances après deux parties terminées du même niveau.
+- [ ] Test téléphone : navigation Stats ↔ Hall of Fame et lisibilité des graphes.
