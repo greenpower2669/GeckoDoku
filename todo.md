@@ -735,3 +735,5 @@ GECKO-047 CI FINAL : run #402 SUCCESS sur commit `7425eadb8385226075d0e5b5d224c0
 - [ ] Test téléphone de la réduction extrême et des zones tactiles.
 
 GECKO-048 RELEASE FINALE : CI #403 SUCCESS sur commit `10da3008613c26973d7598211967ba64a0e18601`. Release finale publiée et promue : `phone-0.15.43-dev-run-403`, titre `GeckoDoku 0.15.43-dev • téléphone validé`. APK public : `GeckoDoku-v0.15.43-dev.apk`, 299414401 octets. Artifact CI : `GeckoDoku-v0.15.43-dev-phone`, digest `sha256:c11afe59f5ab784256edb2a39ad76dcf9b0c0d0ed93f4679bcece7c57847b661`. Aucun merge main.
+
+GECKO-048 MERGE MAIN FINAL : PR #2 fusionnée le 2026-10-02. Merge commit code `17c6de0186c745c15fc042971eb09b4fe19a6299`. Réconciliation préalable `a08b0b436b8523487bb3aae11c4405351df687ca` conserve l'historique main sans réintroduire les anciens médias supprimés. CI de réconciliation #404 SUCCESS ; CI finale main #405 SUCCESS. Release téléphone validée reste `phone-0.15.43-dev-run-403`.
