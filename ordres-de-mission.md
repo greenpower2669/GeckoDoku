@@ -1242,3 +1242,5 @@ GECKO-047 CI FINAL : run #402 SUCCESS sur commit `7425eadb8385226075d0e5b5d224c0
 Le pavé Sudoku doit pouvoir être réduit au moins deux fois davantage que GECKO-047 sans blocage prématuré. Minimum : 140×160 dp ; bandeau minimum : 14 dp. Toutes les fonctions persistantes, drag, resize, aide ?, hypothèses, candidats, prévisualisation et passage tactile vers la grille restent actives.
 
 Fab autorise explicitement la production de la release téléphone de cette version après CI verte. Aucun merge main.
+
+GECKO-048 RELEASE FINALE : CI #403 SUCCESS sur commit `10da3008613c26973d7598211967ba64a0e18601`. Release finale publiée et promue : `phone-0.15.43-dev-run-403`, titre `GeckoDoku 0.15.43-dev • téléphone validé`. APK public : `GeckoDoku-v0.15.43-dev.apk`, 299414401 octets. Artifact CI : `GeckoDoku-v0.15.43-dev-phone`, digest `sha256:c11afe59f5ab784256edb2a39ad76dcf9b0c0d0ed93f4679bcece7c57847b661`. Aucun merge main.
