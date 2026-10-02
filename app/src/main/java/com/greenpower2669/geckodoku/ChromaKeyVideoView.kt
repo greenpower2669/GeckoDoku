@@ -1,7 +1,6 @@
 package com.greenpower2669.geckodoku
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.SurfaceTexture
 import android.media.MediaPlayer
@@ -14,13 +13,22 @@ import android.view.Surface
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
+import java.util.concurrent.atomic.AtomicLong
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+
+enum class ChromaKeyColor(
+    val greenStrength: Float
+) {
+    BLUE(0f),
+    GREEN(1f)
+}
 
 class ChromaKeyVideoView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
-) : GLSurfaceView(context, attrs) {
+) : GLSurfaceView(context, attrs),
+    ChromaKeyPlayback {
     private val chromaRenderer =
         ChromaRenderer(
             requestFrame = {
@@ -32,6 +40,14 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                     mediaSurfaceTexture =
                         surfaceTexture
                     startPendingPlayback()
+                }
+            },
+            firstFrameRendered = {
+                    generation ->
+                post {
+                    handleFirstFrameRendered(
+                        generation
+                    )
                 }
             },
             rendererError = {
@@ -59,6 +75,46 @@ class ChromaKeyVideoView @JvmOverloads constructor(
 
     private var muted = false
 
+    private var audioTrackIndices:
+        List<Int> =
+        emptyList()
+
+    private var activeAssetPath:
+        String? = null
+
+    private val firstFrameGate =
+        FirstFrameVisibilityGate()
+
+    private var revealOnFirstFrame =
+        false
+
+    private var firstFrameCallback:
+        (() -> Unit)? = null
+
+    private var firstFrameAssetPath:
+        String? = null
+
+    private var holdOnFirstFrame =
+        false
+
+    private var firstFrameHeld =
+        false
+
+    private val freshPlaybackFrameGate =
+        FreshPlaybackFrameGate()
+
+    private val firstFrameGateActivationPolicy =
+        FirstFrameGateActivationPolicy()
+
+    private var activePlaybackGeneration =
+        0L
+
+    override var logicalLayer: String =
+        "UNSPECIFIED"
+
+    private val layerPolicy =
+        VideoSurfaceLayerPolicy()
+
     init {
         setEGLContextClientVersion(2)
         setEGLConfigChooser(
@@ -72,11 +128,29 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         holder.setFormat(
             PixelFormat.TRANSLUCENT
         )
-        // Keep the chroma-key surface inside Android's media-overlay
-        // composition instead of forcing a separate top-most surface.
-        // The shader already writes transparent alpha for keyed blue.
-        setZOrderMediaOverlay(true)
-        setBackgroundColor(Color.TRANSPARENT)
+        if (
+            layerPolicy.useZOrderOnTop
+        ) {
+            setZOrderOnTop(true)
+        }
+
+        if (
+            layerPolicy.useMediaOverlay
+        ) {
+            setZOrderMediaOverlay(true)
+        }
+
+        MediaTrace.event(
+            source = traceSource(),
+            event = "SURFACE_POLICY",
+            detail =
+                "onTop=" +
+                    layerPolicy.useZOrderOnTop +
+                    " mediaOverlay=" +
+                    layerPolicy.useMediaOverlay +
+                    " pixelFormat=TRANSLUCENT alphaBits=8"
+        )
+
         setRenderer(chromaRenderer)
         renderMode = RENDERMODE_WHEN_DIRTY
         preserveEGLContextOnPause = true
@@ -85,16 +159,88 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             IMPORTANT_FOR_ACCESSIBILITY_NO
     }
 
-    fun play(
+    override fun play(
         assetPath: String,
         muted: Boolean,
         onCompletion: () -> Unit,
         onError: (String) -> Unit,
-        onStarted: () -> Unit = {}
+        onStarted: () -> Unit,
+        revealOnFirstFrame: Boolean,
+        holdOnFirstFrame: Boolean,
+        onFirstFrameRendered: () -> Unit
     ) {
+        MediaTrace.event(
+            source =
+                traceSource(),
+            event = "PLAY_REQUEST",
+            assetPath = assetPath,
+            detail =
+                "muted=" +
+                    muted +
+                    " hadPlayer=" +
+                    (player != null) +
+                    " hadPending=" +
+                    (pendingPlayback != null)
+        )
+
         stopPlayback()
 
+        activePlaybackGeneration =
+            freshPlaybackFrameGate
+                .beginPlayback()
+
+        val gateFirstFrame =
+            firstFrameGateActivationPolicy
+                .shouldArm(
+                    revealOnFirstFrame
+                )
+
+        queueEvent {
+            chromaRenderer
+                .beginPlayback(
+                    generation =
+                        activePlaybackGeneration,
+                    gateFirstFrame =
+                        gateFirstFrame
+                )
+        }
+
         this.muted = muted
+        this.revealOnFirstFrame =
+            revealOnFirstFrame
+        this.holdOnFirstFrame =
+            holdOnFirstFrame
+        firstFrameHeld = false
+        firstFrameCallback =
+            onFirstFrameRendered
+        firstFrameAssetPath =
+            assetPath
+
+        if (revealOnFirstFrame) {
+            firstFrameGate.arm()
+            alpha = 0f
+
+            MediaTrace.event(
+                source = traceSource(),
+                event =
+                    "VIDEO_VISIBILITY_ARMED",
+                assetPath = assetPath,
+                detail = "alpha=0"
+            )
+
+            queueEvent {
+                chromaRenderer
+                    .cancelFirstFrameNotification()
+            }
+        } else {
+            firstFrameGate.reset()
+            alpha = 1f
+
+            queueEvent {
+                chromaRenderer
+                    .cancelFirstFrameNotification()
+            }
+        }
 
         val failure = rendererFailure
 
@@ -109,25 +255,126 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 onCompletion =
                     onCompletion,
                 onError = onError,
-                onStarted = onStarted
+                onStarted = onStarted,
+                generation =
+                    activePlaybackGeneration,
+                gateFirstFrame =
+                    gateFirstFrame
             )
 
         startPendingPlayback()
     }
 
-    fun setMuted(
-        value: Boolean
-    ) {
-        muted = value
+    override fun revealHeldFirstFrame(): Boolean {
+        if (!firstFrameHeld) {
+            return false
+        }
 
-        player?.setVolume(
-            if (value) 0f else 1f,
-            if (value) 0f else 1f
-        )
+        firstFrameHeld = false
+        alpha = 1f
+
+        return try {
+            player?.start()
+
+            MediaTrace.event(
+                source = traceSource(),
+                event = "VIDEO_VISIBLE",
+                assetPath = activeAssetPath,
+                detail =
+                    "heldFirstFrame=true alpha=1"
+            )
+
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
 
-    fun stopPlayback() {
+    override fun setMuted(
+        value: Boolean
+    ) {
+        MediaTrace.event(
+            source =
+                traceSource(),
+            event = "SET_MUTED",
+            assetPath =
+                activeAssetPath,
+            detail =
+                "muted=" +
+                    value
+        )
+
+        muted = value
+
+        player?.let {
+            current ->
+            current.setVolume(
+                if (value) 0f else 1f,
+                if (value) 0f else 1f
+            )
+
+            applyAudioTrackPolicy(
+                current
+            )
+        }
+    }
+
+    override fun setYellowTint(
+        enabled: Boolean
+    ) {
+        queueEvent {
+            chromaRenderer
+                .setYellowTint(
+                    enabled
+                )
+        }
+        requestRender()
+    }
+
+    override fun setKeyColor(
+        color: ChromaKeyColor
+    ) {
+        queueEvent {
+            chromaRenderer
+                .setKeyColor(
+                    color
+                )
+        }
+        requestRender()
+    }
+
+    override fun stopPlayback() {
+        abortFirstFrameReveal(
+            "stop"
+        )
+
+        val pendingAsset =
+            pendingPlayback
+                ?.assetPath
+
+        if (
+            player != null ||
+            pendingAsset != null ||
+            activeAssetPath != null
+        ) {
+            MediaTrace.event(
+                source =
+                    traceSource(),
+                event = "STOP",
+                assetPath =
+                    activeAssetPath
+                        ?: pendingAsset,
+                detail =
+                    "player=" +
+                        (player != null) +
+                        " pending=" +
+                        (pendingAsset != null)
+            )
+        }
+
         pendingPlayback = null
+        firstFrameHeld = false
+        holdOnFirstFrame = false
 
         val current = player
         player = null
@@ -142,10 +389,27 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             }
 
             current.release()
+
+            AudioCapturePolicy.log(
+                source = "VIDEO",
+                detail = "STOP_RELEASE"
+            )
         }
+
+        activeAssetPath = null
+        audioTrackIndices =
+            emptyList()
     }
 
-    fun release() {
+    override fun release() {
+        MediaTrace.event(
+            source =
+                traceSource(),
+            event = "RELEASE",
+            assetPath =
+                activeAssetPath
+        )
+
         stopPlayback()
         queueEvent {
             chromaRenderer.releaseSurfaceTexture()
@@ -165,6 +429,11 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         try {
             val mediaPlayer =
                 MediaPlayer()
+
+            mediaPlayer.setAudioAttributes(
+                AudioCapturePolicy
+                    .videoAttributes()
+            )
 
             player = mediaPlayer
 
@@ -202,17 +471,131 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             }
 
             mediaPlayer.setOnPreparedListener {
+                activeAssetPath =
+                    request.assetPath
+
+                audioTrackIndices =
+                    it.trackInfo
+                        .mapIndexedNotNull {
+                            index,
+                            info ->
+
+                            if (
+                                info.trackType ==
+                                    MediaPlayer.TrackInfo
+                                        .MEDIA_TRACK_TYPE_AUDIO
+                            ) {
+                                index
+                            } else {
+                                null
+                            }
+                        }
+
+                applyAudioTrackPolicy(
+                    it
+                )
+
+                AudioCapturePolicy.log(
+                    source = "VIDEO",
+                    detail =
+                        "START asset=" +
+                            request.assetPath +
+                            " usage=MEDIA content=MOVIE capture=ALLOW_ALL muted=" +
+                            muted +
+                            " audioTracks=" +
+                            audioTrackIndices.size
+                )
+
+                firstFrameGate.onPrepared()
+
+                MediaTrace.event(
+                    source =
+                        traceSource(),
+                    event = "START",
+                    assetPath =
+                        request.assetPath,
+                    detail =
+                        "muted=" +
+                            muted
+                )
+
                 it.setVolume(
                     if (muted) 0f else 1f,
                     if (muted) 0f else 1f
                 )
-                request.onStarted()
                 it.start()
+                freshPlaybackFrameGate
+                    .onPlayerStarted(
+                        request.generation
+                    )
+                firstFrameGate.onStarted()
+                request.onStarted()
+            }
+
+            mediaPlayer.setOnInfoListener {
+                    _,
+                    what,
+                    extra ->
+
+                if (
+                    what ==
+                    MediaPlayer
+                        .MEDIA_INFO_VIDEO_RENDERING_START
+                ) {
+                    if (request.gateFirstFrame) {
+                        freshPlaybackFrameGate
+                            .onRenderingStart(
+                                request.generation
+                            )
+
+                        queueEvent {
+                            chromaRenderer
+                                .armFirstFrameNotification(
+                                    request.generation
+                                )
+                        }
+                    }
+
+                    MediaTrace.event(
+                        source =
+                            traceSource(),
+                        event =
+                            "VIDEO_RENDERING_START_SIGNAL",
+                        assetPath =
+                            request.assetPath,
+                        detail =
+                            "extra=" +
+                                extra +
+                                " generation=" +
+                                request.generation +
+                                " gate=" +
+                                request.gateFirstFrame
+                    )
+                }
+
+                false
             }
 
             mediaPlayer.setOnCompletionListener {
                 if (player === it) {
+                    MediaTrace.event(
+                        source =
+                            "ChromaKey@" +
+                                Integer.toHexString(
+                                    System.identityHashCode(
+                                        this
+                                    )
+                                ),
+                        event = "COMPLETE",
+                        assetPath =
+                            request.assetPath
+                    )
+
                     player = null
+                    activeAssetPath = null
+                    abortFirstFrameReveal(
+                        "complete_before_first_frame"
+                    )
                     it.release()
                     request.onCompletion()
                 }
@@ -228,6 +611,24 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 }
 
                 failedPlayer.release()
+
+                MediaTrace.event(
+                    source =
+                        traceSource(),
+                    event = "ERROR",
+                    assetPath =
+                        request.assetPath,
+                    detail =
+                        "what=" +
+                            what +
+                            " extra=" +
+                            extra
+                )
+
+                activeAssetPath = null
+                abortFirstFrameReveal(
+                    "media_error_before_first_frame"
+                )
 
                 request.onError(
                     "MediaPlayer error " +
@@ -245,6 +646,20 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         } catch (error: Exception) {
             player?.release()
             player = null
+            activeAssetPath = null
+            abortFirstFrameReveal(
+                "exception_before_first_frame"
+            )
+
+            MediaTrace.event(
+                source =
+                    traceSource(),
+                event = "EXCEPTION",
+                assetPath =
+                    request.assetPath,
+                detail =
+                    error.message
+            )
 
             request.onError(
                 "Unable to play " +
@@ -255,17 +670,226 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         }
     }
 
+    private fun applyAudioTrackPolicy(
+        mediaPlayer: MediaPlayer
+    ) {
+        val tracks =
+            if (
+                audioTrackIndices
+                    .isNotEmpty()
+            ) {
+                audioTrackIndices
+            } else {
+                try {
+                    mediaPlayer
+                        .trackInfo
+                        .mapIndexedNotNull {
+                            index,
+                            info ->
+
+                            if (
+                                info.trackType ==
+                                    MediaPlayer.TrackInfo
+                                        .MEDIA_TRACK_TYPE_AUDIO
+                            ) {
+                                index
+                            } else {
+                                null
+                            }
+                        }
+                } catch (_: Throwable) {
+                    return
+                }
+            }
+
+        if (muted) {
+            tracks.forEach {
+                index ->
+                try {
+                    mediaPlayer
+                        .deselectTrack(
+                            index
+                        )
+                } catch (_: Throwable) {
+                    // Some devices do not expose audio deselection.
+                }
+            }
+
+            AudioCapturePolicy.log(
+                source = "VIDEO",
+                detail =
+                    "MUTE_DECODED_AUDIO tracks=" +
+                        tracks.size
+            )
+        } else {
+            tracks
+                .firstOrNull()
+                ?.let {
+                    index ->
+                    try {
+                        mediaPlayer
+                            .selectTrack(
+                                index
+                            )
+                    } catch (_: Throwable) {
+                        // Default MediaPlayer selection remains active.
+                    }
+                }
+        }
+    }
+
+    private fun handleFirstFrameRendered(
+        generation: Long
+    ) {
+        if (
+            generation !=
+                activePlaybackGeneration ||
+            !freshPlaybackFrameGate
+                .onFrameRendered(
+                    generation
+                )
+        ) {
+            MediaTrace.event(
+                source = traceSource(),
+                event =
+                    "VIDEO_STALE_FRAME_IGNORED",
+                assetPath =
+                    firstFrameAssetPath
+                        ?: activeAssetPath,
+                detail =
+                    "generation=" +
+                        generation +
+                        " active=" +
+                        activePlaybackGeneration
+            )
+            return
+        }
+
+        queueEvent {
+            chromaRenderer
+                .cancelFirstFrameNotification()
+        }
+
+        if (
+            !revealOnFirstFrame ||
+            !firstFrameGate.isArmed
+        ) {
+            return
+        }
+
+        firstFrameGate
+            .onFirstFrameRendered()
+
+        if (!firstFrameGate.isVisible) {
+            return
+        }
+
+        val asset =
+            firstFrameAssetPath
+                ?: activeAssetPath
+
+        MediaTrace.event(
+            source = traceSource(),
+            event = "VIDEO_FIRST_FRAME",
+            assetPath = asset,
+            detail =
+                "glFrameDrawn=true hold=" +
+                    holdOnFirstFrame
+        )
+
+        if (holdOnFirstFrame) {
+            try {
+                player?.pause()
+                firstFrameHeld = true
+            } catch (_: Exception) {
+                firstFrameHeld = false
+            }
+
+            MediaTrace.event(
+                source = traceSource(),
+                event =
+                    "VIDEO_FIRST_FRAME_HELD",
+                assetPath = asset,
+                detail = "alpha=0"
+            )
+        } else {
+            alpha = 1f
+
+            MediaTrace.event(
+                source = traceSource(),
+                event = "VIDEO_VISIBLE",
+                assetPath = asset,
+                detail = "alpha=1"
+            )
+        }
+
+        val callback =
+            firstFrameCallback
+
+        firstFrameCallback = null
+        firstFrameAssetPath = null
+        callback?.invoke()
+    }
+
+    private fun abortFirstFrameReveal(
+        reason: String
+    ) {
+        if (firstFrameGate.isArmed) {
+            firstFrameGate.abort()
+
+            MediaTrace.event(
+                source = traceSource(),
+                event =
+                    "VIDEO_ABORT_BEFORE_FIRST_FRAME",
+                assetPath =
+                    firstFrameAssetPath
+                        ?: activeAssetPath,
+                detail =
+                    "reason=" +
+                        reason
+            )
+        }
+
+        firstFrameCallback = null
+        firstFrameAssetPath = null
+
+        freshPlaybackFrameGate
+            .cancel(
+                activePlaybackGeneration
+            )
+
+        queueEvent {
+            chromaRenderer
+                .cancelFirstFrameNotification()
+        }
+    }
+
+    private fun traceSource(): String =
+        "ChromaKey@" +
+            Integer.toHexString(
+                System.identityHashCode(
+                    this
+                )
+            ) +
+            "[" +
+            logicalLayer +
+            "]"
+
     private data class PlaybackRequest(
         val assetPath: String,
         val onCompletion: () -> Unit,
         val onError: (String) -> Unit,
-        val onStarted: () -> Unit
+        val onStarted: () -> Unit,
+        val generation: Long,
+        val gateFirstFrame: Boolean
     )
 
     private class ChromaRenderer(
         private val requestFrame: () -> Unit,
         private val surfaceReady:
             (SurfaceTexture) -> Unit,
+        private val firstFrameRendered:
+            (Long) -> Unit,
         private val rendererError:
             (String) -> Unit
     ) : Renderer {
@@ -274,13 +898,48 @@ class ChromaKeyVideoView @JvmOverloads constructor(
         private var surfaceTexture:
             SurfaceTexture? = null
 
-        @Volatile
-        private var frameAvailable = false
+        private val producedFrameSerial =
+            AtomicLong(0L)
+
+        private var consumedFrameSerial =
+            0L
+
+        private val freshFrameSerialGate =
+            FreshFrameSerialGate()
+
+        private var firstFrameNotificationArmed =
+            false
+
+        private var firstFrameGeneration =
+            0L
+
+        private var renderGeneration =
+            0L
+
+        private var renderBaselineSerial =
+            0L
+
+        private var renderGateRequired =
+            false
+
+        private var renderGateArmed =
+            true
+
+        private var hasRenderableFrame =
+            false
 
         private var viewWidth = 1
         private var viewHeight = 1
         private var videoWidth = 1
         private var videoHeight = 1
+
+        private var yellowTintStrength =
+            0f
+
+        private var greenKeyStrength =
+            ChromaKeyColor
+                .BLUE
+                .greenStrength
 
         private val textureMatrix =
             FloatArray(16)
@@ -342,11 +1001,14 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 )
 
             texture.setOnFrameAvailableListener {
-                frameAvailable = true
+                producedFrameSerial
+                    .incrementAndGet()
                 requestFrame()
             }
 
             surfaceTexture = texture
+            consumedFrameSerial =
+                producedFrameSerial.get()
 
             GLES20.glClearColor(
                 0f,
@@ -405,16 +1067,43 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             val texture =
                 surfaceTexture ?: return
 
-            if (frameAvailable) {
+            var consumedFreshFrame =
+                false
+
+            val availableSerial =
+                producedFrameSerial.get()
+
+            if (
+                availableSerial >
+                consumedFrameSerial
+            ) {
                 try {
                     texture.updateTexImage()
                     texture.getTransformMatrix(
                         textureMatrix
                     )
-                    frameAvailable = false
+                    consumedFrameSerial =
+                        availableSerial
+                    consumedFreshFrame = true
                 } catch (_: Exception) {
                     return
                 }
+            }
+
+            if (
+                consumedFreshFrame &&
+                renderGateArmed &&
+                consumedFrameSerial >
+                    renderBaselineSerial
+            ) {
+                hasRenderableFrame = true
+            }
+
+            // Never sample an uninitialised or stale external texture.
+            // Until the current playback has delivered a fresh frame,
+            // the Surface stays as the transparent clear performed above.
+            if (!hasRenderableFrame) {
+                return
             }
 
             GLES20.glUseProgram(program)
@@ -453,6 +1142,18 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 GLES20.glGetUniformLocation(
                     program,
                     "uDespill"
+                )
+
+            val yellowTintHandle =
+                GLES20.glGetUniformLocation(
+                    program,
+                    "uYellowTint"
+                )
+
+            val greenKeyHandle =
+                GLES20.glGetUniformLocation(
+                    program,
+                    "uGreenKeyStrength"
                 )
 
             GLES20.glActiveTexture(
@@ -515,6 +1216,16 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                     .KEY_DESPILL
             )
 
+            GLES20.glUniform1f(
+                yellowTintHandle,
+                yellowTintStrength
+            )
+
+            GLES20.glUniform1f(
+                greenKeyHandle,
+                greenKeyStrength
+            )
+
             GLES20.glDrawArrays(
                 GLES20.GL_TRIANGLE_STRIP,
                 0,
@@ -527,6 +1238,82 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             GLES20.glDisableVertexAttribArray(
                 textureHandle
             )
+
+            if (
+                consumedFreshFrame &&
+                firstFrameNotificationArmed &&
+                freshFrameSerialGate.accept(
+                    generation =
+                        firstFrameGeneration,
+                    consumedSerial =
+                        consumedFrameSerial
+                )
+            ) {
+                firstFrameNotificationArmed =
+                    false
+                firstFrameRendered(
+                    firstFrameGeneration
+                )
+            }
+        }
+
+        fun beginPlayback(
+            generation: Long,
+            gateFirstFrame: Boolean
+        ) {
+            renderGeneration =
+                generation
+            renderGateRequired =
+                gateFirstFrame
+            renderGateArmed =
+                !gateFirstFrame
+            renderBaselineSerial =
+                producedFrameSerial.get()
+            hasRenderableFrame = false
+
+            firstFrameNotificationArmed =
+                false
+            freshFrameSerialGate.cancel()
+
+            requestFrame()
+        }
+
+        fun armFirstFrameNotification(
+            generation: Long
+        ) {
+            if (
+                generation !=
+                renderGeneration
+            ) {
+                return
+            }
+
+            renderGateArmed = true
+            renderBaselineSerial =
+                producedFrameSerial.get()
+            hasRenderableFrame = false
+
+            firstFrameGeneration =
+                generation
+            freshFrameSerialGate.arm(
+                generation =
+                    generation,
+                currentProducedSerial =
+                    producedFrameSerial.get()
+            )
+            firstFrameNotificationArmed =
+                true
+
+            // Consume any frame already pending. It may be
+            // older than the gate baseline, but must never
+            // be discarded without updateTexImage().
+            requestFrame()
+        }
+
+        fun cancelFirstFrameNotification() {
+            firstFrameNotificationArmed =
+                false
+            freshFrameSerialGate.cancel()
         }
 
         fun setVideoSize(
@@ -540,7 +1327,28 @@ class ChromaKeyVideoView @JvmOverloads constructor(
             updateVertexBuffer()
         }
 
+        fun setYellowTint(
+            enabled: Boolean
+        ) {
+            yellowTintStrength =
+                if (enabled) {
+                    1f
+                } else {
+                    0f
+                }
+        }
+
+        fun setKeyColor(
+            color: ChromaKeyColor
+        ) {
+            greenKeyStrength =
+                color.greenStrength
+        }
+
         fun releaseSurfaceTexture() {
+            hasRenderableFrame = false
+            renderGateArmed =
+                !renderGateRequired
             surfaceTexture?.release()
             surfaceTexture = null
         }
@@ -752,17 +1560,29 @@ class ChromaKeyVideoView @JvmOverloads constructor(
                 "uniform float uThreshold;\n" +
                 "uniform float uSoftness;\n" +
                 "uniform float uDespill;\n" +
+                "uniform float uYellowTint;\n" +
+                "uniform float uGreenKeyStrength;\n" +
                 "varying vec2 vTexCoord;\n" +
                 "void main() {\n" +
                 "  vec4 color = texture2D(sTexture, vTexCoord);\n" +
-                "  float maxRG = max(color.r, color.g);\n" +
-                "  float dominance = color.b - maxRG;\n" +
-                "  float blueKey = smoothstep(uThreshold, uThreshold + uSoftness, dominance);\n" +
-                "  float brightness = smoothstep(0.18, 0.42, color.b);\n" +
-                "  float key = clamp(blueKey * brightness, 0.0, 1.0);\n" +
+                "  float blueMax = max(color.r, color.g);\n" +
+                "  float greenMax = max(color.r, color.b);\n" +
+                "  float blueDominance = color.b - blueMax;\n" +
+                "  float greenDominanceKey = color.g - greenMax;\n" +
+                "  float dominance = mix(blueDominance, greenDominanceKey, uGreenKeyStrength);\n" +
+                "  float keyChannel = mix(color.b, color.g, uGreenKeyStrength);\n" +
+                "  float chromaKey = smoothstep(uThreshold, uThreshold + uSoftness, dominance);\n" +
+                "  float brightness = smoothstep(0.18, 0.42, keyChannel);\n" +
+                "  float key = clamp(chromaKey * brightness, 0.0, 1.0);\n" +
                 "  vec3 clean = color.rgb;\n" +
-                "  float neutralBlue = maxRG + 0.04;\n" +
-                "  clean.b = mix(clean.b, min(clean.b, neutralBlue), key * uDespill);\n" +
+                "  float neutralBlue = blueMax + 0.04;\n" +
+                "  float neutralGreen = greenMax + 0.04;\n" +
+                "  clean.b = mix(clean.b, min(clean.b, neutralBlue), key * uDespill * (1.0 - uGreenKeyStrength));\n" +
+                "  clean.g = mix(clean.g, min(clean.g, neutralGreen), key * uDespill * uGreenKeyStrength);\n" +
+                "  float greenDominance = max(clean.g - max(clean.r, clean.b), 0.0);\n" +
+                "  float greenMask = smoothstep(0.04, 0.34, greenDominance) * uYellowTint;\n" +
+                "  vec3 yellowized = vec3(max(clean.r, clean.g * 0.95), clean.g, clean.b * 0.25);\n" +
+                "  clean = mix(clean, yellowized, greenMask);\n" +
                 "  float alpha = color.a * (1.0 - key);\n" +
                 "  gl_FragColor = vec4(clean, alpha);\n" +
                 "}\n"

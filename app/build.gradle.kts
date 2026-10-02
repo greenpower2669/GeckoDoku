@@ -10,8 +10,8 @@ android {
         applicationId = "com.greenpower2669.geckodoku"
         minSdk = 26
         targetSdk = 36
-        versionCode = 19
-        versionName = "0.10.8-dev"
+        versionCode = 78
+        versionName = "0.15.43-dev"
     }
 
     sourceSets {
@@ -27,6 +27,18 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+
+        create("phone") {
+            initWith(
+                getByName("release")
+            )
+            signingConfig =
+                signingConfigs
+                    .getByName("debug")
+            isDebuggable = false
+            matchingFallbacks +=
+                listOf("release")
         }
     }
 }

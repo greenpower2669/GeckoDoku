@@ -2,9 +2,9 @@
 
 > Documentation vivante de l'application telle qu'elle existe au 28 septembre 2026.
 >
-> **Version applicative observée :** `0.15.5-dev` — `versionCode 40`  
+> **Version applicative observée :** `0.15.15-dev` — `versionCode 50`  
 > **Branche :** `gecko-039-sudoku-tap-gecko-gomoku`  
-> **Référence code fonctionnel :** `81675c42a1f73108daf2c64e667ea3088f847608`  
+> **Référence code fonctionnel :** `8ccc0385c8314239976368811dab93808970e35a`  
 > Cette documentation décrit le comportement présent. Elle peut évoluer avec le logiciel. Elle n'est ni un historique de debug ni un ordre de mission.
 
 ## 1. But général
@@ -218,11 +218,13 @@ Le raisonnement Gomoku peut exposer :
 
 ### Géométrie
 
-Le plateau est hexagonal et utilise les trois axes :
+Le plateau est hexagonal pointy-top et utilise les trois axes réels de l’écran :
 
-- **Q** ↖↘
-- **S** ↑↓
-- **R** ↗↙
+- **Q** = **+60°** = ↖↘
+- **S** = **-60°** = ↙↗
+- **R** = **0°** = ←→
+
+Ces orientations sont centralisées dans `BeeGeckoAxisGeometry`. La projection du plateau, la légende, la popup Axe du double-clic et les libellés du Prof utilisent cette même source afin qu’un axe annoncé corresponde toujours à la barre réellement dessinée.
 
 La carte peut être déplacée et zoomée. Les réglages offrent également **Recentrer la carte** et **Prochaine zone non résolue**.
 
@@ -515,3 +517,96 @@ Le code de la mission GECKO-048 contient actuellement :
 - persistance Bee schema 4.
 
 La validation finale sur téléphone de ces éléments reste distincte de leur présence dans le code.
+
+
+### Delta GECKO-049 — cohérence des axes hexagonaux
+
+La version 0.15.6-dev corrige un décalage purement géométrique d’affichage : les barres réelles étaient alignées sur les cellules, mais les symboles de S et R ne correspondaient pas aux angles du plateau pointy-top.
+
+La correction ne change ni les règles Abeilles & Geckos, ni le solveur, ni le format de session. Elle unifie uniquement la source géométrique utilisée par le rendu, l’interface et le Prof.
+
+
+### Delta GECKO-050 — mascottes vivantes et sérénité
+
+La version de travail 0.15.7-dev introduit un moteur commun de présence visuelle pour Gecko, Abeille et la Plante décorative.
+
+Quand les animations sont actives, une mascotte peut enchaîner apparition, animations d'attente discrètes et mignonnerie sans repasser brièvement par son PNG entre deux vidéos. Le masque de la pièce statique est conservé pendant toute la chaîne et la taille vidéo est calculée depuis la taille réellement utilisée par le PNG du mode.
+
+Le moteur mémorise les derniers clips et évite une répétition immédiate lorsqu'une alternative existe. Quatre attentes terminées ou la fin d'une mignonnerie provoquent une réinterrogation douce du groupe.
+
+Quand les animations sont désactivées, le jeu revient aux PNG : Gecko/Abeille restent les PNG déjà dessinés par leur plateau ; la Plante utilise `PlanteTr.png`.
+
+Une seule mascotte vivante de chaque type est animée à la fois afin de conserver une charge légère sur téléphone. Les autres pièces restent en PNG.
+
+La Plante est décorative, sans collision ni effet sur les règles. Prof Gecko/Pierre restent sur leur pipeline vidéo/parole séparé.
+
+
+#### Correctif continuité 0.15.8-dev
+
+Le premier essai téléphone GECKO-050 a montré un bref vide intermittent entre deux clips successifs.
+
+Cause : lorsqu'un nouveau clip est demandé, le lecteur précédent est arrêté et la nouvelle surface reste volontairement transparente jusqu'à sa première frame décodée. Le masque continu empêchait alors le PNG du plateau de réapparaître, laissant momentanément seulement le fond.
+
+Correction : après qu'une mascotte a déjà rendu sa première frame, son PNG transparent canonique de même taille sert de pont uniquement pendant la préparation du clip suivant. Il est retiré exactement dans `onFirstFrameRendered`. La première animation d'apparition ne montre donc toujours aucun PNG prématuré.
+
+
+#### Refactor autonomie visuelle 0.15.9-dev
+
+Le pipeline vivant n'utilise plus aucune couleur de fond de case. Gecko, Abeille et Plante possèdent leur PNG transparent dans leur profil AliveAnimator. Pendant qu'une instance est vivante, le plateau suspend uniquement le dessin de son ancien PNG statique ; AliveMascotOverlayView devient l'unique propriétaire visuel de cette mascotte.
+
+Le nombre d'instances vidéo reste borné pour protéger le téléphone tout en rendant le plateau plus vivant : trois Gecko, deux Abeilles et une Plante peuvent être animés simultanément. Lorsqu'un pool est plein, l'instance la plus ancienne revient au PNG statique du plateau.
+
+La Plante carnivore est déplaçable par drag. Sa position est mémorisée sous forme normalisée afin de rester cohérente après les changements de dimensions.
+
+Le PNG interne sert aussi de pont entre clips et reçoit la teinte jaune lorsqu'il représente le Gecko du Prof.
+
+
+#### Nuages des placements donnés 0.15.10-dev
+
+Les placements imposés/grisés conservent une brume visuelle mais elle est désormais beaucoup plus légère. Un moteur commun construit sept petites bouffées irrégulières, avec des tailles et positions légèrement différentes et une opacité comprise entre 8 et 21. Le mouvement reste lent et déterministe par cellule, ce qui évite l'aspect de quatre ellipses géométriques superposées.
+
+
+#### Mascottes vivantes 0.15.11-dev
+
+Toutes les mascottes visibles sont désormais enregistrées comme Presence légères dans AliveMascotOverlayView, y compris celles déjà présentes lors du chargement d'une partie. Le PNG transparent appartient à la Presence. Les lecteurs vidéo sont séparés et restent bornés à 3 Gecko, 2 Abeilles et 1 Plante simultanément. Le scheduler update() fait tourner ces lecteurs entre toutes les Presence visibles, par ordre d'ancienneté d'animation avec des pauses légèrement aléatoires. Cette architecture est commune aux modes Classic, Sudoku, Gomoku et Abeilles & Geckos.
+
+AliveAnimator change de stay à chaque clip, forme des séries de 3 à 5 stays, évite de reproduire immédiatement une série complète et déclenche à la fin d'un grand cycle une animation cute chez une autre mascotte visible qui en possède une.
+
+
+#### Diagnostic ALL ANIMATED 0.15.12-dev
+
+Pour isoler un défaut observé sur téléphone, le plafond de lecteurs vidéo est temporairement retiré. AliveMascotOverlayView crée dynamiquement un VideoSlot par Presence visible ; toutes les mascottes peuvent ainsi être animées simultanément. Ce réglage sert à déterminer si le pool borné 3 Gecko / 2 Abeilles était responsable de l'arrêt apparent des animations.
+
+Pendant les deux vidéos d'introduction, la couche AliveMascotOverlayView est suspendue et cachée. Les lecteurs mascottes sont arrêtés afin qu'aucun Gecko ou Plante ne puisse apparaître au-dessus de l'intro. Après fin naturelle ou skip, les Presence reprennent leur PNG interne et leur cycle.
+
+
+#### Reprise après changement d'application 0.15.13-dev
+
+Quand GeckoDoku passe en arrière-plan, AliveMascotOverlayView est volontairement arrêté afin qu'aucun lecteur vidéo ne continue à fonctionner hors écran. Au retour dans l'application, la couche vivante est maintenant entièrement reconstruite : la Plante est recréée puis les mascottes du mode courant sont resynchronisées depuis le snapshot du moteur. La reprise couvre Classic, Sudoku, Gomoku et Abeilles & Geckos. Le simple aller-retour vers Mail ou Messages ne relance pas l'introduction.
+
+
+#### Architecture définitive mascottes 0.15.14-dev
+
+Le diagnostic ALL ANIMATED devient la règle permanente : chaque mascotte visible possède son propre PNG transparent, son AliveAnimator et son propre ChromaKeyVideoView. Il n’existe plus de pool, de limite 3/2/1 ni de rotation de lecteurs.
+
+Une mascotte créée avant la fin du layout reste enregistrée et retente localement sa géométrie jusqu’à disponibilité. Les pièces déjà données par une map peuvent donc devenir vivantes sans action du joueur. Un refresh post-layout complète la synchronisation Classic, Sudoku, Gomoku et Abeilles & Geckos.
+
+Pour Gecko, une vraie apparition suit désormais strictement : case vide → vidéo d’apparition → PNG/idle vivant. Les deux intros continuent de suspendre entièrement la couche vivante.
+
+#### Pierre — retours après pause
+
+Le moteur visuel/parole de Pierre reste séparé. La catégorie RETURN contient maintenant 300 phrases. RETURN_AFTER_PAUSE utilise exclusivement ce corpus, conserve 48 h de cooldown individuel, mémorise les 48 derniers IDs et évite autant que possible les mêmes familles d’ouverture ainsi que les formulations lexicalement proches des derniers retours.
+
+
+#### Composition PNG/vidéo d'une Presence — 0.15.15-dev
+
+Chaque mascotte vivante reste un objet autonome qui possède son PNG et son lecteur vidéo. Pour respecter la nature particulière de GLSurfaceView sous Android, ces deux représentations sont toutefois placées dans deux conteneurs siblings du même overlay plutôt que dans le même FrameLayout.
+
+Le plateau transmet la propriété visuelle à la Presence une seule fois lorsque sa target devient valide. Après ce handoff, les transitions sont internes à la Presence :
+PNG interne pendant l'attente et la préparation, vidéo à partir de sa première frame réelle, puis retour immédiat au PNG interne à la fin du clip.
+
+L'apparition est l'exception : le PNG interne reste caché afin d'obtenir vide → vidéo d'apparition → vivant.
+Aucun lecteur n'est partagé et aucun ordonnanceur n'existe.
+
+
+Build 0.15.15-dev : CI #257 verte. APK Phone SHA-256 : 671776186328f53df577599e45d2cb85ea8bc6a8ca8daf5d54bf0721c71dabf5. Validation appareil en attente.

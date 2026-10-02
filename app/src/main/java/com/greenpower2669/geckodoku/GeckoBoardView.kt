@@ -13,7 +13,9 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import kotlin.math.cos
 import kotlin.math.min
+import kotlin.math.sin
 
 class GeckoBoardView @JvmOverloads constructor(
     context: Context,
@@ -26,6 +28,13 @@ class GeckoBoardView @JvmOverloads constructor(
     var onDoubleTapCell: ((Cell) -> Unit)? = null
     var onLongPressCell: ((Cell) -> Unit)? = null
     var onLongPressOutside: (() -> Unit)? = null
+
+    var onAxisGuideMoved:
+        ((
+            ClassicAxisGuide,
+            ClassicAxisGuide?
+        ) -> Unit)? =
+        null
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
@@ -40,14 +49,35 @@ class GeckoBoardView @JvmOverloads constructor(
             null
         }
 
+    private val mediaSuppressedGeckos =
+        linkedSetOf<Cell>()
+
     private val boardRect = RectF()
     private var cellSize = 1f
-    private val gutter = dp(76f)
+
+    private val readabilityPolicy =
+        ClassicBoardReadabilityPolicy()
+
+    private val gutter = dp(38f)
 
     private var professorSources: Set<Cell> = emptySet()
     private var professorTargets: Set<Cell> = emptySet()
     private var professorGhosts: Set<Cell> = emptySet()
     private var professorLevel = 0
+
+    private var professorAxisGuides:
+        Set<ClassicAxisGuide> =
+        emptySet()
+
+    private var draggingAxisGuide:
+        ClassicAxisGuide? =
+        null
+
+    private var victoryStartedAt =
+        0L
+
+    private var victoryRunning =
+        false
 
     private val gestures =
         GestureDetector(
@@ -117,6 +147,8 @@ class GeckoBoardView @JvmOverloads constructor(
         newPuzzle: Puzzle
     ) {
         puzzle = newPuzzle
+        victoryRunning = false
+        victoryStartedAt = 0L
         clearProfessorHint()
         requestLayout()
         invalidate()
@@ -145,6 +177,10 @@ class GeckoBoardView @JvmOverloads constructor(
         professorGhosts =
             emptySet()
 
+        professorAxisGuides =
+            ClassicProfessorAxisGuidePolicy
+                .forStep(step)
+
         invalidate()
     }
 
@@ -158,6 +194,15 @@ class GeckoBoardView @JvmOverloads constructor(
             emptySet()
         professorGhosts =
             step.sourceCells
+        professorAxisGuides =
+            emptySet()
+        invalidate()
+    }
+
+    fun startVictoryAnimation() {
+        victoryStartedAt =
+            SystemClock.uptimeMillis()
+        victoryRunning = true
         invalidate()
     }
 
@@ -166,6 +211,8 @@ class GeckoBoardView @JvmOverloads constructor(
         professorSources = emptySet()
         professorTargets = emptySet()
         professorGhosts = emptySet()
+        professorAxisGuides =
+            emptySet()
         invalidate()
     }
 
@@ -202,22 +249,27 @@ class GeckoBoardView @JvmOverloads constructor(
     ) {
         if (w <= 0 || h <= 0) return
 
-        val horizontal = dp(6f)
+        val geometry =
+            readabilityPolicy
+                .geometry(
+                    viewWidthPx = w,
+                    viewHeightPx = h,
+                    gutterPx =
+                        gutter.toInt()
+                )
 
         val side =
-            min(
-                w - horizontal * 2,
-                h - gutter - dp(4f)
-            ).coerceAtLeast(dp(80f))
-
-        val left =
-            (w - side) / 2f
+            geometry.side
+                .toFloat()
+                .coerceAtLeast(
+                    dp(80f)
+                )
 
         boardRect.set(
-            left,
-            dp(4f),
-            left + side,
-            dp(4f) + side
+            geometry.left.toFloat(),
+            geometry.top.toFloat(),
+            geometry.left + side,
+            geometry.top + side
         )
 
         if (::puzzle.isInitialized) {
@@ -228,8 +280,124 @@ class GeckoBoardView @JvmOverloads constructor(
 
     override fun onTouchEvent(
         event: MotionEvent
-    ): Boolean =
-        gestures.onTouchEvent(event)
+    ): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                val guide =
+                    findAxisGuideAt(
+                        event.x,
+                        event.y
+                    )
+
+                if (guide != null) {
+                    draggingAxisGuide =
+                        guide
+                    parent
+                        ?.requestDisallowInterceptTouchEvent(
+                            true
+                        )
+                    return true
+                }
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                val active =
+                    draggingAxisGuide
+
+                if (active != null) {
+                    val moved =
+                        guideAtPointer(
+                            active.kind,
+                            event.x,
+                            event.y,
+                            active.color
+                        )
+
+                    if (
+                        moved != null &&
+                        moved != active
+                    ) {
+                        onAxisGuideMoved
+                            ?.invoke(
+                                active,
+                                moved
+                            )
+
+                        draggingAxisGuide =
+                            moved
+                    }
+
+                    invalidate()
+                    return true
+                }
+            }
+
+            MotionEvent.ACTION_UP -> {
+                val active =
+                    draggingAxisGuide
+
+                if (active != null) {
+                    val final =
+                        guideAtPointer(
+                            active.kind,
+                            event.x,
+                            event.y,
+                            active.color
+                        )
+
+                    if (final == null) {
+                        onAxisGuideMoved
+                            ?.invoke(
+                                active,
+                                null
+                            )
+                    } else if (
+                        final != active
+                    ) {
+                        onAxisGuideMoved
+                            ?.invoke(
+                                active,
+                                final
+                            )
+                    }
+
+                    draggingAxisGuide =
+                        null
+
+                    parent
+                        ?.requestDisallowInterceptTouchEvent(
+                            false
+                        )
+
+                    invalidate()
+                    performClick()
+                    return true
+                }
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                if (
+                    draggingAxisGuide !=
+                        null
+                ) {
+                    draggingAxisGuide =
+                        null
+
+                    parent
+                        ?.requestDisallowInterceptTouchEvent(
+                            false
+                        )
+
+                    invalidate()
+                    return true
+                }
+            }
+        }
+
+        return gestures.onTouchEvent(
+            event
+        )
+    }
 
     override fun onDraw(
         canvas: Canvas
@@ -255,6 +423,16 @@ class GeckoBoardView @JvmOverloads constructor(
 
         drawRegions(canvas)
         drawGrid(canvas)
+        drawAxisGuides(
+            canvas,
+            state.axisGuides,
+            professor = false
+        )
+        drawAxisGuides(
+            canvas,
+            professorAxisGuides,
+            professor = true
+        )
         drawMarks(canvas, state)
         drawProfessorGhosts(canvas, state)
         drawProfessorOverlay(canvas)
@@ -266,6 +444,25 @@ class GeckoBoardView @JvmOverloads constructor(
             }
         ) {
             postInvalidateDelayed(450)
+        }
+
+        if (state.givens.isNotEmpty()) {
+            postInvalidateOnAnimation()
+        }
+
+        if (victoryRunning) {
+            val elapsed =
+                SystemClock.uptimeMillis() -
+                    victoryStartedAt
+
+            if (
+                elapsed <
+                    VICTORY_DURATION_MS
+            ) {
+                postInvalidateOnAnimation()
+            } else {
+                victoryRunning = false
+            }
         }
     }
 
@@ -398,6 +595,247 @@ class GeckoBoardView @JvmOverloads constructor(
         }
     }
 
+    private fun drawAxisGuides(
+        canvas: Canvas,
+        guides:
+            Set<ClassicAxisGuide>,
+        professor: Boolean
+    ) {
+        if (guides.isEmpty()) {
+            return
+        }
+
+        paint.style =
+            Paint.Style.FILL
+
+        val half =
+            cellSize *
+                .17f
+
+        guides.forEach {
+            guide ->
+
+            paint.color =
+                if (professor) {
+                    Color.argb(
+                        58,
+                        220,
+                        120,
+                        20
+                    )
+                } else {
+                    when (guide.color) {
+                        AxisGuideColor.YELLOW ->
+                            Color.argb(
+                                70,
+                                232,
+                                178,
+                                28
+                            )
+
+                        AxisGuideColor.GREEN ->
+                            Color.argb(
+                                66,
+                                38,
+                                156,
+                                72
+                            )
+
+                        AxisGuideColor.RED ->
+                            Color.argb(
+                                70,
+                                190,
+                                45,
+                                45
+                            )
+                    }
+                }
+
+            when (guide.kind) {
+                ClassicAxisGuideKind
+                    .HORIZONTAL -> {
+                    if (
+                        guide.index !in
+                            0 until puzzle.size
+                    ) {
+                        return@forEach
+                    }
+
+                    val y =
+                        boardRect.top +
+                            (
+                                guide.index +
+                                    .5f
+                                ) *
+                                cellSize
+
+                    canvas.drawRect(
+                        boardRect.left,
+                        y - half,
+                        boardRect.right,
+                        y + half,
+                        paint
+                    )
+                }
+
+                ClassicAxisGuideKind
+                    .VERTICAL -> {
+                    if (
+                        guide.index !in
+                            0 until puzzle.size
+                    ) {
+                        return@forEach
+                    }
+
+                    val x =
+                        boardRect.left +
+                            (
+                                guide.index +
+                                    .5f
+                                ) *
+                                cellSize
+
+                    canvas.drawRect(
+                        x - half,
+                        boardRect.top,
+                        x + half,
+                        boardRect.bottom,
+                        paint
+                    )
+                }
+            }
+        }
+    }
+
+    private fun findAxisGuideAt(
+        x: Float,
+        y: Float
+    ): ClassicAxisGuide? {
+        if (
+            !::snapshotProvider
+                .isInitialized ||
+            !boardRect
+                .contains(
+                    x,
+                    y
+                )
+        ) {
+            return null
+        }
+
+        val guides =
+            snapshotProvider()
+                .axisGuides
+
+        val threshold =
+            maxOf(
+                cellSize *
+                    .25f,
+                dp(16f)
+            )
+
+        return guides
+            .map {
+                guide ->
+                guide to
+                    when (guide.kind) {
+                        ClassicAxisGuideKind
+                            .HORIZONTAL ->
+                            kotlin.math.abs(
+                                y -
+                                    (
+                                        boardRect.top +
+                                            (
+                                                guide.index +
+                                                    .5f
+                                                ) *
+                                                cellSize
+                                        )
+                            )
+
+                        ClassicAxisGuideKind
+                            .VERTICAL ->
+                            kotlin.math.abs(
+                                x -
+                                    (
+                                        boardRect.left +
+                                            (
+                                                guide.index +
+                                                    .5f
+                                                ) *
+                                                cellSize
+                                        )
+                            )
+                    }
+            }
+            .minByOrNull {
+                it.second
+            }
+            ?.takeIf {
+                it.second <=
+                    threshold
+            }
+            ?.first
+    }
+
+    private fun guideAtPointer(
+        kind: ClassicAxisGuideKind,
+        x: Float,
+        y: Float,
+        color: AxisGuideColor
+    ): ClassicAxisGuide? {
+        if (
+            !boardRect
+                .contains(
+                    x,
+                    y
+                )
+        ) {
+            return null
+        }
+
+        val index =
+            when (kind) {
+                ClassicAxisGuideKind
+                    .HORIZONTAL ->
+                    (
+                        (
+                            y -
+                                boardRect.top
+                            ) /
+                            cellSize
+                        )
+                        .toInt()
+
+                ClassicAxisGuideKind
+                    .VERTICAL ->
+                    (
+                        (
+                            x -
+                                boardRect.left
+                            ) /
+                            cellSize
+                        )
+                        .toInt()
+            }
+
+        if (
+            index !in
+                0 until puzzle.size
+        ) {
+            return null
+        }
+
+        return ClassicAxisGuide(
+            kind =
+                kind,
+            index =
+                index,
+            color =
+                color
+        )
+    }
+
     private fun drawMarks(
         canvas: Canvas,
         state: GameSnapshot
@@ -409,28 +847,58 @@ class GeckoBoardView @JvmOverloads constructor(
 
                 when {
                     state.givens.contains(cell) -> {
-                        drawGecko(
+                        if (
+                            !mediaSuppressedGeckos
+                                .contains(
+                                    cell
+                                )
+                        ) {
+                            drawVictoryGecko(
+                                canvas,
+                                rect,
+                                cell,
+                                1f,
+                                false
+                            )
+                        }
+                        drawGivenFog(
                             canvas,
                             rect,
-                            1f,
-                            false
-                        )
-                        drawGivenRing(
-                            canvas,
-                            rect
+                            cell
                         )
                     }
 
-                    state.confirmed.contains(cell) ->
-                        drawGecko(
-                            canvas,
-                            rect,
-                            1f,
-                            false
-                        )
+                    state.confirmed.contains(cell) -> {
+                        if (
+                            !mediaSuppressedGeckos
+                                .contains(
+                                    cell
+                                )
+                        ) {
+                            drawVictoryGecko(
+                                canvas,
+                                rect,
+                                cell,
+                                1f,
+                                false
+                            )
+                        }
+                    }
 
                     state.hypotheses[cell] ==
                         HypothesisMark.ALERT_GECKO -> {
+                        drawHypothesisAura(
+                            canvas,
+                            rect,
+                            state
+                                .hypothesisTrace
+                                .colorForHypothesis(
+                                    cell
+                                ),
+                            contradiction =
+                                true
+                        )
+
                         val visible =
                             (
                                 SystemClock
@@ -444,27 +912,45 @@ class GeckoBoardView @JvmOverloads constructor(
                             if (visible) {
                                 1f
                             } else {
-                                .20f
+                                .36f
                             },
                             true
                         )
                     }
 
                     state.hypotheses[cell] ==
-                        HypothesisMark.GHOST_GECKO ->
+                        HypothesisMark.GHOST_GECKO -> {
+                        drawHypothesisAura(
+                            canvas,
+                            rect,
+                            state
+                                .hypothesisTrace
+                                .colorForHypothesis(
+                                    cell
+                                ),
+                            contradiction =
+                                false
+                        )
+
                         drawGecko(
                             canvas,
                             rect,
-                            .18f,
+                            .38f,
                             false
                         )
+                    }
 
                     state.manualCrosses
                         .contains(cell) ->
                         drawCross(
                             canvas,
                             rect,
-                            1f
+                            1f,
+                            state
+                                .hypothesisTrace
+                                .colorForCross(
+                                    cell
+                                )
                         )
 
                     state.autoCrosses
@@ -586,35 +1072,129 @@ class GeckoBoardView @JvmOverloads constructor(
         }
     }
 
-    private fun drawGivenRing(
+    private fun drawGivenFog(
         canvas: Canvas,
-        rect: RectF
+        rect: RectF,
+        cell: Cell
     ) {
-        paint.style =
-            Paint.Style.STROKE
-
-        paint.strokeWidth =
-            cellSize * .045f
-
-        paint.color =
-            Color.rgb(
-                16,
-                78,
-                44
+        val phase =
+            BeeGeckoFogPolicy.phase(
+                SystemClock.uptimeMillis(),
+                cell.row * 37 +
+                    cell.col * 19
             )
 
-        canvas.drawCircle(
+        val centerX =
+            rect.centerX()
+        val centerY =
+            rect.centerY()
+
+        GivenFogVisualPolicy
+            .puffs(
+                seed =
+                    cell.row * 37 +
+                        cell.col * 19,
+                phase = phase
+            )
+            .forEach {
+                puff ->
+                paint.style =
+                    Paint.Style.FILL
+                paint.color =
+                    Color.argb(
+                        puff.alpha,
+                        72,
+                        78,
+                        82
+                    )
+
+                val cx =
+                    centerX +
+                        puff.offsetX *
+                            cellSize
+                val cy =
+                    centerY +
+                        puff.offsetY *
+                            cellSize
+
+                canvas.drawOval(
+                    RectF(
+                        cx -
+                            puff.halfWidth *
+                                cellSize,
+                        cy -
+                            puff.halfHeight *
+                                cellSize,
+                        cx +
+                            puff.halfWidth *
+                                cellSize,
+                        cy +
+                            puff.halfHeight *
+                                cellSize
+                    ),
+                    paint
+                )
+            }
+    }
+
+    private fun drawVictoryGecko(
+        canvas: Canvas,
+        rect: RectF,
+        cell: Cell,
+        alpha: Float,
+        alert: Boolean
+    ) {
+        if (!victoryRunning) {
+            drawGecko(
+                canvas,
+                rect,
+                alpha,
+                alert
+            )
+            return
+        }
+
+        val elapsed =
+            SystemClock.uptimeMillis() -
+                victoryStartedAt
+
+        val pulse =
+            1f +
+                sin(
+                    elapsed /
+                        130f +
+                        cell.row *
+                            .55f +
+                        cell.col *
+                            .43f
+                )
+                    .toFloat() *
+                .12f
+
+        canvas.save()
+        canvas.scale(
+            pulse,
+            pulse,
             rect.centerX(),
-            rect.centerY(),
-            cellSize * .34f,
-            paint
+            rect.centerY()
         )
+
+        drawGecko(
+            canvas,
+            rect,
+            alpha,
+            alert
+        )
+
+        canvas.restore()
     }
 
     private fun drawCross(
         canvas: Canvas,
         rect: RectF,
-        alpha: Float
+        alpha: Float,
+        hypothesisColor:
+            HypothesisColor? = null
     ) {
         paint.style =
             Paint.Style.STROKE
@@ -626,13 +1206,23 @@ class GeckoBoardView @JvmOverloads constructor(
             Paint.Cap.ROUND
 
         paint.color =
-            Color.argb(
-                (255 * alpha)
-                    .toInt(),
-                45,
-                45,
-                45
-            )
+            hypothesisColor
+                ?.let {
+                    Color.argb(
+                        (255 * alpha)
+                            .toInt(),
+                        it.red,
+                        it.green,
+                        it.blue
+                    )
+                }
+                ?: Color.argb(
+                    (255 * alpha)
+                        .toInt(),
+                    45,
+                    45,
+                    45
+                )
 
         val m =
             cellSize * .29f
@@ -652,6 +1242,95 @@ class GeckoBoardView @JvmOverloads constructor(
             rect.bottom - m,
             paint
         )
+    }
+
+    private fun drawHypothesisAura(
+        canvas: Canvas,
+        rect: RectF,
+        color: HypothesisColor?,
+        contradiction: Boolean
+    ) {
+        val selected =
+            color
+                ?: return
+
+        paint.style =
+            Paint.Style.STROKE
+        paint.strokeCap =
+            Paint.Cap.ROUND
+        paint.strokeWidth =
+            cellSize *
+                .075f
+        paint.color =
+            Color.argb(
+                225,
+                selected.red,
+                selected.green,
+                selected.blue
+            )
+
+        canvas.drawCircle(
+            rect.centerX(),
+            rect.centerY(),
+            cellSize *
+                .39f,
+            paint
+        )
+
+        paint.strokeWidth =
+            cellSize *
+                .13f
+        paint.color =
+            Color.argb(
+                58,
+                selected.red,
+                selected.green,
+                selected.blue
+            )
+
+        canvas.drawCircle(
+            rect.centerX(),
+            rect.centerY(),
+            cellSize *
+                .39f,
+            paint
+        )
+
+        if (contradiction) {
+            paint.strokeWidth =
+                cellSize *
+                    .055f
+            paint.color =
+                Color.rgb(
+                    178,
+                    28,
+                    28
+                )
+
+            canvas.drawCircle(
+                rect.centerX(),
+                rect.centerY(),
+                cellSize *
+                    .32f,
+                paint
+            )
+
+            canvas.drawLine(
+                rect.left +
+                    cellSize *
+                        .20f,
+                rect.bottom -
+                    cellSize *
+                        .20f,
+                rect.right -
+                    cellSize *
+                        .20f,
+                rect.top +
+                    cellSize *
+                        .20f,
+                paint
+            )
+        }
     }
 
     private fun drawGecko(
@@ -957,7 +1636,7 @@ class GeckoBoardView @JvmOverloads constructor(
             "Simple = ✕   •   Double = 🦎   •   Long = hypothèse",
             width/2f,
             boardRect.bottom +
-                dp(32f),
+                dp(24f),
             paint
         )
     }
@@ -993,6 +1672,35 @@ class GeckoBoardView @JvmOverloads constructor(
                 )
 
         return Cell(row, col)
+    }
+
+    fun setMediaGeckoSuppressed(
+        cell: Cell,
+        suppressed: Boolean
+    ) {
+        if (suppressed) {
+            mediaSuppressedGeckos.add(
+                cell
+            )
+        } else {
+            mediaSuppressedGeckos.remove(
+                cell
+            )
+        }
+
+        invalidate()
+    }
+
+    fun clearMediaGeckoSuppression() {
+        if (
+            mediaSuppressedGeckos
+                .isEmpty()
+        ) {
+            return
+        }
+
+        mediaSuppressedGeckos.clear()
+        invalidate()
     }
 
     fun cellBackgroundColor(
@@ -1049,4 +1757,9 @@ class GeckoBoardView @JvmOverloads constructor(
             resources
                 .displayMetrics
                 .density
+    companion object {
+        private const val VICTORY_DURATION_MS =
+            3600L
+    }
+
 }
