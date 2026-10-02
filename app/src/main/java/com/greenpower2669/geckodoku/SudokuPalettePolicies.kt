@@ -454,7 +454,7 @@ class SudokuPaletteLayoutPolicy {
             )
             .toInt()
             .coerceAtLeast(
-                28
+                14
             )
             .coerceAtMost(
                 (
@@ -463,7 +463,7 @@ class SudokuPaletteLayoutPolicy {
                     )
                     .toInt()
                     .coerceAtLeast(
-                        28
+                        14
                     )
             )
 
