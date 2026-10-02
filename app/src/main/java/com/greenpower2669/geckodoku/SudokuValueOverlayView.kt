@@ -244,7 +244,21 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                     continue
                 }
 
+                val hypothesis =
+                    state.hypothesisAt(
+                        cell
+                    )
+
+                if (hypothesis != null) {
+                    drawHypothesisAura(
+                        canvas,
+                        rect,
+                        hypothesis
+                    )
+                }
+
                 if (
+                    hypothesis == null &&
                     state.hasGeckoMarker(
                         cell
                     ) &&
@@ -299,6 +313,15 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                         candidates
                     )
                 }
+
+                hypothesis
+                    ?.let {
+                        drawHypothesisDigit(
+                            canvas,
+                            rect,
+                            it
+                        )
+                    }
             }
         }
 
@@ -312,6 +335,152 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         ) {
             postInvalidateDelayed(
                 180L
+            )
+        }
+    }
+
+    private fun drawHypothesisAura(
+        canvas: Canvas,
+        rect: RectF,
+        node:
+            HypothesisNode<
+                SudokuHypothesisChoice
+                >
+    ) {
+        val color =
+            node.color
+
+        paint.style =
+            Paint.Style.STROKE
+        paint.strokeWidth =
+            cellSize *
+                .065f
+        paint.color =
+            Color.argb(
+                225,
+                color.red,
+                color.green,
+                color.blue
+            )
+
+        canvas.drawCircle(
+            rect.centerX(),
+            rect.centerY(),
+            cellSize *
+                .42f,
+            paint
+        )
+
+        paint.strokeWidth =
+            cellSize *
+                .12f
+        paint.color =
+            Color.argb(
+                52,
+                color.red,
+                color.green,
+                color.blue
+            )
+
+        canvas.drawCircle(
+            rect.centerX(),
+            rect.centerY(),
+            cellSize *
+                .42f,
+            paint
+        )
+    }
+
+    private fun drawHypothesisDigit(
+        canvas: Canvas,
+        rect: RectF,
+        node:
+            HypothesisNode<
+                SudokuHypothesisChoice
+                >
+    ) {
+        val target =
+            RectF(
+                rect.left +
+                    rect.width() *
+                        .20f,
+                rect.top +
+                    rect.height() *
+                        .17f,
+                rect.right -
+                    rect.width() *
+                        .20f,
+                rect.bottom -
+                    rect.height() *
+                        .17f
+            )
+
+        renderer.draw(
+            canvas =
+                canvas,
+            target =
+                target,
+            digit =
+                node.cell.digit,
+            style =
+                visualStyle,
+            given =
+                false,
+            mini =
+                false,
+            alpha =
+                if (
+                    node.state ==
+                        HypothesisBranchState
+                            .CONTRADICTION
+                ) {
+                    135
+                } else {
+                    215
+                }
+        )
+
+        if (
+            node.state ==
+                HypothesisBranchState
+                    .CONTRADICTION
+        ) {
+            paint.style =
+                Paint.Style.STROKE
+            paint.strokeWidth =
+                cellSize *
+                    .065f
+            paint.strokeCap =
+                Paint.Cap.ROUND
+            paint.color =
+                Color.rgb(
+                    172,
+                    28,
+                    28
+                )
+
+            canvas.drawCircle(
+                rect.centerX(),
+                rect.centerY(),
+                cellSize *
+                    .31f,
+                paint
+            )
+
+            canvas.drawLine(
+                rect.left +
+                    cellSize *
+                        .22f,
+                rect.bottom -
+                    cellSize *
+                        .22f,
+                rect.right -
+                    cellSize *
+                        .22f,
+                rect.top +
+                    cellSize *
+                        .22f,
+                paint
             )
         }
     }

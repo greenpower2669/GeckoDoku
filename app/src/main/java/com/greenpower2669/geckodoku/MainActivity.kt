@@ -10874,9 +10874,69 @@ class MainActivity : Activity() {
 
         dismissSudokuPalette()
 
-        sudokuSelectedCell = cell
+        sudokuSelectedCell =
+            cell
+
         sudokuBoard
-            .setSelectedCell(cell)
+            .setSelectedCell(
+                cell
+            )
+
+        val popupWidth =
+            minOf(
+                (
+                    screenRoot.width -
+                        dp(16)
+                    ).coerceAtLeast(
+                    dp(280)
+                ),
+                dp(360)
+            )
+
+        val popupHeight =
+            minOf(
+                (
+                    screenRoot.height -
+                        dp(24)
+                    ).coerceAtLeast(
+                    dp(320)
+                ),
+                dp(390)
+            )
+
+        var popupX =
+            0
+
+        var popupY =
+            0
+
+        var popupRef:
+            PopupWindow? =
+            null
+
+        fun hypothesisVisuals():
+            Map<
+                Int,
+                SudokuHypothesisDigitVisual
+                > {
+            return engine
+                .snapshot()
+                .hypothesisTrace
+                .nodes
+                .filter {
+                    it.cell.cell ==
+                        cell
+                }
+                .associate {
+                    it.cell.digit to
+                        SudokuHypothesisDigitVisual(
+                            color =
+                                it.color,
+                            state =
+                                it.state
+                        )
+                }
+        }
 
         val palette =
             SudokuQuickPaletteView(
@@ -10886,27 +10946,45 @@ class MainActivity : Activity() {
                     gameModePreferences
                         .sudokuVisualStyle
 
-                setActiveCandidates(
+                val initial =
                     engine.snapshot()
-                        .notesAt(cell)
-                )
 
-                setGeckoMarkerActive(
-                    engine.snapshot()
-                        .hasGeckoMarker(
+                setCurrentValue(
+                    initial
+                        .valueAt(
                             cell
                         )
+                        .takeIf {
+                            it != 0
+                        }
+                )
+
+                setActiveCandidates(
+                    initial
+                        .notesAt(
+                            cell
+                        )
+                )
+
+                setHypothesisDigits(
+                    digits =
+                        hypothesisVisuals(),
+                    nextColor =
+                        engine
+                            .nextHypothesisColor()
                 )
 
                 onValueDigit = {
                         digit ->
 
-                    dismissSudokuPalette()
-                    handleSudokuDigit(
-                        digit,
-                        notesModeOverride =
-                            false
+                    setPendingValue(
+                        digit
                     )
+
+                    status.text =
+                        "Prévisu : " +
+                            digit +
+                            " • confirme Oui ou Non."
                 }
 
                 onCandidateDigit = {
@@ -10920,43 +10998,165 @@ class MainActivity : Activity() {
 
                     setActiveCandidates(
                         engine.snapshot()
-                            .notesAt(cell)
+                            .notesAt(
+                                cell
+                            )
                     )
+
+                    sudokuValueOverlay
+                        .invalidate()
                 }
 
-                onGeckoMarker = {
-                    setGeckoMarkerActive(
-                        toggleSudokuGeckoMarker()
-                    )
+                onHypothesisDigit = {
+                        digit ->
+
+                    when (
+                        engine.cycleHypothesis(
+                            cell,
+                            digit
+                        )
+                    ) {
+                        SudokuActionFeedback
+                            .HYPOTHESIS_CHANGED -> {
+                            fx.hint()
+
+                            val snapshot =
+                                engine
+                                    .snapshot()
+
+                            val node =
+                                snapshot
+                                    .hypothesisAt(
+                                        cell
+                                    )
+
+                            status.text =
+                                when {
+                                    node == null ->
+                                        "Hypothèse supprimée avec toutes ses sous-branches."
+
+                                    node.state ==
+                                        HypothesisBranchState
+                                            .CONTRADICTION ->
+                                        "Hypothèse " +
+                                            node.cell.digit +
+                                            " en contradiction • sens interdit."
+
+                                    else ->
+                                        "Hypothèse " +
+                                            node.cell.digit +
+                                            " • branche " +
+                                            node.color
+                                                .label
+                                                .lowercase() +
+                                            "."
+                                }
+
+                            setHypothesisDigits(
+                                digits =
+                                    hypothesisVisuals(),
+                                nextColor =
+                                    engine
+                                        .nextHypothesisColor()
+                            )
+
+                            sudokuValueOverlay
+                                .invalidate()
+                        }
+
+                        SudokuActionFeedback
+                            .GIVEN_LOCKED -> {
+                            fx.blocked()
+                            status.text =
+                                "Ce chiffre est donné."
+                        }
+
+                        else -> {
+                            fx.blocked()
+                            status.text =
+                                "Cette case contient déjà une valeur confirmée."
+                        }
+                    }
                 }
 
-                onErase = {
+                onConfirmValue = {
+                        digit ->
+
                     dismissSudokuPalette()
-                    eraseSudokuSelection()
+
+                    handleSudokuDigit(
+                        digit,
+                        notesModeOverride =
+                            false
+                    )
+                }
+
+                onRejectValue = {
+                    setPendingValue(
+                        null
+                    )
+
+                    status.text =
+                        "Prévisu annulée • aucun nombre posé."
+                }
+
+                onClose = {
+                    dismissSudokuPalette()
+                }
+
+                onDragDelta = {
+                        dx,
+                        dy ->
+
+                    val maxX =
+                        (
+                            screenRoot.width -
+                                popupWidth -
+                                dp(4)
+                            )
+                            .coerceAtLeast(
+                                dp(4)
+                            )
+
+                    val maxY =
+                        (
+                            screenRoot.height -
+                                popupHeight -
+                                dp(4)
+                            )
+                            .coerceAtLeast(
+                                dp(4)
+                            )
+
+                    popupX =
+                        (
+                            popupX +
+                                dx.toInt()
+                            )
+                            .coerceIn(
+                                dp(4),
+                                maxX
+                            )
+
+                    popupY =
+                        (
+                            popupY +
+                                dy.toInt()
+                            )
+                            .coerceIn(
+                                dp(4),
+                                maxY
+                            )
+
+                    popupRef
+                        ?.update(
+                            popupX,
+                            popupY,
+                            -1,
+                            -1
+                        )
                 }
             }
-
-        val popupWidth =
-            minOf(
-                (
-                    screenRoot.width -
-                        dp(24)
-                    ).coerceAtLeast(
-                    dp(220)
-                ),
-                dp(320)
-            )
-
-        val popupHeight =
-            minOf(
-                (
-                    screenRoot.height -
-                        dp(24)
-                    ).coerceAtLeast(
-                    dp(180)
-                ),
-                dp(230)
-            )
 
         val popup =
             PopupWindow(
@@ -10965,14 +11165,18 @@ class MainActivity : Activity() {
                 popupHeight,
                 true
             ).apply {
-                isOutsideTouchable = true
+                isOutsideTouchable =
+                    false
+
                 setBackgroundDrawable(
                     ColorDrawable(
                         Color.WHITE
                     )
                 )
+
                 elevation =
-                    dp(10).toFloat()
+                    dp(10)
+                        .toFloat()
 
                 setOnDismissListener {
                     if (
@@ -10984,6 +11188,9 @@ class MainActivity : Activity() {
                     }
                 }
             }
+
+        popupRef =
+            popup
 
         val rootLocation =
             IntArray(2)
@@ -11002,7 +11209,9 @@ class MainActivity : Activity() {
 
         val cellRect =
             sudokuBoard
-                .cellRectLocal(cell)
+                .cellRectLocal(
+                    cell
+                )
 
         val anchor =
             PixelBox(
@@ -11035,7 +11244,8 @@ class MainActivity : Activity() {
                         screenRoot.width,
                     screenHeight =
                         screenRoot.height,
-                    anchor = anchor,
+                    anchor =
+                        anchor,
                     popupWidth =
                         popupWidth,
                     popupHeight =
@@ -11044,6 +11254,12 @@ class MainActivity : Activity() {
                         dp(8)
                 )
 
+        popupX =
+            position.x
+
+        popupY =
+            position.y
+
         sudokuPalettePopup =
             popup
 
@@ -11051,15 +11267,12 @@ class MainActivity : Activity() {
             screenRoot,
             Gravity.TOP or
                 Gravity.START,
-            position.x,
-            position.y
+            popupX,
+            popupY
         )
 
         status.text =
-            "Sudoku • saisie rapide case " +
-                (cell.row + 1) +
-                "," +
-                (cell.col + 1)
+            "Sudoku • Choix / Candidats / Hypothèse / Prévisu • glisse le bandeau pour déplacer."
     }
 
     private fun dismissSudokuPalette() {
