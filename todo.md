@@ -730,6 +730,8 @@ GECKO-047 CI FINAL : run #402 SUCCESS sur commit `7425eadb8385226075d0e5b5d224c0
 - [x] Minimum du pavé réduit de 280×320 à 140×160 dp.
 - [x] Bandeau minimum réduit de 28 à 14 dp.
 - [x] Version 0.15.43-dev / code 78.
-- [ ] CI Kotlin + assemblePhone.
-- [ ] Publication release téléphone finale.
+- [x] CI Kotlin + assemblePhone — run #403 vert.
+- [x] Publication release téléphone finale — phone-0.15.43-dev-run-403.
 - [ ] Test téléphone de la réduction extrême et des zones tactiles.
+
+GECKO-048 RELEASE FINALE : CI #403 SUCCESS sur commit `10da3008613c26973d7598211967ba64a0e18601`. Release finale publiée et promue : `phone-0.15.43-dev-run-403`, titre `GeckoDoku 0.15.43-dev • téléphone validé`. APK public : `GeckoDoku-v0.15.43-dev.apk`, 299414401 octets. Artifact CI : `GeckoDoku-v0.15.43-dev-phone`, digest `sha256:c11afe59f5ab784256edb2a39ad76dcf9b0c0d0ed93f4679bcece7c57847b661`. Aucun merge main.
