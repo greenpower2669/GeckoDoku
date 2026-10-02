@@ -1260,7 +1260,7 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
     ) {
         val size =
             dp(
-                30f
+                15f
             )
 
         val right =
@@ -1297,7 +1297,7 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
             val offset =
                 index *
                     dp(
-                        7f
+                        3.5f
                     )
 
             canvas.drawLine(
@@ -1320,7 +1320,7 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
     ): Boolean {
         val size =
             dp(
-                42f
+                21f
             )
 
         return x >=
