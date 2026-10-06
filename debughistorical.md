@@ -1,64 +1,61 @@
 # GeckoDoku — FAB Copilot debug historical
 
-> Historique condensé. Pour le détail ancien : `sauvegarde.md`.
-> Version + SHA + date priment sur les anciens identifiants GECKO.
+> Historique condensé. La vérité courante reste `brain.md` + `ordres-de-mission.md`.
 
 ## Baseline avant HOF
 
-Au 2 octobre 2026 :
-- quatre modes : Classic, Sudoku, Gomoku, Abeilles & Geckos ;
-- base HOF : `main@1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675` ;
-- version `0.15.43-dev`, code 78 ;
-- release téléphone précédente `phone-0.15.43-dev-run-403` ;
-- stats, hypothèses, pavé Sudoku et médias 240p déjà en place.
+- base : `main@1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
+- version `0.15.43-dev`, code 78
+- téléphone validé avant HOF : `phone-0.15.43-dev-run-403`
+- quatre modes, Pierre, médias 240p, stats et Hall local déjà fonctionnels.
 
-## GECKO-HOF-SYNC-001 — 6 octobre 2026
+## GECKO-HOF-SYNC-001 — 06/10/2026
 
-Contrat serveur : 4 modes, `runId` idempotent, champs spécifiques nullable, metadata libre, seed 64 bits décimale, aucun secret APK, POST + `/sync`.
+Implémenté en TDD : payload 4 modes, pending crash-safe, client ACK, backoff, cache `/sync`, mono-worker, reprise réseau, runtime Android, mapping des complétions et timestamp local/global unique.
 
-### TDD par lots
+Invariants : pending avant réseau, retry exact, erreurs permanentes BLOCKED, `/sync` transactionnel, seed décimale 64 bits, aucun secret APK, aucune donnée globale injectée dans stats/progression.
 
-1. `GlobalScorePayload` + codec/factory quatre modes.
-2. `AtomicJsonFileStore` + `PendingScoreStore` crash-safe.
-3. `GeckoDokuHallApiClient` + `GlobalScoreRetryPolicy`.
-4. `GlobalScoreCacheStore` avec page + curseur atomiques.
-5. `GlobalScoreSyncCoordinator` mono-worker + `AndroidNetworkMonitor`.
-6. `GlobalScoreCompletionPublisher`, `GlobalScoreCompletionBridge`, `GlobalScoreRuntime` + raccord `MainActivity`.
+## Régressions téléphone du premier APK de validation
 
-### Incidents utiles
+Fab a fourni capture + journal.
 
-- Pipeline téléphone historique `PackageSprites` séparé du banc HOF.
-- Erreur Kotlin initiale du parseur ACK corrigée sans changer le contrat.
-- Test publisher corrigé après mauvais usage de `assertNotNull`.
-- Patches `MainActivity` trop sensibles à l’indentation abandonnés au profit d’un patch borné à la méthode.
-- `BuildConfig.VERSION_NAME` non généré : version récupérée via `PackageManager`.
-- Revue finale : Hall local et global pouvaient prendre deux timestamps distincts. Test RED ajouté, puis correction : un seul `completedAt` est calculé et réutilisé partout.
-- Une première transformation timestamp a produit `val completedAt = completedAt`; le compilateur l’a refusée, aucun commit produit n’a été effectué. L’ordre du patch a été corrigé.
+### Médias
 
-### Vérification finale
+Symptômes : Gecko invisibles/empreintes vides et Pierre muet.
 
-- commit code HOF final : `9ff902bbe778a2202bdda3ca715e2bbce7cb06dd` ;
-- run timestamp `37518234014` : tests JVM + `assembleDebug` GREEN ;
-- run HOF canonique `37519024806` : GREEN ;
-- run APK validation `37519024909` : tests + build + artifact GREEN ;
-- artifact `GeckoDoku-HOF-v1-validation` ;
-- SHA-256 APK : `926058461bb214fbe9e8abcf4825902b8a58129169907a1a4d9749a79c2dd49a` ;
-- workflows temporaires timestamp/APK supprimés après usage.
+Preuves journal :
+- `SpriteBankFactory ... SPRITE_BANK_ERROR ... FileNotFoundException` sur `gecko/alive/stay*.mp4`, `Gecko_apparition.mp4`, etc. ;
+- `ProfessorSpeech ... SPEAK_STARTED ... engine=android`.
 
-### Invariants confirmés
+Cause : l’APK de validation HOF avait été construit via une chaîne légère `assembleDebug` sans le packaging téléphone complet. Le code gameplay n’était pas en cause.
 
-- pending écrit avant réseau ;
-- retry exact même JSON + même runId ;
-- ACK invalide/refusé ne supprime pas pending ;
-- erreurs permanentes gardées BLOCKED ;
-- retry réseau/5xx/429 ;
-- `/sync` continue si `hasMore=true`, même page vide ;
-- cache global séparé des stats/progression ;
-- quatre modes mappés sans inventer de règle gameplay ;
-- un seul `completedAt` local/global.
+Correction build :
+- Piper UPMC Medium téléchargé avec checksum canonique ;
+- ancienne Release technique `PackageSprites` constatée absente ;
+- banque 240p restaurée depuis l’APK téléphone validé `phone-0.15.43-dev-run-403`, SHA connu `5b4f38049c3c7e8d115b78bef573784084ddec85cd4774d620dd0d76a4ba7a94` ;
+- `assemblePhone` ;
+- contrôle APK : modèle Pierre présent, index sprites présent, bank-manifest 240p présent, 1 305 fichiers 240p, entrées Gecko signalées par le journal présentes.
 
-## État suivant
+### Hall après réinstallation
 
-Code Android HOF prêt pour validation téléphone réelle : online, offline, kill/restart, retour réseau, dédoublonnage et contrôle des catégories/champs.
+Symptôme : un score global Facile existait mais, après désinstallation/réinstallation, l’UI disait « aucune partie terminée » ; une nouvelle partie recréait ensuite 1 résultat.
 
-Aucun merge `main` ni Release avant ordre explicite de Fab.
+Cause : `/sync` alimentait bien `GlobalScoreCacheStore`, mais `showHallOfFame()` lisait seulement `HallOfFameStore.entries()` local. La désinstallation effaçait donc la seule source affichée.
+
+Correction TDD :
+- `GlobalHallProjectionTest` RED ;
+- `GlobalHallProjection` convertit les entrées cache valides en `HallOfFameEntry` ;
+- `HallOfFameStore.entries()` fusionne local + cache global en lecture seule ;
+- même complétion locale/globale dédoublonnée grâce au `completedAt` commun ;
+- entrées invalides/inachevées ignorées ;
+- tests HOF GREEN.
+
+## État actuel
+
+- code fonctionnel : `1e54fe8156bc04de2470456423ec62f125856083`
+- build téléphone complet : run `37526965060` GREEN
+- artifact : `GeckoDoku-HOF-v1-phone-validation`
+- SHA-256 : `c5232d721c22d4d7c1eefd35f53411ebf03a0d1f70ade1cc145efef1019b63bf`
+- workflow temporaire de build supprimé après génération.
+
+Reste : validation réelle animations/Pierre, restauration Hall après clean install, puis scénarios offline/retry. Aucun merge/release avant ordre de Fab.

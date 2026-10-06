@@ -6,56 +6,50 @@
 
 - base : `main@1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
 - branche : `feature/gecko-hof-sync-v1`
-- code HOF final vérifié : `9ff902bbe778a2202bdda3ca715e2bbce7cb06dd`
+- code fonctionnel HOF + restauration Hall : `1e54fe8156bc04de2470456423ec62f125856083`
 - version : `0.15.43-dev` / code 78
-- référence téléphone précédente : `phone-0.15.43-dev-run-403`
-- aucune fusion `main` / Release HOF sans ordre explicite de Fab.
+- téléphone de référence avant HOF : `phone-0.15.43-dev-run-403`
+- aucun merge `main` / Release sans ordre explicite de Fab.
 
 ## Contrat FAB Copilot
 
-1. Lire le code courant avant toute modification ; ne jamais recoder depuis une vieille mémoire.
-2. Synchroniser après chaque geste significatif : `brain.md`, `brainmap.md`, `debughistorical.md`, `todo.md`, `ordres-de-mission.md`.
-3. `sauvegarde.md` est archive froide, jamais vérité courante.
-4. Aucun merge `main` ni Release/prerelease sans ordre explicite de Fab.
-5. Ne pas restaurer d’anciens médias supprimés.
+1. Lire le code courant avant modification ; jamais recoder depuis mémoire.
+2. Synchroniser `brain.md`, `brainmap.md`, `debughistorical.md`, `todo.md`, `ordres-de-mission.md` après geste significatif.
+3. `sauvegarde.md` = archive froide.
+4. Aucun merge `main`, Release ou prerelease sans ordre explicite de Fab.
+5. Ne pas modifier gameplay/médias source hors cause démontrée.
 
-## Contrat HOF canonique
+## Contrat HOF
 
-Hôte : `https://fab-hall-of-fame.gnrationsia.chatgpt.site`
+Hôte : `https://fab-hall-of-fame.gnrationsia.chatgpt.site`.
 
-- POST `/api/v1/games/geckodoku/scores`
-- GET `/api/v1/games/geckodoku/sync`
-- aucun secret / Authorization dans l’APK ;
-- `runId` idempotent ;
-- payload figé et persisté avant réseau ;
-- retry = même JSON + même `runId` ;
-- retrait pending seulement après ACK accepté ou confirmation `/sync` ;
-- `seed` 64 bits en chaîne décimale ;
-- champs spécifiques nullable ; `metadata` extensible ;
-- 400/409/413/415 bloqués ; 429/5xx/réseau réessayés ;
-- `/sync` fusion par `scoreId`, `nextCursor` persisté avec la page ;
-- Hall global indépendant des stats/progression/Hall local ;
-- `completedAt` est calculé une seule fois pour Hall local + payload global.
+- POST `/api/v1/games/geckodoku/scores` ; GET `/api/v1/games/geckodoku/sync` ;
+- aucun secret/Authorization dans APK ;
+- `runId` idempotent ; payload persisté avant réseau ; retry exact ;
+- retrait pending seulement sur confirmation serveur ;
+- seed 64 bits en chaîne décimale ;
+- 400/409/413/415 BLOCKED, 429/5xx/réseau retry ;
+- `/sync` fusionne `scoreId` et persiste page + `nextCursor` ensemble ;
+- global ne modifie jamais stats/progression personnelles ;
+- Hall UI peut afficher le cache global restauré et le fusionne au Hall local sans réinjecter ces résultats dans les stats ;
+- `completedAt` unique local/global sert aussi au dédoublonnage d’affichage.
 
-## État d’implémentation
+## Avenant validation téléphone 06/10
 
-Implémenté : payload quatre modes, pending crash-safe, client/ACK, retry/backoff, cache `/sync`, mono-worker, reprise réseau, runtime Android, permissions, raccord `MainActivity`, mapping des quatre modes.
+Le premier APK HOF était invalide pour médias : absence banque sprites 240p + modèle Pierre. Journal Fab : `FileNotFoundException` SpriteRGBA et `engine=android`.
 
-Important Gomoku : seuls les cas déjà considérés comme score local sont publiés ; aucune nouvelle règle de classement n’est inventée.
+Le score global absent après réinstallation venait d’un raccord UI incomplet : cache `/sync` séparé mais UI Hall local-only. Corrigé par `GlobalHallProjection` + fusion dans `HallOfFameStore.entries()`.
 
-## Vérification technique
+Nouvel APK téléphone :
+- run `37526965060` GREEN ;
+- artifact `GeckoDoku-HOF-v1-phone-validation` ;
+- SHA-256 `c5232d721c22d4d7c1eefd35f53411ebf03a0d1f70ade1cc145efef1019b63bf` ;
+- Pierre UPMC Medium présent ;
+- banque 240p présente, 1 305 fichiers vérifiés ;
+- workflow temporaire supprimé après génération.
 
-- run `37518234014` : test du timestamp unique + tests JVM + `assembleDebug` GREEN ;
-- run `37519024806` : workflow HOF canonique GREEN ;
-- run `37519024909` : APK de validation GREEN ;
-- artifact : `GeckoDoku-HOF-v1-validation` ;
-- SHA-256 : `926058461bb214fbe9e8abcf4825902b8a58129169907a1a4d9749a79c2dd49a` ;
-- workflows temporaires de patch/build supprimés après usage.
+## Reste autorisé
 
-## Reste autorisé / attendu
+Validation téléphone seulement : animations, Pierre, restauration Hall après clean install, online/offline/restart/retry/doublons et cohérence catégories. Corriger uniquement un défaut observé et documenté.
 
-- validation téléphone : online, offline→online, redémarrage pending, absence de doublon, champs/catégories ;
-- corriger seulement les bugs découverts par cette validation ;
-- maintenir les cinq mémoires synchronisées.
-
-Aucun merge `main`, aucune Release avant ordre explicite de Fab.
+Aucun merge `main`, aucune Release avant ordre de Fab.
