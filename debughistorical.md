@@ -74,3 +74,14 @@ Avant publication, contrôle du workflow canonique :
 - version de publication portée à `0.15.44-dev`, code 79.
 
 Les tests offline/retry/doublons exhaustifs n’ont pas tous été rejoués manuellement après ce clean install ; Fab accepte explicitement ce reliquat de validation pour cette publication.
+
+
+## Merge et Release finale HOF
+
+- PR #3 mergée dans `main` par le commit `c1a32bf4736894f87ac45f1c626f72a111cf1c2e`.
+- Le merge a déclenché le workflow téléphone canonique avec `[phone-release] [phone-publish]`.
+- Run `37531494180` / #432 : GREEN.
+- Étapes GREEN : restauration sprites 240p depuis APK validé, tests JVM, `assemblePhone`, vérification Pierre + banque sprites, création prerelease puis promotion.
+- Release finale : `phone-0.15.44-dev-run-432`.
+- APK : `GeckoDoku-v0.15.44-dev.apk`.
+- SHA-256 : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c`.
