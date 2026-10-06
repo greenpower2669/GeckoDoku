@@ -1,160 +1,72 @@
 # GeckoDoku — FAB Copilot debug historical
 
-> Historique condensé uniquement.
-> L'archive exhaustive antérieure reste dans `sauvegarde.md`.
-> Les anciens numéros GECKO ont parfois été réutilisés : version, SHA et date priment.
+> Historique condensé. Pour le détail ancien : `sauvegarde.md`.
+> Version + SHA + date priment sur les anciens identifiants GECKO.
 
-## Socle multimode
+## Baseline avant HOF
 
-Le projet a évolué d'un GeckoDoku Classic vers quatre modes :
-Classic, Sudoku, Gomoku, Abeilles & Geckos.
+Au 2 octobre 2026 :
+- GeckoDoku multimode : Classic, Sudoku, Gomoku, Abeilles & Geckos ;
+- merge code précédent : `17c6de0186c745c15fc042971eb09b4fe19a6299` ;
+- main documentaire utilisé pour HOF : `1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675` ;
+- version `0.15.43-dev`, code 78 ;
+- release téléphone `phone-0.15.43-dev-run-403` ;
+- sprites Gecko/Abeille 240p préconstruits ; Plante, Prof/Pierre et intros conservés ;
+- stats : terminée enregistrée, abandon 0 erreur ignoré, abandon avec erreur enregistré ;
+- hypothèses colorées parent/enfant dans les modes concernés ;
+- pavé Sudoku persistant 2×2 et aide `?` documentaire.
 
-Les invariants conservés :
-- moteurs logiques séparés du rendu ;
-- Prof pédagogique ;
-- médias décoratifs non bloquants ;
-- statistiques locales ;
-- overlays sans reflow du plateau.
+## GECKO-HOF-SYNC-001 — 6 octobre 2026
 
-## Pierre / capture audio
+Branche créée depuis main : `feature/gecko-hof-sync-v1`.
 
-Ancien problème :
-Pierre n'était pas toujours capturable par l'enregistrement écran.
+Contrat serveur déjà publié par Fab : 4 modes, `runId` idempotent, champs nullable, metadata libre, seed 64 bits décimale, aucun secret APK, POST + `/sync`.
 
-Correction :
-- routage Android MEDIA ;
-- contenu SPEECH ;
-- capture autorisée ;
-- fallback Android TTS conservé.
+### TDD
 
-Prononciation :
-`PierrePronunciationPolicy` permet des corrections vocales sans modifier l'affichage.
-Exemple canonique : `église` → `eglize` pour la synthèse seulement.
+Implémentation par lots RED → GREEN :
 
-## Axes Classic / Abeilles & Geckos
+1. `GlobalScorePayload` + codec + factory quatre modes.
+2. `AtomicJsonFileStore` + `PendingScoreStore` crash-safe.
+3. `GeckoDokuHallApiClient` + `GlobalScoreRetryPolicy`.
+4. `GlobalScoreCacheStore` avec page et curseur atomiques.
+5. `GlobalScoreSyncCoordinator` mono-worker + `AndroidNetworkMonitor`.
+6. `GlobalScoreCompletionPublisher`, `GlobalScoreCompletionBridge`, `GlobalScoreRuntime` et raccord `MainActivity`.
 
-Évolution :
-- axes joueurs devenus globaux et déplaçables ;
-- jaune/vert/rouge ;
-- suppression hors plateau ;
-- Bee persiste la couleur ;
-- géométrie Bee centralisée :
-  Q +60° ↖↘, S -60° ↙↗, R 0° ←→.
+Run de référence Task 5 : `37500492900` GREEN.
 
-## Pipeline sprites 240p
+### Incidents de développement utiles
 
-Problème :
-génération progressive et banques multiples 60/120/240/... coûtaient du temps et de la mémoire.
+- Le workflow téléphone historique dépendait du package `PackageSprites`; un workflow unitaire HOF dédié a été utilisé pour isoler les tests du chantier.
+- Premier client HTTP : erreur Kotlin `return` dans un corps d’expression ; corrigée sans changer le contrat.
+- Un test publisher contenait un mauvais cast du retour de `assertNotNull`; le code produit compilait, test corrigé.
+- Premier patch `MainActivity` trop sensible à l’indentation : échec avant toute écriture produit.
+- Deuxième patch compilait jusqu’à `BuildConfig.VERSION_NAME`, non généré dans ce projet. Remplacement par `PackageManager.versionName`.
+- Le patch corrigé a passé `testDebugUnitTest` + `assembleDebug` dans le run `37508648842`, puis a été poussé au commit produit `d6d25e051c0a4723844df51c21aa99c15cd35c08`.
+- Les workflows temporaires de chirurgie ont ensuite été supprimés et le scope du workflow téléphone historique restauré.
 
-Solution :
-- banques préconstruites ;
-- runtime SpriteRGBA ;
-- cible unique 240p ;
-- suppression des banques inférieures/obsolètes ;
-- suppression des MP4 Gecko/Abeille devenus inutiles ;
-- Plante, Prof/Pierre et intros conservés.
+### Invariants confirmés
 
-CI de la migration : branche GECKO-043, version 0.15.38-dev, run #395 vert.
+- pending écrit avant réseau ;
+- retry exact même JSON + même runId ;
+- ACK invalide ou refusé ne supprime pas pending ;
+- erreurs permanentes gardées BLOCKED ;
+- retry réseau/5xx/429 ;
+- `/sync` continue avec `hasMore=true` même page vide ;
+- cache global séparé des stats/progression ;
+- mapping quatre modes sans inventer de nouvelle règle de gameplay ;
+- Gomoku non éligible au Hall local reste seulement représentable dans le protocole.
 
-## Hypothèses colorées
+## État suivant
 
-Ajout d'un modèle parent/enfant commun aux raisonnements d'hypothèse :
-- couleurs jaune, vert, rouge, violet, bleu, orange ;
-- aura sur branche active ;
-- croix filles colorées ;
-- suppression parent → descendants supprimés ;
-- contradiction → sens interdit + rollback descendants ;
-- changement de sous-branche → ancienne descendance retirée.
+Code Android HOF techniquement prêt pour validation téléphone réelle.
 
-Le Sudoku a ensuite adopté la même logique.
+À vérifier sur téléphone :
+- online → une seule entrée ;
+- offline → pending conservé ;
+- kill/restart offline → pending survit ;
+- retour réseau → envoi automatique ;
+- doublon/retry → une seule entrée serveur ;
+- catégories et champs spécifiques corrects.
 
-## Pavé Sudoku 2×2
-
-Version 0.15.40-dev :
-- zones Choix / Candidats / Hypothèse / Prévisu ;
-- prévalidation Oui/Non ;
-- candidats distincts des hypothèses ;
-- suppression des anciens libellés H1/H2.
-
-Version 0.15.41-dev :
-- pavé redimensionnable ;
-- statistiques temporelles refaites.
-
-Version 0.15.42-dev :
-- pavé persistant ;
-- simple + double clic ouvrent/reciblent ;
-- appui long garde les repères personnels ;
-- aide `?` interactive par zone ;
-- popup non modal pour laisser les clics extérieurs atteindre la grille.
-CI finale : #402 verte.
-
-Version 0.15.43-dev / code 78 :
-- minimum resize 280×320 → 140×160 dp ;
-- bandeau et poignée de resize réduits ;
-- release téléphone produite.
-CI #403 verte.
-
-## Statistiques temporelles
-
-Ancien problème :
-une partie était comptée dès son lancement, donc les annulations polluaient les stats.
-
-Nouvelle règle :
-- terminée → enregistrée ;
-- annulée à 0 erreur → ignorée ;
-- annulée avec erreur → enregistrée comme abandon.
-
-Ajouts :
-- erreurs par niveau ;
-- événements temporels ;
-- comparaison des deux dernières parties terminées ;
-- tendances temps/étoiles ;
-- graphe par niveau ;
-- lien Stats ↔ Hall of Fame ;
-- narration Prof limitée au niveau le plus difficile + précédent.
-
-CI : version 0.15.41-dev, run #399 vert.
-
-## Merge final main — 2 octobre 2026
-
-Situation :
-`main` possédait 8 commits absents de la branche GECKO-048.
-
-Mesure de sécurité :
-- pas de fast-forward forcé ;
-- PR #2 ;
-- réconciliation à deux parents ;
-- code/médias récents conservés ;
-- anciens médias supprimés non réintroduits ;
-- documents iOS et petits fichiers utiles de main préservés.
-
-Réconciliation :
-- commit `a08b0b436b8523487bb3aae11c4405351df687ca`
-- CI #404 verte.
-
-Merge :
-- commit code `17c6de0186c745c15fc042971eb09b4fe19a6299`
-- CI main #405 verte.
-
-Release :
-- `phone-0.15.43-dev-run-403`.
-
-## Ouverture mission Hall of Fame global — 6 octobre 2026
-
-Mission `GECKO-HOF-SYNC-001` ouverte depuis `main` SHA `1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675` sur `feature/gecko-hof-sync-v1`.
-
-État à l’ouverture :
-- protocole serveur v1 déjà publié et testé côté site ;
-- quatre modes couverts ;
-- aucun secret requis dans l’APK ;
-- travail Android restant : pendingScores, retry, ACK, `/sync`, tests et validation téléphone ;
-- design approuvé en conversation puis écrit dans `docs/superpowers/specs/2026-10-06-geckodoku-global-hof-sync-design.md` ;
-- aucune modification de code produit encore exécutée à ce point.
-
-## Règle de diagnostic actuelle
-
-Avant de rouvrir un ancien bug :
-1. lire le code de `main` ou de la branche mission concernée ;
-2. vérifier la version/SHA concernée ;
-3. consulter ce fichier ;
-4. n'ouvrir `sauvegarde.md` que si un détail historique précis manque.
+Aucun merge `main` ni Release avant ordre explicite de Fab.
