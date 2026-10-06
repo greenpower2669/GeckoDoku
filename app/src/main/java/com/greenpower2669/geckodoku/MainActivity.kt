@@ -52,6 +52,9 @@ class MainActivity : Activity() {
     private lateinit var hallOfFameStore:
         HallOfFameStore
 
+
+    private lateinit var globalScoreRuntime:
+        GlobalScoreRuntime
     private lateinit var userDataBackup:
         UserDataBackup
 
@@ -489,6 +492,11 @@ class MainActivity : Activity() {
         hallOfFameStore =
             HallOfFameStore(this)
 
+
+        globalScoreRuntime =
+            GlobalScoreRuntime(this).also {
+                it.start()
+            }
         userDataBackup =
             UserDataBackup(this)
 
@@ -3816,6 +3824,36 @@ class MainActivity : Activity() {
                 )
             )
 
+            GlobalScoreCompletionBridge.publish(
+                publisher =
+                    globalScoreRuntime.publisher,
+                playerName =
+                    playerProfileStore.playerName,
+                mode = mode,
+                size = size,
+                difficulty = difficulty,
+                stars = stars,
+                elapsedSeconds = seconds,
+                mistakes =
+                    mistakeCountForMode(mode),
+                assistancePoints =
+                    assistancePoints,
+                appVersion =
+                    packageManager.getPackageInfo(packageName, 0).versionName ?: "unknown",
+                classicPuzzle = puzzle,
+                sudokuPuzzle = sudokuPuzzle,
+                sudokuVisualStyle =
+                    if (::gameModePreferences.isInitialized) {
+                        gameModePreferences.sudokuVisualStyle
+                    } else {
+                        null
+                    },
+                gomokuSnapshot =
+                    gomokuEngine?.snapshot(),
+                gomokuMatchMode =
+                    gomokuMatchMode,
+                beeGeckoPuzzle = beeGeckoPuzzle
+            )
             completionRecorded = true
         }
 
@@ -14373,6 +14411,10 @@ class MainActivity : Activity() {
             professorSpeech.release()
         }
 
+
+        if (::globalScoreRuntime.isInitialized) {
+            globalScoreRuntime.stop()
+        }
         fx.release()
         AnimationPerformanceMonitor.stop()
         super.onDestroy()
