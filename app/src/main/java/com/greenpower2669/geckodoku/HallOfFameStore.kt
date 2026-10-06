@@ -1,6 +1,7 @@
 package com.greenpower2669.geckodoku
 
 import android.content.Context
+import java.io.File
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -17,10 +18,19 @@ data class HallOfFameEntry(
 class HallOfFameStore(
     context: Context
 ) {
+    private val appContext =
+        context.applicationContext
+
     private val prefs =
-        context.getSharedPreferences(
+        appContext.getSharedPreferences(
             PREFERENCES_NAME,
             Context.MODE_PRIVATE
+        )
+
+    private val globalHallDirectory =
+        File(
+            appContext.filesDir,
+            GlobalScoreRuntime.DIRECTORY_NAME
         )
 
     fun add(
@@ -79,26 +89,31 @@ class HallOfFameStore(
     }
 
     fun entries():
-        List<HallOfFameEntry> =
-        readObjects()
-            .mapNotNull {
-                obj ->
-                decode(obj)
-            }
-            .sortedWith(
-                compareBy<HallOfFameEntry> {
-                    it.difficulty.ordinal
+        List<HallOfFameEntry> {
+        val local =
+            readObjects()
+                .mapNotNull {
+                    obj ->
+                    decode(obj)
                 }
-                    .thenByDescending {
-                        it.stars
-                    }
-                    .thenBy {
-                        it.elapsedSeconds
-                    }
-                    .thenByDescending {
-                        it.completedAt
-                    }
-            )
+
+        val global =
+            runCatching {
+                GlobalScoreCacheStore(
+                    globalHallDirectory
+                )
+                    .state()
+                    .entries
+            }
+                .getOrElse {
+                    emptyList()
+                }
+
+        return GlobalHallProjection.merge(
+            local = local,
+            globalCache = global
+        )
+    }
 
     fun clear() {
         prefs.edit()
