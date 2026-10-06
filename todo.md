@@ -1,49 +1,43 @@
 # GeckoDoku — TODO actif
 
-> Uniquement les travaux réellement ouverts.
-> Tout ce qui est terminé est dans `debughistorical.md`.
-> Référence courante : `main` — 0.15.43-dev / code 78.
+Mission `GECKO-HOF-SYNC-001` sur `feature/gecko-hof-sync-v1`.
 
-## Validation téléphone 0.15.43-dev
+## HOF global v1
 
-- [ ] Vérifier que le pavé Sudoku descend confortablement jusqu'à ~140×160 dp.
-- [ ] Vérifier qu'à taille minimale les zones Choix / Candidats / Hypothèse / Prévisu restent utilisables.
-- [ ] Vérifier que la poignée de resize n'empiète pas trop sur Prévisu.
-- [ ] Vérifier que simple et double clic reciblent le pavé sans flicker ni fermeture.
-- [ ] Vérifier que le pavé reste ouvert après Oui et après Non.
-- [ ] Vérifier que les clics hors popup atteignent correctement la grille sur Android 16.
-- [ ] Vérifier `?` puis les quatre zones : bonne explication de Pierre.
-- [ ] Vérifier que l'aide `?` ne réduit pas les étoiles.
+- [x] Contrat serveur publié.
+- [x] Payload 4 modes + seed 64 bits chaîne.
+- [x] pending crash-safe avant réseau.
+- [x] ACK idempotent + retry/backoff/Retry-After.
+- [x] `/sync` + cache + curseur transactionnel.
+- [x] reprise lancement/retour réseau.
+- [x] timestamp local/global unique.
+- [x] Hall affiché fusionne désormais cache global + local et dédoublonne.
+- [x] Test restauration après réinstallation ajouté en TDD.
+- [x] APK `phone` complet avec Pierre + sprites 240p construit et vérifié.
+- [x] run build `37526965060` GREEN.
+- [x] SHA APK `c5232d721c22d4d7c1eefd35f53411ebf03a0d1f70ade1cc145efef1019b63bf`.
+- [x] Téléphone : animations Gecko revenues (SpriteRGBA/banque 240p visibles dans le journal de validation).
+- [ ] Téléphone : confirmer Pierre Piper revenu (plus de fallback `engine=android`).
+- [x] Clean install online : Hall global restauré après désinstallation/réinstallation ; 3 résultats visibles.
+- [ ] Partie online : une seule entrée serveur.
+- [ ] Partie offline : pending conservé.
+- [ ] Kill/redémarrage offline : pending survit.
+- [ ] Retour réseau : envoi automatique.
+- [ ] Retry/duplicate : une seule entrée globale.
+- [ ] Vérifier au moins un score réel par mode éligible et ses catégories.
+- [x] Ordre explicite Fab reçu : merge `main` + Release.
 
-## Hypothèses
+## Publication
 
-- [ ] Test téléphone Classic : suppression parent retire croix/aura des enfants.
-- [ ] Test téléphone Classic : contradiction transforme visuellement la branche en sens interdit et nettoie ses descendants.
-- [ ] Test téléphone Abeilles & Geckos : même comportement parent/enfant.
-- [ ] Test téléphone Sudoku : même comportement parent/enfant.
-- [ ] Test de changement de sous-branche : aucun descendant visuel de l'ancienne branche ne reste.
+- [x] Cible : `0.15.44-dev`, code 79.
+- [x] Corriger le workflow Release qui référençait la Release supprimée `PackageSprites`.
+- [x] Utiliser l’APK validé `phone-0.15.43-dev-run-403` comme source contrôlée de la banque 240p.
+- [ ] Merge `main`.
+- [ ] Run Release GREEN + APK publié.
+- [ ] Promouvoir la prerelease en Release validée.
 
-## Statistiques
+Les tests offline/restart/retry/doublons exhaustifs restent en suivi produit ; Fab a autorisé la publication sans attendre leur répétition complète.
 
-- [ ] Annuler une partie à 0 erreur → aucune nouvelle statistique.
-- [ ] Annuler après erreur → tentative + erreurs visibles au bon niveau.
-- [ ] Deux parties terminées du même niveau → tendance temps/étoiles correcte.
-- [ ] Stats → niveau → graphe lisible.
-- [ ] Hall of Fame → niveau → graphe et retour vers stats.
+## Produit hors mission à préserver
 
-## Médias / mémoire
-
-- [ ] Vérifier en usage réel que Gecko/Abeille chargent les banques 240p sans reconstruction MP4.
-- [ ] Vérifier qu'aucun log 60p/120p n'apparaît.
-- [ ] Mesurer RAM/FPS sur une session longue ; ne pas conclure à un gain mémoire sans mesure.
-
-## Git
-
-- [x] Release 0.15.43-dev produite — run #403.
-- [x] Réconciliation avec les 8 commits historiques de main — CI #404 verte.
-- [x] Merge PR #2 dans main — `17c6de0186c745c15fc042971eb09b4fe19a6299`.
-- [x] CI finale main #405 verte.
-
-## Plus tard
-
-- [ ] Décider d'un éventuel chantier iOS uniquement sur demande explicite ; `ios.md` reste documentaire.
+Ne pas modifier pour ce lot : gameplay, étoiles, aides, statistiques personnelles, progression, gestes/géométrie, logique Prof, médias source.

@@ -1,148 +1,76 @@
 # GeckoDoku — FAB Copilot debug historical
 
-> Historique condensé uniquement.
-> L'archive exhaustive antérieure reste dans `sauvegarde.md`.
-> Les anciens numéros GECKO ont parfois été réutilisés : version, SHA et date priment.
+> Historique condensé. La vérité courante reste `brain.md` + `ordres-de-mission.md`.
 
-## Socle multimode
+## Baseline avant HOF
 
-Le projet a évolué d'un GeckoDoku Classic vers quatre modes :
-Classic, Sudoku, Gomoku, Abeilles & Geckos.
+- base : `main@1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
+- version `0.15.43-dev`, code 78
+- téléphone validé avant HOF : `phone-0.15.43-dev-run-403`
+- quatre modes, Pierre, médias 240p, stats et Hall local déjà fonctionnels.
 
-Les invariants conservés :
-- moteurs logiques séparés du rendu ;
-- Prof pédagogique ;
-- médias décoratifs non bloquants ;
-- statistiques locales ;
-- overlays sans reflow du plateau.
+## GECKO-HOF-SYNC-001 — 06/10/2026
 
-## Pierre / capture audio
+Implémenté en TDD : payload 4 modes, pending crash-safe, client ACK, backoff, cache `/sync`, mono-worker, reprise réseau, runtime Android, mapping des complétions et timestamp local/global unique.
 
-Ancien problème :
-Pierre n'était pas toujours capturable par l'enregistrement écran.
+Invariants : pending avant réseau, retry exact, erreurs permanentes BLOCKED, `/sync` transactionnel, seed décimale 64 bits, aucun secret APK, aucune donnée globale injectée dans stats/progression.
 
-Correction :
-- routage Android MEDIA ;
-- contenu SPEECH ;
-- capture autorisée ;
-- fallback Android TTS conservé.
+## Régressions téléphone du premier APK de validation
 
-Prononciation :
-`PierrePronunciationPolicy` permet des corrections vocales sans modifier l'affichage.
-Exemple canonique : `église` → `eglize` pour la synthèse seulement.
+Fab a fourni capture + journal.
 
-## Axes Classic / Abeilles & Geckos
+### Médias
 
-Évolution :
-- axes joueurs devenus globaux et déplaçables ;
-- jaune/vert/rouge ;
-- suppression hors plateau ;
-- Bee persiste la couleur ;
-- géométrie Bee centralisée :
-  Q +60° ↖↘, S -60° ↙↗, R 0° ←→.
+Symptômes : Gecko invisibles/empreintes vides et Pierre muet.
 
-## Pipeline sprites 240p
+Preuves journal :
+- `SpriteBankFactory ... SPRITE_BANK_ERROR ... FileNotFoundException` sur `gecko/alive/stay*.mp4`, `Gecko_apparition.mp4`, etc. ;
+- `ProfessorSpeech ... SPEAK_STARTED ... engine=android`.
 
-Problème :
-génération progressive et banques multiples 60/120/240/... coûtaient du temps et de la mémoire.
+Cause : l’APK de validation HOF avait été construit via une chaîne légère `assembleDebug` sans le packaging téléphone complet. Le code gameplay n’était pas en cause.
 
-Solution :
-- banques préconstruites ;
-- runtime SpriteRGBA ;
-- cible unique 240p ;
-- suppression des banques inférieures/obsolètes ;
-- suppression des MP4 Gecko/Abeille devenus inutiles ;
-- Plante, Prof/Pierre et intros conservés.
+Correction build :
+- Piper UPMC Medium téléchargé avec checksum canonique ;
+- ancienne Release technique `PackageSprites` constatée absente ;
+- banque 240p restaurée depuis l’APK téléphone validé `phone-0.15.43-dev-run-403`, SHA connu `5b4f38049c3c7e8d115b78bef573784084ddec85cd4774d620dd0d76a4ba7a94` ;
+- `assemblePhone` ;
+- contrôle APK : modèle Pierre présent, index sprites présent, bank-manifest 240p présent, 1 305 fichiers 240p, entrées Gecko signalées par le journal présentes.
 
-CI de la migration : branche GECKO-043, version 0.15.38-dev, run #395 vert.
+### Hall après réinstallation
 
-## Hypothèses colorées
+Symptôme : un score global Facile existait mais, après désinstallation/réinstallation, l’UI disait « aucune partie terminée » ; une nouvelle partie recréait ensuite 1 résultat.
 
-Ajout d'un modèle parent/enfant commun aux raisonnements d'hypothèse :
-- couleurs jaune, vert, rouge, violet, bleu, orange ;
-- aura sur branche active ;
-- croix filles colorées ;
-- suppression parent → descendants supprimés ;
-- contradiction → sens interdit + rollback descendants ;
-- changement de sous-branche → ancienne descendance retirée.
+Cause : `/sync` alimentait bien `GlobalScoreCacheStore`, mais `showHallOfFame()` lisait seulement `HallOfFameStore.entries()` local. La désinstallation effaçait donc la seule source affichée.
 
-Le Sudoku a ensuite adopté la même logique.
+Correction TDD :
+- `GlobalHallProjectionTest` RED ;
+- `GlobalHallProjection` convertit les entrées cache valides en `HallOfFameEntry` ;
+- `HallOfFameStore.entries()` fusionne local + cache global en lecture seule ;
+- même complétion locale/globale dédoublonnée grâce au `completedAt` commun ;
+- entrées invalides/inachevées ignorées ;
+- tests HOF GREEN.
 
-## Pavé Sudoku 2×2
+## État actuel
 
-Version 0.15.40-dev :
-- zones Choix / Candidats / Hypothèse / Prévisu ;
-- prévalidation Oui/Non ;
-- candidats distincts des hypothèses ;
-- suppression des anciens libellés H1/H2.
+- code fonctionnel : `1e54fe8156bc04de2470456423ec62f125856083`
+- build téléphone complet : run `37526965060` GREEN
+- artifact : `GeckoDoku-HOF-v1-phone-validation`
+- SHA-256 : `c5232d721c22d4d7c1eefd35f53411ebf03a0d1f70ade1cc145efef1019b63bf`
+- workflow temporaire de build supprimé après génération.
 
-Version 0.15.41-dev :
-- pavé redimensionnable ;
-- statistiques temporelles refaites.
+Reste : validation réelle animations/Pierre, restauration Hall après clean install, puis scénarios offline/retry. Aucun merge/release avant ordre de Fab.
 
-Version 0.15.42-dev :
-- pavé persistant ;
-- simple + double clic ouvrent/reciblent ;
-- appui long garde les repères personnels ;
-- aide `?` interactive par zone ;
-- popup non modal pour laisser les clics extérieurs atteindre la grille.
-CI finale : #402 verte.
 
-Version 0.15.43-dev / code 78 :
-- minimum resize 280×320 → 140×160 dp ;
-- bandeau et poignée de resize réduits ;
-- release téléphone produite.
-CI #403 verte.
+## Validation finale et préparation Release — 06/10/2026
 
-## Statistiques temporelles
+Fab a effectué une désinstallation/réinstallation sur téléphone. Le Hall global a été restauré après clean install et l’UI affiche `GeckoDoku Classic · Facile · 3 résultats`. Le journal montre les banques 240p chargées et les animations Gecko relancées sans l’ancienne erreur de fichiers absents.
 
-Ancien problème :
-une partie était comptée dès son lancement, donc les annulations polluaient les stats.
+Fab a ensuite donné l’ordre explicite de merger `feature/gecko-hof-sync-v1` dans `main` et de publier la Release.
 
-Nouvelle règle :
-- terminée → enregistrée ;
-- annulée à 0 erreur → ignorée ;
-- annulée avec erreur → enregistrée comme abandon.
+Avant publication, contrôle du workflow canonique :
+- la Release `PackageSprites` référencée par `.github/workflows/build.yml` n’existe plus (404 GitHub) ;
+- la Release téléphone validée `phone-0.15.43-dev-run-403` existe et son APK a le SHA-256 `5b4f38049c3c7e8d115b78bef573784084ddec85cd4774d620dd0d76a4ba7a94` ;
+- le workflow canonique a donc été aligné sur la méthode déjà validée par le run `37526965060` : restauration de `assets/sprites` depuis cet APK connu bon, puis vérification de Pierre et de la banque 240p dans l’APK produit ;
+- version de publication portée à `0.15.44-dev`, code 79.
 
-Ajouts :
-- erreurs par niveau ;
-- événements temporels ;
-- comparaison des deux dernières parties terminées ;
-- tendances temps/étoiles ;
-- graphe par niveau ;
-- lien Stats ↔ Hall of Fame ;
-- narration Prof limitée au niveau le plus difficile + précédent.
-
-CI : version 0.15.41-dev, run #399 vert.
-
-## Merge final main — 2 octobre 2026
-
-Situation :
-`main` possédait 8 commits absents de la branche GECKO-048.
-
-Mesure de sécurité :
-- pas de fast-forward forcé ;
-- PR #2 ;
-- réconciliation à deux parents ;
-- code/médias récents conservés ;
-- anciens médias supprimés non réintroduits ;
-- documents iOS et petits fichiers utiles de main préservés.
-
-Réconciliation :
-- commit `a08b0b436b8523487bb3aae11c4405351df687ca`
-- CI #404 verte.
-
-Merge :
-- commit code `17c6de0186c745c15fc042971eb09b4fe19a6299`
-- CI main #405 verte.
-
-Release :
-- `phone-0.15.43-dev-run-403`.
-
-## Règle de diagnostic actuelle
-
-Avant de rouvrir un ancien bug :
-1. lire le code de `main` ;
-2. vérifier la version/SHA concernée ;
-3. consulter ce fichier ;
-4. n'ouvrir `sauvegarde.md` que si un détail historique précis manque.
+Les tests offline/retry/doublons exhaustifs n’ont pas tous été rejoués manuellement après ce clean install ; Fab accepte explicitement ce reliquat de validation pour cette publication.

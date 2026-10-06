@@ -2,7 +2,7 @@ name: Build GeckoDoku phone APK
 
 on:
   push:
-    branches: [ main, gecko-022-rich-media, gecko-024-grid-audio, gecko-025-canonical-gecko-prof, gecko-026-floating-prof-ui, gecko-027-prof-foreground, gecko-028-prof-voice-idle-mask, gecko-029-more-life-full-celebration, gecko-030-restore-prof-video, gecko-031-voice-ab-experiment, gecko-032-pierre-medium, gecko-033-identity-prof-life, gecko-038-sudoku-mode, gecko-039-sudoku-tap-gecko-gomoku, gecko-040-resolution-sprite-banks, gecko-041-sprite-banks-240-max, gecko-042-prebuilt-sprite-runtime, gecko-043-sprite-240-only-cleanup, gecko-044-hypothesis-branches, gecko-045-sudoku-hypothesis-pad, gecko-046-stats-trends-resizable, gecko-047-sudoku-persistent-help, gecko-048-sudoku-compact-release ]
+    branches: [ main, gecko-022-rich-media, gecko-024-grid-audio, gecko-025-canonical-gecko-prof, gecko-026-floating-prof-ui, gecko-027-prof-foreground, gecko-028-prof-voice-idle-mask, gecko-029-more-life-full-celebration, gecko-030-restore-prof-video, gecko-031-voice-ab-experiment, gecko-032-pierre-medium, gecko-033-identity-prof-life, gecko-038-sudoku-mode, gecko-039-sudoku-tap-gecko-gomoku, gecko-040-resolution-sprite-banks, gecko-041-sprite-240-max, gecko-042-prebuilt-sprite-runtime, gecko-043-sprite-240-only-cleanup, gecko-044-hypothesis-branches, gecko-045-sudoku-hypothesis-pad, gecko-046-stats-trends-resizable, gecko-047-sudoku-persistent-help, gecko-048-sudoku-compact-release ]
   workflow_dispatch:
 
 permissions:
@@ -59,40 +59,46 @@ jobs:
 
           du -sh assets/tts/piper/pierre
 
-      - name: Prepare prebuilt sprite bank 240p only
+      - name: Restore validated 240p sprite bank from known-good phone APK
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           work="$(mktemp -d)"
-          asset="GeckoDoku-sprite-banks-60-120-240-480-20260930-2058.zip"
+          apk="$work/known-good.apk"
 
-          gh release download PackageSprites \
-            --repo "${GITHUB_REPOSITORY}" \
-            --pattern "$asset" \
-            --dir "$work"
+          curl --fail --location --retry 3 \
+            -o "$apk" \
+            "https://github.com/greenpower2669/GeckoDoku/releases/download/phone-0.15.43-dev-run-403/GeckoDoku-v0.15.43-dev.apk"
 
-          archive="$work/$asset"
-          echo "b108331d259d6d03aa6832028327a76fb31cf3bcb882738f759121cfeafad296  $archive" | sha256sum -c -
+          echo "5b4f38049c3c7e8d115b78bef573784084ddec85cd4774d620dd0d76a4ba7a94  $apk" | sha256sum -c -
+
+          mkdir -p "$work/extracted"
+          unzip -q "$apk" 'assets/sprites/*' -d "$work/extracted"
+          test -d "$work/extracted/assets/sprites"
 
           rm -rf assets/sprites
           mkdir -p assets
-          unzip -q "$archive" \
-            "sprites/index.json" \
-            "sprites/sprite-factory-report.json" \
-            "sprites/export-manifest.json" \
-            "sprites/banks/240p/*" \
-            -d assets
+          cp -a "$work/extracted/assets/sprites" assets/sprites
 
+          test -f assets/sprites/index.json
           test -f assets/sprites/banks/240p/bank-manifest.json
           test ! -d assets/sprites/banks/60p
           test ! -d assets/sprites/banks/120p
           test ! -d assets/sprites/banks/480p
-          du -sh assets/sprites/banks/240p
+          echo "Restored sprite files: $(find assets/sprites/banks/240p -type f | wc -l)"
 
       - name: Test and build phone APK
         run: gradle :app:testDebugUnitTest :app:assemblePhone --no-daemon
+
+      - name: Verify packaged Pierre and sprite bank
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="app/build/outputs/apk/phone/app-phone.apk"
+          test -s "$apk"
+          unzip -l "$apk" | grep -F 'assets/tts/piper/pierre/fr_FR-upmc-medium.onnx'
+          unzip -l "$apk" | grep -F 'assets/sprites/index.json'
+          unzip -l "$apk" | grep -F 'assets/sprites/banks/240p/bank-manifest.json'
 
       - name: Resolve app version
         shell: bash

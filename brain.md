@@ -1,221 +1,68 @@
 # GeckoDoku — FAB Copilot brain
 
-> Mémoire fonctionnelle courte et canonique.
-> Pour l'historique ancien : `sauvegarde.md`.
-> Pour les détails de fonctionnement : `docs/GECKODOKU-FONCTIONNEMENT.md`.
-> En cas de contradiction, le code de `main`, la version, le SHA et la date priment sur les anciens numéros GECKO.
+> Mémoire fonctionnelle courte. Historique : `debughistorical.md`; `sauvegarde.md` reste archive froide.
 
-## Référence courante
+## Référence
 
-- Branche canonique : `main`
-- Version : `0.15.43-dev`
-- versionCode : `78`
-- Release téléphone : `phone-0.15.43-dev-run-403`
-- Merge GECKO-048 → main : `17c6de0186c745c15fc042971eb09b4fe19a6299`
-- CI de réconciliation : #404 verte
-- CI finale main : #405 verte
-- Aucun ancien média supprimé ne doit être réintroduit.
+- canonique : `main`
+- mission : `GECKO-HOF-SYNC-001`
+- branche : `feature/gecko-hof-sync-v1`
+- base : `main@1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
+- code HOF + restauration Hall : `1e54fe8156bc04de2470456423ec62f125856083`
+- version de publication : `0.15.44-dev`, code 79
+- ordre explicite reçu de Fab le 06/10/2026 : merger `main` et publier la Release HOF.
 
-## Règles de travail FAB Copilot
+## Hall global v1
 
-- Ne jamais recoder depuis une vieille mémoire si le code courant peut être lu.
-- Après modification significative, synchroniser : `brain.md`, `brainmap.md`, `debughistorical.md`, `todo.md`, `ordres-de-mission.md`.
-- `ordres-de-mission.md` contient le contrat actif, pas l'historique.
-- Pas de merge `main` ni release sans validation explicite de Fab.
-- `sauvegarde.md` est une archive froide : ne pas la charger par défaut.
-- Les anciens identifiants GECKO peuvent avoir été réutilisés ; utiliser version + SHA + date pour lever toute ambiguïté.
+API : `https://fab-hall-of-fame.gnrationsia.chatgpt.site`.
 
-## Produit
+Flux sortant :
+`GlobalScoreCompletionBridge → GlobalScoreCompletionPublisher → PendingScoreStore → GlobalScoreSyncCoordinator → GeckoDokuHallApiClient`.
 
-GeckoDoku regroupe quatre modes :
-1. GeckoDoku Classic.
-2. Sudoku.
-3. Gomoku.
-4. Abeilles & Geckos.
-
-Éléments communs :
-- Prof Gecko / voix Pierre locale ;
-- difficultés selon le mode ;
-- étoiles, erreurs, statistiques et Hall of Fame ;
-- préférences locales ;
-- export/import ;
-- animations optionnelles ;
-- overlays sans modifier la géométrie logique du plateau.
-
-## GeckoDoku Classic
-
-Règles principales :
-- un Gecko par ligne, colonne et zone ;
-- aucun contact horizontal, vertical ou diagonal ;
-- givens verrouillés ;
-- solution unique ;
-- confirmation d'un Gecko produit ses exclusions automatiques.
-
-Repères joueur :
-- croix manuelles ;
-- hypothèses colorées ;
-- axes personnels ;
-- repères personnels indépendants du Prof.
-
-Hypothèses :
-- couleurs de branches : jaune, vert, rouge, violet, bleu, orange ;
-- une hypothèse active possède une aura de sa couleur ;
-- les croix déduites dans cette branche prennent la même couleur ;
-- les sous-hypothèses sont des enfants de la branche courante ;
-- suppression d'une hypothèse parent → suppression automatique de ses croix filles + perte d'aura des descendants ;
-- contradiction → branche signalée en sens interdit, descendants invalidés, croix/aura correspondantes retirées ;
-- explorer une autre sous-branche supprime les descendants devenus hors branche.
-
-## Sudoku
-
-Grille 9×9, givens verrouillés.
-
-Gestes actuels :
-- simple clic : ouvre ou recible le pavé de saisie ;
-- double clic : ouvre ou recible aussi le pavé ;
-- appui long : repères personnels.
-
-Pavé flottant persistant :
-- quatre zones : `Choix`, `Candidats`, `Hypothèse`, `Prévisu` ;
-- reste ouvert jusqu'à fermeture explicite par sa croix ou changement de contexte ;
-- toucher une autre case recible le même pavé ;
-- déplaçable par drag ;
-- redimensionnable jusqu'à environ `140×160 dp` ;
-- poignée de resize compacte ;
-- passage tactile extérieur vers la grille sur Android récent.
-
-Choix :
-- le chiffre apparaît d'abord en Prévisu ;
-- confirmation `Êtes-vous sûr ? Oui / Non` ;
-- pendant confirmation, la croix de fermeture disparaît ;
-- Non efface seulement la prévisu ;
-- Oui applique la validation Sudoku normale ;
-- le pavé reste ouvert après validation.
-
-Candidats :
-- indépendants des hypothèses ;
-- plusieurs candidats peuvent coexister.
-
-Hypothèses Sudoku :
-- même logique parent/enfant que les autres modes ;
-- couleurs jaune, vert, rouge, violet, bleu, orange ;
-- suppression parent → descendants + croix filles supprimés ;
-- contradiction → sens interdit + rollback descendant ;
-- changement de sous-branche → nettoyage des descendants de l'ancienne branche.
-
-Aide `?` :
-- active un mode documentaire ;
-- toucher Choix / Candidats / Hypothèse / Prévisu fait expliquer cette zone par Pierre ;
-- cette aide documentaire ne compte pas comme assistance de résolution et ne retire pas d'étoile.
-
-## Gomoku
-
-- plateau exploratoire avec zoom/drag ;
-- cinq alignés gagnent ;
-- humain vs humain ou humain vs Prof ;
-- difficulté du Prof ajuste sa force ;
-- Prof peut expliquer menaces, ligne étudiée, coup conseillé et projection.
-
-## Abeilles & Geckos
-
-Plateau hexagonal compact.
-
-Géométrie canonique :
-- Q = +60° = ↖↘
-- S = -60° = ↙↗
-- R = 0° = ←→
-
-Règles :
-- exactement un Gecko et une Abeille par zone ;
-- paire Gecko/Abeille voisine et exclusive 1↔1 ;
-- contraintes d'axes Q/R/S.
-
-Hypothèses :
-- même modèle de branches colorées parent/enfant que Classic ;
-- croix filles colorées ;
-- aura sur hypothèses actives ;
-- suppression/contradiction/changement de sous-branche nettoient descendants, croix et auras.
-
-Axes joueur :
-- Q/S/R ;
-- jaune/vert/rouge ;
-- drag ;
-- suppression hors plateau ;
-- persistance de la couleur.
-
-## Prof Gecko / Pierre
-
-- Pierre est la voix locale du Prof ;
-- modèle Sherpa/Piper UPMC Medium, voix Pierre ;
-- `PierrePronunciationPolicy` ne modifie que le texte vocal ;
-- exemple : affichage `église`, synthèse `eglize` ;
-- paroles pédagogiques prioritaires sur décorations ;
-- aide documentaire `?` Sudoku ≠ assistance de résolution ;
-- animations Prof et parole restent des couches séparées.
-
-## Statistiques
-
-Une tentative n'est plus comptée au simple lancement.
-
-Règle :
-- partie terminée → statée ;
-- partie annulée sans erreur → ignorée ;
-- partie annulée avec ≥1 erreur → statée comme abandon avec erreurs.
-
-Par niveau :
-- nombre de parties statées ;
-- terminées ;
-- abandonnées avec erreur ;
-- erreurs ;
-- temps moyen ;
-- étoiles moyennes / meilleur score ;
-- tendance temps ;
-- tendance étoiles.
-
-Tendances :
-- comparent les deux dernières parties terminées du niveau ;
-- temps plus bas = plus rapide ;
-- étoiles plus hautes = progression.
-
-Prof au début :
-- parle seulement du niveau le plus difficile ayant des données et, s'il existe, du niveau juste précédent ;
-- signale uniquement les tendances utiles de vitesse et d'étoiles.
-
-Menu Stats :
-- chaque niveau est cliquable ;
-- graphe temporel temps + étoiles ;
-- Hall of Fame navigable par mode/niveau et relié aux mêmes stats.
-
-## Médias / sprites
-
-Runtime Gecko/Abeille :
-- banques SpriteRGBA préconstruites en `240p` uniquement ;
-- anciennes banques 60/120/180/360/480 supprimées/prunées ;
-- MP4 Gecko/Abeille remplacés par les banques ne doivent pas revenir ;
-- séquences logiques préchargées ; bitmaps bornés par cache LRU.
-
-À conserver en vidéo :
-- intros ;
-- Plante ;
-- Prof/Pierre ;
-- médias explicitement encore utilisés.
+Flux entrant :
+`GET /sync → GlobalScoreCacheStore → GlobalHallProjection → HallOfFameStore.entries()`.
 
 Invariants :
-- média décoratif ≠ logique du jeu ;
-- échec média ne doit pas bloquer une partie ;
-- pas de reflow de plateau dû aux overlays.
+- un seul `completedAt` local/global ;
+- pending écrit avant réseau ;
+- retry = même JSON + même `runId` ;
+- retrait seulement après ACK accepté ou `/sync` confirmé ;
+- seed 64 bits en chaîne décimale ;
+- aucun secret dans l’APK ;
+- global ne modifie jamais stats/progression personnelles ;
+- Hall affiché fusionne local + cache global et dédoublonne la même complétion.
 
-## État validation
+## Validation téléphone du 06/10/2026
 
-Validé techniquement :
-- release 0.15.43-dev produite ;
-- CI #403 verte ;
-- réconciliation main #404 verte ;
-- main #405 verte ;
-- merge main explicitement validé par Fab.
+Trois écarts trouvés :
+1. Gecko animé vide : banque SpriteRGBA 240p absente du premier APK HOF (`FileNotFoundException`).
+2. Pierre absent : modèle Piper non embarqué, fallback `engine=android`.
+3. Après désinstallation/réinstallation, le bouton Hall lisait seulement le Hall local et ignorait le cache `/sync`.
 
-À vérifier encore sur téléphone si non déjà fait :
-- réduction extrême du pavé Sudoku ;
-- précision tactile à la taille minimale ;
-- passage des clics hors popup vers la grille ;
-- aide `?` sur les quatre zones.
+Corrections :
+- restauration Hall par `GlobalHallProjection` + fusion lecture-only dans `HallOfFameStore` ;
+- tests HOF GREEN ;
+- nouvel APK construit en variante `phone` avec Pierre UPMC Medium + banque 240p restaurée depuis l’APK téléphone validé `phone-0.15.43-dev-run-403` ;
+- APK vérifié : 1 305 fichiers 240p, index Gecko attendu et modèle Pierre présents.
+
+Nouvel APK validation :
+- run : `37526965060` GREEN ;
+- artifact : `GeckoDoku-HOF-v1-phone-validation` ;
+- SHA-256 APK : `c5232d721c22d4d7c1eefd35f53411ebf03a0d1f70ade1cc145efef1019b63bf`.
+
+Le premier APK HOF SHA `926058...` est à considérer invalide pour toute validation média.
+
+## Validation finale téléphone et publication
+
+- désinstallation/réinstallation effectuée par Fab ;
+- le Hall global est restauré après clean install : l’UI affiche de nouveau les résultats synchronisés ;
+- la capture de validation montre `GeckoDoku Classic · Facile · 3 résultats` ;
+- le journal téléphone montre le backend SpriteRGBA actif, les banques 240p chargées en mémoire et les animations Gecko relancées sans `FileNotFoundException` ;
+- Fab autorise explicitement le merge `main` et la Release malgré les scénarios offline/retry exhaustifs encore non rejoués dans cette session.
+
+Blocage de publication trouvé puis corrigé avant merge :
+- le workflow canonique `build.yml` référençait encore la Release supprimée `PackageSprites` ;
+- il restaure désormais la banque 240p depuis l’APK téléphone validé `phone-0.15.43-dev-run-403`, avec SHA-256 figé ;
+- il vérifie aussi dans l’APK produit la présence de Pierre et des assets sprites 240p.
+
+Cible de publication : `0.15.44-dev` / code 79.

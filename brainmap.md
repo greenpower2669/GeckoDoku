@@ -1,169 +1,67 @@
 # GeckoDoku — FAB Copilot brainmap
 
-> Carte technique courte de l'état courant.
-> Référence : `main`, version `0.15.43-dev`, code 78.
+Mission `GECKO-HOF-SYNC-001` — branche `feature/gecko-hof-sync-v1`.
 
-## Architecture générale
+## Fin de partie
 
 ```text
 MainActivity
-├─ GameMode
-│  ├─ Classic → GameEngine / PuzzleGenerator / HumanSolver
-│  ├─ Sudoku → SudokuGameEngine / SudokuSolver / SudokuHintEngine
-│  ├─ Gomoku → GomokuGameEngine / GomokuAi
-│  └─ BeeGecko → BeeGeckoGameEngine / générateur / solveur
-├─ Prof Gecko
-│  └─ ProfessorSpeech → PierrePiperSpeechEngine
-│     → PierrePronunciationPolicy → VoicePcmPlayer
-├─ Stats
-│  └─ PlayerStatsStore → PlayerStatsTrendView → HallOfFameStore
-└─ Rich media
-   ├─ SpriteBankFactory / SpriteFrameCache
-   ├─ AliveMascotOverlay
-   └─ ChromaKey vidéo pour médias encore conservés
+├─ stats personnelles → PlayerStatsStore
+├─ Hall local → HallOfFameStore
+└─ complétion éligible
+   → completedAt unique
+   → GlobalScoreCompletionBridge
+   → GlobalScoreCompletionPublisher
+   → PendingScoreStore (avant réseau)
+   → GlobalScoreSyncCoordinator
+   → POST /scores
 ```
 
-## Classic
+## Retry / ACK
 
 ```text
-PuzzleGenerator
-→ unicité + contraintes
-→ HumanSolver / HypothesisSolver
-→ GameEngine
-→ GeckoBoardView
-→ ProfessorGecko
+201 accepted                 → retire pending
+200 duplicate:true           → retire pending
+429                          → Retry-After
+5xx / réseau                 → backoff + pending conservé
+400/409/413/415              → BLOCKED conservé
 ```
 
-Branches d'hypothèses :
-```text
-hypothèse parent (couleur + aura)
-→ croix filles de même couleur
-→ sous-hypothèse enfant
-   ├─ continuation
-   ├─ changement de sous-branche → prune descendants
-   └─ contradiction → sens interdit + prune descendants/croix/aura
-```
+Toujours même JSON + même `runId`.
 
-## Sudoku
-
-Entrée tactile :
-```text
-simple clic ─┐
-double clic ─┼→ SudokuGesturePolicy → OPEN_INPUT_PALETTE
-appui long ──┘                         └→ OPEN_PERSONAL_MARKERS
-```
-
-Pavé persistant :
-```text
-SudokuQuickPaletteView
-├─ Choix → Prévisu → Oui/Non → SudokuGameEngine
-├─ Candidats → notes de la case
-├─ Hypothèse → HypothesisBranchTrace
-└─ Prévisu
-   └─ ? → aide documentaire Prof
-```
-
-Popup :
-- `PopupWindow` non focusable ;
-- Android Q+ : `setTouchModal(false)` ;
-- reciblage sans fermeture ;
-- drag ;
-- resize min ~140×160 dp.
-
-Hypothèses Sudoku :
-```text
-SudokuGameEngine.cycleHypothesis
-→ trace parent/enfant
-→ couleur de branche
-→ visualisation aura/croix
-→ contradiction / prune / rollback
-```
-
-## Stats
+## Sync entrant et Hall affiché
 
 ```text
-recordStart
-→ tentative active temporaire
-   ├─ recordComplete → event terminé
-   └─ nouveau départ / abandon
-      ├─ 0 erreur → suppression silencieuse
-      └─ ≥1 erreur → event abandon avec erreurs
+GET /sync(cursor)
+→ GlobalScoreCacheStore
+   ├─ fusion par scoreId
+   └─ page + nextCursor persistés ensemble
+→ GlobalHallProjection
+→ fusion cache global + Hall local
+→ dédoublonnage par complétion
+→ UI Hall existante
 ```
+
+Le cache global reste séparé de `PlayerStatsStore`; aucune progression personnelle n’est reconstruite depuis le serveur.
+
+## Médias téléphone
 
 ```text
-PlayerStatEvent[]
-→ statsForDifficulty
-→ dernières 2 parties terminées
-   ├─ tendance temps
-   └─ tendance étoiles
-→ PlayerStatsTrendView
-→ Stats / Hall of Fame
+APK phone
+├─ Sherpa-ONNX AAR
+├─ Piper Pierre UPMC Medium
+└─ assets/sprites
+   ├─ index.json
+   └─ banks/240p (1 305 fichiers vérifiés)
 ```
 
-Prof au démarrage :
-```text
-professorLevels()
-→ niveau le plus difficile staté
-→ niveau précédent éventuel
-→ PlayerStatsNarration
-→ uniquement tendances vitesse/étoiles
-```
+La première validation HOF avait utilisé un APK incomplet : Pierre et sprites 240p manquaient. Le build corrigé récupère la banque depuis l’APK téléphone connu bon `phone-0.15.43-dev-run-403` et vérifie son SHA avant extraction.
 
-## Abeilles & Geckos
+## Références
 
-```text
-BeeGeckoAxisGeometry
-├─ Q +60° ↖↘
-├─ S -60° ↙↗
-└─ R 0°   ←→
-```
-
-Même trace de branches d'hypothèses que Classic :
-parent → enfants → prune à suppression, contradiction ou changement de sous-branche.
-
-Axes personnels :
-choix Q/S/R → couleur jaune/vert/rouge → rendu → drag → persistance.
-
-## Prof / voix
-
-```text
-texte UI correct
-→ ProfessorSpeech
-→ PierrePiperSpeechEngine
-→ PierrePronunciationPolicy
-→ Sherpa/Piper
-→ AudioTrack / sortie Android
-```
-
-Exemple :
-`église` affiché → `eglize` envoyé à Pierre.
-
-## Sprites / médias
-
-```text
-APK
-└─ sprites/banks/240p
-   → SpriteBankFactory
-   → séquences prêtes en mémoire
-   → SpriteFrameCache LRU
-   → SpriteRGBA runtime
-```
-
-Gecko/Abeille gameplay : SpriteRGBA 240p.
-Plante, Prof/Pierre et intros : médias conservés selon leur pipeline dédié.
-
-## Persistance
-
-- préférences de mode ;
-- stats + events temporels ;
-- Hall of Fame ;
-- profils ;
-- sessions Bee ;
-- export/import utilisateur.
-
-## Références Git
-
-- release : `phone-0.15.43-dev-run-403`
-- merge code main : `17c6de0186c745c15fc042971eb09b4fe19a6299`
-- CI merge/reconciliation : #404 verte
-- CI main : #405 verte
+- code fonctionnel HOF + restauration Hall : `1e54fe8156bc04de2470456423ec62f125856083`
+- run APK téléphone complet : `37526965060` GREEN
+- SHA APK validé : `c5232d721c22d4d7c1eefd35f53411ebf03a0d1f70ade1cc145efef1019b63bf`
+- clean install Fab : Hall global restauré, 3 résultats visibles
+- pipeline Release : `build.yml` restaure désormais la banque 240p depuis la Release validée `phone-0.15.43-dev-run-403` et vérifie Pierre + sprites dans l’APK
+- publication autorisée : `0.15.44-dev` / code 79, merge `main` + Release explicitement ordonnés par Fab.
