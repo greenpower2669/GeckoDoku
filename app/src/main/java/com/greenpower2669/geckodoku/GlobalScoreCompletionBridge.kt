@@ -17,7 +17,8 @@ object GlobalScoreCompletionBridge {
         sudokuVisualStyle: SudokuVisualStyle?,
         gomokuSnapshot: GomokuSnapshot?,
         gomokuMatchMode: GomokuMatchMode?,
-        beeGeckoPuzzle: BeeGeckoPuzzle?
+        beeGeckoPuzzle: BeeGeckoPuzzle?,
+        completedAt: Long
     ): String? {
         val puzzleId: String?
         val seed: Long?
@@ -84,7 +85,8 @@ object GlobalScoreCompletionBridge {
             appVersion = appVersion,
             puzzleId = puzzleId,
             seed = seed,
-            details = details
+            details = details,
+            completedAt = completedAt
         )
     }
 }
