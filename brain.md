@@ -9,8 +9,8 @@
 - branche : `feature/gecko-hof-sync-v1`
 - base : `main@1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
 - code HOF + restauration Hall : `1e54fe8156bc04de2470456423ec62f125856083`
-- version : `0.15.43-dev`, code 78
-- aucun merge `main` / Release sans ordre explicite de Fab.
+- version de publication : `0.15.44-dev`, code 79
+- ordre explicite reçu de Fab le 06/10/2026 : merger `main` et publier la Release HOF.
 
 ## Hall global v1
 
@@ -52,8 +52,17 @@ Nouvel APK validation :
 
 Le premier APK HOF SHA `926058...` est à considérer invalide pour toute validation média.
 
-## Reste téléphone
+## Validation finale téléphone et publication
 
-- vérifier animations Gecko + Pierre sur le nouvel APK ;
-- après réinstallation online, vérifier que l’ancien score global réapparaît sans jouer une nouvelle partie ;
-- reprendre online/offline/restart/retry/dédoublonnage HOF.
+- désinstallation/réinstallation effectuée par Fab ;
+- le Hall global est restauré après clean install : l’UI affiche de nouveau les résultats synchronisés ;
+- la capture de validation montre `GeckoDoku Classic · Facile · 3 résultats` ;
+- le journal téléphone montre le backend SpriteRGBA actif, les banques 240p chargées en mémoire et les animations Gecko relancées sans `FileNotFoundException` ;
+- Fab autorise explicitement le merge `main` et la Release malgré les scénarios offline/retry exhaustifs encore non rejoués dans cette session.
+
+Blocage de publication trouvé puis corrigé avant merge :
+- le workflow canonique `build.yml` référençait encore la Release supprimée `PackageSprites` ;
+- il restaure désormais la banque 240p depuis l’APK téléphone validé `phone-0.15.43-dev-run-403`, avec SHA-256 figé ;
+- il vérifie aussi dans l’APK produit la présence de Pierre et des assets sprites 240p.
+
+Cible de publication : `0.15.44-dev` / code 79.
