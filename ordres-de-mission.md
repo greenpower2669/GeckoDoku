@@ -61,3 +61,18 @@ Avant merge, le pipeline canonique doit être publiable. La Release historique `
 Cible : `0.15.44-dev` / code 79.
 
 Les scénarios offline/restart/retry/doublons encore non rejoués exhaustivement restent du suivi produit et ne bloquent plus la Release sur décision explicite de Fab.
+
+
+## Clôture — merge et Release effectués
+
+Ordre Fab exécuté.
+
+- PR #3 : mergée.
+- merge `main` : `c1a32bf4736894f87ac45f1c626f72a111cf1c2e`.
+- workflow téléphone canonique : run `37531494180`, #432, GREEN.
+- Release finale : `phone-0.15.44-dev-run-432`.
+- APK : `GeckoDoku-v0.15.44-dev.apk`.
+- SHA-256 : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c`.
+- statut Release : publiée, non prerelease, latest au moment de la publication.
+
+La mission `GECKO-HOF-SYNC-001` est close. Les tests offline/restart/retry/doublons exhaustifs restant non rejoués restent des vérifications produit futures et ne remettent pas en cause l’ordre de publication déjà donné par Fab.
