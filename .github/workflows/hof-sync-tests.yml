@@ -23,7 +23,7 @@ jobs:
           gradle-version: '9.6.0'
 
       - name: Patch frozen completion timestamp wiring
-        if: github.event.head_commit.message == 'run HOF timestamp patch'
+        if: github.event.head_commit.message == 'run HOF timestamp patch 2'
         shell: bash
         run: |
           python3 - <<'PY'
@@ -32,7 +32,8 @@ jobs:
           path = Path('app/src/main/java/com/greenpower2669/geckodoku/MainActivity.kt')
           text = path.read_text(encoding='utf-8')
 
-          seconds_anchor = '''            val seconds =
+          seconds_anchor = '''        if (!completionRecorded) {
+            val seconds =
                 (
                     SystemClock
                         .elapsedRealtime() -
@@ -41,7 +42,8 @@ jobs:
 
             statsStore.recordComplete(
           '''
-          seconds_replacement = '''            val seconds =
+          seconds_replacement = '''        if (!completionRecorded) {
+            val seconds =
                 (
                     SystemClock
                         .elapsedRealtime() -
@@ -100,7 +102,7 @@ jobs:
         run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
 
       - name: Commit verified timestamp wiring
-        if: github.event.head_commit.message == 'run HOF timestamp patch'
+        if: github.event.head_commit.message == 'run HOF timestamp patch 2'
         shell: bash
         run: |
           set -euo pipefail
