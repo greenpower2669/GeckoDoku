@@ -7,9 +7,9 @@
 - base : `main@1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
 - branche : `feature/gecko-hof-sync-v1`
 - code fonctionnel HOF + restauration Hall : `1e54fe8156bc04de2470456423ec62f125856083`
-- version : `0.15.43-dev` / code 78
+- version de publication : `0.15.44-dev` / code 79
 - téléphone de référence avant HOF : `phone-0.15.43-dev-run-403`
-- aucun merge `main` / Release sans ordre explicite de Fab.
+- ordre explicite de Fab reçu le 06/10/2026 : merge `main` + Release autorisés.
 
 ## Contrat FAB Copilot
 
@@ -48,8 +48,16 @@ Nouvel APK téléphone :
 - banque 240p présente, 1 305 fichiers vérifiés ;
 - workflow temporaire supprimé après génération.
 
-## Reste autorisé
+## Décision finale Fab — 06/10/2026
 
-Validation téléphone seulement : animations, Pierre, restauration Hall après clean install, online/offline/restart/retry/doublons et cohérence catégories. Corriger uniquement un défaut observé et documenté.
+Fab a effectué une désinstallation/réinstallation puis constaté que le Hall global revient correctement ; la capture montre `GeckoDoku Classic · Facile · 3 résultats`. Le journal montre la banque 240p active et les animations Gecko sans l’ancienne erreur de fichiers manquants.
 
-Aucun merge `main`, aucune Release avant ordre de Fab.
+Fab autorise explicitement :
+1. le merge de `feature/gecko-hof-sync-v1` vers `main` ;
+2. la publication de la Release HOF.
+
+Avant merge, le pipeline canonique doit être publiable. La Release historique `PackageSprites` est absente ; `build.yml` doit utiliser la méthode validée du run `37526965060` : extraire les sprites 240p depuis l’APK téléphone validé `phone-0.15.43-dev-run-403`, SHA-256 `5b4f38049c3c7e8d115b78bef573784084ddec85cd4774d620dd0d76a4ba7a94`, puis vérifier Pierre + sprites dans l’APK construit.
+
+Cible : `0.15.44-dev` / code 79.
+
+Les scénarios offline/restart/retry/doublons encore non rejoués exhaustivement restent du suivi produit et ne bloquent plus la Release sur décision explicite de Fab.
