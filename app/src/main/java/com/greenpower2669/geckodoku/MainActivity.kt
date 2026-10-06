@@ -3795,6 +3795,9 @@ class MainActivity : Activity() {
                         gameStartedAt
                     ) / 1000L
 
+            val completedAt =
+                System.currentTimeMillis()
+
             statsStore.recordComplete(
                 size = size,
                 difficulty = difficulty,
@@ -3820,7 +3823,7 @@ class MainActivity : Activity() {
                             0L
                         ),
                     completedAt =
-                        System.currentTimeMillis()
+                        completedAt
                 )
             )
 
@@ -3852,7 +3855,8 @@ class MainActivity : Activity() {
                     gomokuEngine?.snapshot(),
                 gomokuMatchMode =
                     gomokuMatchMode,
-                beeGeckoPuzzle = beeGeckoPuzzle
+                beeGeckoPuzzle = beeGeckoPuzzle,
+                completedAt = completedAt
             )
             completionRecorded = true
         }
