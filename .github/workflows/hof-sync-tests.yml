@@ -23,67 +23,61 @@ jobs:
           gradle-version: '9.6.0'
 
       - name: Patch frozen completion timestamp wiring
-        if: github.event.head_commit.message == 'run HOF timestamp patch 2'
+        if: github.event.head_commit.message == 'run HOF timestamp patch 3'
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path('app/src/main/java/com/greenpower2669/geckodoku/MainActivity.kt')
           text = path.read_text(encoding='utf-8')
 
-          seconds_anchor = '''        if (!completionRecorded) {
-            val seconds =
-                (
-                    SystemClock
-                        .elapsedRealtime() -
-                        gameStartedAt
-                    ) / 1000L
+          start_marker = '    private fun recordRatedCompletionIfNeeded('
+          end_marker = '\n    private fun completeGame('
+          start = text.find(start_marker)
+          if start < 0:
+              raise SystemExit('recordRatedCompletionIfNeeded start not found')
+          end = text.find(end_marker, start)
+          if end < 0:
+              raise SystemExit('recordRatedCompletionIfNeeded end not found')
 
-            statsStore.recordComplete(
-          '''
-          seconds_replacement = '''        if (!completionRecorded) {
-            val seconds =
-                (
-                    SystemClock
-                        .elapsedRealtime() -
-                        gameStartedAt
-                    ) / 1000L
+          block = text[start:end]
+          if 'val completedAt =' in block:
+              raise SystemExit('completedAt already present in completion method')
 
-            val completedAt =
-                System.currentTimeMillis()
+          stats_marker = '            statsStore.recordComplete('
+          if block.count(stats_marker) != 1:
+              raise SystemExit(f'stats marker count={block.count(stats_marker)}')
+          block = block.replace(
+              stats_marker,
+              '            val completedAt =\n'
+              '                System.currentTimeMillis()\n\n'
+              + stats_marker,
+              1,
+          )
 
-            statsStore.recordComplete(
-          '''
-          if text.count(seconds_anchor) != 1:
-              raise SystemExit(f'seconds anchor count={text.count(seconds_anchor)}')
-          text = text.replace(seconds_anchor, seconds_replacement, 1)
+          block, hall_count = re.subn(
+              r'(completedAt\s*=\s*)System\.currentTimeMillis\(\)',
+              r'\1completedAt',
+              block,
+              count=1,
+          )
+          if hall_count != 1:
+              raise SystemExit(f'local Hall timestamp replacements={hall_count}')
 
-          hall_anchor = '''                    completedAt =
-                        System.currentTimeMillis()
-          '''
-          hall_replacement = '''                    completedAt =
-                        completedAt
-          '''
-          if text.count(hall_anchor) != 1:
-              raise SystemExit(f'hall timestamp anchor count={text.count(hall_anchor)}')
-          text = text.replace(hall_anchor, hall_replacement, 1)
+          bee_marker = '                beeGeckoPuzzle = beeGeckoPuzzle\n            )'
+          if block.count(bee_marker) != 1:
+              raise SystemExit(f'bridge marker count={block.count(bee_marker)}')
+          block = block.replace(
+              bee_marker,
+              '                beeGeckoPuzzle = beeGeckoPuzzle,\n'
+              '                completedAt = completedAt\n'
+              '            )',
+              1,
+          )
 
-          bridge_anchor = '''                gomokuMatchMode =
-                    gomokuMatchMode,
-                beeGeckoPuzzle = beeGeckoPuzzle
-            )
-          '''
-          bridge_replacement = '''                gomokuMatchMode =
-                    gomokuMatchMode,
-                beeGeckoPuzzle = beeGeckoPuzzle,
-                completedAt = completedAt
-            )
-          '''
-          if text.count(bridge_anchor) != 1:
-              raise SystemExit(f'bridge anchor count={text.count(bridge_anchor)}')
-          text = text.replace(bridge_anchor, bridge_replacement, 1)
-
+          text = text[:start] + block + text[end:]
           path.write_text(text, encoding='utf-8')
           PY
           git diff --check
@@ -102,7 +96,7 @@ jobs:
         run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
 
       - name: Commit verified timestamp wiring
-        if: github.event.head_commit.message == 'run HOF timestamp patch 2'
+        if: github.event.head_commit.message == 'run HOF timestamp patch 3'
         shell: bash
         run: |
           set -euo pipefail
