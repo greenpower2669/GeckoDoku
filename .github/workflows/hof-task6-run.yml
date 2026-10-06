@@ -1,0 +1,276 @@
+name: HOF Task 6 runner
+
+on:
+  push:
+    branches:
+      - feature/gecko-hof-sync-v1
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    if: github.event.head_commit.message == 'run HOF Task 6 integration'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+
+      - name: Patch application wiring
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('app/src/main/java/com/greenpower2669/geckodoku/MainActivity.kt')
+          s = p.read_text(encoding='utf-8')
+
+          old = """    private lateinit var hallOfFameStore:
+              HallOfFameStore
+
+              private lateinit var userDataBackup:
+          """.replace("              private", "    private")
+          new = """    private lateinit var hallOfFameStore:
+              HallOfFameStore
+
+              private lateinit var globalScoreRuntime:
+                  GlobalScoreRuntime
+
+              private lateinit var userDataBackup:
+          """.replace("              private", "    private").replace("                  Global", "        Global")
+          assert s.count(old) == 1, f"field anchor count={s.count(old)}"
+          s = s.replace(old, new, 1)
+
+          old = """        hallOfFameStore =
+              HallOfFameStore(this)
+
+              userDataBackup =
+          """.replace("              Hall", "            Hall").replace("              user", "        user")
+          new = """        hallOfFameStore =
+              HallOfFameStore(this)
+
+              globalScoreRuntime =
+                  GlobalScoreRuntime(this).also {
+                      it.start()
+                  }
+
+              userDataBackup =
+          """.replace("              Hall", "            Hall").replace("              global", "        global").replace("                  Global", "            Global").replace("                      it", "                it").replace("                  }", "            }").replace("              user", "        user")
+          assert s.count(old) == 1, f"init anchor count={s.count(old)}"
+          s = s.replace(old, new, 1)
+
+          pattern = re.compile(
+              r"    private fun recordRatedCompletionIfNeeded\(\n.*?\n    }\n\n    private fun completeGame\(",
+              re.S,
+          )
+          assert len(pattern.findall(s)) == 1, "completion method anchor mismatch"
+
+          replacement = """    private fun recordRatedCompletionIfNeeded(
+              mode: GameMode,
+              size: Int,
+              difficulty: GameDifficulty
+          ): Int {
+              val mistakes =
+                  mistakeCountForMode(mode)
+
+              val stars =
+                  CompletionRatingPolicy
+                      .starsFor(
+                          assistancePoints =
+                              assistancePoints,
+                          mistakes = mistakes
+                      )
+
+              if (!completionRecorded) {
+                  val seconds =
+                      (
+                          SystemClock
+                              .elapsedRealtime() -
+                              gameStartedAt
+                          ) / 1000L
+
+                  val completedAt =
+                      System.currentTimeMillis()
+
+                  statsStore.recordComplete(
+                      size = size,
+                      difficulty = difficulty,
+                      elapsedSeconds = seconds,
+                      usedProfessor =
+                          assistancePoints > 0,
+                      stars = stars,
+                      mode = mode
+                  )
+
+                  hallOfFameStore.add(
+                      HallOfFameEntry(
+                          playerName =
+                              playerProfileStore
+                                  .playerName,
+                          mode = mode,
+                          size = size,
+                          difficulty = difficulty,
+                          stars = stars,
+                          elapsedSeconds =
+                              seconds.coerceAtLeast(0L),
+                          completedAt = completedAt
+                      )
+                  )
+
+                  val context =
+                      globalScoreContextFor(mode)
+
+                  globalScoreRuntime
+                      .publisher
+                      .publish(
+                          playerName =
+                              playerProfileStore
+                                  .playerName,
+                          mode = mode,
+                          size = size,
+                          difficulty = difficulty,
+                          stars = stars,
+                          elapsedSeconds = seconds,
+                          mistakes = mistakes,
+                          assistancePoints =
+                              assistancePoints,
+                          appVersion =
+                              BuildConfig.VERSION_NAME,
+                          puzzleId = context.second,
+                          seed = context.third,
+                          details = context.first,
+                          completedAt = completedAt
+                      )
+
+                  completionRecorded = true
+              }
+
+              return stars
+          }
+
+          private fun globalScoreContextFor(
+              mode: GameMode
+          ): Triple<GlobalScoreModeDetails, String?, Long?> =
+              when (mode) {
+                  GameMode.GECKODOKU ->
+                      Triple(
+                          GlobalScoreModeDetails.Classic,
+                          puzzle.id,
+                          puzzle.seed
+                      )
+
+                  GameMode.SUDOKU -> {
+                      val current = sudokuPuzzle
+                      Triple(
+                          GlobalScoreModeDetails.Sudoku(
+                              seed = current?.seed,
+                              visualStyle =
+                                  gameModePreferences
+                                      .sudokuVisualStyle
+                          ),
+                          null,
+                          current?.seed
+                      )
+                  }
+
+                  GameMode.GOMOKU -> {
+                      val snapshot =
+                          gomokuEngine?.snapshot()
+                      Triple(
+                          GlobalScoreModeDetails.Gomoku(
+                              matchMode = gomokuMatchMode,
+                              winner = snapshot?.winner,
+                              draw = snapshot?.draw,
+                              moveCount =
+                                  snapshot?.moveCount
+                          ),
+                          null,
+                          null
+                      )
+                  }
+
+                  GameMode.BEES_GECKOS -> {
+                      val current = beeGeckoPuzzle
+                      Triple(
+                          GlobalScoreModeDetails.BeeGecko(
+                              puzzleId = current?.id,
+                              seed = current?.seed,
+                              radius = current?.radius,
+                              pairCount =
+                                  current?.regionCount
+                          ),
+                          current?.id,
+                          current?.seed
+                      )
+                  }
+              }
+
+          private fun completeGame("""
+          s = pattern.sub(replacement, s, count=1)
+
+          old = """        if (::professorSpeech.isInitialized) {
+              professorSpeech.release()
+          }
+
+              fx.release()
+          """.replace("              professor", "            professor").replace("              fx", "        fx")
+          new = """        if (::professorSpeech.isInitialized) {
+              professorSpeech.release()
+          }
+
+              if (::globalScoreRuntime.isInitialized) {
+                  globalScoreRuntime.stop()
+              }
+
+              fx.release()
+          """.replace("              professor", "            professor").replace("              if", "        if").replace("                  global", "            global").replace("              }", "        }").replace("              fx", "        fx")
+          assert s.count(old) == 1, f"destroy anchor count={s.count(old)}"
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+
+          m = Path('app/src/main/AndroidManifest.xml')
+          x = m.read_text(encoding='utf-8')
+          marker = '<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n'
+          assert x.count(marker) == 1
+          x = x.replace(
+              marker,
+              marker
+              + '    <uses-permission android:name="android.permission.INTERNET" />\n'
+              + '    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n',
+              1,
+          )
+          m.write_text(x, encoding='utf-8')
+          PY
+
+      - name: Prepare Sherpa AAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p app/libs
+          curl --fail --location --retry 3 -o app/libs/sherpa-onnx-1.13.8.aar "https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-1.13.8.aar"
+          echo "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96  app/libs/sherpa-onnx-1.13.8.aar" | sha256sum -c -
+
+      - name: Unit tests and debug APK
+        run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
+
+      - name: Commit verified wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          git config user.name "greenpower2669"
+          git config user.email "80179295+greenpower2669@users.noreply.github.com"
+          git add app/src/main/java/com/greenpower2669/geckodoku/MainActivity.kt app/src/main/AndroidManifest.xml
+          git commit -m "feat: wire Hall sync into real game completions"
+          git push origin HEAD:feature/gecko-hof-sync-v1
