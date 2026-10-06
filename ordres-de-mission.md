@@ -1,117 +1,66 @@
 # GeckoDoku — ordre de mission courant
 
-## Statut
+## Mission active
 
-Mission active : `GECKO-HOF-SYNC-001` — synchronisation Hall of Fame global v1.
+`GECKO-HOF-SYNC-001` — Hall of Fame global v1.
 
-Référence de départ :
-- branche canonique : `main`
-- branche de travail : `feature/gecko-hof-sync-v1`
-- base : `1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
-- version de départ : `0.15.43-dev`
-- versionCode : `78`
-- release de référence : `phone-0.15.43-dev-run-403`
-- merge code précédent : `17c6de0186c745c15fc042971eb09b4fe19a6299`
-- CI main précédente : #405 verte.
+- base : `main@1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
+- branche : `feature/gecko-hof-sync-v1`
+- dernier commit code HOF : `d6d25e051c0a4723844df51c21aa99c15cd35c08`
+- version de départ : `0.15.43-dev` / code 78
+- référence téléphone précédente : `phone-0.15.43-dev-run-403`
 
-Le travail part du code de `main`, jamais d’un ancien ordre archivé.
+## Contrat FAB Copilot
 
-## Contrat permanent FAB Copilot
+1. Lire le code courant avant toute modification ; ne jamais recoder depuis une vieille mémoire.
+2. Synchroniser après chaque geste significatif : `brain.md`, `brainmap.md`, `debughistorical.md`, `todo.md`, `ordres-de-mission.md`.
+3. `sauvegarde.md` est archive froide, jamais vérité courante.
+4. Aucun merge `main` ni Release/prerelease sans ordre explicite de Fab.
+5. Ne pas restaurer d’anciens médias supprimés.
 
-1. Lire le dépôt avant toute modification.
-2. Ne pas recoder depuis la mémoire.
-3. Une demande de Fab remplace les anciennes consignes contradictoires sur le même sujet.
-4. Synchroniser après chaque geste significatif :
-   - `brain.md`
-   - `brainmap.md`
-   - `debughistorical.md`
-   - `todo.md`
-   - `ordres-de-mission.md`
-5. Pas de merge `main` sans validation explicite de Fab.
-6. Pas de release/prerelease sans validation explicite de Fab.
-7. Ne jamais restaurer des médias supprimés uniquement parce qu'ils existent dans un ancien commit.
-8. `sauvegarde.md` est archive froide et ne doit pas servir de vérité courante.
-9. En cas de conflit d'identifiants GECKO, utiliser version + SHA + date.
+## Contrat HOF canonique
 
-## Mission GECKO-HOF-SYNC-001
+Hôte : `https://fab-hall-of-fame.gnrationsia.chatgpt.site`
 
-Objectif : raccorder les quatre modes GeckoDoku au protocole public Hall of Fame global v1 déjà publié.
-
-Contrat serveur canonique :
-- hôte : `https://fab-hall-of-fame.gnrationsia.chatgpt.site`
-- POST : `/api/v1/games/geckodoku/scores`
-- sync : `/api/v1/games/geckodoku/sync`
-- aucun header Authorization requis ;
-- aucun secret serveur dans l’APK ;
+- POST `/api/v1/games/geckodoku/scores`
+- GET `/api/v1/games/geckodoku/sync`
+- aucun secret / Authorization dans l’APK ;
 - `runId` idempotent ;
-- `seed` 64 bits transportée en chaîne décimale quand nécessaire ;
-- champs spécifiques nullable ;
-- `metadata` extensible.
+- payload figé et persisté avant réseau ;
+- retry = même JSON + même `runId` ;
+- retrait pending uniquement après ACK accepté ou confirmation `/sync` ;
+- `seed` 64 bits envoyée en chaîne décimale ;
+- champs propres aux modes nullable ; `metadata` extensible ;
+- 400/409/413/415 bloqués pour diagnostic ; 429/5xx/réseau réessayés ;
+- `/sync` fusion par `scoreId`, curseur `nextCursor` persisté avec la page ;
+- le Hall global ne modifie jamais stats, progression ou Hall local.
 
-Implémenter :
-- payload global immuable ;
-- persistance `pendingScores` avant réseau ;
-- retry progressif et respect de `Retry-After` ;
-- retrait uniquement après `accepted:true` ;
-- cache/sync global par `scoreId` et curseur `nextCursor` ;
-- reprise après redémarrage et retour réseau ;
-- tests unitaires et build.
+## État d’implémentation
 
-Préserver strictement :
-- gameplay des quatre modes ;
-- calcul d’étoiles ;
-- statistiques et progression locales ;
-- Hall of Fame local ;
-- médias et géométrie ;
-- aucune donnée personnelle ou matérielle supplémentaire.
+Implémenté et vérifié sur la branche :
 
-Document de design :
-`docs/superpowers/specs/2026-10-06-geckodoku-global-hof-sync-design.md`
+- payload protocole v1 pour Classic, Sudoku, Gomoku et Abeilles & Geckos ;
+- `PendingScoreStore` crash-safe ;
+- client HTTP + ACK 200/201 + conflits/erreurs ;
+- retry progressif + `Retry-After` ;
+- cache global + `/sync` transactionnel ;
+- coordinateur mono-worker + reprise au démarrage/retour réseau ;
+- `GlobalScoreCompletionPublisher` : persistance avant déclenchement réseau ;
+- `GlobalScoreCompletionBridge` : mapping des quatre modes sans nouvelle règle de gameplay ;
+- `GlobalScoreRuntime` Android ;
+- permissions `INTERNET` et `ACCESS_NETWORK_STATE` ;
+- raccord aux complétions locales existantes dans `MainActivity` ;
+- arrêt du runtime dans `onDestroy`.
 
-Aucun merge `main` ni release sans ordre explicite de Fab.
+Important Gomoku : conformément au plan, seuls les cas déjà considérés comme score local sont publiés. Les autres formats restent représentables par le protocole mais aucune nouvelle règle de classement n’a été inventée.
 
-## Baseline fonctionnelle à préserver
+Vérification technique du raccord réel : workflow temporaire de validation `37508648842` — tests JVM + `assembleDebug` GREEN avant commit du code. Les workflows temporaires ont ensuite été supprimés.
 
-### Sudoku
-- pavé persistant 2×2 ;
-- simple/double clic ouvrent ou reciblent ;
-- appui long = repères personnels ;
-- drag + resize ;
-- minimum ~140×160 dp ;
-- Choix / Candidats / Hypothèse / Prévisu ;
-- confirmation Oui/Non avant valeur définitive ;
-- candidats distincts des hypothèses ;
-- aide `?` interactive par zone, sans coût d'assistance ;
-- hypothèses parent/enfant colorées avec rollback.
+## Reste autorisé / attendu
 
-### Classic / Abeilles & Geckos
-- hypothèses parent/enfant colorées ;
-- aura de branche ;
-- croix filles colorées ;
-- prune descendants à suppression, contradiction ou changement de sous-branche ;
-- sens interdit sur contradiction ;
-- axes personnels et repères Prof séparés.
+- finir la vérification CI dédiée HOF après nettoyage documentaire ;
+- validation téléphone réelle : online, offline→online, redémarrage pending et absence de doublon ;
+- corriger uniquement les bugs découverts par cette validation ;
+- mettre à jour les cinq mémoires.
 
-### Statistiques
-- terminée = statée ;
-- annulée 0 erreur = ignorée ;
-- annulée avec erreur = statée ;
-- erreurs par niveau ;
-- tendances sur les deux dernières parties terminées ;
-- graphes Stats + Hall of Fame ;
-- Prof de début limité au niveau le plus difficile + précédent.
-
-### Médias
-- Gecko/Abeille runtime SpriteRGBA 240p ;
-- ne pas réintroduire MP4 Gecko/Abeille supprimés ;
-- Plante, Prof/Pierre et intros conservés ;
-- médias décoratifs sans effet sur logique ou géométrie.
-
-## Travail actuellement autorisé
-
-- mission `GECKO-HOF-SYNC-001` selon le design approuvé ;
-- corrections de bugs découvertes lors des tests téléphone de 0.15.43-dev ;
-- mise à jour des cinq mémoires ;
-- documentation pure.
-
-Toute extension hors de ce périmètre nécessite un nouvel avenant ou ordre de Fab.
+Aucun merge `main`, aucune Release avant ordre explicite de Fab.
