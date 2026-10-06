@@ -48,8 +48,9 @@ class GlobalScoreCompletionPublisherTest {
         assertEquals("fixed-run", runId)
         assertTrue(triggerSawPersistedScore)
 
-        val stored = assertNotNull(store.find("fixed-run")) as PendingScoreEntry
-        val root = JSONObject(stored.payloadJson)
+        val stored = store.find("fixed-run")
+        assertNotNull(stored)
+        val root = JSONObject(requireNotNull(stored).payloadJson)
         assertEquals("fixed-run", root.getString("runId"))
         assertEquals("GeckoTétu", root.getString("playerName"))
         assertEquals("GECKODOKU", root.getString("mode"))
