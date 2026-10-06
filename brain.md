@@ -5,8 +5,8 @@
 ## Référence
 
 - canonique : `main`
-- mission : `GECKO-HOF-SYNC-001`
-- branche : `feature/gecko-hof-sync-v1`
+- mission `GECKO-HOF-SYNC-001` : close après validation téléphone, merge et Release
+- merge final : `c1a32bf4736894f87ac45f1c626f72a111cf1c2e`
 - base : `main@1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
 - code HOF + restauration Hall : `1e54fe8156bc04de2470456423ec62f125856083`
 - version de publication : `0.15.44-dev`, code 79
@@ -66,3 +66,13 @@ Blocage de publication trouvé puis corrigé avant merge :
 - il vérifie aussi dans l’APK produit la présence de Pierre et des assets sprites 240p.
 
 Cible de publication : `0.15.44-dev` / code 79.
+
+
+## Publication finale
+
+- workflow Release : run `37531494180` / #432 GREEN ;
+- Release : `phone-0.15.44-dev-run-432` ;
+- titre : `GeckoDoku 0.15.44-dev • téléphone validé` ;
+- APK : `GeckoDoku-v0.15.44-dev.apk` ;
+- SHA-256 : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c` ;
+- Release finale non prerelease, ciblée sur le merge `c1a32bf4736894f87ac45f1c626f72a111cf1c2e`.
