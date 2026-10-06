@@ -61,5 +61,7 @@ La première validation HOF avait utilisé un APK incomplet : Pierre et sprites 
 
 - code fonctionnel HOF + restauration Hall : `1e54fe8156bc04de2470456423ec62f125856083`
 - run APK téléphone complet : `37526965060` GREEN
-- SHA APK : `c5232d721c22d4d7c1eefd35f53411ebf03a0d1f70ade1cc145efef1019b63bf`
-- aucun merge `main`, aucune Release.
+- SHA APK validé : `c5232d721c22d4d7c1eefd35f53411ebf03a0d1f70ade1cc145efef1019b63bf`
+- clean install Fab : Hall global restauré, 3 résultats visibles
+- pipeline Release : `build.yml` restaure désormais la banque 240p depuis la Release validée `phone-0.15.43-dev-run-403` et vérifie Pierre + sprites dans l’APK
+- publication autorisée : `0.15.44-dev` / code 79, merge `main` + Release explicitement ordonnés par Fab.
