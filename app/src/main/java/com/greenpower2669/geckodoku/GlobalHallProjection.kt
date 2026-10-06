@@ -43,8 +43,8 @@ object GlobalHallProjection {
 
     private fun decode(
         raw: String
-    ): HallOfFameEntry? =
-        try {
+    ): HallOfFameEntry? {
+        return try {
             val obj = JSONObject(raw)
 
             if (!obj.optBoolean("completed", false)) {
@@ -97,6 +97,7 @@ object GlobalHallProjection {
         } catch (_: Exception) {
             null
         }
+    }
 
     private fun identity(
         entry: HallOfFameEntry
