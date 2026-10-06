@@ -14,13 +14,15 @@ Mission : `GECKO-HOF-SYNC-001` sur `feature/gecko-hof-sync-v1`.
 - [x] POST + ACK idempotent.
 - [x] retry/backoff + `Retry-After`.
 - [x] cache global + `/sync` transactionnel.
-- [x] mono-worker + reprise au lancement/retour réseau.
+- [x] mono-worker + reprise lancement/retour réseau.
 - [x] raccord aux complétions locales existantes.
 - [x] INTERNET + ACCESS_NETWORK_STATE.
-- [x] tests JVM GREEN.
-- [x] `assembleDebug` GREEN sur le raccord réel — run `37508648842`.
-- [x] workflows temporaires de développement supprimés.
-- [ ] CI HOF finale GREEN après synchronisation des mémoires.
+- [x] timestamp de fin unique Hall local/global.
+- [x] tests JVM HOF GREEN — run `37519024806`.
+- [x] tests + `assembleDebug` GREEN sur correctif final — run `37518234014`.
+- [x] APK de validation généré — run `37519024909`.
+- [x] SHA-256 APK `926058461bb214fbe9e8abcf4825902b8a58129169907a1a4d9749a79c2dd49a`.
+- [x] workflows temporaires timestamp/APK supprimés.
 - [ ] Téléphone : terminer une partie online et vérifier une seule entrée serveur.
 - [ ] Téléphone : terminer offline et vérifier que le score reste pending.
 - [ ] Téléphone : tuer/redémarrer offline puis vérifier que pending survit.

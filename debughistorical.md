@@ -6,67 +6,59 @@
 ## Baseline avant HOF
 
 Au 2 octobre 2026 :
-- GeckoDoku multimode : Classic, Sudoku, Gomoku, Abeilles & Geckos ;
-- merge code précédent : `17c6de0186c745c15fc042971eb09b4fe19a6299` ;
-- main documentaire utilisé pour HOF : `1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675` ;
+- quatre modes : Classic, Sudoku, Gomoku, Abeilles & Geckos ;
+- base HOF : `main@1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675` ;
 - version `0.15.43-dev`, code 78 ;
-- release téléphone `phone-0.15.43-dev-run-403` ;
-- sprites Gecko/Abeille 240p préconstruits ; Plante, Prof/Pierre et intros conservés ;
-- stats : terminée enregistrée, abandon 0 erreur ignoré, abandon avec erreur enregistré ;
-- hypothèses colorées parent/enfant dans les modes concernés ;
-- pavé Sudoku persistant 2×2 et aide `?` documentaire.
+- release téléphone précédente `phone-0.15.43-dev-run-403` ;
+- stats, hypothèses, pavé Sudoku et médias 240p déjà en place.
 
 ## GECKO-HOF-SYNC-001 — 6 octobre 2026
 
-Branche créée depuis main : `feature/gecko-hof-sync-v1`.
+Contrat serveur : 4 modes, `runId` idempotent, champs spécifiques nullable, metadata libre, seed 64 bits décimale, aucun secret APK, POST + `/sync`.
 
-Contrat serveur déjà publié par Fab : 4 modes, `runId` idempotent, champs nullable, metadata libre, seed 64 bits décimale, aucun secret APK, POST + `/sync`.
+### TDD par lots
 
-### TDD
-
-Implémentation par lots RED → GREEN :
-
-1. `GlobalScorePayload` + codec + factory quatre modes.
+1. `GlobalScorePayload` + codec/factory quatre modes.
 2. `AtomicJsonFileStore` + `PendingScoreStore` crash-safe.
 3. `GeckoDokuHallApiClient` + `GlobalScoreRetryPolicy`.
-4. `GlobalScoreCacheStore` avec page et curseur atomiques.
+4. `GlobalScoreCacheStore` avec page + curseur atomiques.
 5. `GlobalScoreSyncCoordinator` mono-worker + `AndroidNetworkMonitor`.
-6. `GlobalScoreCompletionPublisher`, `GlobalScoreCompletionBridge`, `GlobalScoreRuntime` et raccord `MainActivity`.
+6. `GlobalScoreCompletionPublisher`, `GlobalScoreCompletionBridge`, `GlobalScoreRuntime` + raccord `MainActivity`.
 
-Run de référence Task 5 : `37500492900` GREEN.
+### Incidents utiles
 
-### Incidents de développement utiles
+- Pipeline téléphone historique `PackageSprites` séparé du banc HOF.
+- Erreur Kotlin initiale du parseur ACK corrigée sans changer le contrat.
+- Test publisher corrigé après mauvais usage de `assertNotNull`.
+- Patches `MainActivity` trop sensibles à l’indentation abandonnés au profit d’un patch borné à la méthode.
+- `BuildConfig.VERSION_NAME` non généré : version récupérée via `PackageManager`.
+- Revue finale : Hall local et global pouvaient prendre deux timestamps distincts. Test RED ajouté, puis correction : un seul `completedAt` est calculé et réutilisé partout.
+- Une première transformation timestamp a produit `val completedAt = completedAt`; le compilateur l’a refusée, aucun commit produit n’a été effectué. L’ordre du patch a été corrigé.
 
-- Le workflow téléphone historique dépendait du package `PackageSprites`; un workflow unitaire HOF dédié a été utilisé pour isoler les tests du chantier.
-- Premier client HTTP : erreur Kotlin `return` dans un corps d’expression ; corrigée sans changer le contrat.
-- Un test publisher contenait un mauvais cast du retour de `assertNotNull`; le code produit compilait, test corrigé.
-- Premier patch `MainActivity` trop sensible à l’indentation : échec avant toute écriture produit.
-- Deuxième patch compilait jusqu’à `BuildConfig.VERSION_NAME`, non généré dans ce projet. Remplacement par `PackageManager.versionName`.
-- Le patch corrigé a passé `testDebugUnitTest` + `assembleDebug` dans le run `37508648842`, puis a été poussé au commit produit `d6d25e051c0a4723844df51c21aa99c15cd35c08`.
-- Les workflows temporaires de chirurgie ont ensuite été supprimés et le scope du workflow téléphone historique restauré.
+### Vérification finale
+
+- commit code HOF final : `9ff902bbe778a2202bdda3ca715e2bbce7cb06dd` ;
+- run timestamp `37518234014` : tests JVM + `assembleDebug` GREEN ;
+- run HOF canonique `37519024806` : GREEN ;
+- run APK validation `37519024909` : tests + build + artifact GREEN ;
+- artifact `GeckoDoku-HOF-v1-validation` ;
+- SHA-256 APK : `926058461bb214fbe9e8abcf4825902b8a58129169907a1a4d9749a79c2dd49a` ;
+- workflows temporaires timestamp/APK supprimés après usage.
 
 ### Invariants confirmés
 
 - pending écrit avant réseau ;
 - retry exact même JSON + même runId ;
-- ACK invalide ou refusé ne supprime pas pending ;
+- ACK invalide/refusé ne supprime pas pending ;
 - erreurs permanentes gardées BLOCKED ;
 - retry réseau/5xx/429 ;
-- `/sync` continue avec `hasMore=true` même page vide ;
+- `/sync` continue si `hasMore=true`, même page vide ;
 - cache global séparé des stats/progression ;
-- mapping quatre modes sans inventer de nouvelle règle de gameplay ;
-- Gomoku non éligible au Hall local reste seulement représentable dans le protocole.
+- quatre modes mappés sans inventer de règle gameplay ;
+- un seul `completedAt` local/global.
 
 ## État suivant
 
-Code Android HOF techniquement prêt pour validation téléphone réelle.
-
-À vérifier sur téléphone :
-- online → une seule entrée ;
-- offline → pending conservé ;
-- kill/restart offline → pending survit ;
-- retour réseau → envoi automatique ;
-- doublon/retry → une seule entrée serveur ;
-- catégories et champs spécifiques corrects.
+Code Android HOF prêt pour validation téléphone réelle : online, offline, kill/restart, retour réseau, dédoublonnage et contrôle des catégories/champs.
 
 Aucun merge `main` ni Release avant ordre explicite de Fab.
