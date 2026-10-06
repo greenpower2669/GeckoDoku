@@ -8,12 +8,14 @@
 ## Référence courante
 
 - Branche canonique : `main`
-- Version : `0.15.43-dev`
+- Branche active : `feature/gecko-hof-sync-v1`
+- Mission active : `GECKO-HOF-SYNC-001`
+- Base de mission : `1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
+- Version de départ : `0.15.43-dev`
 - versionCode : `78`
-- Release téléphone : `phone-0.15.43-dev-run-403`
+- Release téléphone de référence : `phone-0.15.43-dev-run-403`
 - Merge GECKO-048 → main : `17c6de0186c745c15fc042971eb09b4fe19a6299`
-- CI de réconciliation : #404 verte
-- CI finale main : #405 verte
+- CI finale main précédente : #405 verte
 - Aucun ancien média supprimé ne doit être réintroduit.
 
 ## Règles de travail FAB Copilot
@@ -24,6 +26,25 @@
 - Pas de merge `main` ni release sans validation explicite de Fab.
 - `sauvegarde.md` est une archive froide : ne pas la charger par défaut.
 - Les anciens identifiants GECKO peuvent avoir été réutilisés ; utiliser version + SHA + date pour lever toute ambiguïté.
+
+## Hall of Fame global — mission active
+
+Protocole public GeckoDoku v1 :
+- hôte : `https://fab-hall-of-fame.gnrationsia.chatgpt.site` ;
+- POST `/api/v1/games/geckodoku/scores` ;
+- GET `/api/v1/games/geckodoku/sync` ;
+- aucun secret/API key dans l’APK ;
+- score déclaré avec `runId` idempotent ;
+- champs propres aux modes nullable ;
+- `seed` 64 bits en chaîne décimale pour éviter tout arrondi ;
+- `metadata` extensible.
+
+Architecture prévue :
+`GlobalScorePayload → PendingScoreStore → GeckoDokuHallApiClient → GlobalScoreSyncCoordinator`.
+
+Règle fondamentale : le payload est persisté avant réseau et ne doit jamais être recalculé au retry. Retrait de pending uniquement après `accepted:true`.
+
+Le flux `/sync` est séparé des stats/progression locales : fusion globale par `scoreId`, curseur opaque `nextCursor`, aucun résultat distant ne crée une victoire personnelle.
 
 ## Produit
 
@@ -158,9 +179,9 @@ Axes joueur :
 Une tentative n'est plus comptée au simple lancement.
 
 Règle :
-- partie terminée → statée ;
+- partie terminée → enregistrée ;
 - partie annulée sans erreur → ignorée ;
-- partie annulée avec ≥1 erreur → statée comme abandon avec erreurs.
+- partie annulée avec erreur → enregistrée comme abandon.
 
 Par niveau :
 - nombre de parties statées ;
@@ -207,15 +228,11 @@ Invariants :
 
 ## État validation
 
-Validé techniquement :
+Baseline précédente validée techniquement :
 - release 0.15.43-dev produite ;
 - CI #403 verte ;
 - réconciliation main #404 verte ;
 - main #405 verte ;
 - merge main explicitement validé par Fab.
 
-À vérifier encore sur téléphone si non déjà fait :
-- réduction extrême du pavé Sudoku ;
-- précision tactile à la taille minimale ;
-- passage des clics hors popup vers la grille ;
-- aide `?` sur les quatre zones.
+Mission HOF globale : design approuvé en conversation ; spec écrite, en attente de revue écrite avant plan d’implémentation.

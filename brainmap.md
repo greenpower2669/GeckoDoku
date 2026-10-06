@@ -1,7 +1,8 @@
 # GeckoDoku — FAB Copilot brainmap
 
 > Carte technique courte de l'état courant.
-> Référence : `main`, version `0.15.43-dev`, code 78.
+> Référence baseline : `main`, version `0.15.43-dev`, code 78.
+> Mission active : `GECKO-HOF-SYNC-001` sur `feature/gecko-hof-sync-v1`.
 
 ## Architecture générale
 
@@ -17,11 +18,42 @@ MainActivity
 │     → PierrePronunciationPolicy → VoicePcmPlayer
 ├─ Stats
 │  └─ PlayerStatsStore → PlayerStatsTrendView → HallOfFameStore
+├─ Global HOF [mission active]
+│  └─ GlobalScorePayload
+│     → PendingScoreStore
+│     → GeckoDokuHallApiClient
+│     → GlobalScoreSyncCoordinator
+│        ├─ POST score / ACK / retry
+│        └─ GET sync → GlobalScoreCache + nextCursor
 └─ Rich media
    ├─ SpriteBankFactory / SpriteFrameCache
    ├─ AliveMascotOverlay
    └─ ChromaKey vidéo pour médias encore conservés
 ```
+
+## Hall of Fame global — flux prévu
+
+```text
+fin de partie locale validée
+→ figer payload + runId
+→ écrire pendingScores
+→ retour UI normal
+→ envoi asynchrone
+   ├─ 201 accepted → retire pending
+   ├─ 200 duplicate → retire pending
+   ├─ 429/503/réseau → backoff + retry même runId
+   └─ 400/409/413/415 → conserver + état bloqué diagnostic
+```
+
+```text
+GET /sync(cursor)
+→ fusion par scoreId
+→ réconciliation de ses runId
+→ persister entrées + nextCursor ensemble
+→ hasMore ? continuer : fin
+```
+
+Le cache global ne nourrit jamais `PlayerStatsStore` ni la progression locale.
 
 ## Classic
 
@@ -156,14 +188,16 @@ Plante, Prof/Pierre et intros : médias conservés selon leur pipeline dédié.
 
 - préférences de mode ;
 - stats + events temporels ;
-- Hall of Fame ;
+- Hall of Fame local ;
 - profils ;
 - sessions Bee ;
-- export/import utilisateur.
+- export/import utilisateur ;
+- mission HOF : `pendingScores`, cache global et curseur `/sync` à ajouter.
 
 ## Références Git
 
-- release : `phone-0.15.43-dev-run-403`
-- merge code main : `17c6de0186c745c15fc042971eb09b4fe19a6299`
-- CI merge/reconciliation : #404 verte
-- CI main : #405 verte
+- baseline main : `1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
+- branche mission : `feature/gecko-hof-sync-v1`
+- release de référence : `phone-0.15.43-dev-run-403`
+- merge code précédent : `17c6de0186c745c15fc042971eb09b4fe19a6299`
+- CI main précédente : #405 verte

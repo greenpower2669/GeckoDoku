@@ -2,17 +2,19 @@
 
 ## Statut
 
-Aucune mission de développement nouvelle n'est ouverte après le merge GECKO-048.
+Mission active : `GECKO-HOF-SYNC-001` — synchronisation Hall of Fame global v1.
 
-Référence :
-- branche : `main`
-- version : `0.15.43-dev`
+Référence de départ :
+- branche canonique : `main`
+- branche de travail : `feature/gecko-hof-sync-v1`
+- base : `1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
+- version de départ : `0.15.43-dev`
 - versionCode : `78`
-- release : `phone-0.15.43-dev-run-403`
-- merge code : `17c6de0186c745c15fc042971eb09b4fe19a6299`
-- CI main : #405 verte.
+- release de référence : `phone-0.15.43-dev-run-403`
+- merge code précédent : `17c6de0186c745c15fc042971eb09b4fe19a6299`
+- CI main précédente : #405 verte.
 
-Le prochain travail doit partir du code de `main`, pas des anciens ordres archivés.
+Le travail part du code de `main`, jamais d’un ancien ordre archivé.
 
 ## Contrat permanent FAB Copilot
 
@@ -30,6 +32,43 @@ Le prochain travail doit partir du code de `main`, pas des anciens ordres archiv
 7. Ne jamais restaurer des médias supprimés uniquement parce qu'ils existent dans un ancien commit.
 8. `sauvegarde.md` est archive froide et ne doit pas servir de vérité courante.
 9. En cas de conflit d'identifiants GECKO, utiliser version + SHA + date.
+
+## Mission GECKO-HOF-SYNC-001
+
+Objectif : raccorder les quatre modes GeckoDoku au protocole public Hall of Fame global v1 déjà publié.
+
+Contrat serveur canonique :
+- hôte : `https://fab-hall-of-fame.gnrationsia.chatgpt.site`
+- POST : `/api/v1/games/geckodoku/scores`
+- sync : `/api/v1/games/geckodoku/sync`
+- aucun header Authorization requis ;
+- aucun secret serveur dans l’APK ;
+- `runId` idempotent ;
+- `seed` 64 bits transportée en chaîne décimale quand nécessaire ;
+- champs spécifiques nullable ;
+- `metadata` extensible.
+
+Implémenter :
+- payload global immuable ;
+- persistance `pendingScores` avant réseau ;
+- retry progressif et respect de `Retry-After` ;
+- retrait uniquement après `accepted:true` ;
+- cache/sync global par `scoreId` et curseur `nextCursor` ;
+- reprise après redémarrage et retour réseau ;
+- tests unitaires et build.
+
+Préserver strictement :
+- gameplay des quatre modes ;
+- calcul d’étoiles ;
+- statistiques et progression locales ;
+- Hall of Fame local ;
+- médias et géométrie ;
+- aucune donnée personnelle ou matérielle supplémentaire.
+
+Document de design :
+`docs/superpowers/specs/2026-10-06-geckodoku-global-hof-sync-design.md`
+
+Aucun merge `main` ni release sans ordre explicite de Fab.
 
 ## Baseline fonctionnelle à préserver
 
@@ -68,11 +107,11 @@ Le prochain travail doit partir du code de `main`, pas des anciens ordres archiv
 - Plante, Prof/Pierre et intros conservés ;
 - médias décoratifs sans effet sur logique ou géométrie.
 
-## Travail actuellement autorisé sans nouveau contrat
+## Travail actuellement autorisé
 
-Uniquement :
+- mission `GECKO-HOF-SYNC-001` selon le design approuvé ;
 - corrections de bugs découvertes lors des tests téléphone de 0.15.43-dev ;
-- mise à jour de ces cinq mémoires ;
+- mise à jour des cinq mémoires ;
 - documentation pure.
 
-Toute nouvelle fonctionnalité doit être ajoutée ici comme nouvelle mission avant développement.
+Toute extension hors de ce périmètre nécessite un nouvel avenant ou ordre de Fab.

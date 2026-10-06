@@ -139,10 +139,22 @@ Merge :
 Release :
 - `phone-0.15.43-dev-run-403`.
 
+## Ouverture mission Hall of Fame global — 6 octobre 2026
+
+Mission `GECKO-HOF-SYNC-001` ouverte depuis `main` SHA `1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675` sur `feature/gecko-hof-sync-v1`.
+
+État à l’ouverture :
+- protocole serveur v1 déjà publié et testé côté site ;
+- quatre modes couverts ;
+- aucun secret requis dans l’APK ;
+- travail Android restant : pendingScores, retry, ACK, `/sync`, tests et validation téléphone ;
+- design approuvé en conversation puis écrit dans `docs/superpowers/specs/2026-10-06-geckodoku-global-hof-sync-design.md` ;
+- aucune modification de code produit encore exécutée à ce point.
+
 ## Règle de diagnostic actuelle
 
 Avant de rouvrir un ancien bug :
-1. lire le code de `main` ;
+1. lire le code de `main` ou de la branche mission concernée ;
 2. vérifier la version/SHA concernée ;
 3. consulter ce fichier ;
 4. n'ouvrir `sauvegarde.md` que si un détail historique précis manque.
