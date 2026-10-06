@@ -5,15 +5,13 @@ on:
     branches: [ feature/gecko-hof-sync-v1 ]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -21,70 +19,6 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.6.0'
-
-      - name: Patch frozen completion timestamp wiring
-        if: github.event.head_commit.message == 'run HOF timestamp patch 4'
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path('app/src/main/java/com/greenpower2669/geckodoku/MainActivity.kt')
-          text = path.read_text(encoding='utf-8')
-
-          start_marker = '    private fun recordRatedCompletionIfNeeded('
-          end_marker = '\n    private fun completeGame('
-          start = text.find(start_marker)
-          if start < 0:
-              raise SystemExit('recordRatedCompletionIfNeeded start not found')
-          end = text.find(end_marker, start)
-          if end < 0:
-              raise SystemExit('recordRatedCompletionIfNeeded end not found')
-
-          block = text[start:end]
-          if 'val completedAt =' in block:
-              raise SystemExit('completedAt already present in completion method')
-
-          hall_marker = (
-              '                    completedAt =\n'
-              '                        System.currentTimeMillis()'
-          )
-          if block.count(hall_marker) != 1:
-              raise SystemExit(f'local Hall timestamp marker count={block.count(hall_marker)}')
-          block = block.replace(
-              hall_marker,
-              '                    completedAt =\n'
-              '                        completedAt',
-              1,
-          )
-
-          stats_marker = '            statsStore.recordComplete('
-          if block.count(stats_marker) != 1:
-              raise SystemExit(f'stats marker count={block.count(stats_marker)}')
-          block = block.replace(
-              stats_marker,
-              '            val completedAt =\n'
-              '                System.currentTimeMillis()\n\n'
-              + stats_marker,
-              1,
-          )
-
-          bee_marker = '                beeGeckoPuzzle = beeGeckoPuzzle\n            )'
-          if block.count(bee_marker) != 1:
-              raise SystemExit(f'bridge marker count={block.count(bee_marker)}')
-          block = block.replace(
-              bee_marker,
-              '                beeGeckoPuzzle = beeGeckoPuzzle,\n'
-              '                completedAt = completedAt\n'
-              '            )',
-              1,
-          )
-
-          text = text[:start] + block + text[end:]
-          path.write_text(text, encoding='utf-8')
-          PY
-          git diff --check
-
       - name: Prepare Sherpa-ONNX Android AAR
         shell: bash
         run: |
@@ -94,17 +28,5 @@ jobs:
             -o app/libs/sherpa-onnx-1.13.8.aar \
             "https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-1.13.8.aar"
           echo "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96  app/libs/sherpa-onnx-1.13.8.aar" | sha256sum -c -
-
-      - name: Run JVM unit tests and debug build
-        run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
-
-      - name: Commit verified timestamp wiring
-        if: github.event.head_commit.message == 'run HOF timestamp patch 4'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "greenpower2669"
-          git config user.email "80179295+greenpower2669@users.noreply.github.com"
-          git add app/src/main/java/com/greenpower2669/geckodoku/MainActivity.kt
-          git commit -m "fix: freeze one completion timestamp for local and global Hall"
-          git push origin HEAD:feature/gecko-hof-sync-v1
+      - name: Run JVM unit tests
+        run: gradle :app:testDebugUnitTest --no-daemon
