@@ -1,203 +1,97 @@
 # GeckoDoku — FAB Copilot brainmap
 
-> Carte technique courte de l'état courant.
-> Référence baseline : `main`, version `0.15.43-dev`, code 78.
-> Mission active : `GECKO-HOF-SYNC-001` sur `feature/gecko-hof-sync-v1`.
+> Carte technique courte. Mission : `GECKO-HOF-SYNC-001` sur `feature/gecko-hof-sync-v1`.
 
-## Architecture générale
+## Flux produit
 
 ```text
 MainActivity
-├─ GameMode
-│  ├─ Classic → GameEngine / PuzzleGenerator / HumanSolver
-│  ├─ Sudoku → SudokuGameEngine / SudokuSolver / SudokuHintEngine
-│  ├─ Gomoku → GomokuGameEngine / GomokuAi
-│  └─ BeeGecko → BeeGeckoGameEngine / générateur / solveur
-├─ Prof Gecko
-│  └─ ProfessorSpeech → PierrePiperSpeechEngine
-│     → PierrePronunciationPolicy → VoicePcmPlayer
-├─ Stats
-│  └─ PlayerStatsStore → PlayerStatsTrendView → HallOfFameStore
-├─ Global HOF [mission active]
-│  └─ GlobalScorePayload
-│     → PendingScoreStore
-│     → GeckoDokuHallApiClient
-│     → GlobalScoreSyncCoordinator
-│        ├─ POST score / ACK / retry
-│        └─ GET sync → GlobalScoreCache + nextCursor
-└─ Rich media
-   ├─ SpriteBankFactory / SpriteFrameCache
-   ├─ AliveMascotOverlay
-   └─ ChromaKey vidéo pour médias encore conservés
+├─ Classic / Sudoku / Gomoku / BeeGecko
+├─ stats locales → PlayerStatsStore
+├─ Hall local → HallOfFameStore
+└─ fin de partie déjà éligible localement
+   → GlobalScoreCompletionBridge
+      → mapping spécifique du mode
+      → GlobalScoreCompletionPublisher
+         1. génère runId
+         2. construit GlobalScorePayload
+         3. sérialise une fois
+         4. écrit PendingScoreStore
+         5. déclenche seulement ensuite la synchro
 ```
 
-## Hall of Fame global — flux prévu
+## Synchronisation sortante
 
 ```text
-fin de partie locale validée
-→ figer payload + runId
-→ écrire pendingScores
-→ retour UI normal
-→ envoi asynchrone
+PendingScoreStore (fichiers JSON atomiques)
+→ GlobalScoreSyncCoordinator mono-worker
+→ GeckoDokuHallApiClient / HttpURLConnection
    ├─ 201 accepted → retire pending
-   ├─ 200 duplicate → retire pending
-   ├─ 429/503/réseau → backoff + retry même runId
-   └─ 400/409/413/415 → conserver + état bloqué diagnostic
+   ├─ 200 duplicate accepted → retire pending
+   ├─ 429 → Retry-After
+   ├─ 5xx / réseau → backoff 5/15/30/60 puis plafond 5 min
+   └─ 400/409/413/415 → BLOCKED, entrée conservée
 ```
+
+Même `payloadJson` et même `runId` à chaque retry.
+
+## Synchronisation entrante
 
 ```text
-GET /sync(cursor)
-→ fusion par scoreId
-→ réconciliation de ses runId
-→ persister entrées + nextCursor ensemble
-→ hasMore ? continuer : fin
+GET /api/v1/games/geckodoku/sync?cursor=...&limit=100
+→ HallSyncPage
+→ GlobalScoreCacheStore.applyPage
+   ├─ fusion scoreId
+   └─ entrées + nextCursor écrits atomiquement ensemble
+→ hasMore=true ? page suivante : fin
+→ runId global confirmé ? réconciliation pending
 ```
 
-Le cache global ne nourrit jamais `PlayerStatsStore` ni la progression locale.
+Le `highWatermark` ou l’ACK POST ne font jamais avancer le curseur.
 
-## Classic
+## Runtime Android
 
 ```text
-PuzzleGenerator
-→ unicité + contraintes
-→ HumanSolver / HypothesisSolver
-→ GameEngine
-→ GeckoBoardView
-→ ProfessorGecko
+MainActivity.onCreate
+→ GlobalScoreRuntime.start
+   ├─ GlobalScoreSyncCoordinator.start
+   └─ AndroidNetworkMonitor.start
+
+réseau disponible → coordinator.triggerNow
+MainActivity.onDestroy → GlobalScoreRuntime.stop
 ```
 
-Branches d'hypothèses :
-```text
-hypothèse parent (couleur + aura)
-→ croix filles de même couleur
-→ sous-hypothèse enfant
-   ├─ continuation
-   ├─ changement de sous-branche → prune descendants
-   └─ contradiction → sens interdit + prune descendants/croix/aura
-```
+Permissions : INTERNET + ACCESS_NETWORK_STATE.
 
-## Sudoku
-
-Entrée tactile :
-```text
-simple clic ─┐
-double clic ─┼→ SudokuGesturePolicy → OPEN_INPUT_PALETTE
-appui long ──┘                         └→ OPEN_PERSONAL_MARKERS
-```
-
-Pavé persistant :
-```text
-SudokuQuickPaletteView
-├─ Choix → Prévisu → Oui/Non → SudokuGameEngine
-├─ Candidats → notes de la case
-├─ Hypothèse → HypothesisBranchTrace
-└─ Prévisu
-   └─ ? → aide documentaire Prof
-```
-
-Popup :
-- `PopupWindow` non focusable ;
-- Android Q+ : `setTouchModal(false)` ;
-- reciblage sans fermeture ;
-- drag ;
-- resize min ~140×160 dp.
-
-Hypothèses Sudoku :
-```text
-SudokuGameEngine.cycleHypothesis
-→ trace parent/enfant
-→ couleur de branche
-→ visualisation aura/croix
-→ contradiction / prune / rollback
-```
-
-## Stats
+## Mapping des modes
 
 ```text
-recordStart
-→ tentative active temporaire
-   ├─ recordComplete → event terminé
-   └─ nouveau départ / abandon
-      ├─ 0 erreur → suppression silencieuse
-      └─ ≥1 erreur → event abandon avec erreurs
+GECKODOKU
+→ size réel + puzzle.id + puzzle.seed + Classic
+
+SUDOKU
+→ size 9 + sudokuPuzzle.seed + SudokuVisualStyle
+
+GOMOKU
+→ GomokuMatchMode + snapshot winner/draw/moveCount
+→ uniquement quand le chemin local actuel considère déjà la complétion comme score
+
+BEES_GECKOS
+→ puzzle.id + seed + radius + regionCount
 ```
 
-```text
-PlayerStatEvent[]
-→ statsForDifficulty
-→ dernières 2 parties terminées
-   ├─ tendance temps
-   └─ tendance étoiles
-→ PlayerStatsTrendView
-→ Stats / Hall of Fame
-```
+Aucune nouvelle règle de victoire/statistique n’est introduite par le HOF global.
 
-Prof au démarrage :
-```text
-professorLevels()
-→ niveau le plus difficile staté
-→ niveau précédent éventuel
-→ PlayerStatsNarration
-→ uniquement tendances vitesse/étoiles
-```
+## Persistance indépendante
 
-## Abeilles & Geckos
+- stats/progression/Hall local : inchangés ;
+- pending global : `PendingScoreStore` ;
+- cache global + curseur : `GlobalScoreCacheStore` ;
+- aucun flux global ne nourrit `PlayerStatsStore`.
 
-```text
-BeeGeckoAxisGeometry
-├─ Q +60° ↖↘
-├─ S -60° ↙↗
-└─ R 0°   ←→
-```
+## Références
 
-Même trace de branches d'hypothèses que Classic :
-parent → enfants → prune à suppression, contradiction ou changement de sous-branche.
-
-Axes personnels :
-choix Q/S/R → couleur jaune/vert/rouge → rendu → drag → persistance.
-
-## Prof / voix
-
-```text
-texte UI correct
-→ ProfessorSpeech
-→ PierrePiperSpeechEngine
-→ PierrePronunciationPolicy
-→ Sherpa/Piper
-→ AudioTrack / sortie Android
-```
-
-Exemple :
-`église` affiché → `eglize` envoyé à Pierre.
-
-## Sprites / médias
-
-```text
-APK
-└─ sprites/banks/240p
-   → SpriteBankFactory
-   → séquences prêtes en mémoire
-   → SpriteFrameCache LRU
-   → SpriteRGBA runtime
-```
-
-Gecko/Abeille gameplay : SpriteRGBA 240p.
-Plante, Prof/Pierre et intros : médias conservés selon leur pipeline dédié.
-
-## Persistance
-
-- préférences de mode ;
-- stats + events temporels ;
-- Hall of Fame local ;
-- profils ;
-- sessions Bee ;
-- export/import utilisateur ;
-- mission HOF : `pendingScores`, cache global et curseur `/sync` à ajouter.
-
-## Références Git
-
-- baseline main : `1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
-- branche mission : `feature/gecko-hof-sync-v1`
-- release de référence : `phone-0.15.43-dev-run-403`
-- merge code précédent : `17c6de0186c745c15fc042971eb09b4fe19a6299`
-- CI main précédente : #405 verte
+- base : `main@1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`
+- code HOF raccordé : `d6d25e051c0a4723844df51c21aa99c15cd35c08`
+- tests + `assembleDebug` du raccord : run `37508648842` GREEN
+- validation restante : téléphone online/offline/restart/dédoublonnage.
