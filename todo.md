@@ -32,9 +32,11 @@ Mission `GECKO-HOF-SYNC-001` sur `feature/gecko-hof-sync-v1`.
 - [x] Cible : `0.15.44-dev`, code 79.
 - [x] Corriger le workflow Release qui référençait la Release supprimée `PackageSprites`.
 - [x] Utiliser l’APK validé `phone-0.15.43-dev-run-403` comme source contrôlée de la banque 240p.
-- [ ] Merge `main`.
-- [ ] Run Release GREEN + APK publié.
-- [ ] Promouvoir la prerelease en Release validée.
+- [x] Merge `main` : `c1a32bf4736894f87ac45f1c626f72a111cf1c2e`.
+- [x] Run Release GREEN : `37531494180` / #432.
+- [x] APK publié : `GeckoDoku-v0.15.44-dev.apk`.
+- [x] Prerelease promue en Release validée : `phone-0.15.44-dev-run-432`.
+- [x] SHA-256 final : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c`.
 
 Les tests offline/restart/retry/doublons exhaustifs restent en suivi produit ; Fab a autorisé la publication sans attendre leur répétition complète.
 
