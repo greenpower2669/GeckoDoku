@@ -23,12 +23,11 @@ jobs:
           gradle-version: '9.6.0'
 
       - name: Patch frozen completion timestamp wiring
-        if: github.event.head_commit.message == 'run HOF timestamp patch 3'
+        if: github.event.head_commit.message == 'run HOF timestamp patch 4'
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
           path = Path('app/src/main/java/com/greenpower2669/geckodoku/MainActivity.kt')
           text = path.read_text(encoding='utf-8')
@@ -46,6 +45,19 @@ jobs:
           if 'val completedAt =' in block:
               raise SystemExit('completedAt already present in completion method')
 
+          hall_marker = (
+              '                    completedAt =\n'
+              '                        System.currentTimeMillis()'
+          )
+          if block.count(hall_marker) != 1:
+              raise SystemExit(f'local Hall timestamp marker count={block.count(hall_marker)}')
+          block = block.replace(
+              hall_marker,
+              '                    completedAt =\n'
+              '                        completedAt',
+              1,
+          )
+
           stats_marker = '            statsStore.recordComplete('
           if block.count(stats_marker) != 1:
               raise SystemExit(f'stats marker count={block.count(stats_marker)}')
@@ -56,15 +68,6 @@ jobs:
               + stats_marker,
               1,
           )
-
-          block, hall_count = re.subn(
-              r'(completedAt\s*=\s*)System\.currentTimeMillis\(\)',
-              r'\1completedAt',
-              block,
-              count=1,
-          )
-          if hall_count != 1:
-              raise SystemExit(f'local Hall timestamp replacements={hall_count}')
 
           bee_marker = '                beeGeckoPuzzle = beeGeckoPuzzle\n            )'
           if block.count(bee_marker) != 1:
@@ -96,7 +99,7 @@ jobs:
         run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
 
       - name: Commit verified timestamp wiring
-        if: github.event.head_commit.message == 'run HOF timestamp patch 3'
+        if: github.event.head_commit.message == 'run HOF timestamp patch 4'
         shell: bash
         run: |
           set -euo pipefail
