@@ -91,3 +91,15 @@ Cible de publication : `0.15.44-dev` / code 79.
 - workflow AAB : Pierre + sprites 240p, tests JVM, `bundleRelease`, `jarsigner`, vérification et nettoyage.
 - sortie : `GeckoDoku-v<version>-code<versionCode>-signed.aab`.
 - pas de merge `main`, Release GitHub ou envoi Play sans ordre explicite.
+
+
+## Bootstrap Play signé — résultat
+
+- run GitHub Actions : `37632351393` GREEN.
+- Upload Key `geckodoku-upload` RSA 4096 créée une seule fois.
+- certificat SHA-256 : `8E:A9:D0:C7:33:0F:ED:0E:B4:FF:04:1E:BC:9C:EB:E0:93:09:B8:36:44:C7:39:8C:FB:AE:E8:E4:E4:13:43:5F`.
+- artifact handoff chiffré : `11486976777` ; doit être transféré vers le Secret `ANDROID_UPLOAD_KEYSTORE_BASE64`.
+- AAB signé : `GeckoDoku-v0.15.44-dev-code79-signed.aab`, SHA-256 `cc904dab3c0170f522507af2c5805e5d00cde22bf920bc53537a2e1a1e726a16`.
+- artifact AAB : `11486204826`.
+- tests, médias embarqués et signature : GREEN.
+- aucun merge `main`, Release GitHub ou envoi Play effectué.

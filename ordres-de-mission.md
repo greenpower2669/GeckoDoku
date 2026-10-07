@@ -17,6 +17,23 @@
 - aucun changement gameplay.
 - aucun merge `main`, aucune Release GitHub et aucun envoi Play Console sans nouvel ordre explicite de Fab.
 
+
+## Résultat bootstrap du 07/10/2026
+
+- commit de préparation : `93dc77b6b175790ab392f731a86be712da3970dd` ;
+- run GitHub Actions : `37632351393` / #2 — GREEN ;
+- Upload Key générée : alias `geckodoku-upload`, RSA 4096 ;
+- certificat upload SHA-256 : `8E:A9:D0:C7:33:0F:ED:0E:B4:FF:04:1E:BC:9C:EB:E0:93:09:B8:36:44:C7:39:8C:FB:AE:E8:E4:E4:13:43:5F` ;
+- handoff chiffré : artifact `geckodoku-upload-key-handoff`, ID `11486976777`, rétention 1 jour ;
+- AAB signé : artifact `GeckoDoku-v0.15.44-dev-code79-GooglePlay`, ID `11486204826` ;
+- fichier : `GeckoDoku-v0.15.44-dev-code79-signed.aab` ;
+- SHA-256 AAB : `cc904dab3c0170f522507af2c5805e5d00cde22bf920bc53537a2e1a1e726a16` ;
+- tests JVM + `bundleRelease` : GREEN ;
+- Pierre + sprites 240p : vérifiés dans l'AAB ;
+- `jarsigner -verify` : `jar verified.` ;
+- aucun keystore privé committé dans Git ;
+- prochain geste obligatoire : placer le contenu de `ANDROID_UPLOAD_KEYSTORE_BASE64.txt` dans le Secret GitHub `ANDROID_UPLOAD_KEYSTORE_BASE64`, puis conserver une sauvegarde hors dépôt.
+
 ## Mission close précédente
 
 `GECKO-HOF-SYNC-001` — Hall of Fame global v1.

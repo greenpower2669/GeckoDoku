@@ -109,3 +109,18 @@ Architecture corrigée :
 - premier AAB signé dans le même bootstrap pour éviter de bloquer la publication sans PC ;
 - aucun gameplay/Gradle produit modifié ;
 - aucun merge `main`, Release GitHub ou envoi Play Console sans ordre explicite.
+
+
+## Bootstrap exécuté — 07/10/2026
+
+Commit `93dc77b6b175790ab392f731a86be712da3970dd`, run `37632351393` GREEN.
+
+La validation des trois Secrets déjà créés par Fab a réussi. Une Upload Key pérenne `geckodoku-upload` RSA 4096 a été générée, vérifiée puis utilisée immédiatement pour signer le premier AAB.
+
+Le JKS brut n'a jamais été committé. Le handoff est un Base64 du JKS chiffré AES-256-CBC/PBKDF2, artifact `11486976777` à rétention 1 jour. Certificat SHA-256 : `8E:A9:D0:C7:33:0F:ED:0E:B4:FF:04:1E:BC:9C:EB:E0:93:09:B8:36:44:C7:39:8C:FB:AE:E8:E4:E4:13:43:5F`.
+
+Chaîne build : Sherpa AAR vérifié, Pierre UPMC Medium restauré, banque sprites 240p restaurée depuis l'APK de référence, tests JVM + `bundleRelease` GREEN, présence Pierre/sprites contrôlée, `jarsigner -verify` = `jar verified.`.
+
+AAB : `GeckoDoku-v0.15.44-dev-code79-signed.aab`, SHA-256 `cc904dab3c0170f522507af2c5805e5d00cde22bf920bc53537a2e1a1e726a16`, artifact `11486204826`.
+
+Reste obligatoire avant de considérer la clé réutilisable par CI : transférer `ANDROID_UPLOAD_KEYSTORE_BASE64.txt` dans le Secret GitHub `ANDROID_UPLOAD_KEYSTORE_BASE64` et conserver une sauvegarde hors dépôt.

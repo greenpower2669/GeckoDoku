@@ -120,3 +120,20 @@ Play App Signing
 ```
 
 Garde-fous : aucune clé privée dans Git, bootstrap non rejouable par re-run, pas de génération si le Secret keystore existe déjà, aucun merge/main, aucune Release GitHub et aucun envoi Play automatique.
+
+
+## État réel après bootstrap
+
+```text
+run 37632351393 GREEN
+├─ Upload Key RSA 4096 créée
+├─ certificat SHA-256 8E:A9:D0:C7:...:43:5F
+├─ handoff chiffré artifact 11486976777
+├─ tests + bundleRelease GREEN
+├─ Pierre + sprites 240p vérifiés
+├─ jarsigner : jar verified
+└─ AAB artifact 11486204826
+   └─ SHA-256 cc904dab3c0170f522507af2c5805e5d00cde22bf920bc53537a2e1a1e726a16
+```
+
+Étape suivante : copier `ANDROID_UPLOAD_KEYSTORE_BASE64.txt` dans le Secret homonyme, puis utiliser `build-play-aab.yml` pour les builds futurs.

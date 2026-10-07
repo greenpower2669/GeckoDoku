@@ -55,10 +55,13 @@ Ne pas modifier pour ce lot : gameplay, étoiles, aides, statistiques personnell
 - [x] Préparer workflow AAB futur alimenté par Secrets.
 - [x] Préserver Pierre + sprites 240p dans la chaîne AAB.
 - [x] Fab : créer `ANDROID_UPLOAD_STORE_PASSWORD`, `ANDROID_UPLOAD_KEY_PASSWORD` et `ANDROID_UPLOAD_KEY_ALIAS`.
-- [ ] Exécuter le bootstrap `[bootstrap-play-once]`.
-- [ ] Vérifier génération Upload Key + certificat public.
-- [ ] Vérifier tests, packaging média, `bundleRelease` et signature du premier AAB.
-- [ ] Récupérer `ANDROID_UPLOAD_KEYSTORE_BASE64.txt` et le placer dans le Secret `ANDROID_UPLOAD_KEYSTORE_BASE64`.
-- [ ] Conserver une sauvegarde durable de l'Upload Key hors dépôt.
+- [x] Exécuter le bootstrap `[bootstrap-play-once]` : run `37632351393` GREEN.
+- [x] Vérifier génération Upload Key + certificat public ; SHA-256 certificat `8E:A9:D0:C7:33:0F:ED:0E:B4:FF:04:1E:BC:9C:EB:E0:93:09:B8:36:44:C7:39:8C:FB:AE:E8:E4:E4:13:43:5F`.
+- [x] Vérifier tests, packaging média, `bundleRelease` et signature du premier AAB ; `jar verified.`.
+- [ ] Fab : placer le contenu de `ANDROID_UPLOAD_KEYSTORE_BASE64.txt` (artifact `11486976777`) dans le Secret `ANDROID_UPLOAD_KEYSTORE_BASE64`.
+- [ ] Fab : conserver une sauvegarde durable du handoff/Upload Key hors dépôt.
 - [ ] Fab : importer l'AAB dans Play Console et laisser Google générer/protéger l'App Signing Key.
 - [ ] Aucun merge `main` avant ordre explicite de Fab.
+
+
+Premier AAB signé produit : `GeckoDoku-v0.15.44-dev-code79-signed.aab` — SHA-256 `cc904dab3c0170f522507af2c5805e5d00cde22bf920bc53537a2e1a1e726a16` — artifact `11486204826`.
