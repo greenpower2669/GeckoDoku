@@ -1,6 +1,8 @@
 # GeckoDoku — TODO actif
 
-Mission `GECKO-HOF-SYNC-001` sur `feature/gecko-hof-sync-v1`.
+Mission active `GECKO-PLAY-SIGNING-001` sur `feature/play-upload-signing-v1`.
+
+Mission précédente `GECKO-HOF-SYNC-001` : close, mergée et publiée.
 
 ## HOF global v1
 
