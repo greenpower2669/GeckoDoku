@@ -43,3 +43,20 @@ Les tests offline/restart/retry/doublons exhaustifs restent en suivi produit ; F
 ## Produit hors mission à préserver
 
 Ne pas modifier pour ce lot : gameplay, étoiles, aides, statistiques personnelles, progression, gestes/géométrie, logique Prof, médias source.
+
+
+## GECKO-PLAY-SIGNING-001 — Google Play / AAB
+
+- [x] Créer la branche `feature/play-upload-signing-v1` depuis `main@908df36a4e26e79d714967ff9fb7948759cdd9ee`.
+- [x] Préparer workflow one-shot de génération clé d'upload + certificat.
+- [x] Préparer workflow AAB Release signé.
+- [x] Préserver Pierre + sprites 240p dans la chaîne AAB.
+- [x] Interdire l'écrasement silencieux d'une clé existante.
+- [x] Ne jamais écrire le secret ou le JKS clair dans Git.
+- [ ] Fab : créer le secret GitHub `ANDROID_UPLOAD_STORE_PASSWORD` (24+ caractères, idéalement généré par gestionnaire de mots de passe).
+- [ ] Déclencher la génération one-shot par commit `[generate-upload-key]`.
+- [ ] Vérifier le run et le SHA-256 du certificat public.
+- [ ] Construire l'AAB signé par commit `[play-aab]`.
+- [ ] Vérifier tests, packaging média et signature du bundle.
+- [ ] Fab : importer l'AAB dans Play Console et laisser Google générer/protéger la clé de signature Play.
+- [ ] Aucun merge `main` avant ordre explicite de Fab.

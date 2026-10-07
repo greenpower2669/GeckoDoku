@@ -82,3 +82,29 @@ main
 
 APK final : `GeckoDoku-v0.15.44-dev.apk`  
 SHA-256 : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c`.
+
+
+## Google Play — flux de signature
+
+```text
+Fab crée ANDROID_UPLOAD_STORE_PASSWORD dans GitHub Actions Secrets
+        ↓
+setup-play-upload-key.yml
+        ├─ keytool RSA 4096 / alias geckodoku-upload
+        ├─ certificat public PEM
+        ├─ JKS chiffré AES-256-CBC + PBKDF2
+        └─ commit du .jks.enc + PEM, jamais du JKS clair
+        ↓
+build-play-aab.yml
+        ├─ Pierre + sprites 240p validés
+        ├─ tests JVM
+        ├─ bundleRelease
+        ├─ déchiffrement temporaire du JKS
+        ├─ vérification certificat
+        ├─ jarsigner + vérification
+        └─ artifact AAB signé
+        ↓
+Upload manuel Play Console depuis le téléphone
+```
+
+Garde-fous : génération one-shot, pas de secret dans le dépôt, pas de remplacement silencieux de clé, pas de merge/main ni publication Play automatique.

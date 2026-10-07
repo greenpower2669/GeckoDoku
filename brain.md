@@ -76,3 +76,15 @@ Cible de publication : `0.15.44-dev` / code 79.
 - APK : `GeckoDoku-v0.15.44-dev.apk` ;
 - SHA-256 : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c` ;
 - Release finale non prerelease, ciblée sur le merge `c1a32bf4736894f87ac45f1c626f72a111cf1c2e`.
+
+
+## Google Play / AAB — mission active
+
+- branche : `feature/play-upload-signing-v1`.
+- aucun secret ni keystore en clair dans Git.
+- secret GitHub attendu : `ANDROID_UPLOAD_STORE_PASSWORD` (24 caractères minimum ; valeur connue uniquement de Fab/GitHub).
+- workflow setup : génère une seule fois une clé d'upload RSA 4096 `geckodoku-upload`, exporte le PEM public, chiffre le JKS avec AES-256-CBC/PBKDF2 et refuse tout remplacement.
+- workflow AAB : restaure Pierre + banque sprites 240p validée, lance les tests JVM + `bundleRelease`, déchiffre temporairement le JKS, vérifie le certificat, signe l'AAB puis supprime le JKS clair.
+- sortie prévue : `GeckoDoku-v<version>-code<versionCode>-signed.aab`.
+- Play App Signing : Google pourra conserver la clé de signature finale ; notre clé sert uniquement à l'importation.
+- pas de merge `main` ni publication Play sans ordre explicite.

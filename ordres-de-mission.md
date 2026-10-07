@@ -2,6 +2,22 @@
 
 ## Mission active
 
+`GECKO-PLAY-SIGNING-001` — clé d'importation Google Play + AAB signé sans PC.
+
+- base : `main@908df36a4e26e79d714967ff9fb7948759cdd9ee`
+- branche : `feature/play-upload-signing-v1`
+- objectif : générer une clé d'upload Google Play dédiée, conserver uniquement sa forme chiffrée dans Git, exporter le certificat public, puis produire un AAB Release signé via GitHub Actions.
+- secret unique attendu : `ANDROID_UPLOAD_STORE_PASSWORD`, créé par Fab dans GitHub Actions Secrets ; sa valeur ne doit jamais être envoyée dans le chat ni écrite dans Git.
+- clé : alias `geckodoku-upload`, RSA 4096, JKS.
+- stockage privé : `.github/signing/geckodoku-upload.jks.enc`, chiffré AES-256-CBC + PBKDF2 300000 itérations.
+- certificat public : `.github/signing/geckodoku-upload-certificate.pem`.
+- génération strictement one-shot : refus d'écraser une clé existante.
+- l'AAB Play réutilise la chaîne média validée (Pierre + sprites 240p), exécute les tests JVM, construit `bundleRelease`, signe avec `jarsigner`, vérifie la signature et publie seulement un artifact GitHub.
+- aucun changement gameplay.
+- aucun merge `main`, aucune Release GitHub et aucun envoi Play Console sans nouvel ordre explicite de Fab.
+
+## Mission close précédente
+
 `GECKO-HOF-SYNC-001` — Hall of Fame global v1.
 
 - base : `main@1b66d3fc6ad4bfa06bf939cd5ee743fe767a4675`

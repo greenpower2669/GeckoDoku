@@ -85,3 +85,24 @@ Les tests offline/retry/doublons exhaustifs n’ont pas tous été rejoués manu
 - Release finale : `phone-0.15.44-dev-run-432`.
 - APK : `GeckoDoku-v0.15.44-dev.apk`.
 - SHA-256 : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c`.
+
+
+## GECKO-PLAY-SIGNING-001 — ouverture 07/10/2026
+
+Besoin Fab : publier un AAB Google Play sans PC et créer une nouvelle clé d'importation proprement.
+
+État initial :
+- `main@908df36a4e26e79d714967ff9fb7948759cdd9ee` ;
+- APK téléphone actuel encore signé avec la clé Android de test, explicitement impropre à Google Play ;
+- `release` ne possède pas de signingConfig de production ;
+- chaîne de packaging média canonique déjà présente dans `.github/workflows/build.yml`.
+
+Décision :
+- ne pas toucher au gameplay ni à Gradle pour la signature ;
+- construire `bundleRelease` non signé puis signer l'AAB avec `jarsigner` ;
+- générer la clé d'upload dans GitHub Actions ;
+- ne conserver dans Git que le JKS chiffré + le certificat public ;
+- mot de passe uniquement dans le secret GitHub `ANDROID_UPLOAD_STORE_PASSWORD` ;
+- génération bloquée si une clé existe déjà.
+
+Branche créée : `feature/play-upload-signing-v1`.

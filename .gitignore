@@ -5,3 +5,9 @@ local.properties
 .DS_Store
 build/
 app/build/
+
+
+# Android signing material: never commit plaintext private-key stores
+*.jks
+*.keystore
+*.p12
