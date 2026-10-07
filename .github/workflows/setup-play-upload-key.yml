@@ -1,28 +1,26 @@
-name: Setup Google Play upload key
+name: Bootstrap Google Play upload key and signed AAB
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - feature/play-upload-signing-v1
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: geckodoku-play-upload-key
+  group: geckodoku-play-upload-key-bootstrap
   cancel-in-progress: false
 
 jobs:
-  generate-upload-key:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[generate-upload-key]')
+  bootstrap-upload-key-and-aab:
+    if: github.run_attempt == 1 && contains(github.event.head_commit.message, '[bootstrap-play-once]')
     runs-on: ubuntu-latest
     env:
-      KEY_ALIAS: geckodoku-upload
+      KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS || 'geckodoku-upload' }}
       UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
-      ENCRYPTED_KEYSTORE: .github/signing/geckodoku-upload.jks.enc
-      PUBLIC_CERTIFICATE: .github/signing/geckodoku-upload-certificate.pem
-      KEY_INFO: .github/signing/geckodoku-upload-key-info.txt
+      UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD || secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+      EXISTING_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
 
     steps:
       - name: Checkout
@@ -34,123 +32,194 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Validate signing secret
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+
+      - name: Validate bootstrap secrets
         shell: bash
         run: |
           set -euo pipefail
-          if [ -z "${UPLOAD_STORE_PASSWORD:-}" ]; then
-            echo "::error::Missing repository secret ANDROID_UPLOAD_STORE_PASSWORD."
+          test -n "${UPLOAD_STORE_PASSWORD:-}" || {
+            echo "::error::Missing ANDROID_UPLOAD_STORE_PASSWORD."
+            exit 1
+          }
+          test -n "${UPLOAD_KEY_PASSWORD:-}" || {
+            echo "::error::Missing ANDROID_UPLOAD_KEY_PASSWORD."
+            exit 1
+          }
+          test -n "${KEY_ALIAS:-}" || {
+            echo "::error::Missing upload key alias."
+            exit 1
+          }
+          if [ "${#UPLOAD_STORE_PASSWORD}" -lt 12 ]; then
+            echo "::error::Upload keystore password must contain at least 12 characters."
             exit 1
           fi
-          if [ "${#UPLOAD_STORE_PASSWORD}" -lt 24 ]; then
-            echo "::error::ANDROID_UPLOAD_STORE_PASSWORD must contain at least 24 characters."
+          if [ "${#UPLOAD_KEY_PASSWORD}" -lt 12 ]; then
+            echo "::error::Upload key password must contain at least 12 characters."
+            exit 1
+          fi
+          if [ -n "${EXISTING_UPLOAD_KEYSTORE_BASE64:-}" ]; then
+            echo "::error::ANDROID_UPLOAD_KEYSTORE_BASE64 already exists. Refusing to generate another upload key."
             exit 1
           fi
 
-      - name: Refuse to overwrite an existing upload key
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -e "$ENCRYPTED_KEYSTORE" ] || [ -e "$PUBLIC_CERTIFICATE" ]; then
-            echo "::error::A Google Play upload key is already stored. Refusing to replace it."
-            exit 1
-          fi
-
-      - name: Generate upload key and public certificate
+      - name: Generate persistent upload key
         shell: bash
         run: |
           set -euo pipefail
           umask 077
-          mkdir -p .github/signing
 
           KEYSTORE="$RUNNER_TEMP/geckodoku-upload.jks"
+          ENCRYPTED="$RUNNER_TEMP/geckodoku-upload.jks.enc"
+          mkdir -p play-key-handoff
 
-          keytool -genkeypair \
-            -keystore "$KEYSTORE" \
-            -storetype JKS \
-            -storepass:env UPLOAD_STORE_PASSWORD \
-            -keypass:env UPLOAD_STORE_PASSWORD \
-            -alias "$KEY_ALIAS" \
-            -keyalg RSA \
-            -keysize 4096 \
-            -validity 10000 \
-            -dname "CN=GeckoDoku Upload, O=GreenPower2669, C=FR"
+          keytool -genkeypair             -keystore "$KEYSTORE"             -storetype JKS             -storepass:env UPLOAD_STORE_PASSWORD             -keypass:env UPLOAD_KEY_PASSWORD             -alias "$KEY_ALIAS"             -keyalg RSA             -keysize 4096             -validity 10000             -dname "CN=GeckoDoku Upload, O=GreenPower2669, C=FR"
 
-          keytool -exportcert \
-            -rfc \
-            -keystore "$KEYSTORE" \
-            -storetype JKS \
-            -storepass:env UPLOAD_STORE_PASSWORD \
-            -alias "$KEY_ALIAS" \
-            -file "$PUBLIC_CERTIFICATE"
+          keytool -exportcert             -rfc             -keystore "$KEYSTORE"             -storetype JKS             -storepass:env UPLOAD_STORE_PASSWORD             -alias "$KEY_ALIAS"             -file play-key-handoff/geckodoku-upload-certificate.pem
 
-          openssl enc -aes-256-cbc -pbkdf2 -iter 300000 -salt \
-            -in "$KEYSTORE" \
-            -out "$ENCRYPTED_KEYSTORE" \
-            -pass env:UPLOAD_STORE_PASSWORD
+          openssl enc -aes-256-cbc -pbkdf2 -iter 300000 -salt             -in "$KEYSTORE"             -out "$ENCRYPTED"             -pass env:UPLOAD_STORE_PASSWORD
 
-          CERT_SHA256="$(
-            openssl x509 -in "$PUBLIC_CERTIFICATE" -outform der \
-              | sha256sum \
-              | awk '{print toupper($1)}'
-          )"
+          base64 -w 0 "$ENCRYPTED" > play-key-handoff/ANDROID_UPLOAD_KEYSTORE_BASE64.txt
+          printf '\n' >> play-key-handoff/ANDROID_UPLOAD_KEYSTORE_BASE64.txt
 
-          cat > "$KEY_INFO" <<EOF
+          CERT_SHA256="$(openssl x509             -in play-key-handoff/geckodoku-upload-certificate.pem             -noout -fingerprint -sha256 | cut -d= -f2)"
+
+          cat > play-key-handoff/geckodoku-upload-key-info.txt <<EOF
           GeckoDoku Google Play upload key
           Alias: $KEY_ALIAS
           Algorithm: RSA 4096
-          Keystore format: JKS
-          Certificate SHA-256: $CERT_SHA256
-          Private key storage: AES-256-CBC / PBKDF2 300000 iterations
-          Password source: GitHub Actions secret ANDROID_UPLOAD_STORE_PASSWORD
+          Keystore format before transport encryption: JKS
+          Transport protection: AES-256-CBC / PBKDF2 300000 iterations
+          Upload certificate SHA-256: $CERT_SHA256
+          Secret destination: ANDROID_UPLOAD_KEYSTORE_BASE64
+          Password secrets: ANDROID_UPLOAD_STORE_PASSWORD and ANDROID_UPLOAD_KEY_PASSWORD
           EOF
 
-          rm -f "$KEYSTORE"
+          echo "UPLOAD_KEYSTORE=$KEYSTORE" >> "$GITHUB_ENV"
+          echo "UPLOAD_CERT_SHA256=$CERT_SHA256" >> "$GITHUB_ENV"
 
-      - name: Verify encrypted keystore round-trip
+      - name: Verify generated key before handoff
         shell: bash
         run: |
           set -euo pipefail
-          VERIFY_KEYSTORE="$RUNNER_TEMP/geckodoku-upload-verify.jks"
-          VERIFY_CERT="$RUNNER_TEMP/geckodoku-upload-verify.pem"
+          keytool -list             -keystore "$UPLOAD_KEYSTORE"             -storetype JKS             -storepass:env UPLOAD_STORE_PASSWORD             -alias "$KEY_ALIAS" >/dev/null
+          test -s play-key-handoff/ANDROID_UPLOAD_KEYSTORE_BASE64.txt
+          test -s play-key-handoff/geckodoku-upload-certificate.pem
+          test -s play-key-handoff/geckodoku-upload-key-info.txt
 
-          openssl enc -d -aes-256-cbc -pbkdf2 -iter 300000 \
-            -in "$ENCRYPTED_KEYSTORE" \
-            -out "$VERIFY_KEYSTORE" \
-            -pass env:UPLOAD_STORE_PASSWORD
-
-          keytool -list \
-            -keystore "$VERIFY_KEYSTORE" \
-            -storetype JKS \
-            -storepass:env UPLOAD_STORE_PASSWORD \
-            -alias "$KEY_ALIAS" >/dev/null
-
-          keytool -exportcert \
-            -rfc \
-            -keystore "$VERIFY_KEYSTORE" \
-            -storetype JKS \
-            -storepass:env UPLOAD_STORE_PASSWORD \
-            -alias "$KEY_ALIAS" \
-            -file "$VERIFY_CERT"
-
-          cmp "$PUBLIC_CERTIFICATE" "$VERIFY_CERT"
-          rm -f "$VERIFY_KEYSTORE" "$VERIFY_CERT"
-
-      - name: Commit encrypted key material and public certificate
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$ENCRYPTED_KEYSTORE" "$PUBLIC_CERTIFICATE" "$KEY_INFO"
-          git commit -m "chore: store encrypted Google Play upload key [skip ci]"
-          git push
-
-      - name: Upload public certificate for Play Console
+      - name: Upload one-day encrypted key handoff
         uses: actions/upload-artifact@v4
         with:
-          name: geckodoku-google-play-upload-certificate
-          path: |
-            ${{ env.PUBLIC_CERTIFICATE }}
-            ${{ env.KEY_INFO }}
+          name: geckodoku-upload-key-handoff
+          path: play-key-handoff/
           if-no-files-found: error
+          retention-days: 1
+
+      - name: Prepare Sherpa-ONNX Android AAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p app/libs
+          curl --fail --location --retry 3             -o app/libs/sherpa-onnx-1.13.8.aar             "https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-1.13.8.aar"
+          echo "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96  app/libs/sherpa-onnx-1.13.8.aar" | sha256sum -c -
+          test -s app/libs/sherpa-onnx-1.13.8.aar
+
+      - name: Prepare Piper UPMC Medium Pierre asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          archive="$work/upmc-medium.tar.bz2"
+
+          curl --fail --location --retry 3             -o "$archive"             "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-fr_FR-upmc-medium.tar.bz2"
+
+          echo "e9830a331a16f6cc5ef3116a287065e015d3495c3f56b974889a266da7f89a7f  $archive" | sha256sum -c -
+          tar -xjf "$archive" -C "$work"
+
+          rm -rf assets/tts/piper
+          mkdir -p assets/tts/piper
+          mv "$work/vits-piper-fr_FR-upmc-medium" assets/tts/piper/pierre
+
+          test -f assets/tts/piper/pierre/fr_FR-upmc-medium.onnx
+          test -f assets/tts/piper/pierre/tokens.txt
+          test -d assets/tts/piper/pierre/espeak-ng-data
+
+      - name: Restore validated 240p sprite bank
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          apk="$work/known-good.apk"
+
+          curl --fail --location --retry 3             -o "$apk"             "https://github.com/greenpower2669/GeckoDoku/releases/download/phone-0.15.43-dev-run-403/GeckoDoku-v0.15.43-dev.apk"
+
+          echo "5b4f38049c3c7e8d115b78bef573784084ddec85cd4774d620dd0d76a4ba7a94  $apk" | sha256sum -c -
+
+          mkdir -p "$work/extracted"
+          unzip -q "$apk" 'assets/sprites/*' -d "$work/extracted"
+          test -d "$work/extracted/assets/sprites"
+
+          rm -rf assets/sprites
+          mkdir -p assets
+          cp -a "$work/extracted/assets/sprites" assets/sprites
+
+          test -f assets/sprites/index.json
+          test -f assets/sprites/banks/240p/bank-manifest.json
+          test ! -d assets/sprites/banks/60p
+          test ! -d assets/sprites/banks/120p
+          test ! -d assets/sprites/banks/480p
+
+      - name: Test and build unsigned release AAB
+        run: gradle :app:testDebugUnitTest :app:bundleRelease --no-daemon
+
+      - name: Verify packaged Pierre and sprite bank
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAB="app/build/outputs/bundle/release/app-release.aab"
+          test -s "$AAB"
+          unzip -l "$AAB" | grep -F 'base/assets/tts/piper/pierre/fr_FR-upmc-medium.onnx'
+          unzip -l "$AAB" | grep -F 'base/assets/sprites/index.json'
+          unzip -l "$AAB" | grep -F 'base/assets/sprites/banks/240p/bank-manifest.json'
+
+      - name: Sign release AAB with persistent upload key
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAB="app/build/outputs/bundle/release/app-release.aab"
+
+          jarsigner             -keystore "$UPLOAD_KEYSTORE"             -storetype JKS             -storepass:env UPLOAD_STORE_PASSWORD             -keypass:env UPLOAD_KEY_PASSWORD             -sigalg SHA256withRSA             -digestalg SHA-256             "$AAB"             "$KEY_ALIAS"
+
+          jarsigner -verify -verbose -certs "$AAB" | tee "$RUNNER_TEMP/jarsigner-verify.txt"
+          grep -F "jar verified." "$RUNNER_TEMP/jarsigner-verify.txt"
+
+      - name: Resolve app version and name signed AAB
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP_VERSION="$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -n 1)"
+          APP_CODE="$(sed -n 's/.*versionCode = \([0-9][0-9]*\).*/\1/p' app/build.gradle.kts | head -n 1)"
+          test -n "$APP_VERSION"
+          test -n "$APP_CODE"
+          cp app/build/outputs/bundle/release/app-release.aab             "GeckoDoku-v${APP_VERSION}-code${APP_CODE}-signed.aab"
+          test -s "GeckoDoku-v${APP_VERSION}-code${APP_CODE}-signed.aab"
+          echo "APP_VERSION=$APP_VERSION" >> "$GITHUB_ENV"
+          echo "APP_CODE=$APP_CODE" >> "$GITHUB_ENV"
+
+      - name: Upload signed Google Play AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: GeckoDoku-v${{ env.APP_VERSION }}-code${{ env.APP_CODE }}-GooglePlay
+          path: GeckoDoku-v${{ env.APP_VERSION }}-code${{ env.APP_CODE }}-signed.aab
+          if-no-files-found: error
+
+      - name: Remove temporary private material
+        if: always()
+        shell: bash
+        run: |
+          rm -f "$RUNNER_TEMP/geckodoku-upload.jks"
+          rm -f "$RUNNER_TEMP/geckodoku-upload.jks.enc"
+          rm -rf play-key-handoff

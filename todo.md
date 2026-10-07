@@ -49,16 +49,16 @@ Ne pas modifier pour ce lot : gameplay, étoiles, aides, statistiques personnell
 
 ## GECKO-PLAY-SIGNING-001 — Google Play / AAB
 
-- [x] Créer la branche `feature/play-upload-signing-v1` depuis `main@908df36a4e26e79d714967ff9fb7948759cdd9ee`.
-- [x] Préparer workflow one-shot de génération clé d'upload + certificat.
-- [x] Préparer workflow AAB Release signé.
+- [x] Créer `feature/play-upload-signing-v1` depuis `main@908df36a4e26e79d714967ff9fb7948759cdd9ee`.
+- [x] Corriger l'architecture : aucun keystore privé, même chiffré, dans Git.
+- [x] Préparer bootstrap one-shot hors dépôt.
+- [x] Préparer workflow AAB futur alimenté par Secrets.
 - [x] Préserver Pierre + sprites 240p dans la chaîne AAB.
-- [x] Interdire l'écrasement silencieux d'une clé existante.
-- [x] Ne jamais écrire le secret ou le JKS clair dans Git.
-- [ ] Fab : créer le secret GitHub `ANDROID_UPLOAD_STORE_PASSWORD` (24+ caractères, idéalement généré par gestionnaire de mots de passe).
-- [ ] Déclencher la génération one-shot par commit `[generate-upload-key]`.
-- [ ] Vérifier le run et le SHA-256 du certificat public.
-- [ ] Construire l'AAB signé par commit `[play-aab]`.
-- [ ] Vérifier tests, packaging média et signature du bundle.
-- [ ] Fab : importer l'AAB dans Play Console et laisser Google générer/protéger la clé de signature Play.
+- [x] Fab : créer `ANDROID_UPLOAD_STORE_PASSWORD`, `ANDROID_UPLOAD_KEY_PASSWORD` et `ANDROID_UPLOAD_KEY_ALIAS`.
+- [ ] Exécuter le bootstrap `[bootstrap-play-once]`.
+- [ ] Vérifier génération Upload Key + certificat public.
+- [ ] Vérifier tests, packaging média, `bundleRelease` et signature du premier AAB.
+- [ ] Récupérer `ANDROID_UPLOAD_KEYSTORE_BASE64.txt` et le placer dans le Secret `ANDROID_UPLOAD_KEYSTORE_BASE64`.
+- [ ] Conserver une sauvegarde durable de l'Upload Key hors dépôt.
+- [ ] Fab : importer l'AAB dans Play Console et laisser Google générer/protéger l'App Signing Key.
 - [ ] Aucun merge `main` avant ordre explicite de Fab.

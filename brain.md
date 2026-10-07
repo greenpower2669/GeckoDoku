@@ -81,10 +81,13 @@ Cible de publication : `0.15.44-dev` / code 79.
 ## Google Play / AAB — mission active
 
 - branche : `feature/play-upload-signing-v1`.
-- aucun secret ni keystore en clair dans Git.
-- secret GitHub attendu : `ANDROID_UPLOAD_STORE_PASSWORD` (24 caractères minimum ; valeur connue uniquement de Fab/GitHub).
-- workflow setup : génère une seule fois une clé d'upload RSA 4096 `geckodoku-upload`, exporte le PEM public, chiffre le JKS avec AES-256-CBC/PBKDF2 et refuse tout remplacement.
-- workflow AAB : restaure Pierre + banque sprites 240p validée, lance les tests JVM + `bundleRelease`, déchiffre temporairement le JKS, vérifie le certificat, signe l'AAB puis supprime le JKS clair.
-- sortie prévue : `GeckoDoku-v<version>-code<versionCode>-signed.aab`.
-- Play App Signing : Google pourra conserver la clé de signature finale ; notre clé sert uniquement à l'importation.
-- pas de merge `main` ni publication Play sans ordre explicite.
+- ordre Fab du 07/10/2026 : produire le premier AAB signé, sans merge/main ni publication Play.
+- Upload Key : une seule clé pérenne `geckodoku-upload`, RSA 4096 / JKS.
+- App Signing Key : non créée par GeckoDoku ; Google la génère et la conserve via Play App Signing.
+- aucun keystore privé dans Git, même chiffré.
+- secrets utilisés : `ANDROID_UPLOAD_STORE_PASSWORD`, `ANDROID_UPLOAD_KEY_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS`, puis `ANDROID_UPLOAD_KEYSTORE_BASE64`.
+- bootstrap : génère la clé dans le runner, chiffre le JKS AES-256-CBC/PBKDF2, fournit un handoff chiffré à rétention 1 jour, puis construit et signe le premier AAB.
+- le handoff `ANDROID_UPLOAD_KEYSTORE_BASE64.txt` doit ensuite être copié dans le Secret GitHub homonyme ; les builds futurs reconstruisent le keystore temporairement depuis ce Secret.
+- workflow AAB : Pierre + sprites 240p, tests JVM, `bundleRelease`, `jarsigner`, vérification et nettoyage.
+- sortie : `GeckoDoku-v<version>-code<versionCode>-signed.aab`.
+- pas de merge `main`, Release GitHub ou envoi Play sans ordre explicite.

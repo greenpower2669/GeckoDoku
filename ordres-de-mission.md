@@ -2,17 +2,18 @@
 
 ## Mission active
 
-`GECKO-PLAY-SIGNING-001` — clé d'importation Google Play + AAB signé sans PC.
+`GECKO-PLAY-SIGNING-001` — Upload Key Google Play pérenne + AAB signé sans PC.
 
 - base : `main@908df36a4e26e79d714967ff9fb7948759cdd9ee`
 - branche : `feature/play-upload-signing-v1`
-- objectif : générer une clé d'upload Google Play dédiée, conserver uniquement sa forme chiffrée dans Git, exporter le certificat public, puis produire un AAB Release signé via GitHub Actions.
-- secret unique attendu : `ANDROID_UPLOAD_STORE_PASSWORD`, créé par Fab dans GitHub Actions Secrets ; sa valeur ne doit jamais être envoyée dans le chat ni écrite dans Git.
-- clé : alias `geckodoku-upload`, RSA 4096, JKS.
-- stockage privé : `.github/signing/geckodoku-upload.jks.enc`, chiffré AES-256-CBC + PBKDF2 300000 itérations.
-- certificat public : `.github/signing/geckodoku-upload-certificate.pem`.
-- génération strictement one-shot : refus d'écraser une clé existante.
-- l'AAB Play réutilise la chaîne média validée (Pierre + sprites 240p), exécute les tests JVM, construit `bundleRelease`, signe avec `jarsigner`, vérifie la signature et publie seulement un artifact GitHub.
+- objectif immédiat autorisé par Fab le 07/10/2026 : générer UNE Upload Key pérenne hors dépôt et produire le premier AAB signé.
+- Play App Signing : Google générera/conservera l'App Signing Key ; GeckoDoku ne crée que l'Upload Key.
+- alias : `geckodoku-upload`, RSA 4096, JKS.
+- secrets : `ANDROID_UPLOAD_STORE_PASSWORD`, `ANDROID_UPLOAD_KEY_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS`, puis `ANDROID_UPLOAD_KEYSTORE_BASE64`.
+- `ANDROID_UPLOAD_KEYSTORE_BASE64` contient le Base64 du JKS déjà chiffré AES-256-CBC/PBKDF2 ; aucun keystore, même chiffré, n'est stocké dans Git.
+- bootstrap one-shot : génération dans le runner, handoff chiffré 1 jour, build/tests/package, signature + vérification du premier AAB, nettoyage.
+- builds suivants : reconstruction du keystore uniquement depuis GitHub Secrets.
+- chaîne média AAB : Pierre + banque sprites 240p validée.
 - aucun changement gameplay.
 - aucun merge `main`, aucune Release GitHub et aucun envoi Play Console sans nouvel ordre explicite de Fab.
 

@@ -87,22 +87,25 @@ Les tests offline/retry/doublons exhaustifs n’ont pas tous été rejoués manu
 - SHA-256 : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c`.
 
 
-## GECKO-PLAY-SIGNING-001 — ouverture 07/10/2026
+## GECKO-PLAY-SIGNING-001 — ouverture et correction 07/10/2026
 
-Besoin Fab : publier un AAB Google Play sans PC et créer une nouvelle clé d'importation proprement.
+Besoin Fab : produire un AAB Google Play signé sans PC, avec une vraie Upload Key pérenne.
 
 État initial :
 - `main@908df36a4e26e79d714967ff9fb7948759cdd9ee` ;
-- APK téléphone actuel encore signé avec la clé Android de test, explicitement impropre à Google Play ;
-- `release` ne possède pas de signingConfig de production ;
-- chaîne de packaging média canonique déjà présente dans `.github/workflows/build.yml`.
+- APK téléphone historique signé avec la clé Android de test, impropre à Google Play ;
+- `release` sans signingConfig de production ;
+- chaîne Pierre + sprites 240p déjà connue et reproductible.
 
-Décision :
-- ne pas toucher au gameplay ni à Gradle pour la signature ;
-- construire `bundleRelease` non signé puis signer l'AAB avec `jarsigner` ;
-- générer la clé d'upload dans GitHub Actions ;
-- ne conserver dans Git que le JKS chiffré + le certificat public ;
-- mot de passe uniquement dans le secret GitHub `ANDROID_UPLOAD_STORE_PASSWORD` ;
-- génération bloquée si une clé existe déjà.
+Première préparation abandonnée avant génération de clé : elle prévoyait de committer un JKS chiffré dans Git. Fab a précisé le contrat : la clé privée doit rester entièrement hors dépôt et être injectée via GitHub Actions Secrets. Aucun JKS chiffré n'a été généré ni committé avant cette correction.
 
-Branche créée : `feature/play-upload-signing-v1`.
+Architecture corrigée :
+- Play App Signing conserve l'App Signing Key chez Google ;
+- GeckoDoku crée uniquement l'Upload Key `geckodoku-upload` ;
+- bootstrap GitHub Actions à partir des mots de passe Secrets ;
+- JKS chiffré AES-256-CBC/PBKDF2 puis transmis temporairement par artifact 1 jour sous forme Base64 ;
+- Fab place ensuite ce Base64 dans `ANDROID_UPLOAD_KEYSTORE_BASE64` ;
+- builds futurs : keystore reconstruit uniquement dans le runner depuis Secrets ;
+- premier AAB signé dans le même bootstrap pour éviter de bloquer la publication sans PC ;
+- aucun gameplay/Gradle produit modifié ;
+- aucun merge `main`, Release GitHub ou envoi Play Console sans ordre explicite.

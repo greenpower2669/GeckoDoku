@@ -87,24 +87,36 @@ SHA-256 : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c`.
 ## Google Play — flux de signature
 
 ```text
-Fab crée ANDROID_UPLOAD_STORE_PASSWORD dans GitHub Actions Secrets
+Secrets déjà créés par Fab
+├─ ANDROID_UPLOAD_STORE_PASSWORD
+├─ ANDROID_UPLOAD_KEY_PASSWORD
+└─ ANDROID_UPLOAD_KEY_ALIAS
         ↓
-setup-play-upload-key.yml
-        ├─ keytool RSA 4096 / alias geckodoku-upload
-        ├─ certificat public PEM
-        ├─ JKS chiffré AES-256-CBC + PBKDF2
-        └─ commit du .jks.enc + PEM, jamais du JKS clair
+setup-play-upload-key.yml  [bootstrap-play-once]
+        ├─ génère UNE Upload Key RSA 4096 / JKS
+        ├─ exporte le certificat public
+        ├─ chiffre le JKS AES-256-CBC + PBKDF2
+        ├─ artifact handoff chiffré, rétention 1 jour
+        │    └─ ANDROID_UPLOAD_KEYSTORE_BASE64.txt
+        ├─ restaure Pierre + sprites 240p
+        ├─ tests JVM + bundleRelease
+        ├─ jarsigner + vérification
+        └─ artifact premier AAB signé
+        ↓
+Fab copie le handoff dans le Secret
+ANDROID_UPLOAD_KEYSTORE_BASE64
         ↓
 build-play-aab.yml
-        ├─ Pierre + sprites 240p validés
-        ├─ tests JVM
-        ├─ bundleRelease
-        ├─ déchiffrement temporaire du JKS
-        ├─ vérification certificat
-        ├─ jarsigner + vérification
-        └─ artifact AAB signé
+        ├─ reconstruit le JKS uniquement dans le runner
+        ├─ tests + bundleRelease
+        ├─ signe + vérifie
+        ├─ publie l'artifact AAB
+        └─ détruit le keystore temporaire
         ↓
-Upload manuel Play Console depuis le téléphone
+Upload manuel Play Console après validation Fab
+        ↓
+Play App Signing
+        └─ Google génère/conserve l'App Signing Key
 ```
 
-Garde-fous : génération one-shot, pas de secret dans le dépôt, pas de remplacement silencieux de clé, pas de merge/main ni publication Play automatique.
+Garde-fous : aucune clé privée dans Git, bootstrap non rejouable par re-run, pas de génération si le Secret keystore existe déjà, aucun merge/main, aucune Release GitHub et aucun envoi Play automatique.
