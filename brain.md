@@ -95,3 +95,13 @@ Code poussé sur `feature/sudoku-visual-reasoning-v1` : `SudokuVisualReasoning.k
 Identité : `PlayerProfileStore.kt` fournit un profil historique `legacy` conservant son ancien stockage et des profils supplémentaires à UUID ; `PlayerStats.kt` les sépare par fichier de préférences ; `UserDataBackup.kt` exporte/importe les fichiers additionnels ; `MainActivity.kt` autorise le choix/création de profil et exige abandon/relance si partie active. `GlobalHallProjection.merge` préserve deux scores globaux distincts même avec pseudo identique, tandis que la courbe locale n'est plus accolée au classement mondial. Les scores historiques sans identité fiable restent historiques, pas reventilés. Référence : `missions/GECKO-HOF-PLAYER-ISOLATION-002.md`.
 
 Cible branche : `0.15.45-dev` / code 80, mêmes package et configuration de signature. CI phone activée + artefact APK/sha256 ; **preuve finale GREEN/validation Samsung encore à obtenir**.
+
+
+## Validation finale CI du lot 0.15.45-dev — 12/10/2026
+
+- Workflow `Build GeckoDoku phone APK`, run [38314483379](https://github.com/greenpower2669/GeckoDoku/actions/runs/38314483379) : **GREEN**, `gradle :app:testDebugUnitTest :app:assemblePhone` → `BUILD SUCCESSFUL`.
+- Étapes Pierre, banque sprites 240p (source 1 305 fichiers, modèle et manifest dans l'APK) et publication de l'artefact : SUCCESS.
+- Artefact Actions : `GeckoDoku-v0.15.45-dev-phone` (ID `11775463777`) contenant `GeckoDoku-v0.15.45-dev.apk` et `GeckoDoku-v0.15.45-dev.apk.sha256` ; APK SHA-256 : `ddff9b30a3267573cbf0a1cecad98fa6c76ca7aee94f670533a2169e1701d586`.
+- Cette version est le **build de test phone signé avec la clé debug existante**, PAS une publication Google Play. La signature Google Play n'est pas modifiée.
+- PR brouillon #4 : https://github.com/greenpower2669/GeckoDoku/pull/4 ; ne pas merger ni publier avant accord explicite.
+- **À faire** : recette physique Samsung par Fab (UI, Pierre, quatre modes, deux profils/homonymes, restauration des données). Les anciens résultats localement mélangés, sans identité d'origine, ne peuvent être reclassés automatiquement.
