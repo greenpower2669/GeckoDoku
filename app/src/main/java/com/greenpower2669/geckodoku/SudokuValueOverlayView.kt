@@ -414,7 +414,17 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                 val (x1, y1) = targetPoint(link.second)
                 val hue = (link.first.digit * 37) % 255
                 paint.color = Color.argb(115, 25 + hue / 4, 75 + hue / 3, 135)
-                canvas.drawLine(x0, y0, x1, y1, paint)
+                // Le trait dépasse légèrement les chiffres aux deux extrémités
+                // afin que la projection reste perceptible même avec une basse vision.
+                val direction = if (x1 >= x0) 1f else -1f
+                val overhang = cellSize * .11f
+                canvas.drawLine(
+                    x0 - direction * overhang,
+                    y0,
+                    x1 + direction * overhang,
+                    y1,
+                    paint
+                )
             }
         }
 
