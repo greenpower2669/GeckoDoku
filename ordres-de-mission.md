@@ -129,3 +129,7 @@ Ordre Fab exécuté.
 - statut Release : publiée, non prerelease, latest au moment de la publication.
 
 La mission `GECKO-HOF-SYNC-001` est close. Les tests offline/restart/retry/doublons exhaustifs restant non rejoués restent des vérifications produit futures et ne remettent pas en cause l’ordre de publication déjà donné par Fab.
+
+## Avenant daté — récupération autorisée du 12/10/2026
+
+Fab a donné son feu vert pour une nouvelle génération de la clé d'importation, via la **méthode historique GitHub Actions**, avec sauvegarde externe sur Google Drive privé. Relance sur `feature/play-upload-signing-v1` via run `38295693054`. La remise chiffrée (artifact ID `11768141925`) a été créée et doit être téléchargée avant **13/10/2026 à 19:09:21 UTC** : la rétention historique n'est que de **1 jour**. Les anciens Secrets mots de passe sont conservés. Après copie dans le Secret `ANDROID_UPLOAD_KEYSTORE_BASE64` et sauvegarde cloud chiffrée, utiliser le nouveau certificat public pour demander dans Google Play **uniquement la réinitialisation de la clé d'importation**. Aucune publication ni merge `main` sans nouvel ordre, et pas d'envoi d'AAB avant validation Google. Préserver le protocole permanent ci-dessus sans modification automatique.
