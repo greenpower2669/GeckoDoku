@@ -137,3 +137,7 @@ run 37632351393 GREEN
 ```
 
 Étape suivante : copier `ANDROID_UPLOAD_KEYSTORE_BASE64.txt` dans le Secret homonyme, puis utiliser `build-play-aab.yml` pour les builds futurs.
+
+## Contrat de signature permanent — pointeur
+
+Lire en priorité la section « PROTOCOLE PERMANENT — SIGNATURE ANDROID / GOOGLE PLAY » de `ordres-de-mission.md` : procédure stable et préservée par convention, sans aucun secret en clair. Incident 12/10/2026 : keystore Base64 absent des Secrets, handoff initial expiré ; récupération de la clé privée non démontrée. Suivi dans `todo.md`. Pas de génération ni merge sans nouvelle autorisation Fab.
