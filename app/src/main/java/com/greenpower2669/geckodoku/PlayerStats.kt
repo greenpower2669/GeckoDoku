@@ -87,13 +87,18 @@ data class ProfessorDifficultyStats(
 )
 
 class PlayerStatsStore(
-    context: Context
+    context: Context,
+    profileId: String = PlayerProfileStore.LEGACY_PROFILE_ID
 ) {
     private val prefs =
         context.getSharedPreferences(
-            PREFERENCES_NAME,
+            preferenceNameForProfile(profileId),
             Context.MODE_PRIVATE
         )
+
+    /** Interdire tout changement de joueur pendant une tentative active. */
+    fun hasActiveAttempt(): Boolean =
+        prefs.getBoolean(KEY_ACTIVE, false)
 
     fun recordStart(
         size: Int,
@@ -1285,6 +1290,15 @@ class PlayerStatsStore(
     companion object {
         const val PREFERENCES_NAME =
             "geckodoku_local_stats"
+
+        /** Le profil historique conserve exactement son ancien stockage. */
+        fun preferenceNameForProfile(profileId: String): String =
+            if (profileId == PlayerProfileStore.LEGACY_PROFILE_ID) {
+                PREFERENCES_NAME
+            } else {
+                require(profileId.matches(Regex("[a-f0-9-]{36}")))
+                PREFERENCES_NAME + "_profile_" + profileId
+            }
 
         private const val KEY_EVENTS =
             "events_v2"
