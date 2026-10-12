@@ -86,6 +86,22 @@ class SudokuValueOverlayView @JvmOverloads constructor(
 
     private var reasoningStepIndex =
         -1
+    /** Affichages facultatifs : jamais d'effet sur les règles du Sudoku. */
+    var showVisualProjections: Boolean = false
+        set(value) { field = value; invalidate() }
+
+    var showVisualPairs: Boolean = false
+        set(value) { field = value; invalidate() }
+
+    var showVisualTriplets: Boolean = false
+        set(value) { field = value; invalidate() }
+
+    var showVisualCircles: Boolean = false
+        set(value) { field = value; invalidate() }
+
+    var playerCircleLinks: Set<SudokuVisualLink> = emptySet()
+        set(value) { field = value; invalidate() }
+
 
     init {
         isClickable = false
@@ -329,6 +345,9 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             canvas
         )
 
+        // Annotations en surimpression, sans toucher aux notes de jeu.
+        drawPlayerReasoningAnnotations(canvas, state)
+
         if (
             animateMarker &&
             animateGeckoMarkers
@@ -337,6 +356,118 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                 180L
             )
         }
+    }
+
+    /**
+     * Candidats personnels uniquement : les suggestions temporaires de Pierre
+     * ne servent pas de preuve ou de lien de projection.
+     */
+    private fun drawPlayerReasoningAnnotations(
+        canvas: Canvas,
+        snapshot: SudokuSnapshot
+    ) {
+        if (
+            !showVisualProjections &&
+            !showVisualPairs &&
+            !showVisualTriplets &&
+            !showVisualCircles
+        ) return
+
+        val notes = buildMap<Cell, Set<Int>> {
+            for (row in 0..8) {
+                for (col in 0..8) {
+                    val cell = Cell(row, col)
+                    if (snapshot.valueAt(cell) == 0) {
+                        val values = snapshot.notesAt(cell).filter { it in 1..9 }.toSet()
+                        if (values.isNotEmpty()) put(cell, values)
+                    }
+                }
+            }
+        }
+
+        fun targetPoint(ref: SudokuCandidateRef): Pair<Float, Float> {
+            val cell = cellRect(ref.cell)
+            val slot = SudokuCandidateLayout.slot(ref.digit)
+            return (
+                cell.left + (slot.left + slot.right) * cell.width() / 2f
+            ) to (
+                cell.top + (slot.top + slot.bottom) * cell.height() / 2f
+            )
+        }
+
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.pathEffect = null
+        if (showVisualProjections) {
+            val links = SudokuVisualReasoning.projectionSegments(notes)
+            paint.strokeWidth = (cellSize * .045f).coerceAtLeast(dp(1.3f))
+            links.forEach { link ->
+                val (x0, y0) = targetPoint(link.first)
+                val (x1, y1) = targetPoint(link.second)
+                val hue = (link.first.digit * 37) % 255
+                paint.color = Color.argb(115, 25 + hue / 4, 75 + hue / 3, 135)
+                canvas.drawLine(x0, y0, x1, y1, paint)
+            }
+        }
+
+        // Pas de clignotement rapide pour les personnes photosensibles :
+        // contour fixe contrasté, présence indiquée sans dépendre de la couleur.
+        for ((enabled, size) in listOf(
+            showVisualPairs to 2,
+            showVisualTriplets to 3
+        )) {
+            if (!enabled) continue
+            paint.color = if (size == 2) Color.argb(195, 22, 105, 160)
+            else Color.argb(195, 143, 64, 150)
+            paint.strokeWidth = (cellSize * .055f).coerceAtLeast(dp(1.5f))
+            paint.pathEffect = if (size == 3) {
+                android.graphics.DashPathEffect(
+                    floatArrayOf(cellSize * .12f, cellSize * .07f), 0f
+                )
+            } else null
+            val highlighted = SudokuVisualReasoning.nakedGroups(notes, size)
+                .flatMap { it.cells }.toSet()
+            highlighted.forEach { cell ->
+                val rect = cellRect(cell)
+                val inset = cellSize * .055f
+                canvas.drawRoundRect(
+                    rect.left + inset, rect.top + inset,
+                    rect.right - inset, rect.bottom - inset,
+                    cellSize * .12f, cellSize * .12f, paint
+                )
+            }
+            paint.pathEffect = null
+        }
+
+        if (showVisualCircles) {
+            paint.strokeWidth = (cellSize * .055f).coerceAtLeast(dp(1.4f))
+            playerCircleLinks.forEachIndexed { index, link ->
+                if (
+                    link.first.digit !in notes[link.first.cell].orEmpty() ||
+                    link.second.digit !in notes[link.second.cell].orEmpty()
+                ) return@forEachIndexed
+                val colors = intArrayOf(
+                    Color.rgb(15, 108, 171),
+                    Color.rgb(145, 48, 143),
+                    Color.rgb(30, 127, 75),
+                    Color.rgb(165, 97, 17)
+                )
+                val color = colors[index % colors.size]
+                val (x0, y0) = targetPoint(link.first)
+                val (x1, y1) = targetPoint(link.second)
+                paint.color = Color.argb(
+                    100, Color.red(color), Color.green(color), Color.blue(color)
+                )
+                canvas.drawLine(x0, y0, x1, y1, paint)
+                paint.color = Color.argb(
+                    210, Color.red(color), Color.green(color), Color.blue(color)
+                )
+                canvas.drawCircle(x0, y0, cellSize * .105f, paint)
+                canvas.drawCircle(x1, y1, cellSize * .105f, paint)
+            }
+        }
+        paint.pathEffect = null
+        paint.style = Paint.Style.FILL
     }
 
     private fun drawHypothesisAura(
