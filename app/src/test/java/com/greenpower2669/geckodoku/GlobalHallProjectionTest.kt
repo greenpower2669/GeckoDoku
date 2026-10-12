@@ -87,6 +87,34 @@ class GlobalHallProjectionTest {
     }
 
     @Test
+    fun `two separate global scores with same pseudo and time remain separate`() {
+        val raw =
+            """{"playerName":"GeckoTétu","mode":"GECKODOKU","difficulty":"EASY","size":5,"completed":true,"stars":5,"elapsedSeconds":42,"completedAt":123456789}"""
+        val a = GlobalScoreCacheEntry(
+            scoreId = "score-profile-a",
+            runId = "run-profile-a",
+            sequence = 1L,
+            receivedAt = 1000L,
+            normalizedJson = raw
+        )
+        val b = GlobalScoreCacheEntry(
+            scoreId = "score-profile-b",
+            runId = "run-profile-b",
+            sequence = 2L,
+            receivedAt = 1001L,
+            normalizedJson = raw
+        )
+        // Les entrées sont légitimement distinctes malgré un rendu identique.
+        assertEquals(
+            2,
+            GlobalHallProjection.merge(
+                local = emptyList(),
+                globalCache = listOf(a, b)
+            ).size
+        )
+    }
+
+    @Test
     fun `invalid or unfinished server rows are ignored`() {
         val invalid =
             GlobalScoreCacheEntry(
