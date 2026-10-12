@@ -86,3 +86,8 @@ La mission `GECKO-HOF-SYNC-001` est close. Les tests offline/restart/retry/doubl
 - Branche de travail : `feature/sudoku-visual-reasoning-v1`, créée depuis `main`.
 - Au dépôt de cette mission : **documentation seule, code non modifié, APK non construit**.
 - Aucune fusion `main`, aucune Release ou publication sans validation explicite de Fab. Préserver l'identifiant Android, la signature, Pierre et les assets 240p.
+
+
+## Avenant Fab — identité joueur dans Hall/progression (12/10/2026)
+
+**GECKO-HOF-PLAYER-ISOLATION-002**, mission distincte à réaliser dans la même branche : [`missions/GECKO-HOF-PLAYER-ISOLATION-002.md`](missions/GECKO-HOF-PLAYER-ISOLATION-002.md). Retour utilisateur : des progressions associées à plusieurs pseudonymes semblent interprétées comme une seule personne. Objectif **quatre modes** : Hall global multi-joueurs conservé ; **aucune fusion des statistiques personnelles entre profils**. Même pseudo ≠ identité ; une identité stable vaut mieux qu'un nom affiché ; provenance incertaine ≠ attribution automatique. Audit/reproduction avant correction. **À cet instant : spécification poussée, code non corrigé, aucun nouveau build.** Maintenir les interdictions de merge, release, publication et changement de signature.
