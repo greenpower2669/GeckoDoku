@@ -4734,40 +4734,29 @@ class MainActivity : Activity() {
                     }
             }
 
-        val graph =
-            PlayerStatsTrendView(
-                this
-            ).apply {
-                setData(
-                    difficulty =
-                        difficulty,
-                    events =
-                        statsStore
-                            .eventsForModeAndDifficulty(
-                                mode,
-                                difficulty
-                            )
-                )
-            }
-
+        // Un classement global regroupe plusieurs joueurs.
+        // Ne jamais placer la courbe du profil local sous
+        // ces résultats : cela attribuait visuellement à tort
+        // la progression personnelle aux autres pseudonymes.
         val container =
             LinearLayout(this).apply {
                 orientation =
                     LinearLayout.VERTICAL
-
                 addView(
-                    ranking
+                    TextView(this@MainActivity).apply {
+                        text =
+                            "Classement global : plusieurs joueurs. " +
+                                "Les courbes personnelles se trouvent " +
+                                "dans « Stats du niveau » et ne " +
+                                "concernent que le profil actif."
+                        textSize = 16f
+                        setTextColor(Color.BLACK)
+                        setPadding(
+                            dp(12), dp(12), dp(12), dp(6)
+                        )
+                    }
                 )
-
-                addView(
-                    graph,
-                    LinearLayout.LayoutParams(
-                        LinearLayout
-                            .LayoutParams
-                            .MATCH_PARENT,
-                        dp(340)
-                    )
-                )
+                addView(ranking)
             }
 
         val scroll =
