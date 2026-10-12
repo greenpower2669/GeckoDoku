@@ -91,3 +91,10 @@ La mission `GECKO-HOF-SYNC-001` est close. Les tests offline/restart/retry/doubl
 ## Avenant Fab — identité joueur dans Hall/progression (12/10/2026)
 
 **GECKO-HOF-PLAYER-ISOLATION-002**, mission distincte à réaliser dans la même branche : [`missions/GECKO-HOF-PLAYER-ISOLATION-002.md`](missions/GECKO-HOF-PLAYER-ISOLATION-002.md). Retour utilisateur : des progressions associées à plusieurs pseudonymes semblent interprétées comme une seule personne. Objectif **quatre modes** : Hall global multi-joueurs conservé ; **aucune fusion des statistiques personnelles entre profils**. Même pseudo ≠ identité ; une identité stable vaut mieux qu'un nom affiché ; provenance incertaine ≠ attribution automatique. Audit/reproduction avant correction. **À cet instant : spécification poussée, code non corrigé, aucun nouveau build.** Maintenir les interdictions de merge, release, publication et changement de signature.
+
+
+## Exécution du lot GECKO-SUDOKU-VISUAL-001 + GECKO-HOF-PLAYER-ISOLATION-002 — 12/10/2026
+
+Les deux missions ont été **implémentées et poussées sur `feature/sudoku-visual-reasoning-v1`**, sans merge `main` ni Release. Version de test : `0.15.45-dev`, code 80 ; `applicationId` et configuration de signature inchangés. Sudoku : pavé bas-centre (PopupWindow), cases Lignes/Couples/Triplets/Entourer, option Pulsation douce, projections et cercles, groupes Sudoku ; pas d'élimination automatique. Hall : suppression de la courbe locale trompeuse sous le classement global, conservation des scores mondiaux distincts même si pseudo/métriques identiques, profils locaux et préférences statistiques séparés, import/export des préférences propres aux profils. Un changement de joueur en pleine partie demande la confirmation d'abandon et recommence la grille.
+
+CI branche activée avec build `phone` et SHA-256 de l'APK dans l'artefact. **À la rédaction : run final en cours ; ne pas prétendre tests GREEN ni APK livré tant que non confirmé.** Contrôle visuel Samsung et scénario multi-profils réel encore nécessaires. Aucun merge/release/publication sans feu vert complémentaire.
