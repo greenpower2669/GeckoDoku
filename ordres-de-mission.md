@@ -98,3 +98,13 @@ La mission `GECKO-HOF-SYNC-001` est close. Les tests offline/restart/retry/doubl
 Les deux missions ont été **implémentées et poussées sur `feature/sudoku-visual-reasoning-v1`**, sans merge `main` ni Release. Version de test : `0.15.45-dev`, code 80 ; `applicationId` et configuration de signature inchangés. Sudoku : pavé bas-centre (PopupWindow), cases Lignes/Couples/Triplets/Entourer, option Pulsation douce, projections et cercles, groupes Sudoku ; pas d'élimination automatique. Hall : suppression de la courbe locale trompeuse sous le classement global, conservation des scores mondiaux distincts même si pseudo/métriques identiques, profils locaux et préférences statistiques séparés, import/export des préférences propres aux profils. Un changement de joueur en pleine partie demande la confirmation d'abandon et recommence la grille.
 
 CI branche activée avec build `phone` et SHA-256 de l'APK dans l'artefact. **À la rédaction : run final en cours ; ne pas prétendre tests GREEN ni APK livré tant que non confirmé.** Contrôle visuel Samsung et scénario multi-profils réel encore nécessaires. Aucun merge/release/publication sans feu vert complémentaire.
+
+
+## Validation finale CI du lot 0.15.45-dev — 12/10/2026
+
+- Workflow `Build GeckoDoku phone APK`, run [38314483379](https://github.com/greenpower2669/GeckoDoku/actions/runs/38314483379) : **GREEN**, `gradle :app:testDebugUnitTest :app:assemblePhone` → `BUILD SUCCESSFUL`.
+- Étapes Pierre, banque sprites 240p (source 1 305 fichiers, modèle et manifest dans l'APK) et publication de l'artefact : SUCCESS.
+- Artefact Actions : `GeckoDoku-v0.15.45-dev-phone` (ID `11775463777`) contenant `GeckoDoku-v0.15.45-dev.apk` et `GeckoDoku-v0.15.45-dev.apk.sha256` ; APK SHA-256 : `ddff9b30a3267573cbf0a1cecad98fa6c76ca7aee94f670533a2169e1701d586`.
+- Cette version est le **build de test phone signé avec la clé debug existante**, PAS une publication Google Play. La signature Google Play n'est pas modifiée.
+- PR brouillon #4 : https://github.com/greenpower2669/GeckoDoku/pull/4 ; ne pas merger ni publier avant accord explicite.
+- **À faire** : recette physique Samsung par Fab (UI, Pierre, quatre modes, deux profils/homonymes, restauration des données). Les anciens résultats localement mélangés, sans identité d'origine, ne peuvent être reclassés automatiquement.
