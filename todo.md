@@ -73,3 +73,21 @@ Mission détaillée : `missions/GECKO-SUDOKU-VISUAL-001.md`. **Le code n'est pas
 - [ ] Build téléphone, revue de régression et tests Samsung ; demander feu vert avant merge/Release.
 
 **Correction non codée à ce jour.**
+
+
+## Avancement code commun — 12/10/2026
+
+- [x] Pavé Sudoku bas-centre, largeur compacte et PopupWindow prioritaire.
+- [x] Cases Lignes/Couples/Triplets/Entourer plus Pulsation douce facultative (OFF au démarrage).
+- [x] Modèle `SudokuVisualReasoning.kt` : projection par ligne, groupes 2/3 dans unité, vérification des deux orientations X-Wing.
+- [x] Cercles manuels entre notes identiques, sans modifier les notes.
+- [x] Séparation de l'écran Hall global et des graphes personnels ; ne pas associer le graphique local à tous les pseudos du classement.
+- [x] `GlobalHallProjection.merge` garde deux scores mondiaux distincts malgré des libellés identiques.
+- [x] Profils de joueur locaux distincts du pseudo, espace de stats par profil, choix du profil dans Réglages, confirmation en cas de partie en cours.
+- [x] Sauvegarde/import des statistiques pour les nouveaux profils.
+- [x] Tests rédigés (visuels, collision d'identité et nom de stockage de profil), CI build `phone` activée sur branche, APK .sha256 prévu.
+- [ ] Obtenir le **run final GREEN** après corrections de compilation et test X-Wing ; vérifier artefact et SHA-256.
+- [ ] Recette réelle sur Samsung : superposition Pierre/pavé, taille/cases, contraste, cinq cases, projection, cercles, animations.
+- [ ] Recette multi-profils : Classique, Sudoku, Gomoku, Abeilles & Geckos, profils homonymes, import/export, réseau/retry/reinstallation.
+- [ ] Auditer l'historique préexistant potentiellement mélangé : **provenance introuvable, pas de redistribution automatique** ; expliquer au joueur que les anciens événements restent sur le profil historique.
+- [ ] Attendre accord de Fab pour merge `main`, Release, publication ; aucune livraison Play depuis la signature phone debug.
