@@ -76,3 +76,8 @@ Cible de publication : `0.15.44-dev` / code 79.
 - APK : `GeckoDoku-v0.15.44-dev.apk` ;
 - SHA-256 : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c` ;
 - Release finale non prerelease, ciblée sur le merge `c1a32bf4736894f87ac45f1c626f72a111cf1c2e`.
+
+
+## Projet ouvert — raisonnement visuel Sudoku (12/10/2026)
+
+Mission `GECKO-SUDOKU-VISUAL-001` : conception validée, **documentation poussée seulement** sur `feature/sudoku-visual-reasoning-v1`. Nouveau pavé flottant bas-centre avec priorité après parole de Pierre ; cases Projection, Couples, Triplets, Entourer ; lignes dès deux candidats identiques ; paires/triplets dans une unité Sudoku ; liens/cercle pour X-Wing visuel sans preuve automatique ; animation lente facultative et affichage accessible. Mission détaillée : `missions/GECKO-SUDOKU-VISUAL-001.md`. Aucune modification du code, de `main`, de la signature ou de la Release à ce stade.
