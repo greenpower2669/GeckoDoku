@@ -105,3 +105,7 @@ Cible branche : `0.15.45-dev` / code 80, mêmes package et configuration de sign
 - Cette version est le **build de test phone signé avec la clé debug existante**, PAS une publication Google Play. La signature Google Play n'est pas modifiée.
 - PR brouillon #4 : https://github.com/greenpower2669/GeckoDoku/pull/4 ; ne pas merger ni publier avant accord explicite.
 - **À faire** : recette physique Samsung par Fab (UI, Pierre, quatre modes, deux profils/homonymes, restauration des données). Les anciens résultats localement mélangés, sans identité d'origine, ne peuvent être reclassés automatiquement.
+
+
+### Ajustement visuel Sudoku Samsung — 13/10/2026
+Le pavé Sudoku est calculé à 75 % de sa hauteur précédente, avec borne tactile minimale, et reste ancré bas-centre même après redimensionnement. Les projections horizontales dépassent légèrement le candidat à chaque extrémité pour mieux matérialiser la ligne sans modifier les notes ni le solveur.
