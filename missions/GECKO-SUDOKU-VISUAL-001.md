@@ -71,3 +71,8 @@ Cases cochables/décochables par tap successif, états et retours visuels évide
 4. **Aucun merge main, aucune Release, aucun changement d'applicationId ou de signature** sans instruction explicite du propriétaire.
 
 **Critère de succès utilisateur :** avec une basse vision, Fab suit ses propres raisonnements Sudoku à l'écran grâce au pavé toujours accessible, aux projections, aux paires/triplets et aux cercles, sans modification des règles ni perte des fonctions historiques.
+
+
+## I. Mission complémentaire (même lot de développement, logique distincte)
+
+Fab a signalé le 12/10/2026 une **fusion incorrecte apparente de statistiques/progressions entre plusieurs pseudonymes du Hall global**. L'isolation des profils est indispensable dans **les 4 modes**. Voir l'ordre de mission autonome [`GECKO-HOF-PLAYER-ISOLATION-002.md`](GECKO-HOF-PLAYER-ISOLATION-002.md). Ce chantier traite les données de scores/progression et ne doit pas être confondu avec l'assistance graphique Sudoku. Le **signalement est à auditer et reproduire** ; aucune correction de code n'a encore été réalisée. Les agrégations personnelles ne doivent jamais mélanger plusieurs identités, même si les pseudonymes sont identiques, tandis que le Hall global peut afficher tous les utilisateurs. Faire des commits et tests distincts pour chaque mission.
