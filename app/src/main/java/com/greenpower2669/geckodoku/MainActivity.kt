@@ -11412,7 +11412,10 @@ class MainActivity : Activity() {
                 dp(330)
             )
 
-        var popupHeight =
+        // Fab 13/10/2026 : pavé Sudoku 25 % moins haut.
+        // On réduit la hauteur réellement calculée, pas seulement le max,
+        // puis on conserve une borne basse tactile raisonnable.
+        val previousPopupHeight =
             minOf(
                 (
                     screenRoot.height -
@@ -11421,6 +11424,15 @@ class MainActivity : Activity() {
                     dp(320)
                 ),
                 dp(430)
+            )
+
+        var popupHeight =
+            (
+                previousPopupHeight *
+                    3 /
+                    4
+                ).coerceAtLeast(
+                dp(240)
             )
 
         var popupX =
@@ -11713,30 +11725,25 @@ class MainActivity : Activity() {
                                 maxHeight
                             )
 
+                    // L'ancrage canonique reste bas-centre même après redimensionnement.
                     popupX =
-                        popupX.coerceIn(
-                            dp(4),
+                        (
                             (
                                 screenRoot.width -
-                                    popupWidth -
-                                    dp(4)
-                                )
-                                .coerceAtLeast(
-                                    dp(4)
-                                )
+                                    popupWidth
+                                ) /
+                                2
+                            ).coerceAtLeast(
+                            dp(4)
                         )
 
                     popupY =
-                        popupY.coerceIn(
-                            dp(4),
-                            (
-                                screenRoot.height -
-                                    popupHeight -
-                                    dp(4)
-                                )
-                                .coerceAtLeast(
-                                    dp(4)
-                                )
+                        (
+                            screenRoot.height -
+                                popupHeight -
+                                dp(8)
+                            ).coerceAtLeast(
+                            dp(4)
                         )
 
                     popupRef
