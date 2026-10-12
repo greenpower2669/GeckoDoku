@@ -4880,37 +4880,43 @@ class MainActivity : Activity() {
             .show()
     }
 
-    private fun switchPlayerProfile(id: String) {
-        if (id == playerProfileStore.activeProfileId) return
-        if (statsStore.hasActiveAttempt()) {
-            AlertDialog.Builder(this)
-                .setTitle("Partie en cours")
-                .setMessage(
-                    "Termine ou abandonne cette partie avant " +
-                        "de changer de joueur, pour ne pas mélanger les statistiques."
-                )
-                .setPositiveButton("Compris", null)
-                .show()
+    /**
+     * Changer de personne exige une nouvelle partie : jamais attribuer la
+     * fin d'une grille déjà commencée au nouveau joueur.
+     */
+    private fun changeProfileSafely(action: () -> Unit) {
+        if (!statsStore.hasActiveAttempt()) {
+            action()
             return
         }
-        if (playerProfileStore.activateProfile(id)) {
-            statsStore = PlayerStatsStore(this, id)
-            status.text = "Profil actif : " + playerProfileStore.playerName
+
+        AlertDialog.Builder(this)
+            .setTitle("Changer de joueur ?")
+            .setMessage(
+                "La partie en cours appartient au joueur actuel. " +
+                    "Elle sera abandonnée, puis une nouvelle partie de " +
+                    "même mode commencera pour le prochain joueur."
+            )
+            .setPositiveButton("Changer et recommencer") { _, _ ->
+                statsStore.abandonActiveAttempt()
+                action()
+                replayCurrentPuzzle()
+            }
+            .setNegativeButton("Annuler", null)
+            .show()
+    }
+
+    private fun switchPlayerProfile(id: String) {
+        if (id == playerProfileStore.activeProfileId) return
+        changeProfileSafely {
+            if (playerProfileStore.activateProfile(id)) {
+                statsStore = PlayerStatsStore(this, id)
+                status.text = "Profil actif : " + playerProfileStore.playerName
+            }
         }
     }
 
     private fun createPlayerProfile() {
-        if (statsStore.hasActiveAttempt()) {
-            AlertDialog.Builder(this)
-                .setTitle("Partie en cours")
-                .setMessage(
-                    "Termine ou abandonne la partie avant de créer un " +
-                        "nouveau profil pour éviter de lui attribuer tes résultats."
-                )
-                .setPositiveButton("Compris", null)
-                .show()
-            return
-        }
         val input = EditText(this).apply {
             hint = "Pseudo du nouveau joueur"
             setSingleLine(true)
@@ -4919,16 +4925,18 @@ class MainActivity : Activity() {
         AlertDialog.Builder(this)
             .setTitle("➕ Nouveau joueur")
             .setMessage(
-                "Crée un profil indépendant. Même avec un pseudo identique, " +
-                    "ses résultats et progressions resteront séparés."
+                "Le nouveau profil aura ses propres statistiques, " +
+                    "même s'il choisit un pseudo déjà utilisé."
             )
             .setView(input)
             .setPositiveButton("Créer") { _, _ ->
-                val name = input.text?.toString().orEmpty()
+                val name = input.text?.toString().orEmpty().trim()
                 if (name.isBlank()) return@setPositiveButton
-                val profile = playerProfileStore.createProfile(name)
-                statsStore = PlayerStatsStore(this, profile.id)
-                status.text = "Nouveau profil : " + profile.name
+                changeProfileSafely {
+                    val profile = playerProfileStore.createProfile(name)
+                    statsStore = PlayerStatsStore(this, profile.id)
+                    status.text = "Nouveau profil : " + profile.name
+                }
             }
             .setNegativeButton("Annuler", null)
             .show()
