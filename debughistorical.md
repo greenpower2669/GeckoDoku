@@ -90,3 +90,8 @@ Les tests offline/retry/doublons exhaustifs n’ont pas tous été rejoués manu
 ## 12/10/2026 — préparation GECKO-SUDOKU-VISUAL-001
 
 Création de `feature/sudoku-visual-reasoning-v1` depuis `main` et dépôt de `missions/GECKO-SUDOKU-VISUAL-001.md`. **Aucune modification de code, aucun test ni APK nouveau à ce stade** ; aucune régression liée à cette mission observée ou corrigée. Historique HOF précédent conservé.
+
+
+## 12/10/2026 — retour utilisateur : Hall/progression mêlant plusieurs pseudonymes
+
+Fab rapporte que l'affichage de scores/progressions du Hall semble associer plusieurs pseudos à une même personne. **Symptôme déclaré, origine technique non prouvée et non reproduite à cette date.** Ne pas accuser le serveur avant audit API/cache/projection/statistiques locales/UI. Mission de diagnostic et correction : `missions/GECKO-HOF-PLAYER-ISOLATION-002.md`. Aucun correctif/code/build effectué lors de cette documentation.
