@@ -80,3 +80,13 @@ Premier AAB signé produit : `GeckoDoku-v0.15.44-dev-code79-signed.aab` — SHA-
 - [ ] Aucun merge `main` / Release / envoi Play sans ordre explicite.
 
 Les anciennes consignes de récupérer l'artefact de remise du 07/10 ne sont plus exécutables : ce handoff a expiré.
+
+## Recovery bootstrap autorisé — 12/10/2026
+
+- [x] Fab a autorisé explicitement la génération d'une **nouvelle** Upload Key via le workflow historique sécurisé, branche `feature/play-upload-signing-v1`.
+- [ ] Déclenchement du bootstrap historique `setup-play-upload-key.yml` uniquement sur commit marqué `[bootstrap-play-once]`.
+- [ ] Télécharger l'artifact chiffré `geckodoku-upload-key-handoff` **dans les 24 heures** après réussite.
+- [ ] Sauvegarder l'archive chiffrée dans Google Drive privé (MFA), et idéalement une copie supplémentaire hors ligne.
+- [ ] Copier le contenu chiffré de `ANDROID_UPLOAD_KEYSTORE_BASE64.txt` dans le secret GitHub homonyme.
+- [ ] Sauvegarder le certificat public PEM, demander ensuite la réinitialisation de la clé d'importation dans Google Play Console.
+- [ ] Attendre approbation Google avant nouvel AAB et ne jamais merger `main` / publier sans nouvel accord.
