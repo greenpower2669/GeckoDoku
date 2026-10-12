@@ -100,6 +100,14 @@ class PlayerStatsStore(
     fun hasActiveAttempt(): Boolean =
         prefs.getBoolean(KEY_ACTIVE, false)
 
+    /**
+     * Abandon explicitement la tentative du profil sortant, sans transférer
+     * ses erreurs ou ses résultats au profil suivant.
+     */
+    fun abandonActiveAttempt() {
+        finalizePendingAbandoned()
+    }
+
     fun recordStart(
         size: Int,
         difficulty: GameDifficulty,
