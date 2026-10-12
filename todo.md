@@ -90,3 +90,14 @@ Les anciennes consignes de récupérer l'artefact de remise du 07/10 ne sont plu
 - [ ] Copier le contenu chiffré de `ANDROID_UPLOAD_KEYSTORE_BASE64.txt` dans le secret GitHub homonyme.
 - [ ] Sauvegarder le certificat public PEM, demander ensuite la réinitialisation de la clé d'importation dans Google Play Console.
 - [ ] Attendre approbation Google avant nouvel AAB et ne jamais merger `main` / publier sans nouvel accord.
+
+## Exécution relance autorisée du 12/10/2026
+
+- [x] Ordre explicite Fab donné pour recréer l'Upload Key via GitHub Actions et sauvegarder le handoff chiffré sur son Google Drive privé.
+- [x] Run déclenché sur branche `feature/play-upload-signing-v1` : [#38295693054](https://github.com/greenpower2669/GeckoDoku/actions/runs/38295693054), commit `a3bc4e402b7c743b92f0a53a473ad2d6c01d8a5e`.
+- [x] Étape `Upload one-day encrypted key handoff` GREEN ; artifact `geckodoku-upload-key-handoff`, ID `11768141925`, expiration **2026-10-13 19:09:21 UTC / 21:09:21 France**.
+- [ ] Fab : télécharger l'archive (elle contient `ANDROID_UPLOAD_KEYSTORE_BASE64.txt`, certificat public `.pem` et informations non sensibles) AVANT son expiration.
+- [ ] Fab : stocker l'archive chiffrée sur Google Drive en privé et idéalement une seconde sauvegarde ; préserver les mots de passe séparément.
+- [ ] Fab : renseigner le secret GitHub `ANDROID_UPLOAD_KEYSTORE_BASE64` à partir du contenu intégral du fichier chiffré.
+- [ ] Vérifier succès final de l'AAB du run, vérifier le certificat, puis faire demander le reset Upload Key dans Play Console (ne pas toucher à App Signing Key).
+- [ ] Aucune publication ni merge autorisés avant validation Fab et confirmation Google.
