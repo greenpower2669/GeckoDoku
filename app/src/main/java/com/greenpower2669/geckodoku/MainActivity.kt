@@ -113,6 +113,7 @@ class MainActivity : Activity() {
     private var sudokuVisualPairs = false
     private var sudokuVisualTriplets = false
     private var sudokuVisualCircles = false
+    private var sudokuVisualPulse = false
     private var sudokuCircleAnchor: SudokuCandidateRef? = null
     private val sudokuCircleLinks = linkedSetOf<SudokuVisualLink>()
 
@@ -11783,6 +11784,11 @@ class MainActivity : Activity() {
             sudokuVisualTriplets = it
             sudokuValueOverlay.showVisualTriplets = it
         }
+        visualCheckbox("Pulsation douce", sudokuVisualPulse) {
+            sudokuVisualPulse = it
+            sudokuValueOverlay.animateVisualGroups = it
+        }
+
         visualCheckbox("Entourer", sudokuVisualCircles) {
             sudokuVisualCircles = it
             sudokuValueOverlay.showVisualCircles = it
