@@ -40,7 +40,7 @@ class PlayerProfileStore(
                 val array = JSONArray(
                     prefs.getString(KEY_OTHER_PROFILES, "[]") ?: "[]"
                 )
-                buildList {
+                buildList<GeckoPlayerProfile> {
                     for (i in 0 until array.length()) {
                         val obj = array.optJSONObject(i) ?: continue
                         val id = obj.optString("id")
