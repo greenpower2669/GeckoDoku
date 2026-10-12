@@ -99,6 +99,10 @@ class SudokuValueOverlayView @JvmOverloads constructor(
     var showVisualCircles: Boolean = false
         set(value) { field = value; invalidate() }
 
+    // Pulsation très lente, facultative, sans disparition ni flash.
+    var animateVisualGroups: Boolean = false
+        set(value) { field = value; invalidate() }
+
     var playerCircleLinks: Set<SudokuVisualLink> = emptySet()
         set(value) { field = value; invalidate() }
 
@@ -348,6 +352,10 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         // Annotations en surimpression, sans toucher aux notes de jeu.
         drawPlayerReasoningAnnotations(canvas, state)
 
+        if (animateVisualGroups && (showVisualPairs || showVisualTriplets)) {
+            postInvalidateDelayed(220L)
+        }
+
         if (
             animateMarker &&
             animateGeckoMarkers
@@ -417,8 +425,16 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             showVisualTriplets to 3
         )) {
             if (!enabled) continue
-            paint.color = if (size == 2) Color.argb(195, 22, 105, 160)
-            else Color.argb(195, 143, 64, 150)
+            val alpha = if (animateVisualGroups) {
+                // période 3 secondes, alpha jamais inférieur à 125.
+                val phase = (
+                    android.os.SystemClock.uptimeMillis() % 3000L
+                ).toDouble() / 3000.0 * (2.0 * Math.PI)
+                (170 + 45 * kotlin.math.sin(phase)).toInt()
+                    .coerceIn(125, 215)
+            } else 195
+            paint.color = if (size == 2) Color.argb(alpha, 22, 105, 160)
+            else Color.argb(alpha, 143, 64, 150)
             paint.strokeWidth = (cellSize * .055f).coerceAtLeast(dp(1.5f))
             paint.pathEffect = if (size == 3) {
                 android.graphics.DashPathEffect(
