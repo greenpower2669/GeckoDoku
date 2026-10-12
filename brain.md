@@ -81,3 +81,8 @@ Cible de publication : `0.15.44-dev` / code 79.
 ## Projet ouvert — raisonnement visuel Sudoku (12/10/2026)
 
 Mission `GECKO-SUDOKU-VISUAL-001` : conception validée, **documentation poussée seulement** sur `feature/sudoku-visual-reasoning-v1`. Nouveau pavé flottant bas-centre avec priorité après parole de Pierre ; cases Projection, Couples, Triplets, Entourer ; lignes dès deux candidats identiques ; paires/triplets dans une unité Sudoku ; liens/cercle pour X-Wing visuel sans preuve automatique ; animation lente facultative et affichage accessible. Mission détaillée : `missions/GECKO-SUDOKU-VISUAL-001.md`. Aucune modification du code, de `main`, de la signature ou de la Release à ce stade.
+
+
+## Correction à réaliser — identité Hall et progression (12/10/2026)
+
+Signalement de Fab : scores Hall / courbes de progression paraissent réunir les résultats de plusieurs pseudonymes sous un même joueur. Mission autonome `GECKO-HOF-PLAYER-ISOLATION-002`, `missions/GECKO-HOF-PLAYER-ISOLATION-002.md`, même branche de travail `feature/sudoku-visual-reasoning-v1`. **Hall global = multi-profils ; progression personnelle = un seul profil identifié ; filtrage par mode pour Classique, Sudoku, Gomoku, Abeilles & Geckos.** Pseudo ≠ identité stable. Ne pas inférer l'origine des scores historiques inconnus. Signalement **non reproduit, non corrigé** à ce stade.
