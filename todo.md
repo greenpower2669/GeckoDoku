@@ -59,3 +59,17 @@ Ne pas modifier pour ce lot : gameplay, étoiles, aides, statistiques personnell
 - [ ] Attendre l'autorisation expresse pour merge main / Release / publication.
 
 Mission détaillée : `missions/GECKO-SUDOKU-VISUAL-001.md`. **Le code n'est pas encore réalisé.**
+
+
+## GECKO-HOF-PLAYER-ISOLATION-002 — séparation des joueurs, tous modes (12/10/2026)
+
+- [x] Enregistrer le signalement Fab : le Hall/progression paraît confondre plusieurs pseudonymes en un seul joueur.
+- [x] Pousser la mission détaillée `missions/GECKO-HOF-PLAYER-ISOLATION-002.md` sur la branche dédiée.
+- [ ] Reproduire et localiser le mélange (API / cache / projection / PlayerStatsStore / UI).
+- [ ] Auditer l'identité stable de profil, distincte du pseudo et du téléphone.
+- [ ] Isoler les progressions personnelles par profil et par mode sans perdre le Hall global multi-joueurs.
+- [ ] Traiter prudemment les anciens scores d'identité ambiguë ; ne pas les attribuer arbitrairement.
+- [ ] Tests multi-pseudos (y compris pseudo identique), quatre modes, redémarrages, offline, retry et réinstallation.
+- [ ] Build téléphone, revue de régression et tests Samsung ; demander feu vert avant merge/Release.
+
+**Correction non codée à ce jour.**
