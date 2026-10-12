@@ -76,3 +76,13 @@ Ordre Fab exécuté.
 - statut Release : publiée, non prerelease, latest au moment de la publication.
 
 La mission `GECKO-HOF-SYNC-001` est close. Les tests offline/restart/retry/doublons exhaustifs restant non rejoués restent des vérifications produit futures et ne remettent pas en cause l’ordre de publication déjà donné par Fab.
+
+
+## Nouvelle mission ouverte — 12/10/2026
+
+**GECKO-SUDOKU-VISUAL-001** — accessibilité Sudoku : pavé flottant bas-centre au premier plan, projection de candidats identiques par ligne, marquage couples/triplets, cercles/liens et visualisation manuelle du X-Wing.
+
+- Ordre fonctionnel complet : [`missions/GECKO-SUDOKU-VISUAL-001.md`](missions/GECKO-SUDOKU-VISUAL-001.md).
+- Branche de travail : `feature/sudoku-visual-reasoning-v1`, créée depuis `main`.
+- Au dépôt de cette mission : **documentation seule, code non modifié, APK non construit**.
+- Aucune fusion `main`, aucune Release ou publication sans validation explicite de Fab. Préserver l'identifiant Android, la signature, Pierre et les assets 240p.
