@@ -43,3 +43,19 @@ Les tests offline/restart/retry/doublons exhaustifs restent en suivi produit ; F
 ## Produit hors mission à préserver
 
 Ne pas modifier pour ce lot : gameplay, étoiles, aides, statistiques personnelles, progression, gestes/géométrie, logique Prof, médias source.
+
+
+## Nouvelle mission GECKO-SUDOKU-VISUAL-001 (12/10/2026)
+
+- [x] Concept validé par Fab et ordre de mission poussé sur branche dédiée.
+- [ ] Auditer l'UI réelle des candidats, des hypothèses, du pavé flottant et de Pierre.
+- [ ] Implémenter pavé bas-centre et priorité d'affichage temporaire du Prof.
+- [ ] Ajouter 4 cases à cocher indépendantes dans la validation Sudoku.
+- [ ] Projeter les mêmes candidats par ligne dès 2 occurrences, gérer 1 à 9.
+- [ ] Marquer visuellement paires/triplets valides sans élimination abusive ; pulsation lente facultative.
+- [ ] Cercler/lier des candidats et permettre le tracé manuel X-Wing.
+- [ ] Tests de logique, accessibilité, non-régression et build phone vérifié (Pierre + 240p).
+- [ ] Test Samsung de Fab, corrections et mise à jour des 5 mémoires vivantes.
+- [ ] Attendre l'autorisation expresse pour merge main / Release / publication.
+
+Mission détaillée : `missions/GECKO-SUDOKU-VISUAL-001.md`. **Le code n'est pas encore réalisé.**
