@@ -95,3 +95,14 @@ Création de `feature/sudoku-visual-reasoning-v1` depuis `main` et dépôt de `m
 ## 12/10/2026 — retour utilisateur : Hall/progression mêlant plusieurs pseudonymes
 
 Fab rapporte que l'affichage de scores/progressions du Hall semble associer plusieurs pseudos à une même personne. **Symptôme déclaré, origine technique non prouvée et non reproduite à cette date.** Ne pas accuser le serveur avant audit API/cache/projection/statistiques locales/UI. Mission de diagnostic et correction : `missions/GECKO-HOF-PLAYER-ISOLATION-002.md`. Aucun correctif/code/build effectué lors de cette documentation.
+
+
+## 12/10/2026 — diagnostic et corrections des deux missions
+
+- Hall : `MainActivity.showHallOfFameLevel` posait sous un classement mondial multi-pseudonymes la courbe produite par `statsStore.eventsForModeAndDifficulty`, qui correspondait uniquement au téléphone ; fausse attribution visuelle. Courbe retirée du Hall mondial, accès maintenu via Stats du niveau du profil actif.
+- `GlobalHallProjection.merge` supprimait par `HallIdentity` les doublons composites, risquant de fusionner deux scores réellement différents de joueurs homonymes aux mêmes métriques. Nouvelle fusion : conserver chaque score du cache déjà unique par `scoreId`, retirer tout au plus UNE copie locale par score mondial correspondant.
+- Stockage personnel ancien : les préférences stats étaient communes à l'appareil et au pseudo modifiable ; introduction de profils locaux stables, séparation des stores par profil, conservation intégrale du store historique (pas de réattribution rétroactive sans identité).
+- Sudoku : surimpressions distinctes des notes et du solveur, aucun effet sur la grille ; pulsation lente facultative pour éviter les flashs rapides.
+- Première CI a trouvé `PlayerProfileStore.kt:51 Unresolved reference id` : corrigé par `buildList<GeckoPlayerProfile>` explicite.
+- Deuxième CI a trouvé un test X-Wing incorrect : un candidat ajouté dans une ligne n'invalidait pas l'autre orientation par colonnes. Le test a été corrigé en invalidant les deux orientations, sans dégrader l'algorithme mathématique.
+- **Statut à cet instant** : code poussé, test/build final en cours ; ne pas annoncer livraison APK sans passage GREEN + hachage. Aucun test Samsung effectué.
