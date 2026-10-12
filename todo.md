@@ -101,3 +101,10 @@ Mission détaillée : `missions/GECKO-SUDOKU-VISUAL-001.md`. **Le code n'est pas
 - Cette version est le **build de test phone signé avec la clé debug existante**, PAS une publication Google Play. La signature Google Play n'est pas modifiée.
 - PR brouillon #4 : https://github.com/greenpower2669/GeckoDoku/pull/4 ; ne pas merger ni publier avant accord explicite.
 - **À faire** : recette physique Samsung par Fab (UI, Pierre, quatre modes, deux profils/homonymes, restauration des données). Les anciens résultats localement mélangés, sans identité d'origine, ne peuvent être reclassés automatiquement.
+
+
+## Ajustement Samsung — Sudoku visuel (13/10/2026)
+- [x] Réduire la hauteur du pavé Sudoku de 25 %.
+- [x] Conserver son ancrage bas-centre, y compris après redimensionnement.
+- [x] Faire dépasser le trait de projection légèrement au-delà du chiffre à chaque extrémité.
+- [ ] Valider visuellement sur Samsung : hauteur, lisibilité des touches et rendu des projections.
