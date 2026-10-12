@@ -86,8 +86,18 @@ Mission détaillée : `missions/GECKO-SUDOKU-VISUAL-001.md`. **Le code n'est pas
 - [x] Profils de joueur locaux distincts du pseudo, espace de stats par profil, choix du profil dans Réglages, confirmation en cas de partie en cours.
 - [x] Sauvegarde/import des statistiques pour les nouveaux profils.
 - [x] Tests rédigés (visuels, collision d'identité et nom de stockage de profil), CI build `phone` activée sur branche, APK .sha256 prévu.
-- [ ] Obtenir le **run final GREEN** après corrections de compilation et test X-Wing ; vérifier artefact et SHA-256.
+- [x] Obtenir le **run final GREEN** après corrections de compilation et test X-Wing ; vérifier artefact et SHA-256.
 - [ ] Recette réelle sur Samsung : superposition Pierre/pavé, taille/cases, contraste, cinq cases, projection, cercles, animations.
 - [ ] Recette multi-profils : Classique, Sudoku, Gomoku, Abeilles & Geckos, profils homonymes, import/export, réseau/retry/reinstallation.
 - [ ] Auditer l'historique préexistant potentiellement mélangé : **provenance introuvable, pas de redistribution automatique** ; expliquer au joueur que les anciens événements restent sur le profil historique.
 - [ ] Attendre accord de Fab pour merge `main`, Release, publication ; aucune livraison Play depuis la signature phone debug.
+
+
+## Validation finale CI du lot 0.15.45-dev — 12/10/2026
+
+- Workflow `Build GeckoDoku phone APK`, run [38314483379](https://github.com/greenpower2669/GeckoDoku/actions/runs/38314483379) : **GREEN**, `gradle :app:testDebugUnitTest :app:assemblePhone` → `BUILD SUCCESSFUL`.
+- Étapes Pierre, banque sprites 240p (source 1 305 fichiers, modèle et manifest dans l'APK) et publication de l'artefact : SUCCESS.
+- Artefact Actions : `GeckoDoku-v0.15.45-dev-phone` (ID `11775463777`) contenant `GeckoDoku-v0.15.45-dev.apk` et `GeckoDoku-v0.15.45-dev.apk.sha256` ; APK SHA-256 : `ddff9b30a3267573cbf0a1cecad98fa6c76ca7aee94f670533a2169e1701d586`.
+- Cette version est le **build de test phone signé avec la clé debug existante**, PAS une publication Google Play. La signature Google Play n'est pas modifiée.
+- PR brouillon #4 : https://github.com/greenpower2669/GeckoDoku/pull/4 ; ne pas merger ni publier avant accord explicite.
+- **À faire** : recette physique Samsung par Fab (UI, Pierre, quatre modes, deux profils/homonymes, restauration des données). Les anciens résultats localement mélangés, sans identité d'origine, ne peuvent être reclassés automatiquement.
