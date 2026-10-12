@@ -14,18 +14,22 @@ object GlobalHallProjection {
         local: List<HallOfFameEntry>,
         globalCache: List<GlobalScoreCacheEntry>
     ): List<HallOfFameEntry> {
-        val merged =
-            LinkedHashMap<HallIdentity, HallOfFameEntry>()
+        // Les scores mondiaux ont déjà été dédoublonnés par scoreId
+        // dans GlobalScoreCacheStore. Ne JAMAIS utiliser le pseudo
+        // comme clé unique : deux personnes peuvent porter le même nom
+        // et même publier des scores statistiquement identiques.
+        val global = fromCache(globalCache)
+        val remainingLocal = local.toMutableList()
 
-        fromCache(globalCache).forEach {
-            merged[identity(it)] = it
+        global.forEach { remote ->
+            // Une copie locale correspondante est retirée UNE seule fois.
+            val index = remainingLocal.indexOfFirst {
+                identity(it) == identity(remote)
+            }
+            if (index >= 0) remainingLocal.removeAt(index)
         }
 
-        local.forEach {
-            merged[identity(it)] = it
-        }
-
-        return merged.values.sortedWith(
+        return (global + remainingLocal).sortedWith(
             compareBy<HallOfFameEntry> {
                 it.difficulty.ordinal
             }
