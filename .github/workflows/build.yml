@@ -115,10 +115,20 @@ jobs:
           cp app/build/outputs/apk/phone/app-phone.apk "GeckoDoku-v${APP_VERSION}.apk"
           test -s "GeckoDoku-v${APP_VERSION}.apk"
 
+      - name: Verify SHA-256 of phone APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum "GeckoDoku-v${APP_VERSION}.apk" | tee "GeckoDoku-v${APP_VERSION}.apk.sha256"
+          echo "SHA-256 de l'APK :" >> "$GITHUB_STEP_SUMMARY"
+          cat "GeckoDoku-v${APP_VERSION}.apk.sha256" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/upload-artifact@v4
         with:
           name: GeckoDoku-v${{ env.APP_VERSION }}-phone
-          path: GeckoDoku-v${{ env.APP_VERSION }}.apk
+          path: |
+            GeckoDoku-v${{ env.APP_VERSION }}.apk
+            GeckoDoku-v${{ env.APP_VERSION }}.apk.sha256
 
       - name: Publish phone prerelease
         if: github.event_name == 'push' && contains(github.event.head_commit.message, '[phone-release]')
