@@ -65,3 +65,18 @@ Ne pas modifier pour ce lot : gameplay, étoiles, aides, statistiques personnell
 
 
 Premier AAB signé produit : `GeckoDoku-v0.15.44-dev-code79-signed.aab` — SHA-256 `cc904dab3c0170f522507af2c5805e5d00cde22bf920bc53537a2e1a1e726a16` — artifact `11486204826`.
+
+## INCIDENT CLÉ D'IMPORTATION — 12/10/2026
+
+- [x] Capture Settings > Actions Secrets : `ANDROID_UPLOAD_STORE_PASSWORD` et `ANDROID_UPLOAD_KEY_PASSWORD` présents ; `GECKODOKU_HOF_API_KEY` préservé.
+- [x] `ANDROID_UPLOAD_KEYSTORE_BASE64` absent ; `ANDROID_UPLOAD_KEY_ALIAS` absent aussi (alias par défaut possible).
+- [x] Artefact éphémère de remise de la clé du 07/10 expiré ; l'AAB signé ne contient pas la clé privée.
+- [x] Méthode de signature préservée par contrat dans `ordres-de-mission.md` ; aucune clé privée stockée dans Git.
+- [ ] Vérifier dans Play Console : Play App Signing activé et certificat d'importation actuel (comparer à l'ancienne empreinte 8E:A9:D0:C7:...:43:5F).
+- [ ] Obtenir l'accord explicite de Fab avant de relancer une génération de nouvelle Upload Key via GitHub Actions (sans publier automatiquement).
+- [ ] Préparer le certificat public de remplacement et demander la réinitialisation de l'Upload Key ; attendre la confirmation Google.
+- [ ] **Avant expiration du handoff**, sauvegarder de façon durable le JKS chiffré hors GitHub et mettre le Base64 chiffré dans le Secret `ANDROID_UPLOAD_KEYSTORE_BASE64`.
+- [ ] Reconstituer et vérifier le JKS depuis Secrets, puis tester un nouvel AAB signé ; n'envoyer à Google qu'après acceptation de la nouvelle clé.
+- [ ] Aucun merge `main` / Release / envoi Play sans ordre explicite.
+
+Les anciennes consignes de récupérer l'artefact de remise du 07/10 ne sont plus exécutables : ce handoff a expiré.
