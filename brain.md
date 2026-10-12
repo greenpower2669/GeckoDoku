@@ -86,3 +86,12 @@ Mission `GECKO-SUDOKU-VISUAL-001` : conception validée, **documentation poussé
 ## Correction à réaliser — identité Hall et progression (12/10/2026)
 
 Signalement de Fab : scores Hall / courbes de progression paraissent réunir les résultats de plusieurs pseudonymes sous un même joueur. Mission autonome `GECKO-HOF-PLAYER-ISOLATION-002`, `missions/GECKO-HOF-PLAYER-ISOLATION-002.md`, même branche de travail `feature/sudoku-visual-reasoning-v1`. **Hall global = multi-profils ; progression personnelle = un seul profil identifié ; filtrage par mode pour Classique, Sudoku, Gomoku, Abeilles & Geckos.** Pseudo ≠ identité stable. Ne pas inférer l'origine des scores historiques inconnus. Signalement **non reproduit, non corrigé** à ce stade.
+
+
+## Implémentation Sudoku accessible et profils (12/10/2026, branche)
+
+Code poussé sur `feature/sudoku-visual-reasoning-v1` : `SudokuVisualReasoning.kt` (projections ligne/candidats, paires et triplets nus dans une unité, vérificateur géométrique X-Wing), `SudokuValueOverlayView.kt` (repères visuels semi-transparents, cercles et pulsation lente facultative), `MainActivity.kt` (pavé PopupWindow bas-centre, options, sélection manuelle de cercles). Le mode Entourer intercepte volontairement la touche candidats et n'édite pas les notes. Référence : `missions/GECKO-SUDOKU-VISUAL-001.md`.
+
+Identité : `PlayerProfileStore.kt` fournit un profil historique `legacy` conservant son ancien stockage et des profils supplémentaires à UUID ; `PlayerStats.kt` les sépare par fichier de préférences ; `UserDataBackup.kt` exporte/importe les fichiers additionnels ; `MainActivity.kt` autorise le choix/création de profil et exige abandon/relance si partie active. `GlobalHallProjection.merge` préserve deux scores globaux distincts même avec pseudo identique, tandis que la courbe locale n'est plus accolée au classement mondial. Les scores historiques sans identité fiable restent historiques, pas reventilés. Référence : `missions/GECKO-HOF-PLAYER-ISOLATION-002.md`.
+
+Cible branche : `0.15.45-dev` / code 80, mêmes package et configuration de signature. CI phone activée + artefact APK/sha256 ; **preuve finale GREEN/validation Samsung encore à obtenir**.
