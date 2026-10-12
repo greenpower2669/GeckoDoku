@@ -19,6 +19,8 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.WindowInsets
 import android.widget.Button
+import android.widget.CheckBox
+import android.widget.HorizontalScrollView
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -105,6 +107,14 @@ class MainActivity : Activity() {
 
     private var sudokuPaletteView:
         SudokuQuickPaletteView? = null
+
+    // Modes visuels : indépendants du solveur, OFF au premier lancement.
+    private var sudokuVisualProjections = false
+    private var sudokuVisualPairs = false
+    private var sudokuVisualTriplets = false
+    private var sudokuVisualCircles = false
+    private var sudokuCircleAnchor: SudokuCandidateRef? = null
+    private val sudokuCircleLinks = linkedSetOf<SudokuVisualLink>()
 
     private val sudokuPopupPlacementPolicy =
         SudokuPopupPlacementPolicy()
@@ -9880,6 +9890,11 @@ class MainActivity : Activity() {
 
         sudokuEngine =
             SudokuGameEngine(next)
+        sudokuCircleAnchor = null
+        sudokuCircleLinks.clear()
+        if (::sudokuValueOverlay.isInitialized) {
+            sudokuValueOverlay.playerCircleLinks = emptySet()
+        }
         sudokuSelectedCell = null
         sudokuNotesMode = false
         completionRecorded = false
@@ -11300,6 +11315,41 @@ class MainActivity : Activity() {
             .show()
     }
 
+    /**
+     * En mode Entourer, les touches Candidats sélectionnent un lien,
+     * sans ajouter ni retirer de note au Sudoku.
+     */
+    private fun markSudokuCircleCandidate(digit: Int) {
+        val cell = sudokuSelectedCell ?: return
+        val currentNotes = sudokuEngine?.snapshot()?.notesAt(cell).orEmpty()
+        if (digit !in currentNotes) {
+            status.text = "Ajoute d'abord le candidat $digit dans cette case."
+            return
+        }
+        val ref = SudokuCandidateRef(cell, digit)
+        val first = sudokuCircleAnchor
+        if (first == null || first.digit != digit || first.cell == cell) {
+            sudokuCircleAnchor = ref
+            status.text = "Candidat $digit choisi : ouvre une autre case et choisis $digit."
+            return
+        }
+        val firstOrder = first.cell.row * 9 + first.cell.col
+        val nextOrder = cell.row * 9 + cell.col
+        val link = if (firstOrder < nextOrder) {
+            SudokuVisualLink(first, ref)
+        } else {
+            SudokuVisualLink(ref, first)
+        }
+        if (!sudokuCircleLinks.add(link)) {
+            sudokuCircleLinks.remove(link)
+            status.text = "Lien $digit retiré."
+        } else {
+            status.text = "Lien $digit entouré • relation visuelle, pas une exclusion."
+        }
+        sudokuCircleAnchor = null
+        sudokuValueOverlay.playerCircleLinks = sudokuCircleLinks.toSet()
+    }
+
     private fun showSudokuCellPalette(
         cell: Cell
     ) {
@@ -11350,7 +11400,7 @@ class MainActivity : Activity() {
                     ).coerceAtLeast(
                     dp(280)
                 ),
-                dp(360)
+                dp(330)
             )
 
         var popupHeight =
@@ -11361,7 +11411,7 @@ class MainActivity : Activity() {
                     ).coerceAtLeast(
                     dp(320)
                 ),
-                dp(390)
+                dp(430)
             )
 
         var popupX =
@@ -11430,16 +11480,17 @@ class MainActivity : Activity() {
                 onCandidateDigit = {
                         digit ->
 
-                    handleSudokuDigit(
-                        digit,
-                        notesModeOverride =
-                            true
-                    )
+                    if (sudokuVisualCircles) {
+                        markSudokuCircleCandidate(digit)
+                    } else {
+                        handleSudokuDigit(
+                            digit,
+                            notesModeOverride = true
+                        )
+                    }
 
                     refreshSudokuPersistentPalette()
-
-                    sudokuValueOverlay
-                        .invalidate()
+                    sudokuValueOverlay.invalidate()
                 }
 
                 onHypothesisDigit = {
@@ -11694,9 +11745,78 @@ class MainActivity : Activity() {
 
         refreshSudokuPersistentPalette()
 
+        // Les options restent dans la même fenêtre flottante que le pavé.
+        // Barre défilable : commandes assez grandes même sur petit écran.
+        val optionRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(6), 0, dp(6), 0)
+        }
+
+        fun visualCheckbox(
+            label: String,
+            initial: Boolean,
+            change: (Boolean) -> Unit
+        ) {
+            val option = CheckBox(this).apply {
+                text = label
+                textSize = 15f
+                isChecked = initial
+                minHeight = dp(48)
+                contentDescription = label + " • annotation Sudoku"
+                setOnCheckedChangeListener { _, enabled ->
+                    change(enabled)
+                    sudokuValueOverlay.invalidate()
+                }
+            }
+            optionRow.addView(option)
+        }
+
+        visualCheckbox("Lignes", sudokuVisualProjections) {
+            sudokuVisualProjections = it
+            sudokuValueOverlay.showVisualProjections = it
+        }
+        visualCheckbox("Couples", sudokuVisualPairs) {
+            sudokuVisualPairs = it
+            sudokuValueOverlay.showVisualPairs = it
+        }
+        visualCheckbox("Triplets", sudokuVisualTriplets) {
+            sudokuVisualTriplets = it
+            sudokuValueOverlay.showVisualTriplets = it
+        }
+        visualCheckbox("Entourer", sudokuVisualCircles) {
+            sudokuVisualCircles = it
+            sudokuValueOverlay.showVisualCircles = it
+            sudokuCircleAnchor = null
+            status.text = if (it) {
+                "Entourer : sélectionne le même candidat sur deux cases."
+            } else "Mode Entourer désactivé."
+        }
+
+        val popupContent = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(
+                palette,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    0,
+                    1f
+                )
+            )
+            addView(
+                HorizontalScrollView(this@MainActivity).apply {
+                    isHorizontalScrollBarEnabled = true
+                    addView(optionRow)
+                },
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    dp(52)
+                )
+            )
+        }
+
         val popup =
             PopupWindow(
-                palette,
+                popupContent,
                 popupWidth,
                 popupHeight,
                 false
@@ -11785,28 +11905,12 @@ class MainActivity : Activity() {
                             .toInt()
             )
 
-        val position =
-            sudokuPopupPlacementPolicy
-                .place(
-                    screenWidth =
-                        screenRoot.width,
-                    screenHeight =
-                        screenRoot.height,
-                    anchor =
-                        anchor,
-                    popupWidth =
-                        popupWidth,
-                    popupHeight =
-                        popupHeight,
-                    margin =
-                        dp(8)
-                )
-
-        popupX =
-            position.x
-
-        popupY =
-            position.y
+        // Le pavé ne poursuit plus la case : ancrage stable bas-centre.
+        // Il reste un PopupWindow, donc au-dessus des médias de Pierre.
+        popupX = ((screenRoot.width - popupWidth) / 2)
+            .coerceAtLeast(dp(4))
+        popupY = (screenRoot.height - popupHeight - dp(8))
+            .coerceAtLeast(dp(4))
 
         sudokuPalettePopup =
             popup
