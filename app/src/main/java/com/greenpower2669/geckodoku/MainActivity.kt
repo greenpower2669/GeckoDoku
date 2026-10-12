@@ -480,14 +480,17 @@ class MainActivity : Activity() {
             ProfessorLifeController
                 .create(this)
 
+        playerProfileStore =
+            PlayerProfileStore(this)
+
         statsStore =
-            PlayerStatsStore(this)
+            PlayerStatsStore(
+                this,
+                playerProfileStore.activeProfileId
+            )
 
         journalStore =
             PuzzleJournalStore(this)
-
-        playerProfileStore =
-            PlayerProfileStore(this)
 
         hallOfFameStore =
             HallOfFameStore(this)
@@ -4834,6 +4837,91 @@ class MainActivity : Activity() {
             StatTrend.INSUFFICIENT ->
                 "pas encore deux parties terminées à comparer."
         }
+
+    /**
+     * Plusieurs personnes sur le même téléphone = plusieurs profils locaux.
+     * Renommer un pseudo ne crée pas un nouveau joueur.
+     */
+    private fun choosePlayerProfile() {
+        val profiles = playerProfileStore.profiles()
+        val labels = profiles.map {
+            (if (it.id == playerProfileStore.activeProfileId) "✓ " else "") +
+                it.name
+        } + listOf("➕ Nouveau joueur", "✏️ Renommer ce profil")
+
+        AlertDialog.Builder(this)
+            .setTitle("👤 Profils locaux • progressions séparées")
+            .setMessage(
+                "Choisis un profil pour ses propres statistiques. " +
+                    "Le Hall of Fame reste un classement global."
+            )
+            .setItems(labels.toTypedArray()) { _, position ->
+                when (position) {
+                    profiles.size -> createPlayerProfile()
+                    profiles.size + 1 -> editPlayerName()
+                    else -> {
+                        val profile = profiles[position]
+                        switchPlayerProfile(profile.id)
+                    }
+                }
+            }
+            .setNegativeButton("Fermer", null)
+            .show()
+    }
+
+    private fun switchPlayerProfile(id: String) {
+        if (id == playerProfileStore.activeProfileId) return
+        if (statsStore.hasActiveAttempt()) {
+            AlertDialog.Builder(this)
+                .setTitle("Partie en cours")
+                .setMessage(
+                    "Termine ou abandonne cette partie avant " +
+                        "de changer de joueur, pour ne pas mélanger les statistiques."
+                )
+                .setPositiveButton("Compris", null)
+                .show()
+            return
+        }
+        if (playerProfileStore.activateProfile(id)) {
+            statsStore = PlayerStatsStore(this, id)
+            status.text = "Profil actif : " + playerProfileStore.playerName
+        }
+    }
+
+    private fun createPlayerProfile() {
+        if (statsStore.hasActiveAttempt()) {
+            AlertDialog.Builder(this)
+                .setTitle("Partie en cours")
+                .setMessage(
+                    "Termine ou abandonne la partie avant de créer un " +
+                        "nouveau profil pour éviter de lui attribuer tes résultats."
+                )
+                .setPositiveButton("Compris", null)
+                .show()
+            return
+        }
+        val input = EditText(this).apply {
+            hint = "Pseudo du nouveau joueur"
+            setSingleLine(true)
+            contentDescription = "Nom du nouveau profil"
+        }
+        AlertDialog.Builder(this)
+            .setTitle("➕ Nouveau joueur")
+            .setMessage(
+                "Crée un profil indépendant. Même avec un pseudo identique, " +
+                    "ses résultats et progressions resteront séparés."
+            )
+            .setView(input)
+            .setPositiveButton("Créer") { _, _ ->
+                val name = input.text?.toString().orEmpty()
+                if (name.isBlank()) return@setPositiveButton
+                val profile = playerProfileStore.createProfile(name)
+                statsStore = PlayerStatsStore(this, profile.id)
+                status.text = "Nouveau profil : " + profile.name
+            }
+            .setNegativeButton("Annuler", null)
+            .show()
+    }
 
     private fun editPlayerName() {
         val input =
@@ -11939,7 +12027,7 @@ class MainActivity : Activity() {
                         "📚 Journal de grilles"
 
                     SettingsEntry.PLAYER_NAME ->
-                        "👤 Joueur : " +
+                        "👤 Profil : " +
                             playerProfileStore
                                 .playerName
 
@@ -12051,7 +12139,7 @@ class MainActivity : Activity() {
 
                     SettingsEntry.PLAYER_NAME -> {
                         dialog.dismiss()
-                        editPlayerName()
+                        choosePlayerProfile()
                     }
 
                     SettingsEntry.HALL_OF_FAME -> {
