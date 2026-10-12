@@ -85,3 +85,8 @@ Les tests offline/retry/doublons exhaustifs n’ont pas tous été rejoués manu
 - Release finale : `phone-0.15.44-dev-run-432`.
 - APK : `GeckoDoku-v0.15.44-dev.apk`.
 - SHA-256 : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c`.
+
+
+## 12/10/2026 — préparation GECKO-SUDOKU-VISUAL-001
+
+Création de `feature/sudoku-visual-reasoning-v1` depuis `main` et dépôt de `missions/GECKO-SUDOKU-VISUAL-001.md`. **Aucune modification de code, aucun test ni APK nouveau à ce stade** ; aucune régression liée à cette mission observée ou corrigée. Historique HOF précédent conservé.
