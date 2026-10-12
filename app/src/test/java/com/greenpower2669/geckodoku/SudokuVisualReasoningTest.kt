@@ -50,6 +50,9 @@ class SudokuVisualReasoningTest {
         )
         assertTrue(SudokuVisualReasoning.isGenuineXWing(notes, 1, 0 to 5, 2 to 7))
         notes[Cell(0, 4)] = setOf(1)
+        // Pour invalider aussi le X-Wing par colonnes, une troisième
+        // ligne doit contenir le même candidat dans la colonne 2.
+        notes[Cell(1, 2)] = setOf(1)
         assertFalse(SudokuVisualReasoning.isGenuineXWing(notes, 1, 0 to 5, 2 to 7))
     }
 }
