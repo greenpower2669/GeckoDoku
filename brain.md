@@ -103,3 +103,7 @@ Cible de publication : `0.15.44-dev` / code 79.
 - artifact AAB : `11486204826`.
 - tests, médias embarqués et signature : GREEN.
 - aucun merge `main`, Release GitHub ou envoi Play effectué.
+
+## Signature Google Play — continuité 12/10/2026
+
+La méthode permanente et ses garde-fous figurent dans `ordres-de-mission.md` (rubrique dédiée, préservée par convention). Capture GitHub de Fab : Secrets `ANDROID_UPLOAD_STORE_PASSWORD`, `ANDROID_UPLOAD_KEY_PASSWORD`, `GECKODOKU_HOF_API_KEY` présents ; `ANDROID_UPLOAD_KEYSTORE_BASE64` absent. La remise chiffrée à rétention 1 jour du 07/10 a expiré. Ne pas confondre clé d'importation et clé de signature Google. Vérifier Play App Signing et initier un nouveau bootstrap + demande de réinitialisation de l'Upload Key seulement sur accord Fab ; ne pas modifier `main`.
