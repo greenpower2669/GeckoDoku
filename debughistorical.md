@@ -116,3 +116,18 @@ Fab rapporte que l'affichage de scores/progressions du Hall semble associer plus
 - Cette version est le **build de test phone signé avec la clé debug existante**, PAS une publication Google Play. La signature Google Play n'est pas modifiée.
 - PR brouillon #4 : https://github.com/greenpower2669/GeckoDoku/pull/4 ; ne pas merger ni publier avant accord explicite.
 - **À faire** : recette physique Samsung par Fab (UI, Pierre, quatre modes, deux profils/homonymes, restauration des données). Les anciens résultats localement mélangés, sans identité d'origine, ne peuvent être reclassés automatiquement.
+
+
+## 13/10/2026 — première phrase Piper/Sherpa mangée ou déformée
+
+Symptôme Fab : sur la première lecture, le début de certains mots peut être mangé/déformé ; rejouer exactement la même phrase donne généralement un rendu correct.
+
+Audit du code avant correction :
+- `PierrePiperSpeechEngine.ensureTts()` était paresseux : le modèle n'était chargé qu'à la première demande réelle ;
+- `VoicePcmPlayer` recréait un `AudioTrack.MODE_STATIC` à chaque phrase ;
+- le callback de fin reposait sur `samples/sampleRate + 350 ms`, donc sur une estimation temporelle et non sur la consommation audio réelle ;
+- la première phrase cumulait donc démarrage modèle + création AudioTrack + démarrage sortie Android.
+
+Correction : préchauffage asynchrone dès construction du moteur, phrase d'amorce synthétisée et réellement lue à volume nul, AudioTrack STREAM persistant, fin déterminée par les frames réellement consommées via `playbackHeadPosition`, puis réutilisation de la même piste pour la phrase réelle. Traces dédiées `WARMUP_*`, `TRACK_CREATE/REUSE`, `PLAYBACK_DRAINED`.
+
+Cause finale du défaut acoustique à confirmer par test Samsung : l'hypothèse de chaîne audio froide est maintenant testée directement, sans déclarer le défaut résolu avant écoute réelle.
