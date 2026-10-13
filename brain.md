@@ -116,3 +116,6 @@ Le pavé Sudoku est calculé à 75 % de sa hauteur précédente, avec borne tact
 Mission `GECKO-PIERRE-WARMUP-003`. Le premier début de mot Piper/Sherpa pouvait être mangé/déformé à froid alors qu'une seconde lecture était correcte. La chaîne Pierre est désormais préchauffée dès la construction : chargement Sherpa/Piper, synthèse interne `Bonjour, je suis prêt.`, lecture réelle mais volume nul, attente de la consommation des frames audio, puis disponibilité de la première vraie phrase.
 
 `VoicePcmPlayer` n'alloue plus un AudioTrack STATIC pour chaque phrase : il maintient un `AudioTrack.MODE_STREAM` persistant, réutilisé à sample rate identique. La fin est fondée sur `playbackHeadPosition`, pas sur `duration + délai`. Après drainage, la piste reste allouée en pause. La première vraie demande est sérialisée derrière l'amorce sur l'executor mono-thread de `PierrePiperSpeechEngine`. Fallback Android inchangé. Validation Samsung encore requise.
+
+
+Validation CI de l'amorçage : run `38436224654` / #450 GREEN ; build phone, tests, packaging Pierre et sprites réussis. La résolution acoustique reste conditionnée au test réel Samsung.
