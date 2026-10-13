@@ -107,3 +107,28 @@ SHA-256 : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c`.
 - Cette version est le **build de test phone signé avec la clé debug existante**, PAS une publication Google Play. La signature Google Play n'est pas modifiée.
 - PR brouillon #4 : https://github.com/greenpower2669/GeckoDoku/pull/4 ; ne pas merger ni publier avant accord explicite.
 - **À faire** : recette physique Samsung par Fab (UI, Pierre, quatre modes, deux profils/homonymes, restauration des données). Les anciens résultats localement mélangés, sans identité d'origine, ne peuvent être reclassés automatiquement.
+
+
+## Chaîne Pierre préchauffée — 13/10/2026
+
+```text
+MainActivity.onCreate
+→ ProfessorSpeech
+→ PierrePiperSpeechEngine
+   └─ worker mono-thread
+      → ensureTts()
+      → generate("Bonjour, je suis prêt.")
+      → VoicePcmPlayer persistent STREAM
+         ├─ volume = 0 (amorce inaudible)
+         ├─ write PCM float
+         ├─ attendre playbackHeadPosition >= frames écrites
+         └─ pause sans release
+      → WARMUP_COMPLETE
+      → demande réelle suivante
+         → generate(vraie phrase)
+         → même AudioTrack (TRACK_REUSE)
+         → volume = 1
+         → fin réelle par playback head
+```
+
+Invariant : aucun timer de durée ne décide de la fin TTS. Le petit polling ne sert qu'à relire le curseur matériel sans boucle CPU agressive. `stop()` vide la file sans libérer la piste ; `release()` seul détruit l'AudioTrack. En cas d'échec de la voie Piper, `ProfessorSpeech` conserve le fallback Android.
