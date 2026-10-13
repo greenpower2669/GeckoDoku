@@ -108,3 +108,20 @@ Mission détaillée : `missions/GECKO-SUDOKU-VISUAL-001.md`. **Le code n'est pas
 - [x] Conserver son ancrage bas-centre, y compris après redimensionnement.
 - [x] Faire dépasser le trait de projection légèrement au-delà du chiffre à chaque extrémité.
 - [ ] Valider visuellement sur Samsung : hauteur, lisibilité des touches et rendu des projections.
+
+
+## GECKO-PIERRE-WARMUP-003 — première phrase TTS (13/10/2026)
+
+- [x] Charger Sherpa/Piper dès la création du moteur.
+- [x] Générer une phrase d'amorce via le même modèle/speaker que Pierre.
+- [x] Faire traverser l'amorce au vrai AudioTrack avec volume nul.
+- [x] Remplacer l'AudioTrack STATIC recréé par phrase par un AudioTrack STREAM persistant.
+- [x] Attendre la consommation réelle des frames via `playbackHeadPosition`, sans timer de fin arbitraire.
+- [x] Sérialiser la première vraie phrase derrière l'amorce.
+- [x] Conserver le fallback Android en cas d'échec Piper.
+- [ ] Confirmer build/tests CI GREEN sur le commit final.
+- [ ] Samsung : vérifier que l'amorce est inaudible et que le premier mot de la première vraie phrase n'est plus mangé/déformé.
+- [ ] Samsung : vérifier arrêt/pause/reprise, vidéo Prof et absence de régression CPU/mémoire.
+- [ ] Aucun merge main / Release avant ordre explicite de Fab.
+
+Mission détaillée : `missions/GECKO-PIERRE-WARMUP-003.md`.
