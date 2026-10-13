@@ -117,3 +117,8 @@ CI branche activée avec build `phone` et SHA-256 de l'APK dans l'artefact. **À
 Ordre Fab : charger Pierre au démarrage, synthétiser une courte amorce silencieuse dans la vraie chaîne audio, attendre sa fin réelle (pas un timer arbitraire), garder la chaîne chaude puis seulement lire la première vraie phrase. Priorité à un AudioTrack persistant/réutilisable.
 
 Implémenté sur `feature/sudoku-visual-reasoning-v1` : `PierrePiperSpeechEngine` sérialise l'amorce et la première parole ; `VoicePcmPlayer` utilise un AudioTrack STREAM persistant et valide la fin via `playbackHeadPosition`. Validation CI et surtout test Samsung de la première phrase encore requis. Aucun merge/release/publication autorisé par cet ordre.
+
+
+### Validation CI GECKO-PIERRE-WARMUP-003
+
+Run `38436224654` / #450 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque 240p vérifiés, APK et SHA-256 déposés en artefact. Le défaut acoustique de première syllabe reste à valider à l'oreille sur Samsung ; CI ne peut pas le prouver.
