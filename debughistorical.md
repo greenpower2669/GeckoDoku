@@ -131,3 +131,6 @@ Audit du code avant correction :
 Correction : préchauffage asynchrone dès construction du moteur, phrase d'amorce synthétisée et réellement lue à volume nul, AudioTrack STREAM persistant, fin déterminée par les frames réellement consommées via `playbackHeadPosition`, puis réutilisation de la même piste pour la phrase réelle. Traces dédiées `WARMUP_*`, `TRACK_CREATE/REUSE`, `PLAYBACK_DRAINED`.
 
 Cause finale du défaut acoustique à confirmer par test Samsung : l'hypothèse de chaîne audio froide est maintenant testée directement, sans déclarer le défaut résolu avant écoute réelle.
+
+
+Validation compilation : run `38436224654` / #450 GREEN après intégration complète du nouveau `VoicePcmPlayer` et de l'amorçage. Le run #449 rouge correspondait à l'état intermédiaire où le lecteur avait été remplacé avant l'adaptation de `PierrePiperSpeechEngine`; il n'est pas une régression finale.
