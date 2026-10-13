@@ -132,3 +132,6 @@ MainActivity.onCreate
 ```
 
 Invariant : aucun timer de durée ne décide de la fin TTS. Le petit polling ne sert qu'à relire le curseur matériel sans boucle CPU agressive. `stop()` vide la file sans libérer la piste ; `release()` seul détruit l'AudioTrack. En cas d'échec de la voie Piper, `ProfessorSpeech` conserve le fallback Android.
+
+
+Preuve CI : run `38436224654` / #450 GREEN. La chaîne compile et l'APK phone est produit ; seule l'écoute Samsung peut confirmer que le premier phonème n'est plus tronqué.
