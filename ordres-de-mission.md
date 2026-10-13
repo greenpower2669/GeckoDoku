@@ -108,3 +108,12 @@ CI branche activée avec build `phone` et SHA-256 de l'APK dans l'artefact. **À
 - Cette version est le **build de test phone signé avec la clé debug existante**, PAS une publication Google Play. La signature Google Play n'est pas modifiée.
 - PR brouillon #4 : https://github.com/greenpower2669/GeckoDoku/pull/4 ; ne pas merger ni publier avant accord explicite.
 - **À faire** : recette physique Samsung par Fab (UI, Pierre, quatre modes, deux profils/homonymes, restauration des données). Les anciens résultats localement mélangés, sans identité d'origine, ne peuvent être reclassés automatiquement.
+
+
+## Nouvelle mission exécutée — 13/10/2026
+
+**GECKO-PIERRE-WARMUP-003** — amorçage réel de la première phrase Piper/Sherpa : [`missions/GECKO-PIERRE-WARMUP-003.md`](missions/GECKO-PIERRE-WARMUP-003.md).
+
+Ordre Fab : charger Pierre au démarrage, synthétiser une courte amorce silencieuse dans la vraie chaîne audio, attendre sa fin réelle (pas un timer arbitraire), garder la chaîne chaude puis seulement lire la première vraie phrase. Priorité à un AudioTrack persistant/réutilisable.
+
+Implémenté sur `feature/sudoku-visual-reasoning-v1` : `PierrePiperSpeechEngine` sérialise l'amorce et la première parole ; `VoicePcmPlayer` utilise un AudioTrack STREAM persistant et valide la fin via `playbackHeadPosition`. Validation CI et surtout test Samsung de la première phrase encore requis. Aucun merge/release/publication autorisé par cet ordre.
