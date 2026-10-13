@@ -109,3 +109,10 @@ Cible branche : `0.15.45-dev` / code 80, mêmes package et configuration de sign
 
 ### Ajustement visuel Sudoku Samsung — 13/10/2026
 Le pavé Sudoku est calculé à 75 % de sa hauteur précédente, avec borne tactile minimale, et reste ancré bas-centre même après redimensionnement. Les projections horizontales dépassent légèrement le candidat à chaque extrémité pour mieux matérialiser la ligne sans modifier les notes ni le solveur.
+
+
+## Amorçage première phrase Pierre — 13/10/2026
+
+Mission `GECKO-PIERRE-WARMUP-003`. Le premier début de mot Piper/Sherpa pouvait être mangé/déformé à froid alors qu'une seconde lecture était correcte. La chaîne Pierre est désormais préchauffée dès la construction : chargement Sherpa/Piper, synthèse interne `Bonjour, je suis prêt.`, lecture réelle mais volume nul, attente de la consommation des frames audio, puis disponibilité de la première vraie phrase.
+
+`VoicePcmPlayer` n'alloue plus un AudioTrack STATIC pour chaque phrase : il maintient un `AudioTrack.MODE_STREAM` persistant, réutilisé à sample rate identique. La fin est fondée sur `playbackHeadPosition`, pas sur `duration + délai`. Après drainage, la piste reste allouée en pause. La première vraie demande est sérialisée derrière l'amorce sur l'executor mono-thread de `PierrePiperSpeechEngine`. Fallback Android inchangé. Validation Samsung encore requise.
