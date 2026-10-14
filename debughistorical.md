@@ -208,3 +208,28 @@ Les runs rouges #478–#480 correspondent à des commits intermédiaires où Mai
 ### Validation finale repères humains / aide surhumaine
 Run `38522492488` / #486 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11875030286`, APK SHA-256 `793a3878817fa04f9b2096d3ac032c8f235c98df50f6a7f56df0139dda062d15`.
 Le run #486 est la preuve finale du lot complet ; les runs rouges précédents restent des états intermédiaires partiels.
+
+## 14/10/2026 — Hall global vs progression : cause et correction
+
+Signalement Fab : le Hall doit comparer tous les joueurs, mais les progressions ne doivent jamais ranger plusieurs pseudos/joueurs comme une seule personne ; Pierre doit rester attaché au joueur sélectionné.
+
+Audit prouvé :
+- `showHallOfFameLevel()` tronquait les résultats avec `.take(10)` ;
+- `HallOfFameEntry` ne portait pas d'identité stable, seulement `playerName` + métriques ;
+- le protocole global possède déjà un objet `metadata`, mais l'APK n'y publiait pas l'identité locale ;
+- `PlayerStatsStore` était déjà correctement séparé par `activeProfileId` ;
+- `ProfessorLifeController` était créé une seule fois au lancement : lors d'un switch de profil, `statsStore` changeait mais le contexte vivant (mastery, momentum, streak, impulsivity...) pouvait continuer depuis le joueur précédent ;
+- la courbe personnelle avait déjà été retirée du classement global, mais aucune sous-progression distante fiable ne pouvait être créée sans identité.
+
+Correction :
+- identité opaque `progressionId` indépendante du pseudo ;
+- metadata globale + Hall local enrichis ;
+- regroupement de progression uniquement par id ;
+- historiques inconnus conservés au classement et exclus des progressions ;
+- aucune déduplication entre deux ids connus différents ;
+- hydratation locale seulement si preuve exacte non ambiguë ;
+- suppression du Top 10 UI et de la limite locale 200 ;
+- sous-progressions séparées par joueur ;
+- stop/recréation/reset de Pierre lors d'une vraie bascule de profil.
+
+Point restant à valider en recette réseau réelle : le contrat de documentation accepte `metadata`; confirmer qu'un nouveau score publié revient bien avec `metadata.playerProfileId` dans `/sync`. Même si un serveur ancien omet metadata, les propres scores exacts du téléphone restent hydratables localement ; les scores distants d'autres joueurs sans id restent volontairement non attribués.
