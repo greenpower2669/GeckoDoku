@@ -1024,9 +1024,9 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             return
         }
 
-        fun targetPoint(
+        fun targetRect(
             ref: SudokuCandidateRef
-        ): Pair<Float, Float> {
+        ): RectF {
             val cell =
                 cellRect(
                     ref.cell
@@ -1037,24 +1037,71 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                         ref.digit
                     )
 
-            return (
+            return RectF(
                 cell.left +
-                    (
-                        slot.left +
-                            slot.right
-                        ) *
-                        cell.width() /
-                        2f
-                ) to
-                (
-                    cell.top +
-                        (
-                            slot.top +
-                                slot.bottom
-                            ) *
-                            cell.height() /
-                            2f
-                    )
+                    slot.left *
+                        cell.width(),
+                cell.top +
+                    slot.top *
+                        cell.height(),
+                cell.left +
+                    slot.right *
+                        cell.width(),
+                cell.top +
+                    slot.bottom *
+                        cell.height()
+            )
+        }
+
+        fun targetPoint(
+            ref: SudokuCandidateRef
+        ): Pair<Float, Float> {
+            val rect =
+                targetRect(
+                    ref
+                )
+
+            return rect.centerX() to
+                rect.centerY()
+        }
+
+        fun drawManualDigit(
+            ref: SudokuCandidateRef
+        ) {
+            val rect =
+                targetRect(
+                    ref
+                )
+            val inset =
+                rect.width() *
+                    .10f
+
+            renderer.draw(
+                canvas =
+                    canvas,
+                target =
+                    RectF(
+                        rect.left +
+                            inset,
+                        rect.top +
+                            inset,
+                        rect.right -
+                            inset,
+                        rect.bottom -
+                            inset
+                    ),
+                digit =
+                    ref.digit,
+                style =
+                    candidateVisualPolicy
+                        .styleForCandidate(
+                            visualStyle
+                        ),
+                mini =
+                    true,
+                alpha =
+                    215
+            )
         }
 
         paint.style =
@@ -1080,6 +1127,10 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             .forEachIndexed {
                 index,
                 ref ->
+
+                drawManualDigit(
+                    ref
+                )
 
                 val (
                     x,
@@ -1188,6 +1239,10 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         manualCandidateRefs
             .forEach {
                 ref ->
+
+                drawManualDigit(
+                    ref
+                )
 
                 val (
                     x,
