@@ -114,6 +114,18 @@ class MainActivity : Activity() {
     private var sudokuSuperHelpPopup:
         PopupWindow? = null
 
+    private var sudokuManualToolsGeometry:
+        SudokuFloatingWindowGeometry? = null
+
+    private var sudokuSuperHelpGeometry:
+        SudokuFloatingWindowGeometry? = null
+
+    private var sudokuPaletteGeometry:
+        SudokuFloatingWindowGeometry? = null
+
+    private var sudokuFloatingWindowsSuspendedForProfessor =
+        false
+
     private var sudokuPaletteView:
         SudokuQuickPaletteView? = null
 
