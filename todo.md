@@ -231,6 +231,10 @@ Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f
 - [x] Pendant la parole de Pierre, sortir temporairement les PopupWindow de la zone visible sans les détruire.
 - [x] À la fin de la parole, restaurer chaque fenêtre à sa géométrie précédente.
 - [x] Ajouter tests purs du placement compact et du clamp.
-- [ ] Confirmer CI finale du commit code `423f1a1729024abdeaf524bcde24e08aed1a6516`.
+- [x] Confirmer CI finale du commit code `423f1a1729024abdeaf524bcde24e08aed1a6516`.
 - [ ] Recette Samsung : ouverture directe, déplacement mémorisé, Pierre devant puis retour exact des fenêtres.
 - [ ] Aucun merge main / Release avant validation Fab.
+
+
+### Preuve CI finale Repères / calques Pierre
+Run `38537609942` / #522 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11880727507`, APK SHA-256 `3f6dbba028b4bbb793ed16cbf3a9bd3eb237f36963c4e9fd8a292da21fed911c`.
