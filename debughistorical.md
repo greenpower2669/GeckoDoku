@@ -255,3 +255,8 @@ Correction :
 - stratégie de foreground sans destruction : pendant la parole, PopupWindow déplacés hors écran avec clipping temporairement désactivé ; à la fin, restauration exacte.
 
 Risque à valider téléphone : comportement constructeur Android du déplacement offscreen des PopupWindow. La CI ne peut valider que compilation/tests ; la recette Samsung doit confirmer visuellement l'absence de clignotement et le retour exact.
+
+
+### Validation finale Repères compact / calques Pierre
+Run `38537609942` / #522 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11880727507`, APK SHA-256 `3f6dbba028b4bbb793ed16cbf3a9bd3eb237f36963c4e9fd8a292da21fed911c`.
+La CI valide code/tests/build ; la recette Samsung doit confirmer que Pierre apparaît réellement devant puis que les trois fenêtres reprennent exactement leur place.
