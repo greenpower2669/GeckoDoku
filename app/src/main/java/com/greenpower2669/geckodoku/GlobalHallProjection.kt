@@ -87,6 +87,22 @@ object GlobalHallProjection {
                 return null
             }
 
+            val profileId =
+                obj.optJSONObject(
+                    "metadata"
+                )
+                    ?.optString(
+                        "playerProfileId"
+                    )
+                    ?.trim()
+                    ?.takeIf {
+                        it.matches(
+                            Regex(
+                                "[a-fA-F0-9-]{36}"
+                            )
+                        )
+                    }
+
             HallOfFameEntry(
                 playerName = playerName,
                 mode = mode,
@@ -96,7 +112,9 @@ object GlobalHallProjection {
                 elapsedSeconds =
                     obj.getLong("elapsedSeconds")
                         .coerceAtLeast(0L),
-                completedAt = obj.getLong("completedAt")
+                completedAt = obj.getLong("completedAt"),
+                playerProfileId =
+                    profileId
             )
         } catch (_: Exception) {
             null
