@@ -93,9 +93,9 @@ object SudokuFloatingWindowGeometryPolicy {
     ): SudokuFloatingWindowBounds =
         SudokuFloatingWindowBounds(
             left = safe.left,
-            top = maxOf(safe.top, boardBottom + gap),
+            top = minOf(safe.bottom, maxOf(safe.top, boardBottom + gap)),
             right = safe.right,
-            bottom = maxOf(safe.bottom, maxOf(safe.top, boardBottom + gap))
+            bottom = safe.bottom
         )
 
     fun bottomCentered(
