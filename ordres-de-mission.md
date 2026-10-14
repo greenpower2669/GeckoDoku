@@ -141,3 +141,16 @@ Fab autorise le correctif complet du pavé Sudoku après audit de l'impression �
 ### Validation CI Binaire / candidats réels
 Run `38504109994` / #464 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11867790810`, APK SHA-256 `356cb9973995d453d6e82e865b959f4648502624705322502e23d711ec52cb5e`.
 Recette Samsung encore requise avant toute validation fonctionnelle finale. Aucun merge/release/publication.
+
+
+## Avenant projection complète / pseudo / Pierre — 14/10/2026
+
+Fab autorise la correction du retour Samsung :
+- accès direct **✏️ Pseudo : <nom>** dans Réglages ;
+- gestion **👥 Profils locaux** conservée séparément ;
+- Pierre Sudoku reformulé avec phrases courtes et ordre de repères ligne → colonne → bloc ;
+- checkbox **Projection** (ancien « Lignes ») : exactement deux candidats d'un même chiffre dans une ligne OU colonne, trait discret semi-transparent traversant toute la grille ;
+- deux petits anneaux repèrent les occurrences sans dépendre seulement de la couleur ;
+- les outils de projection du Prof sont visuellement adoucis.
+
+Branche uniquement `feature/sudoku-visual-reasoning-v1`. Aucun merge main / Release / Play sans ordre explicite.
