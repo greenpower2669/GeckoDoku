@@ -156,4 +156,33 @@ class SudokuFloatingWindowGeometryTest {
         assertEquals(1, result.height)
     }
 
+    @Test
+    fun sudokuToolsWaitForIntroAndVisibleBoard() {
+        fun allowed(
+            introDone: Boolean = true,
+            introVideo: Boolean = false,
+            curtain: Boolean = false,
+            visible: Boolean = true,
+            measured: Boolean = true,
+            dismissed: Boolean = false,
+            sudoku: Boolean = true
+        ) = SudokuFloatingStartupPolicy.canOpen(
+            sudokuMode = sudoku,
+            introFinished = introDone,
+            introVideoActive = introVideo,
+            launchCurtainVisible = curtain,
+            boardVisible = visible,
+            boardMeasured = measured,
+            dismissed = dismissed
+        )
+        assertTrue(allowed())
+        assertTrue(!allowed(introDone = false))
+        assertTrue(!allowed(introVideo = true))
+        assertTrue(!allowed(curtain = true))
+        assertTrue(!allowed(visible = false))
+        assertTrue(!allowed(measured = false))
+        assertTrue(!allowed(dismissed = true))
+        assertTrue(!allowed(sudoku = false))
+    }
+
 }
