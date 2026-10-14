@@ -16,6 +16,7 @@ jobs:
     if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run525]')
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Download validated run 525 APK and publish temporary prerelease
         shell: bash
         env:
@@ -39,7 +40,7 @@ jobs:
             "GeckoDoku-v0.15.45-dev.apk#GeckoDoku-v0.15.45-dev.apk" \
             "GeckoDoku-v0.15.45-dev.apk.sha256#GeckoDoku-v0.15.45-dev.apk.sha256" \
             --repo "$GITHUB_REPOSITORY" \
-            --target eee5347f52602ccbc91d1359aeacb161c427d9f1 \
+            --target "${GITHUB_SHA}" \
             --title "TEMP GeckoDoku 0.15.45-dev • run 525" \
             --notes "APK de test signé Android, issu du run #525 GREEN. Fichier APK direct, sans ZIP; ne pas publier sur Google Play." \
             --prerelease
