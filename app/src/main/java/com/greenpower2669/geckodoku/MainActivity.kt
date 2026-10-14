@@ -3679,6 +3679,10 @@ class MainActivity : Activity() {
             )
         }
 
+        if (selectedGameMode == GameMode.SUDOKU) {
+            fitOpenSudokuPaletteToDock()
+        }
+
         if (
             ::aliveMascotOverlay
                 .isInitialized
@@ -6847,10 +6851,7 @@ class MainActivity : Activity() {
         sudokuSuperHelpGeometry = reconcile(
             sudokuSuperHelpPopup, sudokuSuperHelpGeometry, dp(280), dp(80)
         )
-        sudokuPaletteGeometry = reconcile(
-            sudokuPalettePopup, sudokuPaletteGeometry,
-            dp(140), dp(160), sudokuKeyboardDockBounds()
-        )
+        fitOpenSudokuPaletteToDock()
     }
 
     private fun protectFromSystemBars(
@@ -12525,6 +12526,29 @@ class MainActivity : Activity() {
         )
     }
 
+    /** Synchronize the physical PopupWindow size and its docked geometry. */
+    private fun fitOpenSudokuPaletteToDock() {
+        if (selectedGameMode != GameMode.SUDOKU ||
+            sudokuFloatingWindowsSuspendedForProfessor ||
+            !::sudokuBoard.isInitialized ||
+            sudokuBoard.width <= 0 || sudokuBoard.height <= 0
+        ) return
+        val popup = sudokuPalettePopup ?: return
+        if (!popup.isShowing) return
+        val current = sudokuPaletteGeometry ?: return
+        val fitted = SudokuFloatingWindowGeometryPolicy.clampToBounds(
+            current, sudokuKeyboardDockBounds(),
+            minimumWidth = dp(140), minimumHeight = dp(160), margin = dp(4)
+        )
+        if (SudokuFloatingWindowGeometryPolicy.needsPhysicalUpdate(
+                current, fitted, popup.width, popup.height
+            )
+        ) {
+            popup.update(fitted.x, fitted.y, fitted.width, fitted.height)
+        }
+        sudokuPaletteGeometry = fitted
+    }
+
     private fun boardRelativeTop(
         popupHeight: Int,
         layer: Int
@@ -13844,6 +13868,7 @@ class MainActivity : Activity() {
                 null
         ) {
             refreshSudokuPersistentPalette()
+            fitOpenSudokuPaletteToDock()
 
             status.text =
                 "Sudoku • case " +
@@ -13855,45 +13880,19 @@ class MainActivity : Activity() {
             return
         }
 
-        var popupWidth =
-            minOf(
-                (
-                    screenRoot.width -
-                        dp(16)
-                    ).coerceAtLeast(
-                    dp(280)
-                ),
-                dp(330)
+        // Compute FINAL dimensions before constructing PopupWindow.
+        // Target: compact keyboard below the entire grid, on the right.
+        val openingGeometry =
+            SudokuFloatingWindowGeometryPolicy.compactKeypadBelowBoard(
+                dock = sudokuKeyboardDockBounds(),
+                preferredWidth = dp(315), preferredHeight = dp(225),
+                minimumWidth = dp(240), minimumHeight = dp(160),
+                margin = dp(4), bottomGap = dp(8)
             )
-
-        // Fab 13/10/2026 : pavé Sudoku 25 % moins haut.
-        // On réduit la hauteur réellement calculée, pas seulement le max,
-        // puis on conserve une borne basse tactile raisonnable.
-        val previousPopupHeight =
-            minOf(
-                (
-                    screenRoot.height -
-                        dp(24)
-                    ).coerceAtLeast(
-                    dp(320)
-                ),
-                dp(430)
-            )
-
-        var popupHeight =
-            (
-                previousPopupHeight *
-                    3 /
-                    4
-                ).coerceAtLeast(
-                dp(240)
-            )
-
-        var popupX =
-            0
-
-        var popupY =
-            0
+        var popupX = openingGeometry.x
+        var popupY = openingGeometry.y
+        var popupWidth = openingGeometry.width
+        var popupHeight = openingGeometry.height
 
         var popupRef:
             PopupWindow? =
@@ -14232,60 +14231,7 @@ class MainActivity : Activity() {
         popupRef =
             popup
 
-        val rootLocation =
-            IntArray(2)
-
-        val boardLocation =
-            IntArray(2)
-
-        screenRoot.getLocationOnScreen(
-            rootLocation
-        )
-
-        sudokuBoard
-            .getLocationOnScreen(
-                boardLocation
-            )
-
-        val cellRect =
-            sudokuBoard
-                .cellRectLocal(
-                    cell
-                )
-
-        val anchor =
-            PixelBox(
-                left =
-                    boardLocation[0] -
-                        rootLocation[0] +
-                        cellRect.left
-                            .toInt(),
-                top =
-                    boardLocation[1] -
-                        rootLocation[1] +
-                        cellRect.top
-                            .toInt(),
-                right =
-                    boardLocation[0] -
-                        rootLocation[0] +
-                        cellRect.right
-                            .toInt(),
-                bottom =
-                    boardLocation[1] -
-                        rootLocation[1] +
-                        cellRect.bottom
-                            .toInt()
-            )
-
-        // Dock dynamique sous la grille : le pavé réduit d'abord sa
-        // hauteur pour ne jamais masquer une case du Sudoku.
-        val dock = sudokuKeyboardDockBounds()
-        val initial = SudokuFloatingWindowGeometryPolicy.bottomCentered(
-            dock, popupWidth, popupHeight, dp(140), dp(160), dp(4), dp(8)
-        )
-        popupX = initial.x; popupY = initial.y
-        popupWidth = initial.width; popupHeight = initial.height
-
+        // PopupWindow already owns openingGeometry's actual dimensions.
         sudokuPalettePopup =
             popup
 
