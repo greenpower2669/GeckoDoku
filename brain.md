@@ -190,3 +190,7 @@ Les géométries runtime des trois PopupWindow Sudoku sont suivies : Repères hu
 
 
 Preuve CI Repères compact / foreground Pierre : Run `38537609942` / #522 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11880727507`, APK SHA-256 `3f6dbba028b4bbb793ed16cbf3a9bd3eb237f36963c4e9fd8a292da21fed911c`.
+
+## Correctif zone sûre PopupWindow Sudoku — 14/10/2026
+
+Voir `missions/GECKO-SUDOKU-SYSTEM-BARS-005.md`. `sudokuPopupSafeBounds()` déduit les bornes en coordonnées de fenêtre par intersection root mesuré / insets `systemBars|displayCutout`, sans retrancher deux fois les barres déjà appliquées au root. `SudokuFloatingWindowGeometryPolicy.clampToBounds()` et `bottomCentered()` gouvernent désormais Repères, Aide et pavé pour drag / reprise de géométrie / resize / placement par défaut. Les popups ouverts sont reconciliés après changement des insets ; le système de calques Pierre ne ferme toujours rien. Tests géométrie de navigation Android, edge-to-edge, rotation ajoutés ; compilation CI et validation Samsung en attente.
