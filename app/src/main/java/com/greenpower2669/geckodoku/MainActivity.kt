@@ -6422,6 +6422,21 @@ class MainActivity : Activity() {
                 }
             }
 
+        sudokuVisualToolsButton =
+            Button(this).apply {
+                text = "✎ Repères"
+                textSize = 14f
+                minHeight = dp(40)
+                contentDescription =
+                    "Ouvrir les repères visuels manuels"
+
+                setOnClickListener {
+                    sudokuManualToolsDismissed =
+                        false
+                    showSudokuManualToolsPopup()
+                }
+            }
+
         return LinearLayout(this).apply {
             orientation =
                 LinearLayout.HORIZONTAL
@@ -6437,6 +6452,15 @@ class MainActivity : Activity() {
 
             addView(
                 sudokuRedoButton,
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1f
+                )
+            )
+
+            addView(
+                sudokuVisualToolsButton,
                 LinearLayout.LayoutParams(
                     0,
                     LinearLayout.LayoutParams.WRAP_CONTENT,
