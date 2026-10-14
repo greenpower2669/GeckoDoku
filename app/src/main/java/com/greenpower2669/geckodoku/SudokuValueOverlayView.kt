@@ -481,9 +481,9 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             return
         }
 
-        fun targetPoint(
+        fun targetRect(
             ref: SudokuCandidateRef
-        ): Pair<Float, Float> {
+        ): RectF {
             val cell =
                 cellRect(
                     ref.cell
@@ -495,24 +495,72 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                         ref.digit
                     )
 
-            return (
+            return RectF(
                 cell.left +
-                    (
-                        slot.left +
-                            slot.right
-                        ) *
-                        cell.width() /
-                        2f
-                ) to
-                (
-                    cell.top +
-                        (
-                            slot.top +
-                                slot.bottom
-                            ) *
-                            cell.height() /
-                            2f
-                    )
+                    slot.left *
+                        cell.width(),
+                cell.top +
+                    slot.top *
+                        cell.height(),
+                cell.left +
+                    slot.right *
+                        cell.width(),
+                cell.top +
+                    slot.bottom *
+                        cell.height()
+            )
+        }
+
+        fun targetPoint(
+            ref: SudokuCandidateRef
+        ): Pair<Float, Float> {
+            val rect =
+                targetRect(
+                    ref
+                )
+
+            return rect.centerX() to
+                rect.centerY()
+        }
+
+        fun drawAidDigit(
+            ref: SudokuCandidateRef,
+            alpha: Int = 195
+        ) {
+            val rect =
+                targetRect(
+                    ref
+                )
+            val inset =
+                rect.width() *
+                    .10f
+
+            renderer.draw(
+                canvas =
+                    canvas,
+                target =
+                    RectF(
+                        rect.left +
+                            inset,
+                        rect.top +
+                            inset,
+                        rect.right -
+                            inset,
+                        rect.bottom -
+                            inset
+                    ),
+                digit =
+                    ref.digit,
+                style =
+                    candidateVisualPolicy
+                        .styleForCandidate(
+                            visualStyle
+                        ),
+                mini =
+                    true,
+                alpha =
+                    alpha
+            )
         }
 
         paint.style =
@@ -541,6 +589,13 @@ class SudokuValueOverlayView @JvmOverloads constructor(
 
             links.forEach {
                 link ->
+
+                drawAidDigit(
+                    link.first
+                )
+                drawAidDigit(
+                    link.second
+                )
 
                 val (
                     x0,
@@ -727,16 +782,49 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                     null
                 }
 
-            val highlighted =
+            val groups =
                 SudokuVisualReasoning
                     .nakedGroups(
                         candidates,
                         size
                     )
+
+            val highlighted =
+                groups
                     .flatMap {
                         it.cells
                     }
                     .toSet()
+
+            groups.forEach {
+                group ->
+
+                group.cells
+                    .forEach {
+                        cell ->
+
+                        candidates[
+                            cell
+                        ].orEmpty()
+                            .intersect(
+                                group.digits
+                            )
+                            .forEach {
+                                digit ->
+
+                                drawAidDigit(
+                                    SudokuCandidateRef(
+                                        cell =
+                                            cell,
+                                        digit =
+                                            digit
+                                    ),
+                                    alpha =
+                                        190
+                                )
+                            }
+                    }
+            }
 
             highlighted.forEach {
                 cell ->
@@ -842,17 +930,24 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                         .forEach {
                             cell ->
 
+                            val ref =
+                                SudokuCandidateRef(
+                                    cell =
+                                        cell,
+                                    digit =
+                                        group.digit
+                                )
+
+                            drawAidDigit(
+                                ref
+                            )
+
                             val (
                                 x,
                                 y
                             ) =
                                 targetPoint(
-                                    SudokuCandidateRef(
-                                        cell =
-                                            cell,
-                                        digit =
-                                            group.digit
-                                    )
+                                    ref
                                 )
 
                             canvas.drawCircle(
