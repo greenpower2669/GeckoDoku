@@ -12,28 +12,28 @@ permissions:
 jobs:
   # Explicit opt-in only. Publish the EXACT validated phone APK from run #525
   # as an unpacked GitHub Release asset; never copy it to the Git tree.
-  publish_temp_apk_525:
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run525]')
+  publish_temp_apk_529:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run529]')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download validated run 525 APK and publish temporary prerelease
+      - name: Download validated run 529 APK and publish temporary prerelease
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag="temp-geckodoku-0.15.45-dev-run-525"
-          dest="temp/GeckoDoku-run525"
+          tag="temp-geckodoku-0.15.45-dev-run-529"
+          dest="temp/GeckoDoku-run529"
           mkdir -p "$dest"
-          gh run download 38587086273 \
+          gh run download 38603852806 \
             --repo "$GITHUB_REPOSITORY" \
             --name "GeckoDoku-v0.15.45-dev-phone" \
             --dir "$dest"
           cd "$dest"
           sha256sum -c GeckoDoku-v0.15.45-dev.apk.sha256
           actual="$(sha256sum GeckoDoku-v0.15.45-dev.apk | cut -d' ' -f1)"
-          expected="23506e3a310401dcf4016c5544324913d9670bb54b70ce439da6b8356effcb51"
+          expected="28d0995d5e4b1948ff2351b34d3b99638b225b2f755e856fd036d5238ea8a86e"
           test "$actual" = "$expected"
           test -s GeckoDoku-v0.15.45-dev.apk
           gh release create "$tag" \
@@ -41,13 +41,13 @@ jobs:
             "GeckoDoku-v0.15.45-dev.apk.sha256#GeckoDoku-v0.15.45-dev.apk.sha256" \
             --repo "$GITHUB_REPOSITORY" \
             --target "${GITHUB_SHA}" \
-            --title "TEMP GeckoDoku 0.15.45-dev • run 525" \
-            --notes "APK de test signé Android, issu du run #525 GREEN. Fichier APK direct, sans ZIP; ne pas publier sur Google Play." \
+            --title "TEMP GeckoDoku 0.15.45-dev • run 529" \
+            --notes "APK de test signé Android, issu du run #529 GREEN. Fichier APK direct, sans ZIP; ne pas publier sur Google Play." \
             --prerelease
           echo "APK direct : https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
 
   android:
-    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run525]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
