@@ -375,3 +375,19 @@ layout / insets
 ```
 
 Conserver taille grille, repères au-dessus, fenêtre sous grille, calques Pierre, préférences de l'utilisateur. Mission `GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009`. Validation CI et recette Samsung non achevées à la rédaction.
+
+## AAB signé et merge conditionnel — mission 010
+
+```text
+Secrets GitHub (chiffrés, jamais lus par l'assistant)
+→ build-play-aab.yml : reconstruction JKS temporaire
+→ certificat SHA1 = notification Google Play du 12/10 (bloquant)
+→ préparation Pierre + sprites 240p → 299 tests
+→ :app:bundleRelease → jarsigner -verify
+→ avant merge : validation branch feature/sudoku-visual-reasoning-v1
+→ si GREEN : merge PR #4 → main
+→ nouveau build AAB signé sur main → Release AAB + SHA-256
+→ Google Play : envoi ultérieur contrôlé (aucune autopublication)
+```
+
+Protocole immuable conservé en tête d'`ordres-de-mission.md`. Voir `missions/GECKO-PLAY-MERGE-SIGNED-RELEASE-010.md`.
