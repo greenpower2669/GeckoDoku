@@ -50,4 +50,31 @@ class SudokuSettingsPolicyTest {
                 )
         )
     }
+
+    @Test
+    fun pseudoAndProfilesStayAvailableInEveryMode() {
+        val policy =
+            SettingsMenuPolicy()
+
+        GameMode.entries
+            .forEach {
+                mode ->
+
+                val entries =
+                    policy.entriesFor(
+                        mode
+                    )
+
+                assertTrue(
+                    SettingsEntry.PLAYER_NAME in
+                        entries
+                )
+
+                assertTrue(
+                    SettingsEntry.PLAYER_PROFILE in
+                        entries
+                )
+            }
+    }
+
 }
