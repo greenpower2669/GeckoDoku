@@ -16095,10 +16095,13 @@ class MainActivity : Activity() {
         }
 
         val narration =
-            PlayerStatsNarration.build(
-                statsStore
-                    .professorLevels()
-            )
+            playerProfileStore
+                .playerName +
+                ", " +
+                PlayerStatsNarration.build(
+                    statsStore
+                        .professorLevels()
+                )
 
         speakSimpleProfessorBubble(
             text = narration,
