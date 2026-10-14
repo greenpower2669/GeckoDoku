@@ -5480,6 +5480,7 @@ class MainActivity : Activity() {
                     ProfessorLifeController
                         .create(this)
                 clearProfessorSession()
+                resetProfessorAmbientState()
                 status.text =
                     "Profil actif : " +
                         playerProfileStore
@@ -5519,6 +5520,7 @@ class MainActivity : Activity() {
                         ProfessorLifeController
                             .create(this)
                     clearProfessorSession()
+                    resetProfessorAmbientState()
                     status.text =
                         "Nouveau profil : " +
                             profile.name
