@@ -253,3 +253,19 @@ Run `38537609942` / #522 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre e
 - [ ] Aucun merge main, Release ou Play sans validation de Fab.
 
 Mission : `missions/GECKO-SUDOKU-SYSTEM-BARS-005.md`.
+
+## GECKO-SUDOKU-MANUAL-PROJECTION-006 — 14/10/2026
+
+- [x] Auditer la capture « Projection manuelle 1 » et les deux `drawLine` inconditionnels.
+- [x] Ajouter politique testable axe unique selon alignement des marques du même chiffre ; défaut ligne, égalité ligne.
+- [x] Modifier le rendu manuel afin d'interdire la croix.
+- [x] Ajouter la croix discrète seulement pour une hypothèse réellement posée.
+- [x] Modifier les messages du joueur sans annoncer de fausse croix.
+- [x] Ajouter six tests JVM (ligne / colonne / isolé / chiffres distincts / égalité / hypothèse).
+- [ ] Confirmer le nouveau run CI phone `testDebugUnitTest + assemblePhone` GREEN.
+- [ ] Vérifier APK test embarquant Pierre UPMC et sprites 240p ; SHA-256.
+- [ ] Recette Samsung avec repères 1 alignés sur ligne puis colonne, hypothèse active puis retirée ; confirmer aucune élimination, aucune régression autre outil.
+- [ ] Terminer recette Android navigation-bounds mission 005.
+- [ ] Sans merge main, Release, Play ni changement de signature sans feu vert.
+
+Voir `missions/GECKO-SUDOKU-MANUAL-PROJECTION-006.md`.
