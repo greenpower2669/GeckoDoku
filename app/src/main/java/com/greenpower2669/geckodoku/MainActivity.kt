@@ -12684,40 +12684,37 @@ class MainActivity : Activity() {
         sudokuManualToolsDismissed =
             false
 
-        val popupWidth =
-            minOf(
-                (
-                    screenRoot.width -
-                        dp(
-                            12
-                        )
-                    ).coerceAtLeast(
-                    dp(
-                        280
-                    )
-                ),
-                dp(
-                    430
-                )
-            )
+        val initialGeometry =
+            loadSudokuManualToolsGeometry()
 
-        val popupHeight =
-            dp(
-                92
-            )
+        var popupWidth =
+            initialGeometry
+                .width
+
+        var popupHeight =
+            initialGeometry
+                .height
 
         var popupX =
-            (
-                screenRoot.width -
-                    popupWidth
-                ) /
-                2
+            initialGeometry
+                .x
 
         var popupY =
-            boardRelativeTop(
+            initialGeometry
+                .y
+
+        updateSudokuManualToolsGeometry(
+            x =
+                popupX,
+            y =
+                popupY,
+            width =
+                popupWidth,
+            height =
                 popupHeight,
-                1
-            )
+            persist =
+                false
+        )
 
         var popupRef:
             PopupWindow? =
