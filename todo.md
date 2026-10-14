@@ -319,3 +319,9 @@ Livraison APK brut run #525 : prérelease temporaire `temp-geckodoku-0.15.45-dev
 - [ ] Pas de merge main, Release stable, Play. Prérelease TEMP uniquement si APK direct demandé conformément au contrat FAB Copilot.
 
 Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
+
+### CI mission 009 — test #528 puis nouvelle validation
+
+- [x] #528 : compilateur Kotlin passé, 298/299 tests OK ; 1 test révèle double déduction du dégagement bas dans `compactKeypadBelowBoard`.
+- [x] Correction ciblée : `room = dock.height - margin - maxOf(margin, bottomGap)`, conserve 416 px sans recouvrir la grille.
+- [ ] Relancer CI complète après correction ; n'annoncer GREEN qu'avec réussite de tous les tests / build et présence assets.
