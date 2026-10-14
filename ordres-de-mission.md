@@ -284,3 +284,7 @@ Le run #528 `38603247697` a révélé 1 échec sur 299 tests malgré compilation
 ## Preuve CI / livraison du pavé compact — mission 009 (14/10/2026)
 
 Run `#529` (`38603852806`) **GREEN** sur le commit `a699757ec88c15cecc0de24568b02037f45b17e5` : 299 tests JVM, build Android phone, contrôle embarquement Pierre + banque sprites 240p et contrôle SHA-256 réussis. Artefact `GeckoDoku-v0.15.45-dev-phone`, id `11913804772`. APK `GeckoDoku-v0.15.45-dev.apk`, SHA-256 `28d0995d5e4b1948ff2351b34d3b99638b225b2f755e856fd036d5238ea8a86e`. Publication du seul APK direct dans prérelease TEMP demandée par le contrat immuable, tag `temp-geckodoku-0.15.45-dev-run-529` ; **aucun merge `main`, aucune Release stable, aucun Play**. Recette visuelle Samsung encore nécessaire.
+
+## Ordre Fab — fusion et Release AAB signée (14/10/2026)
+
+Fab ordonne explicitement : « Ok, merge release avec la secret key ». Protocole permanent ci-dessus impératif : utiliser uniquement l'Upload Key stockée dans GitHub Secrets, jamais l'APK phone signée debug, ni nouveau keystore. La nouvelle clé annoncée par Play devait être active à 20:49 UTC ; sa SHA1 publique `27:AD:62:56:96:53:F9:82:37:F6:92:F7:9B:EA:DB:B8:EB:2E:25:C7` est le garde-fou avant signature et merge. Effectuer d'abord build AAB branch GREEN + vérification empreinte, puis merge PR #4 et nouveau build main AAB signé ; publier Release GitHub avec AAB & SHA256, **sans envoi automatique Play Console**. Refuser toute Release non signée, mismatch de certificat ou secret absent. Réf : `missions/GECKO-PLAY-MERGE-SIGNED-RELEASE-010.md`.
