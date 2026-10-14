@@ -11648,19 +11648,47 @@ class MainActivity : Activity() {
                 targetSize ==
                     2
             ) {
-                sudokuManualPairGroups
-                    .add(
-                        group
-                    )
-                status.text =
-                    "Couple graphique posé par toi."
+                if (
+                    sudokuManualPairGroups
+                        .contains(
+                            group
+                        )
+                ) {
+                    sudokuManualPairGroups
+                        .remove(
+                            group
+                        )
+                    status.text =
+                        "Couple graphique retiré."
+                } else {
+                    sudokuManualPairGroups
+                        .add(
+                            group
+                        )
+                    status.text =
+                        "Couple graphique posé par toi."
+                }
             } else {
-                sudokuManualTripletGroups
-                    .add(
-                        group
-                    )
-                status.text =
-                    "Triplet graphique posé par toi."
+                if (
+                    sudokuManualTripletGroups
+                        .contains(
+                            group
+                        )
+                ) {
+                    sudokuManualTripletGroups
+                        .remove(
+                            group
+                        )
+                    status.text =
+                        "Triplet graphique retiré."
+                } else {
+                    sudokuManualTripletGroups
+                        .add(
+                            group
+                        )
+                    status.text =
+                        "Triplet graphique posé par toi."
+                }
             }
 
             sudokuManualPendingCells
@@ -12178,7 +12206,15 @@ class MainActivity : Activity() {
                         )
                     setOnClickListener {
                         setSudokuManualTool(
-                            mode
+                            if (
+                                sudokuManualTool ==
+                                    mode
+                            ) {
+                                SudokuVisualToolMode
+                                    .NONE
+                            } else {
+                                mode
+                            }
                         )
                         refreshToolButtons()
                     }
