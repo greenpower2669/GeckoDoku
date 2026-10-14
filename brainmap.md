@@ -135,3 +135,29 @@ Invariant : aucun timer de durée ne décide de la fin TTS. Le petit polling ne 
 
 
 Preuve CI : run `38436224654` / #450 GREEN. La chaîne compile et l'APK phone est produit ; seule l'écoute Samsung peut confirmer que le premier phonème n'est plus tronqué.
+
+
+## Sudoku visuel calculé — flux Binaire (14/10/2026)
+
+```text
+SudokuSnapshot.values
+→ SudokuVisualReasoning.logicalCandidates()
+   → SudokuSolver.candidateMask()
+   → Map<Cell, Set<digit>> read-only
+      ├─ Lignes → projectionSegments()
+      ├─ Couples → nakedGroups(size=2)
+      ├─ Triplets → nakedGroups(size=3)
+      ├─ Binaire → binaryGroups()
+      │   ├─ scan 9 lignes
+      │   ├─ scan 9 colonnes
+      │   ├─ scan 9 blocs
+      │   └─ garder uniquement count == 2
+      └─ Entourer → validation du candidat choisi
+
+Checkbox
+→ flag overlay
+→ Prévisu.setPreviewMessage()
+→ Pierre.speakSimpleProfessorBubble()
+```
+
+Invariant : cette carte n'est jamais recopiée dans `SudokuGameEngine.notes`. Les annotations disparaissent/recalculent avec la grille, sans mutation de gameplay.
