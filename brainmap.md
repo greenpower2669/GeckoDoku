@@ -391,3 +391,16 @@ Secrets GitHub (chiffrés, jamais lus par l'assistant)
 ```
 
 Protocole immuable conservé en tête d'`ordres-de-mission.md`. Voir `missions/GECKO-PLAY-MERGE-SIGNED-RELEASE-010.md`.
+
+## Mission 010 close — production AAB signé, GitHub Release (14/10/2026)
+
+```text
+PR #4 (Sudoku visuel + Hall isolé + signature Play) -> main f48dcd7
+Secrets GitHub -> Upload Key reconstruite temporairement
+-> SHA1 Google Play validé -> 299 tests + bundleRelease
+-> Pierre + sprite bank 240p -> jarsigner verify
+-> GitHub Release stable AAB code80 + SHA256
+-> Play Console : envoi/acceptation restent à réaliser
+```
+
+**Clôture validée 14/10/2026 — mission 010.** Feu vert de Fab « merge release avec la secret key ». PR #4 mergée sur `main`, SHA merge `f48dcd7d6898793ccd6d63b22c0bc20644d6966a`. Contrôle pré-merge AAB sur branche : workflow `38636402228` GREEN (certificat Upload Key conforme au Play SHA-1 `27:AD:62:56:96:53:F9:82:37:F6:92:F7:9B:EA:DB:B8:EB:2E:25:C7`, tests, Pierre et sprites 240p, `jarsigner -verify`). Build officiel depuis main : workflow `38636963727` GREEN, tests + `bundleRelease`, même contrôle certificat, `jar verified.`. GitHub Release **publique/stable** : https://github.com/greenpower2669/GeckoDoku/releases/tag/geckodoku-v0.15.45-dev-code80 ; AAB signé direct : https://github.com/greenpower2669/GeckoDoku/releases/download/geckodoku-v0.15.45-dev-code80/GeckoDoku-v0.15.45-dev-code80-signed.aab ; SHA-256 `08390c0e502380ee5d3b6e2e77e01d491ff2a9535c61524b9b5270eb92cd755c`. Application `com.greenpower2669.geckodoku`, versionName `0.15.45-dev`, versionCode `80`. L'APK téléphone précédent reste un build à signature test : NE PAS le présenter comme signé Play. Aucun envoi à Play Console réalisé ; l'acceptation de l'AAB par Google n'est pas encore démontrée. Aucune clé privée ni valeur de Secret dans Git.
