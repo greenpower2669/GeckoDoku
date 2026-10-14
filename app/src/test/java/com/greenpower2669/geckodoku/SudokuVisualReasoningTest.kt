@@ -55,4 +55,184 @@ class SudokuVisualReasoningTest {
         notes[Cell(1, 2)] = setOf(1)
         assertFalse(SudokuVisualReasoning.isGenuineXWing(notes, 1, 0 to 5, 2 to 7))
     }
+
+    @Test fun logicalCandidatesComeFromConfirmedGridWithoutMutatingNotes() {
+        val values =
+            IntArray(
+                81
+            )
+
+        // Ligne 1 contient déjà 1..8 : la dernière case ne peut être que 9.
+        for (col in 0..7) {
+            values[col] =
+                col + 1
+        }
+
+        val candidates =
+            SudokuVisualReasoning
+                .logicalCandidates(
+                    values
+                )
+
+        assertEquals(
+            setOf(
+                9
+            ),
+            candidates[
+                Cell(
+                    0,
+                    8
+                )
+            ]
+        )
+    }
+
+    @Test fun binaryRequiresExactlyTwoOccurrencesInsideOneUnit() {
+        val candidates =
+            mutableMapOf<Cell, Set<Int>>(
+                Cell(0, 1) to
+                    setOf(
+                        4
+                    ),
+                Cell(0, 7) to
+                    setOf(
+                        4
+                    ),
+                Cell(4, 1) to
+                    setOf(
+                        4
+                    )
+            )
+
+        val first =
+            SudokuVisualReasoning
+                .binaryGroups(
+                    candidates
+                )
+
+        assertTrue(
+            first.any {
+                it.digit ==
+                    4 &&
+                    it.cells ==
+                    setOf(
+                        Cell(
+                            0,
+                            1
+                        ),
+                        Cell(
+                            0,
+                            7
+                        )
+                    ) &&
+                    it.units.any {
+                        unit ->
+                        unit.startsWith(
+                            "Ligne"
+                        )
+                    }
+            }
+        )
+
+        // Une troisième occurrence dans la même ligne annule le binaire
+        // de cette ligne.
+        candidates[
+            Cell(
+                0,
+                4
+            )
+        ] =
+            setOf(
+                4
+            )
+
+        val second =
+            SudokuVisualReasoning
+                .binaryGroups(
+                    candidates
+                )
+
+        assertFalse(
+            second.any {
+                it.digit ==
+                    4 &&
+                    it.cells ==
+                    setOf(
+                        Cell(
+                            0,
+                            1
+                        ),
+                        Cell(
+                            0,
+                            7
+                        )
+                    ) &&
+                    it.units.any {
+                        unit ->
+                        unit.startsWith(
+                            "Ligne"
+                        )
+                    }
+            }
+        )
+    }
+
+    @Test fun binaryMergesSamePairWhenItQualifiesInSeveralUnits() {
+        val candidates =
+            mapOf(
+                Cell(0, 0) to
+                    setOf(
+                        7
+                    ),
+                Cell(0, 2) to
+                    setOf(
+                        7
+                    )
+            )
+
+        val groups =
+            SudokuVisualReasoning
+                .binaryGroups(
+                    candidates
+                )
+                .filter {
+                    it.digit ==
+                        7 &&
+                    it.cells ==
+                        setOf(
+                            Cell(
+                                0,
+                                0
+                            ),
+                            Cell(
+                                0,
+                                2
+                            )
+                        )
+                }
+
+        assertEquals(
+            1,
+            groups.size
+        )
+
+        assertTrue(
+            groups.single()
+                .units.any {
+                    it.startsWith(
+                        "Ligne"
+                    )
+                }
+        )
+
+        assertTrue(
+            groups.single()
+                .units.any {
+                    it.startsWith(
+                        "Bloc"
+                    )
+                }
+        )
+    }
+
 }
