@@ -125,3 +125,21 @@ Mission détaillée : `missions/GECKO-SUDOKU-VISUAL-001.md`. **Le code n'est pas
 - [ ] Aucun merge main / Release avant ordre explicite de Fab.
 
 Mission détaillée : `missions/GECKO-PIERRE-WARMUP-003.md`.
+
+
+## Binaire / candidats réels — 14/10/2026
+
+- [x] Diagnostiquer pourquoi Lignes/Couples/Triplets/Entourer semblaient inactifs : dépendance exclusive aux notes manuelles.
+- [x] Calculer les candidats logiquement possibles depuis `SudokuSolver.candidateMask`, sans modifier les notes personnelles.
+- [x] Utiliser ces candidats pour Lignes, Couples et Triplets.
+- [x] Entourer accepte désormais un candidat possible même sans note manuelle préexistante.
+- [x] Ajouter checkbox **Binaire**.
+- [x] Binaire = exactement deux positions du même chiffre dans ligne/colonne/bloc ; plusieurs chiffres simultanés.
+- [x] Fusionner le même couple s'il qualifie dans plusieurs unités pour éviter les cercles superposés.
+- [x] Double cercle + pulsation lente Binaire ; aucun flash rapide.
+- [x] Prévisu explique les options et Pierre lit l'explication.
+- [x] Compacter bandeau haut/bas, titres et espaces visuels entre touches.
+- [x] Ajouter tests candidats réels + Binaire.
+- [ ] Confirmer le run final #464 GREEN et relever artefact/SHA.
+- [ ] Recette Samsung : visibilité réelle Lignes/Couples/Triplets/Binaire/Entourer, Prévisu, Pierre, taille du pavé.
+- [ ] Aucun merge main / Release avant ordre explicite de Fab.
