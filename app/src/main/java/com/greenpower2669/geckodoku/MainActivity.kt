@@ -4958,10 +4958,10 @@ class MainActivity : Activity() {
 
         AlertDialog.Builder(this)
             .setTitle(
-                "Nom du joueur"
+                "Choisir mon pseudo"
             )
             .setMessage(
-                "Ce nom sera utilisé pour les nouveaux résultats du Hall of Fame."
+                "Ce pseudo sera affiché pour tes nouveaux résultats du Hall of Fame. Ton profil local et tes statistiques restent les mêmes."
             )
             .setView(input)
             .setPositiveButton(
