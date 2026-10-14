@@ -16704,6 +16704,8 @@ class MainActivity : Activity() {
             speaking
 
         if (speaking) {
+            suspendSudokuFloatingWindowsForProfessor()
+
             val now =
                 SystemClock
                     .elapsedRealtime()
@@ -16746,6 +16748,8 @@ class MainActivity : Activity() {
                 }
             }
         } else {
+            restoreSudokuFloatingWindowsAfterProfessor()
+
             if (
                 professorVisualPreparing ||
                 professorVisualPrepared
