@@ -272,3 +272,11 @@ Correction mission `GECKO-SUDOKU-SYSTEM-BARS-005` : borne commune decor/root/ins
 Capture Fab : sur un 1 marqué dans la grille, la projection manuelle trace ligne et colonne alors que l'observation d'un alignement horizontal n'impose qu'une ligne ; vertical → colonne. La croix n'est légitime que pour une hypothèse posée. Audit : `SudokuValueOverlayView.drawManualPlayerAnnotations()` avait deux `canvas.drawLine` inconditionnels ; MainActivity annonçait explicitement « croix ligne-colonne ».
 
 Correction : politique pure `SudokuManualProjectionPolicy.axesFor` séparant repères d'un même chiffre (1 axe selon voisins, horizontal par défaut) des `hypothesisAt` (2 axes), dessin discret, messages conformes. Six tests spécialisés ajoutés. Aucun changement des notes ni du solveur. CI et recette réelle encore à valider ; ne pas confondre code poussé avec APK testé.
+
+## 14/10/2026 — Intro masquée par Repères + pavé sur lignes du bas (PUSH 007/008)
+
+Deux captures Samsung successives :
+1. Une vidéo d'introduction Gecko affichée plein écran est recouverte par le PopupWindow « Repères humains ». Source : `refreshSudokuUi()` postait l'ouverture sans vérifier la phase de l'intro ; le mode Sudoku sauvegardé présentait déjà un plateau sous la vidéo. Fix 007 : nouvelle politique d'admissibilité et vérification au moment de l'ouverture ; relance après intro/saut et quand Pierre cesse de parler.
+2. En jeu, Repères est au-dessus du plateau mais le pavé Sudoku bas-centre en masque la dernière rangée. Source : limitation du PopupWindow aux boutons Android uniquement, sans considérer le bas de la grille. Fix 008 : dock sous le plateau mesuré, réduction de la hauteur, déplacement et resize bornés à ce dock, recalage lors du layout.
+
+Tests purs ajoutés. Pas de refonte du gameplay, de Pierre ou du rendu du Sudoku. **La preuve CI et les essais réels sur Samsung restent à confirmer** ; attention à la place physiquement insuffisante en paysage ou très petit écran.
