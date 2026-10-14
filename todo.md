@@ -306,3 +306,16 @@ Validation finale après les missions 007 et 008 : run [#525](https://github.com
 
 ## Preuve GitHub — APK direct #525 (14/10/2026)
 Livraison APK brut run #525 : prérelease temporaire `temp-geckodoku-0.15.45-dev-run-525` créée et vérifiée par l'API GitHub. [Téléchargement direct .apk](https://github.com/greenpower2669/GeckoDoku/releases/download/temp-geckodoku-0.15.45-dev-run-525/GeckoDoku-v0.15.45-dev.apk), 299496421 octets, SHA-256 `23506e3a310401dcf4016c5544324913d9670bb54b70ce439da6b8356effcb51`. Workflow de publication #527 GREEN. La première tentative #526 (403 GitHub) a été corrigée en reprenant la méthode qui fonctionnait : checkout de la branche et création du tag sur le commit déclencheur. Aucun nouveau build Android, aucun merge main ou Release stable. Règle permanente de livraison d'APK direct enregistrée dans la section `Contrat FAB Copilot` d'`ordres-de-mission.md`.
+
+## GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009 — taille réelle (14/10/2026)
+
+- [x] Comparer captures 16:45 / 18:40 et analyser constructeur `PopupWindow` + dock.
+- [x] Corriger : appliquer dimensions compactes à l'objet AVANT son ouverture, à droite sous les neuf lignes.
+- [x] Recalculer sur réutilisation de pavé, changement des dimensions grille et insets ; conserver déplacements valides.
+- [x] Ajouter tests JVM : portrait deuxième capture, divergence dimensions réelles vs modèle, préservation/recalage du clavier.
+- [ ] CI phone `testDebugUnitTest :app:assemblePhone` GREEN du nouveau commit.
+- [ ] APK phone et SHA, Pierre et sprites 240p validés.
+- [ ] Vérification manuelle Samsung : entrée sans redimensionner, aucun chevauchement des 9 lignes, 4 zones tactiles, sélection d'une autre case, rotation, parole Pierre.
+- [ ] Pas de merge main, Release stable, Play. Prérelease TEMP uniquement si APK direct demandé conformément au contrat FAB Copilot.
+
+Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
