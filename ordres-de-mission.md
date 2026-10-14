@@ -18,6 +18,8 @@
 3. `sauvegarde.md` = archive froide.
 4. Aucun merge `main`, Release ou prerelease sans ordre explicite de Fab.
 5. Ne pas modifier gameplay/médias source hors cause démontrée.
+6. **Règle immuable — lien APK direct GitHub :** lorsque Fab demande « APK décompressé sur GitHub » après CI verte, ne **jamais** proposer un lien Actions/Artifacts ZIP comme s'il s'agissait du fichier APK. Fournir un lien HTTPS finissant par `.apk`, hébergé comme asset d'une **prérelease TEMP** propre au run concerné (et son `.sha256`), sans dépôt Git de gros binaire, merge `main`, Release stable ni publication Play. Une demande explicite d'APK direct vaut autorisation de créer uniquement cette prérelease TEMP de test ; aucune autorisation générale pour les Releases stables. Vérifier l'existence du lien avant d'annoncer la réussite.
+7. **Réponses brèves :** dire ce qui est fait, GREEN ou non, et donner le lien direct ; éviter les explications répétitives.
 
 ## Contrat HOF
 
@@ -239,3 +241,7 @@ Travail sur `feature/sudoku-visual-reasoning-v1`. Passations séparées : `missi
 
 ### Preuve CI Samsung 007/008 — run #525
 Validation finale après les missions 007 et 008 : run [#525](https://github.com/greenpower2669/GeckoDoku/actions/runs/38587086273), workflow 38587086273 **GREEN**, commit de build `eee5347f52602ccbc91d1359aeacb161c427d9f1`. `testDebugUnitTest + assemblePhone` réussis ; vérification Pierre Sherpa/Piper et banque sprites 240p réussie. Artefact `GeckoDoku-v0.15.45-dev-phone` ID `11905448115` ; APK `GeckoDoku-v0.15.45-dev.apk` SHA-256 `23506e3a310401dcf4016c5544324913d9670bb54b70ce439da6b8356effcb51`, contrôlé après extraction. La recette Samsung demeure nécessaire. Aucun merge main / Release / Play.
+
+## Autorisation ponctuelle — APK brut du run #525 (14/10/2026)
+
+Fab confirme « Feu vert » pour placer **l'APK décompressé du run #525** directement sur GitHub, dans une prérelease TEMP, et inscrit la règle ci-dessus dans le contrat immuable. Binaire attendu : `GeckoDoku-v0.15.45-dev.apk` SHA-256 `23506e3a310401dcf4016c5544324913d9670bb54b70ce439da6b8356effcb51`. Artefact source : Actions `38587086273` / `11905448115`. Tag cible : `temp-geckodoku-0.15.45-dev-run-525`. Aucune modification de code, de signature ou de `main` ; prérelease TEMP seulement.
