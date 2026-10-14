@@ -823,7 +823,7 @@ class MainActivity : Activity() {
                     ).snapshot()
                 }
 
-                onCellSelected = {
+                onCellSelected = onSudokuCellSelected@ {
                         cell ->
 
                     sudokuSelectedCell =
@@ -835,6 +835,35 @@ class MainActivity : Activity() {
 
                     sudokuValueOverlay
                         .invalidate()
+
+                    if (sudokuSuperHelpArmed) {
+                        sudokuSuperHelpArmed =
+                            false
+
+                        sudokuPaletteView
+                            ?.setHelpMode(
+                                false
+                            )
+
+                        confirmSudokuSuperHumanHelp(
+                            cell
+                        )
+
+                        return@onSudokuCellSelected
+                    }
+
+                    if (
+                        sudokuManualTool ==
+                            SudokuVisualToolMode.PAIR ||
+                        sudokuManualTool ==
+                            SudokuVisualToolMode.TRIPLET
+                    ) {
+                        handleSudokuManualBoardTap(
+                            cell
+                        )
+
+                        return@onSudokuCellSelected
+                    }
 
                     if (
                         sudokuGesturePolicy
