@@ -80,6 +80,81 @@ class SudokuVisualReasoningTest {
         )
     }
 
+
+    @Test fun manualProjectionAlongSameRowNeverDrawsColumn() {
+        val first = SudokuCandidateRef(Cell(4, 1), 1)
+        val second = SudokuCandidateRef(Cell(4, 7), 1)
+        val selected = setOf(first, second)
+        selected.forEach { ref ->
+            assertEquals(
+                setOf(SudokuManualProjectionAxis.ROW),
+                SudokuManualProjectionPolicy.axesFor(ref, selected)
+            )
+        }
+    }
+
+    @Test fun manualProjectionAlongSameColumnNeverDrawsRow() {
+        val first = SudokuCandidateRef(Cell(1, 7), 1)
+        val second = SudokuCandidateRef(Cell(8, 7), 1)
+        val selected = setOf(first, second)
+        selected.forEach { ref ->
+            assertEquals(
+                setOf(SudokuManualProjectionAxis.COLUMN),
+                SudokuManualProjectionPolicy.axesFor(ref, selected)
+            )
+        }
+    }
+
+    @Test fun isolatedManualProjectionStartsAsRowOnly() {
+        val ref = SudokuCandidateRef(Cell(8, 7), 1)
+        assertEquals(
+            setOf(SudokuManualProjectionAxis.ROW),
+            SudokuManualProjectionPolicy.axesFor(ref, setOf(ref))
+        )
+    }
+
+    @Test fun projectionIgnoresOtherDigitsAndNeverCreatesCrossOnTie() {
+        val pivot = SudokuCandidateRef(Cell(3, 3), 1)
+        val set = setOf(
+            pivot,
+            SudokuCandidateRef(Cell(3, 8), 1),
+            SudokuCandidateRef(Cell(6, 3), 1),
+            SudokuCandidateRef(Cell(1, 3), 2)
+        )
+        assertEquals(
+            setOf(SudokuManualProjectionAxis.ROW),
+            SudokuManualProjectionPolicy.axesFor(pivot, set)
+        )
+    }
+
+    @Test fun placedHypothesisUsesBothAxesRegardlessOfOtherMarks() {
+        val hypothetical = SudokuCandidateRef(Cell(5, 4), 1)
+        assertEquals(
+            setOf(SudokuManualProjectionAxis.ROW, SudokuManualProjectionAxis.COLUMN),
+            SudokuManualProjectionPolicy.axesFor(
+                hypothetical, emptySet(), isHypothesis = true
+            )
+        )
+        assertEquals(
+            setOf(SudokuManualProjectionAxis.ROW),
+            SudokuManualProjectionPolicy.axesFor(
+                hypothetical, emptySet(), isHypothesis = false
+            )
+        )
+    }
+
+    @Test fun otherManualDigitCannotFlipVerticalOneOrientation() {
+        val ref = SudokuCandidateRef(Cell(2, 4), 3)
+        val selected = setOf(
+            ref, SudokuCandidateRef(Cell(6, 4), 3),
+            SudokuCandidateRef(Cell(2, 7), 5)
+        )
+        assertEquals(
+            setOf(SudokuManualProjectionAxis.COLUMN),
+            SudokuManualProjectionPolicy.axesFor(ref, selected)
+        )
+    }
+
     @Test fun pairRequiresSharedUnitAndTwoCells() {
         val notes = mapOf(
             Cell(0, 0) to setOf(1, 3),
