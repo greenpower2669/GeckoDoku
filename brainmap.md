@@ -299,3 +299,18 @@ ProfessorSpeech speaking=false
 
 
 Preuve build Repères compact : Run `38537609942` / #522 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11880727507`, APK SHA-256 `3f6dbba028b4bbb793ed16cbf3a9bd3eb237f36963c4e9fd8a292da21fed911c`.
+
+## Zone sûre pour les trois panneaux Sudoku — mission 005 (14/10/2026)
+
+```text
+window.decorView / screenRoot + WindowInsets(systemBars, displayCutout)
+→ sudokuPopupSafeBounds() : coordonnées absolues de fenêtre
+→ SudokuFloatingWindowGeometryPolicy.safeBounds()
+  ├─ Repères humains : compactAboveBoard → clampToBounds → préférences x/y/w/h
+  ├─ Aide surhumaine : boardRelativeTop → clampToBounds
+  └─ Pavé : bottomCentered / drag / resize → clampToBounds
+→ protectFromSystemBars : onInsets + recalage des PopupWindow visibles
+→ Pierre speaking : suspend hors écran / restore puis clamp de sûreté
+```
+
+Référence : `missions/GECKO-SUDOKU-SYSTEM-BARS-005.md`. Aucun changement du moteur Sudoku ni de la signature. Preuve CI / APK et recette Samsung à compléter.
