@@ -273,3 +273,26 @@ Pierre
 
 
 Preuve build HOF isolation : Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f6cfa197e5998. Tests JVM + assemblePhone réussis, Pierre et banque sprites 240p vérifiés. Artefact GeckoDoku-v0.15.45-dev-phone ID 11876601009. APK SHA-256 eec808012b45e21a36a400672b1c50d7b2db41a27df9310db2df30eccef45981.
+
+## Sudoku floating layers — 14/10/2026
+
+```text
+sudokuBoard geometry
+→ compactAboveBoard()
+→ Repères humains (78dp, largeur plateau)
+→ drag
+→ save x/y/w/h
+→ reopen
+→ clamp()
+
+ProfessorSpeech speaking=true
+→ record current geometry already tracked
+→ PopupWindow clipping=false
+→ move Repères / SuperHelp / Palette offscreen
+→ Pierre views bringToFront()
+
+ProfessorSpeech speaking=false
+→ update popup x/y/w/h to previous geometry
+→ clipping=true
+→ previous functional layer arrangement restored
+```
