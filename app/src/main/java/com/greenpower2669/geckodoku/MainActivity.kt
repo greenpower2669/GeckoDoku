@@ -5476,6 +5476,13 @@ class MainActivity : Activity() {
                         this,
                         id
                     )
+                professorSpeech.stop(
+                    reason =
+                        SpeechStopReason
+                            .PUZZLE_RESET,
+                    caller =
+                        "switchPlayerProfile"
+                )
                 professorLife =
                     ProfessorLifeController
                         .create(this)
@@ -5516,6 +5523,13 @@ class MainActivity : Activity() {
                             this,
                             profile.id
                         )
+                    professorSpeech.stop(
+                        reason =
+                            SpeechStopReason
+                                .PUZZLE_RESET,
+                        caller =
+                            "createPlayerProfile"
+                    )
                     professorLife =
                         ProfessorLifeController
                             .create(this)
