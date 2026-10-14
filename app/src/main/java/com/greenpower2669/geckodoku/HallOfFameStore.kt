@@ -12,7 +12,8 @@ data class HallOfFameEntry(
     val difficulty: GameDifficulty,
     val stars: Int,
     val elapsedSeconds: Long,
-    val completedAt: Long
+    val completedAt: Long,
+    val playerProfileId: String? = null
 )
 
 class HallOfFameStore(
@@ -78,6 +79,13 @@ class HallOfFameStore(
                     "completedAt",
                     entry.completedAt
                 )
+                entry.playerProfileId
+                    ?.let {
+                        put(
+                            "playerProfileId",
+                            it
+                        )
+                    }
             }
         )
 
@@ -188,7 +196,19 @@ class HallOfFameStore(
                 obj.optLong(
                     "completedAt",
                     0L
+                ),
+            playerProfileId =
+                obj.optString(
+                    "playerProfileId"
                 )
+                    .trim()
+                    .takeIf {
+                        it.matches(
+                            Regex(
+                                "[a-fA-F0-9-]{36}"
+                            )
+                        )
+                    }
         )
     }
 
