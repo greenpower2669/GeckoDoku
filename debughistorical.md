@@ -260,3 +260,9 @@ Risque à valider téléphone : comportement constructeur Android du déplacemen
 ### Validation finale Repères compact / calques Pierre
 Run `38537609942` / #522 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11880727507`, APK SHA-256 `3f6dbba028b4bbb793ed16cbf3a9bd3eb237f36963c4e9fd8a292da21fed911c`.
 La CI valide code/tests/build ; la recette Samsung doit confirmer que Pierre apparaît réellement devant puis que les trois fenêtres reprennent exactement leur place.
+
+## 14/10/2026 — Clavier/Repères flottants bornés hors zone navigation Samsung
+
+Capture Fab Android 16 : barre de navigation à trois boutons au bas ; pavé Sudoku redimensionnable et fenêtre Repères glissable ne tenaient pas compte des bornes réellement accessibles ; une partie des outils Repères était horizontalement défilée. Cause relue dans `MainActivity.kt` : coordonnées `PopupWindow` calculées avec `screenRoot.height`, sans intersection explicite avec `WindowInsets` de navigation (alors que la grille utilise `protectFromSystemBars`). En outre certaines positions plateau étaient dérivées de coordonnées root-local plutôt que fenêtre.
+
+Correction mission `GECKO-SUDOKU-SYSTEM-BARS-005` : borne commune decor/root/insets, positions `getLocationInWindow`, drag+resize+placement bas-centre re-clampés, suivi des fenêtres déjà ouvertes lors d'un changement d'insets, reprise de Pierre intacte. Tests JVM ajoutés, **validation CI et Samsung non encore effectuées à cette note**. La ligne d'outils Repères reste horizontalement scrollable. Aucun merge ni Release.
