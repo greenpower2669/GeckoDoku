@@ -12430,6 +12430,7 @@ class MainActivity : Activity() {
      * measured root with the decor safe area so Samsung navigation/status
      * bars remain untouchable even when Android draws edge-to-edge.
      */
+    @Suppress("DEPRECATION")
     private fun sudokuPopupSafeBounds(): SudokuFloatingWindowBounds {
         val rootPosition = IntArray(2)
         screenRoot.getLocationInWindow(rootPosition)
@@ -12450,13 +12451,9 @@ class MainActivity : Activity() {
             insetRight = bars?.right ?: 0
             insetBottom = bars?.bottom ?: 0
         } else {
-            @Suppress("DEPRECATION")
             insetLeft = insets?.systemWindowInsetLeft ?: 0
-            @Suppress("DEPRECATION")
             insetTop = insets?.systemWindowInsetTop ?: 0
-            @Suppress("DEPRECATION")
             insetRight = insets?.systemWindowInsetRight ?: 0
-            @Suppress("DEPRECATION")
             insetBottom = insets?.systemWindowInsetBottom ?: 0
         }
         return SudokuFloatingWindowGeometryPolicy.safeBounds(
@@ -13163,7 +13160,8 @@ class MainActivity : Activity() {
         val safe = sudokuPopupSafeBounds()
         val initialGeometry = SudokuFloatingWindowGeometryPolicy.clampToBounds(
             SudokuFloatingWindowGeometry(
-                x = safe.left + (safe.width - dp(470)) / 2,
+                x = safe.left +
+                    (safe.width - minOf(safe.width - dp(12), dp(470))) / 2,
                 y = boardRelativeTop(
                     dp(94),
                     if (sudokuManualToolsPopup?.isShowing == true) 2 else 1
