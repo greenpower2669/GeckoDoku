@@ -184,3 +184,8 @@ Correction :
 - tests adaptés.
 
 Les runs intermédiaires #465 et #467 peuvent être rouges car ils correspondent à des commits partiels (nouvel enum avant adaptation exhaustive de MainActivity, puis nouvelle règle projection avant mise à jour du test historique). Seul le run final du commit complet fait foi.
+
+
+### Validation finale du lot projection/pseudo/Pierre
+Run `38519610024` / #472 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11873097206`, APK SHA-256 `562218c0d5cc2622e106a582bd5ba8a9bdec667fbec84fc72d0bedb3052ec4b7`.
+Les runs intermédiaires rouges correspondaient aux commits partiels décrits plus haut ; #472 est la preuve finale du lot complet.
