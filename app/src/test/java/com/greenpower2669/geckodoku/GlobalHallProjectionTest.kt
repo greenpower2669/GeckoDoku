@@ -140,4 +140,97 @@ class GlobalHallProjectionTest {
 
         assertTrue(result.isEmpty())
     }
+
+    @Test
+    fun `global metadata carries stable player profile id`() {
+        val cached =
+            GlobalScoreCacheEntry(
+                scoreId =
+                    "score-profile",
+                runId =
+                    "run-profile",
+                sequence =
+                    10L,
+                receivedAt =
+                    1003L,
+                normalizedJson =
+                    """{"playerName":"GeckoTétu","mode":"SUDOKU","difficulty":"EXPERT","size":9,"completed":true,"stars":5,"elapsedSeconds":88,"completedAt":123456790,"metadata":{"playerProfileId":"11111111-1111-4111-8111-111111111111"}}"""
+            )
+
+        val result =
+            GlobalHallProjection
+                .fromCache(
+                    listOf(
+                        cached
+                    )
+                )
+                .single()
+
+        assertEquals(
+            "11111111-1111-4111-8111-111111111111",
+            result.playerProfileId
+        )
+    }
+
+    @Test
+    fun `exact local match can hydrate missing remote profile id without guessing by pseudo`() {
+        val local =
+            HallOfFameEntry(
+                playerName =
+                    "Fab",
+                mode =
+                    GameMode.SUDOKU,
+                size =
+                    9,
+                difficulty =
+                    GameDifficulty.EXPERT,
+                stars =
+                    4,
+                elapsedSeconds =
+                    91L,
+                completedAt =
+                    123456791L,
+                playerProfileId =
+                    "11111111-1111-4111-8111-111111111111"
+            )
+
+        val cached =
+            GlobalScoreCacheEntry(
+                scoreId =
+                    "score-hydrate",
+                runId =
+                    "run-hydrate",
+                sequence =
+                    11L,
+                receivedAt =
+                    1004L,
+                normalizedJson =
+                    """{"playerName":"Fab","mode":"SUDOKU","difficulty":"EXPERT","size":9,"completed":true,"stars":4,"elapsedSeconds":91,"completedAt":123456791}"""
+            )
+
+        val merged =
+            GlobalHallProjection
+                .merge(
+                    local =
+                        listOf(
+                            local
+                        ),
+                    globalCache =
+                        listOf(
+                            cached
+                        )
+                )
+
+        assertEquals(
+            1,
+            merged.size
+        )
+
+        assertEquals(
+            local.playerProfileId,
+            merged.single()
+                .playerProfileId
+        )
+    }
+
 }
