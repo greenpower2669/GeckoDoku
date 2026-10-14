@@ -116,6 +116,47 @@ object SudokuFloatingWindowGeometryPolicy {
         return clampToBounds(preferred, bounds, minWidth, minHeight, margin)
     }
 
+    /**
+     * Preferred portrait opening layout: compact, right-aligned and directly
+     * below the full Sudoku grid. No already-selected cell is concealed.
+     */
+    fun compactKeypadBelowBoard(
+        dock: SudokuFloatingWindowBounds,
+        preferredWidth: Int,
+        preferredHeight: Int,
+        minimumWidth: Int,
+        minimumHeight: Int,
+        margin: Int,
+        bottomGap: Int
+    ): SudokuFloatingWindowGeometry {
+        val room = (dock.height - 2 * margin - bottomGap).coerceAtLeast(1)
+        val targetHeight = preferredHeight.coerceAtMost(room)
+        val preferred = SudokuFloatingWindowGeometry(
+            x = dock.right - margin - preferredWidth,
+            y = dock.bottom - bottomGap - targetHeight,
+            width = preferredWidth,
+            height = targetHeight
+        )
+        val fitted = clampToBounds(
+            preferred, dock, minimumWidth, minimumHeight, margin
+        )
+        // Keep the right edge aligned after width has been clamped.
+        return fitted.copy(
+            x = (dock.right - margin - fitted.width).coerceAtLeast(
+                dock.left + margin
+            )
+        )
+    }
+
+    /** A PopupWindow can have a stale physical size even if stored x/y/w/h match. */
+    fun needsPhysicalUpdate(
+        old: SudokuFloatingWindowGeometry,
+        fitted: SudokuFloatingWindowGeometry,
+        actualWidth: Int,
+        actualHeight: Int
+    ): Boolean = old != fitted ||
+        actualWidth != fitted.width || actualHeight != fitted.height
+
     fun compactAboveBoard(
         rootWidth: Int,
         rootHeight: Int,
