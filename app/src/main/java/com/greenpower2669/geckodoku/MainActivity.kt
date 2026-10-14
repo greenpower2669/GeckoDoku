@@ -112,6 +112,7 @@ class MainActivity : Activity() {
     private var sudokuVisualProjections = false
     private var sudokuVisualPairs = false
     private var sudokuVisualTriplets = false
+    private var sudokuVisualBinary = false
     private var sudokuVisualCircles = false
     private var sudokuVisualPulse = false
     private var sudokuCircleAnchor: SudokuCandidateRef? = null
@@ -11328,35 +11329,133 @@ class MainActivity : Activity() {
      * En mode Entourer, les touches Candidats sélectionnent un lien,
      * sans ajouter ni retirer de note au Sudoku.
      */
-    private fun markSudokuCircleCandidate(digit: Int) {
-        val cell = sudokuSelectedCell ?: return
-        val currentNotes = sudokuEngine?.snapshot()?.notesAt(cell).orEmpty()
-        if (digit !in currentNotes) {
-            status.text = "Ajoute d'abord le candidat $digit dans cette case."
+    private fun markSudokuCircleCandidate(
+        digit: Int
+    ) {
+        val cell =
+            sudokuSelectedCell
+                ?: return
+
+        val engine =
+            sudokuEngine
+                ?: return
+
+        val candidates =
+            SudokuVisualReasoning
+                .logicalCandidates(
+                    engine
+                        .snapshot()
+                        .values
+                )[
+                    cell
+                ].orEmpty()
+
+        if (
+            digit !in
+                candidates
+        ) {
+            status.text =
+                "Le $digit n'est pas candidat possible dans cette case."
+
+            sudokuPaletteView
+                ?.setPreviewMessage(
+                    "Entourer : le $digit n'est pas possible dans cette case."
+                )
+
             return
         }
-        val ref = SudokuCandidateRef(cell, digit)
-        val first = sudokuCircleAnchor
-        if (first == null || first.digit != digit || first.cell == cell) {
-            sudokuCircleAnchor = ref
-            status.text = "Candidat $digit choisi : ouvre une autre case et choisis $digit."
+
+        val ref =
+            SudokuCandidateRef(
+                cell,
+                digit
+            )
+
+        val first =
+            sudokuCircleAnchor
+
+        if (
+            first == null ||
+            first.digit !=
+                digit ||
+            first.cell ==
+                cell
+        ) {
+            sudokuCircleAnchor =
+                ref
+
+            val message =
+                "Entourer : $digit choisi. Sélectionne le même candidat dans une autre case."
+
+            status.text =
+                message
+
+            sudokuPaletteView
+                ?.setPreviewMessage(
+                    message
+                )
+
             return
         }
-        val firstOrder = first.cell.row * 9 + first.cell.col
-        val nextOrder = cell.row * 9 + cell.col
-        val link = if (firstOrder < nextOrder) {
-            SudokuVisualLink(first, ref)
-        } else {
-            SudokuVisualLink(ref, first)
-        }
-        if (!sudokuCircleLinks.add(link)) {
-            sudokuCircleLinks.remove(link)
-            status.text = "Lien $digit retiré."
-        } else {
-            status.text = "Lien $digit entouré • relation visuelle, pas une exclusion."
-        }
-        sudokuCircleAnchor = null
-        sudokuValueOverlay.playerCircleLinks = sudokuCircleLinks.toSet()
+
+        val firstOrder =
+            first.cell.row *
+                9 +
+                first.cell.col
+
+        val nextOrder =
+            cell.row *
+                9 +
+                cell.col
+
+        val link =
+            if (
+                firstOrder <
+                    nextOrder
+            ) {
+                SudokuVisualLink(
+                    first,
+                    ref
+                )
+            } else {
+                SudokuVisualLink(
+                    ref,
+                    first
+                )
+            }
+
+        val message =
+            if (
+                !sudokuCircleLinks
+                    .add(
+                        link
+                    )
+            ) {
+                sudokuCircleLinks
+                    .remove(
+                        link
+                    )
+
+                "Lien $digit retiré."
+            } else {
+                "Lien $digit entouré. C'est un repère visuel, pas une exclusion."
+            }
+
+        status.text =
+            message
+
+        sudokuPaletteView
+            ?.setPreviewMessage(
+                message
+            )
+
+        sudokuCircleAnchor =
+            null
+
+        sudokuValueOverlay
+            .playerCircleLinks =
+            sudokuCircleLinks
+                .toSet()
     }
 
     private fun showSudokuCellPalette(
@@ -11487,6 +11586,10 @@ class MainActivity : Activity() {
 
                 onValueDigit = {
                         digit ->
+
+                    setPreviewMessage(
+                        null
+                    )
 
                     setPendingValue(
                         digit
@@ -11756,6 +11859,54 @@ class MainActivity : Activity() {
                 }
             }
 
+        fun explainVisualOption(
+            label: String,
+            enabled: Boolean
+        ) {
+            val explanation =
+                if (!enabled) {
+                    "$label désactivé."
+                } else {
+                    when (label) {
+                        "Lignes" ->
+                            "Lignes : relie sur chaque ligne les mêmes candidats possibles présents au moins deux fois."
+
+                        "Couples" ->
+                            "Couples : encadre les paires nues de deux cases dans une même ligne, colonne ou bloc."
+
+                        "Triplets" ->
+                            "Triplets : encadre les triplets nus de trois cases dans une même ligne, colonne ou bloc."
+
+                        "Binaire" ->
+                            "Binaire : entoure et fait pulser un chiffre qui n'a exactement que deux positions candidates dans une ligne, une colonne ou un bloc."
+
+                        "Pulsation douce" ->
+                            "Pulsation douce : anime lentement les couples et triplets sans flash rapide."
+
+                        "Entourer" ->
+                            "Entourer : choisis un candidat possible, puis le même chiffre dans une autre case pour tracer ton propre lien."
+
+                        else ->
+                            label
+                    }
+                }
+
+            palette.setPreviewMessage(
+                explanation
+            )
+
+            status.text =
+                explanation
+
+            speakSimpleProfessorBubble(
+                text =
+                    explanation,
+                origin =
+                    SpeechOrigin
+                        .QUICK_TALK
+            )
+        }
+
         sudokuPaletteView =
             palette
 
@@ -11763,54 +11914,144 @@ class MainActivity : Activity() {
 
         // Les options restent dans la même fenêtre flottante que le pavé.
         // Barre défilable : commandes assez grandes même sur petit écran.
-        val optionRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setPadding(dp(6), 0, dp(6), 0)
-        }
+        val optionRow =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+
+                // Un pixel de marge utile : la hauteur reste aux contrôles,
+                // pas aux espaces morts.
+                setPadding(
+                    1,
+                    1,
+                    1,
+                    1
+                )
+            }
 
         fun visualCheckbox(
             label: String,
             initial: Boolean,
-            change: (Boolean) -> Unit
+            change:
+                (Boolean) -> Unit
         ) {
-            val option = CheckBox(this).apply {
-                text = label
-                textSize = 15f
-                isChecked = initial
-                minHeight = dp(48)
-                contentDescription = label + " • annotation Sudoku"
-                setOnCheckedChangeListener { _, enabled ->
-                    change(enabled)
-                    sudokuValueOverlay.invalidate()
+            val option =
+                CheckBox(
+                    this
+                ).apply {
+                    text =
+                        label
+                    textSize =
+                        15f
+                    isChecked =
+                        initial
+                    minHeight =
+                        dp(
+                            44
+                        )
+                    setPadding(
+                        1,
+                        1,
+                        1,
+                        1
+                    )
+                    contentDescription =
+                        label +
+                            " • annotation Sudoku"
+
+                    setOnCheckedChangeListener {
+                        _,
+                        enabled ->
+
+                        change(
+                            enabled
+                        )
+
+                        sudokuValueOverlay
+                            .invalidate()
+
+                        explainVisualOption(
+                            label =
+                                label,
+                            enabled =
+                                enabled
+                        )
+                    }
                 }
-            }
-            optionRow.addView(option)
+
+            optionRow.addView(
+                option
+            )
         }
 
-        visualCheckbox("Lignes", sudokuVisualProjections) {
-            sudokuVisualProjections = it
-            sudokuValueOverlay.showVisualProjections = it
-        }
-        visualCheckbox("Couples", sudokuVisualPairs) {
-            sudokuVisualPairs = it
-            sudokuValueOverlay.showVisualPairs = it
-        }
-        visualCheckbox("Triplets", sudokuVisualTriplets) {
-            sudokuVisualTriplets = it
-            sudokuValueOverlay.showVisualTriplets = it
-        }
-        visualCheckbox("Pulsation douce", sudokuVisualPulse) {
-            sudokuVisualPulse = it
-            sudokuValueOverlay.animateVisualGroups = it
+        visualCheckbox(
+            "Lignes",
+            sudokuVisualProjections
+        ) {
+            sudokuVisualProjections =
+                it
+            sudokuValueOverlay
+                .showVisualProjections =
+                it
         }
 
-        visualCheckbox("Entourer", sudokuVisualCircles) {
-            sudokuVisualCircles = it
-            sudokuValueOverlay.showVisualCircles = it
-            sudokuCircleAnchor = null
-            status.text = if (it) {
-                "Entourer : sélectionne le même candidat sur deux cases."
-            } else "Mode Entourer désactivé."
+        visualCheckbox(
+            "Couples",
+            sudokuVisualPairs
+        ) {
+            sudokuVisualPairs =
+                it
+            sudokuValueOverlay
+                .showVisualPairs =
+                it
+        }
+
+        visualCheckbox(
+            "Triplets",
+            sudokuVisualTriplets
+        ) {
+            sudokuVisualTriplets =
+                it
+            sudokuValueOverlay
+                .showVisualTriplets =
+                it
+        }
+
+        visualCheckbox(
+            "Binaire",
+            sudokuVisualBinary
+        ) {
+            sudokuVisualBinary =
+                it
+            sudokuValueOverlay
+                .showVisualBinary =
+                it
+        }
+
+        visualCheckbox(
+            "Pulsation douce",
+            sudokuVisualPulse
+        ) {
+            sudokuVisualPulse =
+                it
+            sudokuValueOverlay
+                .animateVisualGroups =
+                it
+        }
+
+        visualCheckbox(
+            "Entourer",
+            sudokuVisualCircles
+        ) {
+            sudokuVisualCircles =
+                it
+            sudokuValueOverlay
+                .showVisualCircles =
+                it
+            sudokuCircleAnchor =
+                null
         }
 
         val popupContent = LinearLayout(this).apply {
@@ -11830,7 +12071,7 @@ class MainActivity : Activity() {
                 },
                 LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
-                    dp(52)
+                    dp(46)
                 )
             )
         }
