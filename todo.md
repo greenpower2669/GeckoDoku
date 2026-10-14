@@ -192,3 +192,24 @@ Run `38519610024` / #472 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre e
 
 ### Preuve CI finale repères humains / aide surhumaine
 Run `38522492488` / #486 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11875030286`, APK SHA-256 `793a3878817fa04f9b2096d3ac032c8f235c98df50f6a7f56df0139dda062d15`.
+
+## Hall global complet / progressions isolées — 14/10/2026
+
+- [x] Supprimer la limite UI `.take(10)`.
+- [x] Ne plus tronquer le stockage local du Hall à 200 scores.
+- [x] Ajouter une identité opaque stable de progression par profil.
+- [x] Préserver la même identité lors d'un renommage.
+- [x] Publier l'identité dans `metadata.playerProfileId`.
+- [x] Lire l'identité depuis le cache global.
+- [x] Conserver les historiques sans identité au Hall mais hors progression.
+- [x] Ne jamais fusionner deux profils connus différents au même pseudo.
+- [x] Ajouter les sous-progressions par joueur dans le Hall.
+- [x] Maintenir le Hall global comparatif avec les scores des autres joueurs.
+- [x] Réinitialiser le contexte vivant/ambiant de Pierre lors d'un changement de profil.
+- [x] Couper une parole Pierre appartenant à l'ancien profil avant bascule.
+- [x] Narration de stats basée uniquement sur le `statsStore` actif et le pseudo actif.
+- [x] Ajouter tests identité / renommage / historique ambigu / >10 scores.
+- [ ] Confirmer le run final du dernier commit de code GREEN + artefact APK.
+- [ ] Recette téléphone : plusieurs profils, mêmes pseudos, renommage, Hall complet, sous-progressions, changement de profil pendant/après partie.
+- [ ] Vérifier en vraie synchronisation serveur que `metadata.playerProfileId` revient bien via `/sync` pour les scores nouvellement publiés.
+- [ ] Aucun merge main / Release / Play avant ordre explicite.
