@@ -269,3 +269,25 @@ Mission : `missions/GECKO-SUDOKU-SYSTEM-BARS-005.md`.
 - [ ] Sans merge main, Release, Play ni changement de signature sans feu vert.
 
 Voir `missions/GECKO-SUDOKU-MANUAL-PROJECTION-006.md`.
+
+## Deux pushs ergonomie Samsung — 007 + 008 (14/10/2026)
+
+### PUSH 1 — Intro et fenêtre Repères
+- [x] Empêcher l'affichage de Repères pendant la vidéo d'introduction, avant visibilité/mesure réelle du Sudoku ou pendant la parole de Pierre.
+- [x] Réouvrir seulement une fois l'intro terminée ; préserver fermeture et position manuelle.
+- [x] Tester la garde sur mode/intro/rideau/vidéo/grille/fermeture.
+- [ ] Recette Samsung : intro en mode sauvegardé Sudoku, intro sautée, sans intro, Pierre parle, réouverture.
+
+### PUSH 2 — Grille visible, pavé dessous
+- [x] Calculer une zone clavier située sous la dernière rangée du plateau, en excluant la navigation Android.
+- [x] Adapter la hauteur du pavé à cette zone, bornage du drag, du resize et du recalage.
+- [x] Tests JVM portrait, redimensionnement et évolution du bas du plateau.
+- [ ] Recette Samsung : 9 lignes visibles, cibles tactiles suffisamment grandes, bouton fermer, nouvelle hypothèse, Pierre devant puis restauration.
+- [ ] Paysage / petit écran : si l'espace libre est trop faible, vérifier l'ergonomie et concevoir au besoin une disposition alternative ; ne pas annoncer validation sans ce test.
+
+### Livraison
+- [ ] Vérifier le run CI du dernier commit avec `testDebugUnitTest + assemblePhone`, assets Pierre / sprites 240p et SHA-256.
+- [ ] Télécharger l'APK validé et l'extraire dans un répertoire temporaire.
+- [ ] Aucun merge main, Release, Play sans nouvel ordre Fab.
+
+Passations : `missions/GECKO-SUDOKU-INTRO-GATE-007.md` et `missions/GECKO-SUDOKU-KEYPAD-DOCK-008.md`.
