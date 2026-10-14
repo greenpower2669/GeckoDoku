@@ -10971,7 +10971,7 @@ class MainActivity : Activity() {
         fx.blocked()
 
         showProfessorBubble(
-            "Je ne vois pas encore de déduction simple sûre. Vérifie les candidats déjà posés."
+            "Rien ne presse. Je ne vois pas encore de déduction simple et sûre. Regarde d'abord les lignes, les colonnes et les blocs où il reste peu de candidats."
         )
     }
 
@@ -11868,8 +11868,8 @@ class MainActivity : Activity() {
                     "$label désactivé."
                 } else {
                     when (label) {
-                        "Lignes" ->
-                            "Lignes : relie sur chaque ligne les mêmes candidats possibles présents au moins deux fois."
+                        "Projection" ->
+                            "Projection : quand un chiffre n'a que deux positions possibles sur une ligne ou une colonne, je prolonge doucement cet axe sur toute la grille."
 
                         "Couples" ->
                             "Couples : encadre les paires nues de deux cases dans une même ligne, colonne ou bloc."
@@ -11987,7 +11987,7 @@ class MainActivity : Activity() {
         }
 
         visualCheckbox(
-            "Lignes",
+            "Projection",
             sudokuVisualProjections
         ) {
             sudokuVisualProjections =
@@ -12264,16 +12264,16 @@ class MainActivity : Activity() {
         val message =
             when (panel) {
                 SudokuPalettePanel.VALUE ->
-                    "Choix sert à proposer la valeur définitive de la case. Je la montre d'abord dans Prévisu, puis tu confirmes Oui ou Non. Tant que tu n'as pas confirmé Oui, la grille n'est pas modifiée."
+                    "Choix : touche le chiffre que tu veux poser. Je le mets d'abord en prévisu. Ensuite tu confirmes tranquillement par Oui ou Non."
 
                 SudokuPalettePanel.CANDIDATE ->
-                    "Candidats sert uniquement à noter des chiffres possibles. Un candidat n'est ni une décision ni une hypothèse. Tu peux en garder plusieurs dans la même case pour préparer ton raisonnement."
+                    "Candidats : note simplement les chiffres encore possibles dans cette case. Ce sont des repères de travail, rien n'est validé."
 
                 SudokuPalettePanel.HYPOTHESIS ->
-                    "Hypothèse sert à explorer un raisonnement provisoire. Chaque branche reçoit une couleur. Une sous-hypothèse devient enfant de la précédente. Si une branche mène à contradiction, elle passe en sens interdit. Revenir en arrière supprime seulement ses descendants."
+                    "Hypothèse : teste une idée sans engager la grille. Garde une branche, observe les repères, et reviens en arrière si elle mène à une contradiction."
 
                 SudokuPalettePanel.PREVIEW ->
-                    "Prévisu protège des erreurs de saisie. Le chiffre choisi y apparaît avant toute validation. Oui l'inscrit réellement dans la grille. Non efface seulement la prévisualisation et laisse la case inchangée."
+                    "Prévisu : regarde une dernière fois ton choix. Oui le pose dans la grille. Non annule seulement ce choix."
             }
 
         status.text =
@@ -12393,9 +12393,12 @@ class MainActivity : Activity() {
                         "📚 Journal de grilles"
 
                     SettingsEntry.PLAYER_NAME ->
-                        "👤 Profil : " +
+                        "✏️ Pseudo : " +
                             playerProfileStore
                                 .playerName
+
+                    SettingsEntry.PLAYER_PROFILE ->
+                        "👥 Profils locaux"
 
                     SettingsEntry.HALL_OF_FAME ->
                         "🏆 Hall of Fame"
@@ -12504,6 +12507,11 @@ class MainActivity : Activity() {
                     }
 
                     SettingsEntry.PLAYER_NAME -> {
+                        dialog.dismiss()
+                        editPlayerName()
+                    }
+
+                    SettingsEntry.PLAYER_PROFILE -> {
                         dialog.dismiss()
                         choosePlayerProfile()
                     }
