@@ -196,3 +196,18 @@ Le run de validation final du dernier commit de code doit être GREEN avant anno
 ### Validation CI GECKO-HOF-PLAYER-ISOLATION-002
 Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f6cfa197e5998. Tests JVM + assemblePhone réussis, Pierre et banque sprites 240p vérifiés. Artefact GeckoDoku-v0.15.45-dev-phone ID 11876601009. APK SHA-256 eec808012b45e21a36a400672b1c50d7b2db41a27df9310db2df30eccef45981.
 Reste la recette Samsung et la vérification serveur metadata. Aucun merge main / Release / Play.
+
+## Avenant fenêtre Repères compacte / Pierre premier plan — 14/10/2026
+
+Fab valide la disposition : Repères humains au-dessus du plateau, plateau au centre, clavier Sudoku en bas.
+
+Ordres :
+- première ouverture Repères directement compacte et alignée au plateau ;
+- plus de réduction verticale manuelle à refaire à chaque fois ;
+- dernière position mémorisée ; géométrie restaurée et re-clampée ;
+- barre haute raccourcie/optimisée ;
+- si Pierre parle, Pierre passe temporairement devant les fenêtres Sudoku ;
+- à la fin de la parole, les fenêtres reprennent exactement leur place/calque fonctionnel précédent, sans perte d’état.
+
+Mission de passation dédiée : `missions/GECKO-SUDOKU-FLOATING-LAYERS-004.md`.
+Aucun merge main / Release / Play sans ordre explicite.
