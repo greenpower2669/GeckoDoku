@@ -164,3 +164,27 @@ Invariant : cette carte n'est jamais recopiée dans `SudokuGameEngine.notes`. Le
 
 
 Preuve build Binaire : Run `38504109994` / #464 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11867790810`, APK SHA-256 `356cb9973995d453d6e82e865b959f4648502624705322502e23d711ec52cb5e`.
+
+
+## Projection Sudoku complète — 14/10/2026
+
+```text
+Settings
+├─ Pseudo → editPlayerName() → même profil / nouveau nom public
+└─ Profils locaux → choosePlayerProfile() → identité stats séparée
+
+SudokuSnapshot.values
+→ logicalCandidates()
+→ projectionSegments()
+   ├─ ligne : count(digit) == 2
+   │  → axe horizontal board.left → board.right
+   └─ colonne : count(digit) == 2
+      → axe vertical board.top → board.bottom
+→ alpha faible + deux anneaux de repère
+
+Pierre Sudoku
+→ éliminations
+→ regrouper ROW / COLUMN / BOX
+→ narration courte ordonnée
+→ conclusion
+```
