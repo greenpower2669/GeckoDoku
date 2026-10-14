@@ -122,3 +122,17 @@ Implémenté sur `feature/sudoku-visual-reasoning-v1` : `PierrePiperSpeechEngine
 ### Validation CI GECKO-PIERRE-WARMUP-003
 
 Run `38436224654` / #450 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque 240p vérifiés, APK et SHA-256 déposés en artefact. Le défaut acoustique de première syllabe reste à valider à l'oreille sur Samsung ; CI ne peut pas le prouver.
+
+
+## Avenant Binaire et candidats réels — 14/10/2026
+
+Fab autorise le correctif complet du pavé Sudoku après audit de l'impression « rien ne fonctionne ».
+
+- Lignes / Couples / Triplets basculent des seules notes manuelles vers les candidats logiquement possibles calculés depuis les valeurs confirmées, **sans écrire ces candidats dans le moteur**.
+- Entourer peut désormais lier un candidat possible sans exiger une note préexistante.
+- Nouvelle checkbox **Binaire** : exactement deux occurrences d'un même chiffre candidat dans une ligne, colonne ou bloc ; double anneau + pulsation lente ; disparition automatique si l'occurrence n'est plus exactement deux.
+- Prévisu explique chaque option ; Pierre prononce la même aide.
+- Pavé compacté : titres et espaces visuels réduits, barre d'options abaissée à 46 dp avec marges internes d'1 px, tuiles séparées visuellement d'1 px.
+- Tests unitaires ajoutés pour candidats calculés et Binaire.
+- Branche uniquement : `feature/sudoku-visual-reasoning-v1`. Aucun merge main / Release / Play sans nouvel ordre.
+- Run final attendu : #464, à valider avant annonce de livraison.
