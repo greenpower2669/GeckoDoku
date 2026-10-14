@@ -82,6 +82,22 @@ object SudokuFloatingWindowGeometryPolicy {
         )
     }
 
+    /**
+     * Keyboard can occupy only the vertical space BELOW the playable board.
+     * Coordinates use the same window reference frame as PopupWindow.
+     */
+    fun dockBelowBoard(
+        safe: SudokuFloatingWindowBounds,
+        boardBottom: Int,
+        gap: Int
+    ): SudokuFloatingWindowBounds =
+        SudokuFloatingWindowBounds(
+            left = safe.left,
+            top = maxOf(safe.top, boardBottom + gap),
+            right = safe.right,
+            bottom = maxOf(safe.bottom, maxOf(safe.top, boardBottom + gap))
+        )
+
     fun bottomCentered(
         bounds: SudokuFloatingWindowBounds,
         width: Int,
