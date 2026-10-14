@@ -179,3 +179,11 @@ Pierre : `statsStore` reste lié à `activeProfileId`. Au changement/création d
 
 
 Preuve CI HOF global / progression : Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f6cfa197e5998. Tests JVM + assemblePhone réussis, Pierre et banque sprites 240p vérifiés. Artefact GeckoDoku-v0.15.45-dev-phone ID 11876601009. APK SHA-256 eec808012b45e21a36a400672b1c50d7b2db41a27df9310db2df30eccef45981. Fonctionnellement, la recette Samsung doit encore confirmer l'ergonomie des sous-progressions et la synchronisation réelle de metadata.
+
+## Repères compact + foreground lease Pierre — 14/10/2026
+
+`SudokuFloatingWindowGeometryPolicy` calcule un placement compact au-dessus du plateau et reclamp toute géométrie sauvegardée à la taille écran courante.
+
+`showSudokuManualToolsPopup()` attend désormais un plateau réellement mesuré, ouvre Repères sur la largeur du plateau et une hauteur nominale de 78 dp (barre 34 dp + outils 44 dp), titre raccourci `✎ Repères humains`. Le drag mémorise x/y ; width/height sont aussi persistés pour compatibilité avec tout redimensionnement futur.
+
+Les géométries runtime des trois PopupWindow Sudoku sont suivies : Repères humains, Aide surhumaine, pavé/clavier. Quand `ProfessorSpeech.onSpeakingChanged(true)` arrive, les PopupWindow restent vivants mais sont déplacés hors écran avec clipping désactivé ; Pierre (portrait/vidéo/bulle) devient visuellement prioritaire. Quand `speaking=false`, les PopupWindow sont replacés à leurs coordonnées/taille précédentes et le clipping est restauré. Aucun dismiss/recreate, donc aucun listener de fermeture ni état outil/clavier perdu.
