@@ -4,19 +4,80 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class SudokuVisualReasoningTest {
-    @Test fun projectionRequiresTwoNotesInTheSameRow() {
-        val notes = mapOf(
-            Cell(0, 0) to setOf(1),
-            Cell(1, 0) to setOf(1),
-            Cell(0, 4) to setOf(1),
-            Cell(0, 8) to setOf(1)
+    @Test fun projectionUsesExactlyTwoCandidatesInRowOrColumn() {
+        val candidates =
+            mutableMapOf(
+                Cell(0, 1) to
+                    setOf(
+                        1
+                    ),
+                Cell(0, 7) to
+                    setOf(
+                        1
+                    ),
+                Cell(2, 4) to
+                    setOf(
+                        2
+                    ),
+                Cell(8, 4) to
+                    setOf(
+                        2
+                    )
+            )
+
+        val projections =
+            SudokuVisualReasoning
+                .projectionSegments(
+                    candidates
+                )
+
+        assertTrue(
+            projections.any {
+                it.first.digit ==
+                    1 &&
+                    it.first.cell.row ==
+                    0 &&
+                    it.second.cell.row ==
+                    0
+            }
         )
-        val lines = SudokuVisualReasoning.projectionSegments(notes)
-        assertEquals(2, lines.size)
-        assertEquals(Cell(0, 0), lines[0].first.cell)
-        assertEquals(Cell(0, 4), lines[0].second.cell)
-        assertEquals(Cell(0, 8), lines[1].second.cell)
-        assertEquals(1, lines[1].first.digit)
+
+        assertTrue(
+            projections.any {
+                it.first.digit ==
+                    2 &&
+                    it.first.cell.col ==
+                    4 &&
+                    it.second.cell.col ==
+                    4
+            }
+        )
+
+        // Une troisième possibilité annule la projection de cet axe.
+        candidates[
+            Cell(
+                0,
+                5
+            )
+        ] =
+            setOf(
+                1
+            )
+
+        assertFalse(
+            SudokuVisualReasoning
+                .projectionSegments(
+                    candidates
+                )
+                .any {
+                    it.first.digit ==
+                        1 &&
+                    it.first.cell.row ==
+                        0 &&
+                    it.second.cell.row ==
+                        0
+                }
+        )
     }
 
     @Test fun pairRequiresSharedUnitAndTwoCells() {
