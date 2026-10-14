@@ -145,3 +145,17 @@ Pierre : les traces Sudoku sont regroupées par type de projection (ligne, colon
 
 
 Preuve CI projection complète : Run `38519610024` / #472 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11873097206`, APK SHA-256 `562218c0d5cc2622e106a582bd5ba8a9bdec667fbec84fc72d0bedb3052ec4b7`. La compilation et les tests passent ; la validation d'usage reste le test Samsung.
+
+## Repères humains et aide surhumaine séparés — 14/10/2026
+
+Le pavé Sudoku n'embarque plus la barre d'analyse automatique.
+
+Deux fenêtres indépendantes :
+- `sudokuManualToolsPopup` : repères graphiques du joueur. `SudokuVisualToolMode` = NONE / PROJECTION / PAIR / TRIPLET / CANDIDATE. Les données sont stockées séparément dans `sudokuManualProjectionRefs`, `sudokuManualCandidateRefs`, `sudokuManualPairGroups`, `sudokuManualTripletGroups`; elles sont envoyées à `SudokuValueOverlayView` sans toucher à `SudokuGameEngine.notes`.
+- `sudokuSuperHelpPopup` : aides calculées. Elle n'est accessible qu'après `?` puis tap plateau + confirmation explicite. Options auto OFF au démarrage d'une nouvelle grille.
+
+Projection humaine : case sélectionnée + chiffre choisi dans Candidats → `SudokuCandidateRef`, rendu du petit candidat + croix horizontale et verticale sur tout le plateau, semi-transparente. Couple/triplet sont des ensembles de cellules choisis manuellement. Le candidat manuel est une pièce visuelle seulement.
+
+Aide automatique : `logicalCandidates(values)` reste le moteur de lecture seule. `showVisualCandidates` est maintenant distinct des autres flags, donc Projection/Couples/Triplets/Binaire n'affichent plus tout le tableau de candidats par effet de bord. Chaque aide rend seulement ses candidats concernés ; la checkbox Candidats seule révèle l'ensemble des candidats possibles.
+
+Le `?` de `SudokuQuickPaletteView` expose maintenant `onHelpModeChanged`. Si le prochain clic touche le plateau, `MainActivity` désarme l'aide et ouvre la confirmation surhumaine ; si le clic touche une zone du pavé, l'aide locale courte de Pierre est jouée et le mode aide est désarmé.
