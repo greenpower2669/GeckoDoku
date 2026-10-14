@@ -159,3 +159,6 @@ Projection humaine : case sélectionnée + chiffre choisi dans Candidats → `Su
 Aide automatique : `logicalCandidates(values)` reste le moteur de lecture seule. `showVisualCandidates` est maintenant distinct des autres flags, donc Projection/Couples/Triplets/Binaire n'affichent plus tout le tableau de candidats par effet de bord. Chaque aide rend seulement ses candidats concernés ; la checkbox Candidats seule révèle l'ensemble des candidats possibles.
 
 Le `?` de `SudokuQuickPaletteView` expose maintenant `onHelpModeChanged`. Si le prochain clic touche le plateau, `MainActivity` désarme l'aide et ouvre la confirmation surhumaine ; si le clic touche une zone du pavé, l'aide locale courte de Pierre est jouée et le mode aide est désarmé.
+
+
+Preuve CI repères humains / aide surhumaine : Run `38522492488` / #486 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11875030286`, APK SHA-256 `793a3878817fa04f9b2096d3ac032c8f235c98df50f6a7f56df0139dda062d15`. La compilation et les tests passent ; la validation d'ergonomie reste à faire sur Samsung.
