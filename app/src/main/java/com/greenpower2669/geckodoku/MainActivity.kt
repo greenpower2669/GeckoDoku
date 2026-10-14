@@ -12725,9 +12725,11 @@ class MainActivity : Activity() {
                 this
             ).apply {
                 text =
-                    "✎ Repères humains • glisser"
+                    "✎ Repères humains"
                 textSize =
-                    14f
+                    13.5f
+                contentDescription =
+                    "Repères humains. Glisser cette barre pour déplacer la fenêtre."
                 setTextColor(
                     Color.WHITE
                 )
@@ -12878,7 +12880,7 @@ class MainActivity : Activity() {
                     LinearLayout.LayoutParams(
                         0,
                         dp(
-                            36
+                            34
                         ),
                         1f
                     )
@@ -12887,10 +12889,10 @@ class MainActivity : Activity() {
                     close,
                     LinearLayout.LayoutParams(
                         dp(
-                            48
+                            44
                         ),
                         dp(
-                            36
+                            34
                         )
                     )
                 )
@@ -12904,9 +12906,9 @@ class MainActivity : Activity() {
                     LinearLayout.HORIZONTAL
                 setPadding(
                     1,
+                    0,
                     1,
-                    1,
-                    1
+                    0
                 )
             }
 
@@ -13027,7 +13029,7 @@ class MainActivity : Activity() {
                         LinearLayout.LayoutParams
                             .MATCH_PARENT,
                         dp(
-                            54
+                            44
                         )
                     )
                 )
