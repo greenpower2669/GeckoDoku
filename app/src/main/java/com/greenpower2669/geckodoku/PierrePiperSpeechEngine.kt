@@ -36,6 +36,35 @@ class PierrePiperSpeechEngine(
     private var tts:
         OfflineTts? = null
 
+    @Volatile
+    private var warmupComplete =
+        false
+
+    init {
+        // Amorçage réel dès la création du moteur. Le même worker sérialise
+        // cette phase et les demandes de parole : une première vraie phrase
+        // ne peut donc jamais passer devant l'amorce.
+        executor.execute {
+            try {
+                val engine =
+                    ensureTts()
+
+                ensureWarmup(
+                    engine
+                )
+            } catch (error: Throwable) {
+                AudioCapturePolicy.log(
+                    source = "PIERRE",
+                    detail =
+                        "WARMUP_INIT_ERROR type=" +
+                            error
+                                .javaClass
+                                .simpleName
+                )
+            }
+        }
+    }
+
     fun speak(
         text: String,
         onStarted:
@@ -64,6 +93,32 @@ class PierrePiperSpeechEngine(
                 val engine =
                     ensureTts()
 
+                if (
+                    !ensureWarmup(
+                        engine
+                    )
+                ) {
+                    if (
+                        !released &&
+                        token ==
+                            generation
+                    ) {
+                        error(
+                            "Pierre warmup did not complete"
+                        )
+                    }
+
+                    return@execute
+                }
+
+                if (
+                    released ||
+                    token !=
+                        generation
+                ) {
+                    return@execute
+                }
+
                 val spokenText =
                     PierrePronunciationPolicy
                         .forSpeech(
@@ -80,46 +135,74 @@ class PierrePiperSpeechEngine(
                         speed = 1.0f
                     )
 
-                handler.post {
-                    if (
-                        released ||
-                        token != generation
-                    ) {
-                        return@post
-                    }
+                if (
+                    released ||
+                    token !=
+                        generation
+                ) {
+                    return@execute
+                }
 
-                    player.play(
+                val played =
+                    player.playBlocking(
                         samples =
                             audio.samples,
                         sampleRate =
                             audio.sampleRate,
+                        muted = false,
                         onStarted = {
-                            if (
-                                !released &&
-                                token ==
-                                    generation
-                            ) {
-                                onStarted
-                                    ?.invoke()
-                            }
-                        },
-                        onCompletion = {
-                            if (
-                                !released &&
-                                token ==
-                                    generation
-                            ) {
-                                onCompletion
-                                    ?.invoke()
+                            handler.post {
+                                if (
+                                    !released &&
+                                    token ==
+                                        generation
+                                ) {
+                                    onStarted
+                                        ?.invoke()
+                                }
                             }
                         }
                     )
+
+                if (!played) {
+                    if (
+                        released ||
+                        token !=
+                            generation
+                    ) {
+                        return@execute
+                    }
+
+                    error(
+                        "Pierre AudioTrack playback failed"
+                    )
                 }
-            } catch (_: Throwable) {
+
                 handler.post {
                     if (
                         !released &&
-                        token == generation
+                        token ==
+                            generation
+                    ) {
+                        onCompletion
+                            ?.invoke()
+                    }
+                }
+            } catch (error: Throwable) {
+                AudioCapturePolicy.log(
+                    source = "PIERRE",
+                    detail =
+                        "SPEAK_ERROR type=" +
+                            error
+                                .javaClass
+                                .simpleName
+                )
+
+                handler.post {
+                    if (
+                        !released &&
+                        token ==
+                            generation
                     ) {
                         onFailure?.invoke()
                     }
@@ -143,7 +226,12 @@ class PierrePiperSpeechEngine(
         }
 
         released = true
-        stop()
+
+        synchronized(this) {
+            generation += 1
+            player.stop()
+        }
+
         player.release()
 
         executor.execute {
@@ -152,6 +240,94 @@ class PierrePiperSpeechEngine(
         }
 
         executor.shutdown()
+    }
+
+    /**
+     * Amorçage Piper/Sherpa réel.
+     *
+     * - synthèse d'une courte phrase ;
+     * - passage par le même AudioTrack persistant que la vraie voix ;
+     * - volume nul uniquement pendant cette amorce ;
+     * - validation par la progression réelle du playback head.
+     *
+     * Aucun timer n'est utilisé pour décider que l'amorce est terminée.
+     */
+    private fun ensureWarmup(
+        engine: OfflineTts
+    ): Boolean {
+        if (warmupComplete) {
+            return true
+        }
+
+        if (released) {
+            return false
+        }
+
+        AudioCapturePolicy.log(
+            source = "PIERRE",
+            detail =
+                "WARMUP_GENERATE_START"
+        )
+
+        val warmupAudio =
+            engine.generate(
+                text =
+                    PierrePronunciationPolicy
+                        .forSpeech(
+                            WARMUP_TEXT
+                        ),
+                sid =
+                    PierreVoiceConfig
+                        .speakerId,
+                speed = 1.0f
+            )
+
+        if (released) {
+            return false
+        }
+
+        AudioCapturePolicy.log(
+            source = "PIERRE",
+            detail =
+                "WARMUP_PLAYBACK_START muted=true frames=" +
+                    warmupAudio
+                        .samples
+                        .size +
+                    " sampleRate=" +
+                    warmupAudio
+                        .sampleRate
+        )
+
+        val completed =
+            player.playBlocking(
+                samples =
+                    warmupAudio.samples,
+                sampleRate =
+                    warmupAudio.sampleRate,
+                muted = true
+            )
+
+        if (
+            completed &&
+            !released
+        ) {
+            warmupComplete =
+                true
+
+            AudioCapturePolicy.log(
+                source = "PIERRE",
+                detail =
+                    "WARMUP_COMPLETE persistentTrack=true"
+            )
+        } else {
+            AudioCapturePolicy.log(
+                source = "PIERRE",
+                detail =
+                    "WARMUP_INCOMPLETE"
+            )
+        }
+
+        return warmupComplete
     }
 
     @Synchronized
@@ -206,6 +382,14 @@ class PierrePiperSpeechEngine(
             )
 
         tts = created
+
+        AudioCapturePolicy.log(
+            source = "PIERRE",
+            detail =
+                "TTS_READY engine=SherpaPiper speakerId=" +
+                    PierreVoiceConfig
+                        .speakerId
+        )
 
         return created
     }
@@ -312,5 +496,9 @@ class PierrePiperSpeechEngine(
                     )
             )
         }
+    }
+    private companion object {
+        const val WARMUP_TEXT =
+            "Bonjour, je suis prêt."
     }
 }

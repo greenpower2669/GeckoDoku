@@ -12,7 +12,8 @@ data class HallOfFameEntry(
     val difficulty: GameDifficulty,
     val stars: Int,
     val elapsedSeconds: Long,
-    val completedAt: Long
+    val completedAt: Long,
+    val playerProfileId: String? = null
 )
 
 class HallOfFameStore(
@@ -78,13 +79,20 @@ class HallOfFameStore(
                     "completedAt",
                     entry.completedAt
                 )
+                entry.playerProfileId
+                    ?.let {
+                        put(
+                            "playerProfileId",
+                            it
+                        )
+                    }
             }
         )
 
+        // Le Hall est un historique comparatif complet : aucune
+        // troncature Top-N dans le stockage local.
         writeObjects(
-            all.take(
-                MAX_ENTRIES
-            )
+            all
         )
     }
 
@@ -188,7 +196,19 @@ class HallOfFameStore(
                 obj.optLong(
                     "completedAt",
                     0L
+                ),
+            playerProfileId =
+                obj.optString(
+                    "playerProfileId"
                 )
+                    .trim()
+                    .takeIf {
+                        it.matches(
+                            Regex(
+                                "[a-fA-F0-9-]{36}"
+                            )
+                        )
+                    }
         )
     }
 
@@ -248,7 +268,5 @@ class HallOfFameStore(
         private const val KEY_ENTRIES =
             "entries_v1"
 
-        private const val MAX_ENTRIES =
-            200
     }
 }

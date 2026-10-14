@@ -41,9 +41,9 @@ object SudokuHintEngine {
                     digit =
                         candidates.single(),
                     explanation =
-                        "Cette case n'a plus qu'un seul candidat possible. Le " +
+                        "On regarde cette case tranquillement. Après les repères de ligne, colonne et bloc, il ne reste que le " +
                             candidates.single() +
-                            " est donc certain.",
+                            ".",
                     reasoning =
                         nakedSingleTrace(
                             values = values,
@@ -138,11 +138,11 @@ object SudokuHintEngine {
                         digit =
                             digit,
                         explanation =
-                            "Dans " +
+                            "Regarde " +
                                 unitLabel +
-                                ", le " +
+                                ". Pour le " +
                                 digit +
-                                " ne peut aller qu'à cet endroit.",
+                                ", toutes les autres places sont écartées : il reste celle-ci.",
                         reasoning =
                             hiddenSingleTrace(
                                 values = values,
@@ -198,41 +198,67 @@ object SudokuHintEngine {
                 }
 
         val steps =
-            eliminations
-                .groupBy {
-                    it.sourceCell to
-                        it.projection
-                }
-                .map {
-                    (key, blocked) ->
+            listOf(
+                SudokuProjectionType.ROW,
+                SudokuProjectionType.COLUMN,
+                SudokuProjectionType.BOX
+            )
+                .mapNotNull {
+                    projection ->
+
+                    val blocked =
+                        eliminations
+                            .filter {
+                                it.projection ==
+                                    projection
+                            }
+
+                    if (blocked.isEmpty()) {
+                        return@mapNotNull null
+                    }
+
                     val source =
-                        key.first
-                    val projection =
-                        key.second
+                        blocked.first()
+                            .sourceCell
+
                     val digits =
-                        blocked.map {
-                            it.digit
-                        }.sorted()
-                            .joinToString(", ")
+                        blocked
+                            .map {
+                                it.digit
+                            }
+                            .distinct()
+                            .sorted()
+                            .joinToString(
+                                ", "
+                            )
+
+                    val narration =
+                        when (projection) {
+                            SudokuProjectionType.ROW ->
+                                "On commence par la ligne. Je la projette doucement : elle écarte " +
+                                    digits +
+                                    " de cette case."
+
+                            SudokuProjectionType.COLUMN ->
+                                "Puis la colonne. Même repère : elle écarte " +
+                                    digits +
+                                    "."
+
+                            SudokuProjectionType.BOX ->
+                                "Enfin le bloc trois par trois. Il écarte " +
+                                    digits +
+                                    "."
+                        }
 
                     SudokuReasoningStep(
-                        sourceCell = source,
+                        sourceCell =
+                            source,
                         projection =
                             projection,
                         eliminations =
                             blocked,
                         narration =
-                            "Regarde le " +
-                                values[
-                                    source.index(9)
-                                ] +
-                                " déjà présent ici. " +
-                                projectionText(
-                                    projection
-                                ) +
-                                " Il élimine " +
-                                digits +
-                                " de cette case."
+                            narration
                     )
                 } +
                 SudokuReasoningStep(
@@ -241,11 +267,9 @@ object SudokuHintEngine {
                     eliminations =
                         emptyList(),
                     narration =
-                        "Après ces éliminations, il ne reste plus que le " +
+                        "Voilà. Il ne reste que le " +
                             targetDigit +
-                            ". Donc le " +
-                            targetDigit +
-                            " doit forcément être placé ici.",
+                            " ici. Tu peux le poser tranquillement.",
                     finalCell = target
                 )
 
@@ -316,52 +340,95 @@ object SudokuHintEngine {
             }
 
         val steps =
-            eliminated.groupBy {
-                it.sourceCell to
-                    it.projection
-            }.map {
-                (key, blocked) ->
-                val source =
-                    key.first
-                val projection =
-                    key.second
+            listOf(
+                SudokuProjectionType.ROW,
+                SudokuProjectionType.COLUMN,
+                SudokuProjectionType.BOX
+            )
+                .mapNotNull {
+                    projection ->
 
-                SudokuReasoningStep(
-                    sourceCell = source,
-                    projection =
-                        projection,
-                    eliminations =
-                        blocked,
-                    narration =
-                        "Regarde le " +
-                            digit +
-                            " déjà présent ici. " +
-                            projectionText(
-                                projection
-                            ) +
-                            " " +
-                            blocked.size +
-                            " possibilité" +
-                            if (
-                                blocked.size > 1
-                            ) {
-                                "s deviennent impossibles."
-                            } else {
-                                " devient impossible."
+                    val blocked =
+                        eliminated
+                            .filter {
+                                it.projection ==
+                                    projection
                             }
-                )
-            } +
+
+                    if (blocked.isEmpty()) {
+                        return@mapNotNull null
+                    }
+
+                    val source =
+                        blocked.first()
+                            .sourceCell
+
+                    val narration =
+                        when (projection) {
+                            SudokuProjectionType.ROW ->
+                                "On garde le " +
+                                    digit +
+                                    " en vue. La projection de ligne écarte " +
+                                    blocked.size +
+                                    " place" +
+                                    if (
+                                        blocked.size >
+                                            1
+                                    ) {
+                                        "s."
+                                    } else {
+                                        "."
+                                    }
+
+                            SudokuProjectionType.COLUMN ->
+                                "Ensuite la colonne. Elle enlève encore " +
+                                    blocked.size +
+                                    " possibilité" +
+                                    if (
+                                        blocked.size >
+                                            1
+                                    ) {
+                                        "s."
+                                    } else {
+                                        "."
+                                    }
+
+                            SudokuProjectionType.BOX ->
+                                "Puis le bloc trois par trois. Il enlève " +
+                                    blocked.size +
+                                    " possibilité" +
+                                    if (
+                                        blocked.size >
+                                            1
+                                    ) {
+                                        "s."
+                                    } else {
+                                        "."
+                                    }
+                        }
+
+                    SudokuReasoningStep(
+                        sourceCell =
+                            source,
+                        projection =
+                            projection,
+                        eliminations =
+                            blocked,
+                        narration =
+                            narration
+                    )
+                } +
                 SudokuReasoningStep(
                     sourceCell = null,
                     projection = null,
                     eliminations =
                         emptyList(),
                     narration =
-                        "Dans " +
+                        "Regarde maintenant " +
                             unitLabel +
-                            ", toutes les autres positions sont éliminées. Il ne reste qu'une case pour le " +
+                            " : pour le " +
                             digit +
-                            ". Voilà pourquoi il doit être ici.",
+                            ", il ne reste qu'une place. C'est celle-ci.",
                     finalCell = target
                 )
 

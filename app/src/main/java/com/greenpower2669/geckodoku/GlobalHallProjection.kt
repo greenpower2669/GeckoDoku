@@ -14,18 +14,61 @@ object GlobalHallProjection {
         local: List<HallOfFameEntry>,
         globalCache: List<GlobalScoreCacheEntry>
     ): List<HallOfFameEntry> {
-        val merged =
-            LinkedHashMap<HallIdentity, HallOfFameEntry>()
+        // Les scores mondiaux ont déjà été dédoublonnés par scoreId
+        // dans GlobalScoreCacheStore. Ne JAMAIS utiliser le pseudo
+        // comme clé unique : deux personnes peuvent porter le même nom
+        // et même publier des scores statistiquement identiques.
+        val global =
+            fromCache(
+                globalCache
+            )
+        val remainingLocal =
+            local.toMutableList()
 
-        fromCache(globalCache).forEach {
-            merged[identity(it)] = it
-        }
+        val hydratedGlobal =
+            global.map {
+                remote ->
 
-        local.forEach {
-            merged[identity(it)] = it
-        }
+                // Une copie locale correspondante est retirée UNE seule fois.
+                // Si le serveur historique ne renvoie pas encore metadata,
+                // l'identité locale exacte peut enrichir CE score sans
+                // aucune déduction par pseudo.
+                val index =
+                    matchingLocalIndex(
+                        remainingLocal,
+                        remote
+                    )
 
-        return merged.values.sortedWith(
+                if (
+                    index <
+                        0
+                ) {
+                    remote
+                } else {
+                    val localMatch =
+                        remainingLocal
+                            .removeAt(
+                                index
+                            )
+
+                    if (
+                        remote.playerProfileId ==
+                            null &&
+                        localMatch.playerProfileId !=
+                            null
+                    ) {
+                        remote.copy(
+                            playerProfileId =
+                                localMatch
+                                    .playerProfileId
+                        )
+                    } else {
+                        remote
+                    }
+                }
+            }
+
+        return (hydratedGlobal + remainingLocal).sortedWith(
             compareBy<HallOfFameEntry> {
                 it.difficulty.ordinal
             }
@@ -83,6 +126,22 @@ object GlobalHallProjection {
                 return null
             }
 
+            val profileId =
+                obj.optJSONObject(
+                    "metadata"
+                )
+                    ?.optString(
+                        "playerProfileId"
+                    )
+                    ?.trim()
+                    ?.takeIf {
+                        it.matches(
+                            Regex(
+                                "[a-fA-F0-9-]{36}"
+                            )
+                        )
+                    }
+
             HallOfFameEntry(
                 playerName = playerName,
                 mode = mode,
@@ -92,10 +151,100 @@ object GlobalHallProjection {
                 elapsedSeconds =
                     obj.getLong("elapsedSeconds")
                         .coerceAtLeast(0L),
-                completedAt = obj.getLong("completedAt")
+                completedAt = obj.getLong("completedAt"),
+                playerProfileId =
+                    profileId
             )
         } catch (_: Exception) {
             null
+        }
+    }
+
+    private fun matchingLocalIndex(
+        local: List<HallOfFameEntry>,
+        remote: HallOfFameEntry
+    ): Int {
+        val candidates =
+            local.indices
+                .filter {
+                    identity(
+                        local[
+                            it
+                        ]
+                    ) ==
+                        identity(
+                            remote
+                        )
+                }
+
+        if (
+            candidates.isEmpty()
+        ) {
+            return -1
+        }
+
+        val remoteProfile =
+            remote.playerProfileId
+
+        if (
+            remoteProfile !=
+                null
+        ) {
+            // Une identité serveur connue ne peut correspondre qu'au même
+            // profil local, ou à une vieille ligne locale sans identité.
+            candidates
+                .firstOrNull {
+                    local[
+                        it
+                    ].playerProfileId ==
+                        remoteProfile
+                }
+                ?.let {
+                    return it
+                }
+
+            return candidates
+                .firstOrNull {
+                    local[
+                        it
+                    ].playerProfileId ==
+                        null
+                }
+                ?: -1
+        }
+
+        // Si le serveur historique ne fournit pas l'identité, préférer une
+        // ancienne ligne locale elle aussi non attribuée.
+        candidates
+            .firstOrNull {
+                local[
+                    it
+                ].playerProfileId ==
+                    null
+            }
+            ?.let {
+                return it
+            }
+
+        val knownProfiles =
+            candidates
+                .mapNotNull {
+                    local[
+                        it
+                    ].playerProfileId
+                }
+                .distinct()
+
+        // Hydrater n'est sûr que si toutes les copies candidates connues
+        // appartiennent au même profil. Sinon on garde le score distant
+        // non attribué plutôt que d'inventer un propriétaire.
+        return if (
+            knownProfiles.size ==
+                1
+        ) {
+            candidates.first()
+        } else {
+            -1
         }
     }
 

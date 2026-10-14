@@ -18,7 +18,8 @@ object GlobalScoreCompletionBridge {
         gomokuSnapshot: GomokuSnapshot?,
         gomokuMatchMode: GomokuMatchMode?,
         beeGeckoPuzzle: BeeGeckoPuzzle?,
-        completedAt: Long
+        completedAt: Long,
+        playerProfileId: String? = null
     ): String? {
         val puzzleId: String?
         val seed: Long?
@@ -86,6 +87,23 @@ object GlobalScoreCompletionBridge {
             puzzleId = puzzleId,
             seed = seed,
             details = details,
+            metadata =
+                buildMap {
+                    playerProfileId
+                        ?.takeIf {
+                            it.matches(
+                                Regex(
+                                    "[a-fA-F0-9-]{36}"
+                                )
+                            )
+                        }
+                        ?.let {
+                            put(
+                                "playerProfileId",
+                                it
+                            )
+                        }
+                },
             completedAt = completedAt
         )
     }

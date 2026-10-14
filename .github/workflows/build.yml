@@ -2,14 +2,52 @@ name: Build GeckoDoku phone APK
 
 on:
   push:
-    branches: [ main, gecko-022-rich-media, gecko-024-grid-audio, gecko-025-canonical-gecko-prof, gecko-026-floating-prof-ui, gecko-027-prof-foreground, gecko-028-prof-voice-idle-mask, gecko-029-more-life-full-celebration, gecko-030-restore-prof-video, gecko-031-voice-ab-experiment, gecko-032-pierre-medium, gecko-033-identity-prof-life, gecko-038-sudoku-mode, gecko-039-sudoku-tap-gecko-gomoku, gecko-040-resolution-sprite-banks, gecko-041-sprite-240-max, gecko-042-prebuilt-sprite-runtime, gecko-043-sprite-240-only-cleanup, gecko-044-hypothesis-branches, gecko-045-sudoku-hypothesis-pad, gecko-046-stats-trends-resizable, gecko-047-sudoku-persistent-help, gecko-048-sudoku-compact-release ]
+    branches: [ main, gecko-022-rich-media, gecko-024-grid-audio, gecko-025-canonical-gecko-prof, gecko-026-floating-prof-ui, gecko-027-prof-foreground, gecko-028-prof-voice-idle-mask, gecko-029-more-life-full-celebration, gecko-030-restore-prof-video, gecko-031-voice-ab-experiment, gecko-032-pierre-medium, gecko-033-identity-prof-life, gecko-038-sudoku-mode, gecko-039-sudoku-tap-gecko-gomoku, gecko-040-resolution-sprite-banks, gecko-041-sprite-240-max, gecko-042-prebuilt-sprite-runtime, gecko-043-sprite-240-only-cleanup, gecko-044-hypothesis-branches, gecko-045-sudoku-hypothesis-pad, gecko-046-stats-trends-resizable, gecko-047-sudoku-persistent-help, gecko-048-sudoku-compact-release, feature/sudoku-visual-reasoning-v1 ]
   workflow_dispatch:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
+  # Explicit opt-in only. Publish the EXACT validated phone APK from run #525
+  # as an unpacked GitHub Release asset; never copy it to the Git tree.
+  publish_temp_apk_529:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run529]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download validated run 529 APK and publish temporary prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="temp-geckodoku-0.15.45-dev-run-529"
+          dest="temp/GeckoDoku-run529"
+          mkdir -p "$dest"
+          gh run download 38603852806 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "GeckoDoku-v0.15.45-dev-phone" \
+            --dir "$dest"
+          cd "$dest"
+          sha256sum -c GeckoDoku-v0.15.45-dev.apk.sha256
+          actual="$(sha256sum GeckoDoku-v0.15.45-dev.apk | cut -d' ' -f1)"
+          expected="28d0995d5e4b1948ff2351b34d3b99638b225b2f755e856fd036d5238ea8a86e"
+          test "$actual" = "$expected"
+          test -s GeckoDoku-v0.15.45-dev.apk
+          gh release create "$tag" \
+            "GeckoDoku-v0.15.45-dev.apk#GeckoDoku-v0.15.45-dev.apk" \
+            "GeckoDoku-v0.15.45-dev.apk.sha256#GeckoDoku-v0.15.45-dev.apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "${GITHUB_SHA}" \
+            --title "TEMP GeckoDoku 0.15.45-dev • run 529" \
+            --notes "APK de test signé Android, issu du run #529 GREEN. Fichier APK direct, sans ZIP; ne pas publier sur Google Play." \
+            --prerelease
+          echo "APK direct : https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
+
   android:
+    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -115,10 +153,20 @@ jobs:
           cp app/build/outputs/apk/phone/app-phone.apk "GeckoDoku-v${APP_VERSION}.apk"
           test -s "GeckoDoku-v${APP_VERSION}.apk"
 
+      - name: Verify SHA-256 of phone APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum "GeckoDoku-v${APP_VERSION}.apk" | tee "GeckoDoku-v${APP_VERSION}.apk.sha256"
+          echo "SHA-256 de l'APK :" >> "$GITHUB_STEP_SUMMARY"
+          cat "GeckoDoku-v${APP_VERSION}.apk.sha256" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/upload-artifact@v4
         with:
           name: GeckoDoku-v${{ env.APP_VERSION }}-phone
-          path: GeckoDoku-v${{ env.APP_VERSION }}.apk
+          path: |
+            GeckoDoku-v${{ env.APP_VERSION }}.apk
+            GeckoDoku-v${{ env.APP_VERSION }}.apk.sha256
 
       - name: Publish phone prerelease
         if: github.event_name == 'push' && contains(github.event.head_commit.message, '[phone-release]')

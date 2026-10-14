@@ -85,3 +85,216 @@ Les tests offline/retry/doublons exhaustifs n’ont pas tous été rejoués manu
 - Release finale : `phone-0.15.44-dev-run-432`.
 - APK : `GeckoDoku-v0.15.44-dev.apk`.
 - SHA-256 : `555cce892d573aa5d5bd794b78254ce315e789726a474f149546c11e096d108c`.
+
+
+## 12/10/2026 — préparation GECKO-SUDOKU-VISUAL-001
+
+Création de `feature/sudoku-visual-reasoning-v1` depuis `main` et dépôt de `missions/GECKO-SUDOKU-VISUAL-001.md`. **Aucune modification de code, aucun test ni APK nouveau à ce stade** ; aucune régression liée à cette mission observée ou corrigée. Historique HOF précédent conservé.
+
+
+## 12/10/2026 — retour utilisateur : Hall/progression mêlant plusieurs pseudonymes
+
+Fab rapporte que l'affichage de scores/progressions du Hall semble associer plusieurs pseudos à une même personne. **Symptôme déclaré, origine technique non prouvée et non reproduite à cette date.** Ne pas accuser le serveur avant audit API/cache/projection/statistiques locales/UI. Mission de diagnostic et correction : `missions/GECKO-HOF-PLAYER-ISOLATION-002.md`. Aucun correctif/code/build effectué lors de cette documentation.
+
+
+## 12/10/2026 — diagnostic et corrections des deux missions
+
+- Hall : `MainActivity.showHallOfFameLevel` posait sous un classement mondial multi-pseudonymes la courbe produite par `statsStore.eventsForModeAndDifficulty`, qui correspondait uniquement au téléphone ; fausse attribution visuelle. Courbe retirée du Hall mondial, accès maintenu via Stats du niveau du profil actif.
+- `GlobalHallProjection.merge` supprimait par `HallIdentity` les doublons composites, risquant de fusionner deux scores réellement différents de joueurs homonymes aux mêmes métriques. Nouvelle fusion : conserver chaque score du cache déjà unique par `scoreId`, retirer tout au plus UNE copie locale par score mondial correspondant.
+- Stockage personnel ancien : les préférences stats étaient communes à l'appareil et au pseudo modifiable ; introduction de profils locaux stables, séparation des stores par profil, conservation intégrale du store historique (pas de réattribution rétroactive sans identité).
+- Sudoku : surimpressions distinctes des notes et du solveur, aucun effet sur la grille ; pulsation lente facultative pour éviter les flashs rapides.
+- Première CI a trouvé `PlayerProfileStore.kt:51 Unresolved reference id` : corrigé par `buildList<GeckoPlayerProfile>` explicite.
+- Deuxième CI a trouvé un test X-Wing incorrect : un candidat ajouté dans une ligne n'invalidait pas l'autre orientation par colonnes. Le test a été corrigé en invalidant les deux orientations, sans dégrader l'algorithme mathématique.
+- **Statut à cet instant** : code poussé, test/build final en cours ; ne pas annoncer livraison APK sans passage GREEN + hachage. Aucun test Samsung effectué.
+
+
+## Validation finale CI du lot 0.15.45-dev — 12/10/2026
+
+- Workflow `Build GeckoDoku phone APK`, run [38314483379](https://github.com/greenpower2669/GeckoDoku/actions/runs/38314483379) : **GREEN**, `gradle :app:testDebugUnitTest :app:assemblePhone` → `BUILD SUCCESSFUL`.
+- Étapes Pierre, banque sprites 240p (source 1 305 fichiers, modèle et manifest dans l'APK) et publication de l'artefact : SUCCESS.
+- Artefact Actions : `GeckoDoku-v0.15.45-dev-phone` (ID `11775463777`) contenant `GeckoDoku-v0.15.45-dev.apk` et `GeckoDoku-v0.15.45-dev.apk.sha256` ; APK SHA-256 : `ddff9b30a3267573cbf0a1cecad98fa6c76ca7aee94f670533a2169e1701d586`.
+- Cette version est le **build de test phone signé avec la clé debug existante**, PAS une publication Google Play. La signature Google Play n'est pas modifiée.
+- PR brouillon #4 : https://github.com/greenpower2669/GeckoDoku/pull/4 ; ne pas merger ni publier avant accord explicite.
+- **À faire** : recette physique Samsung par Fab (UI, Pierre, quatre modes, deux profils/homonymes, restauration des données). Les anciens résultats localement mélangés, sans identité d'origine, ne peuvent être reclassés automatiquement.
+
+
+## 13/10/2026 — première phrase Piper/Sherpa mangée ou déformée
+
+Symptôme Fab : sur la première lecture, le début de certains mots peut être mangé/déformé ; rejouer exactement la même phrase donne généralement un rendu correct.
+
+Audit du code avant correction :
+- `PierrePiperSpeechEngine.ensureTts()` était paresseux : le modèle n'était chargé qu'à la première demande réelle ;
+- `VoicePcmPlayer` recréait un `AudioTrack.MODE_STATIC` à chaque phrase ;
+- le callback de fin reposait sur `samples/sampleRate + 350 ms`, donc sur une estimation temporelle et non sur la consommation audio réelle ;
+- la première phrase cumulait donc démarrage modèle + création AudioTrack + démarrage sortie Android.
+
+Correction : préchauffage asynchrone dès construction du moteur, phrase d'amorce synthétisée et réellement lue à volume nul, AudioTrack STREAM persistant, fin déterminée par les frames réellement consommées via `playbackHeadPosition`, puis réutilisation de la même piste pour la phrase réelle. Traces dédiées `WARMUP_*`, `TRACK_CREATE/REUSE`, `PLAYBACK_DRAINED`.
+
+Cause finale du défaut acoustique à confirmer par test Samsung : l'hypothèse de chaîne audio froide est maintenant testée directement, sans déclarer le défaut résolu avant écoute réelle.
+
+
+Validation compilation : run `38436224654` / #450 GREEN après intégration complète du nouveau `VoicePcmPlayer` et de l'amorçage. Le run #449 rouge correspondait à l'état intermédiaire où le lecteur avait été remplacé avant l'adaptation de `PierrePiperSpeechEngine`; il n'est pas une régression finale.
+
+
+## 14/10/2026 — outils visuels Sudoku paraissent inactifs
+
+Signalement Fab : en recette téléphone, Entourer / Lignes / Couples / Triplets ne donnent aucun effet visible.
+
+Audit sans code :
+- checkboxes correctement branchées ;
+- overlay visible et invalidate appelé ;
+- cause commune : `drawPlayerReasoningAnnotations` construisait sa preuve uniquement depuis les **notes personnelles** ;
+- Lignes exigeait donc deux mêmes notes déjà saisies dans la même ligne ;
+- Couples/Triplets exigeaient des ensembles manuels exacts ;
+- Entourer interceptait la touche candidat mais refusait le chiffre s'il n'était pas déjà présent dans `snapshot.notesAt(cell)` ;
+- tests existants injectaient directement des cartes artificielles de notes et ne couvraient pas l'usage bout-en-bout.
+
+Correction autorisée ensuite par Fab :
+- candidats logiques calculés en lecture seule depuis les valeurs confirmées ;
+- Lignes/Couples/Triplets branchés dessus ;
+- Entourer branché sur la validité logique du candidat ;
+- Binaire exact-2 ajouté ligne/colonne/bloc ;
+- explication Prévisu + Pierre ;
+- compaction du pavé.
+
+Ne pas déclarer la correction visuelle validée avant recette Samsung, même si la CI devient GREEN.
+
+
+### Validation finale du correctif visuel
+Run `38504109994` / #464 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11867790810`, APK SHA-256 `356cb9973995d453d6e82e865b959f4648502624705322502e23d711ec52cb5e`.
+Le défaut d'usage n'est pas déclaré résolu tant que Fab n'a pas validé visuellement Lignes/Couples/Triplets/Binaire/Entourer sur Samsung.
+
+
+## 14/10/2026 — retour Samsung projection/pseudo/Pierre
+
+Retour Fab après APK run #464 :
+1. choix du pseudo perçu comme perdu depuis l'introduction des profils ;
+2. narrations Sudoku de Pierre jugées « imbuvables » ;
+3. « Lignes » ne projette que l'horizontal et manque la colonne / l'axe complet.
+
+Audit :
+- le renommage existait encore mais était enfoui dans le dialogue Profils, d'où la régression d'usage ;
+- `SudokuHintEngine` produisait une étape parlée par source de conflit, donc trop de phrases ;
+- `projectionSegments` ne parcourait que les lignes et l'overlay reliait uniquement les deux points.
+
+Correction :
+- pseudo direct + profils séparés ;
+- narrations regroupées par ligne/colonne/bloc ;
+- projection exact-2 horizontale ou verticale, prolongée sur tout le plateau, discrète et semi-transparente ;
+- tests adaptés.
+
+Les runs intermédiaires #465 et #467 peuvent être rouges car ils correspondent à des commits partiels (nouvel enum avant adaptation exhaustive de MainActivity, puis nouvelle règle projection avant mise à jour du test historique). Seul le run final du commit complet fait foi.
+
+
+### Validation finale du lot projection/pseudo/Pierre
+Run `38519610024` / #472 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11873097206`, APK SHA-256 `562218c0d5cc2622e106a582bd5ba8a9bdec667fbec84fc72d0bedb3052ec4b7`.
+Les runs intermédiaires rouges correspondaient aux commits partiels décrits plus haut ; #472 est la preuve finale du lot complet.
+
+## 14/10/2026 — ambiguïté outils humains / solutions automatiques
+
+Retour Fab : après le correctif projection/Binaire, les checkboxes sont techniquement efficaces mais elles calculent les candidats et motifs à la place du joueur. C'est intéressant pédagogiquement, mais l'UI les présentait encore comme de simples repères personnels, créant une ambiguïté « j'ai dessiné » vs « le solveur m'a montré ».
+
+Correction :
+- retrait de la barre auto du clavier ;
+- couche manuelle autonome et purement graphique ;
+- couche automatique renommée implicitement Aide surhumaine, protégée par confirmation explicite ;
+- point d'interrogation utilisé comme geste en deux temps : `?` puis zone du pavé = explication ; `?` puis plateau = demande d'aide calculée ;
+- candidats auto découplés : les autres modes n'affichent plus tous les candidats par défaut ;
+- nouvelle grille remet les flags auto OFF.
+
+Les runs rouges #478–#480 correspondent à des commits intermédiaires où MainActivity référençait des fonctions ajoutées dans les commits suivants ; ne pas les considérer comme état final. Run #481 a déjà validé la création complète des deux fenêtres. La preuve finale doit être prise sur le dernier commit fonctionnel.
+
+
+### Validation finale repères humains / aide surhumaine
+Run `38522492488` / #486 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11875030286`, APK SHA-256 `793a3878817fa04f9b2096d3ac032c8f235c98df50f6a7f56df0139dda062d15`.
+Le run #486 est la preuve finale du lot complet ; les runs rouges précédents restent des états intermédiaires partiels.
+
+## 14/10/2026 — Hall global vs progression : cause et correction
+
+Signalement Fab : le Hall doit comparer tous les joueurs, mais les progressions ne doivent jamais ranger plusieurs pseudos/joueurs comme une seule personne ; Pierre doit rester attaché au joueur sélectionné.
+
+Audit prouvé :
+- `showHallOfFameLevel()` tronquait les résultats avec `.take(10)` ;
+- `HallOfFameEntry` ne portait pas d'identité stable, seulement `playerName` + métriques ;
+- le protocole global possède déjà un objet `metadata`, mais l'APK n'y publiait pas l'identité locale ;
+- `PlayerStatsStore` était déjà correctement séparé par `activeProfileId` ;
+- `ProfessorLifeController` était créé une seule fois au lancement : lors d'un switch de profil, `statsStore` changeait mais le contexte vivant (mastery, momentum, streak, impulsivity...) pouvait continuer depuis le joueur précédent ;
+- la courbe personnelle avait déjà été retirée du classement global, mais aucune sous-progression distante fiable ne pouvait être créée sans identité.
+
+Correction :
+- identité opaque `progressionId` indépendante du pseudo ;
+- metadata globale + Hall local enrichis ;
+- regroupement de progression uniquement par id ;
+- historiques inconnus conservés au classement et exclus des progressions ;
+- aucune déduplication entre deux ids connus différents ;
+- hydratation locale seulement si preuve exacte non ambiguë ;
+- suppression du Top 10 UI et de la limite locale 200 ;
+- sous-progressions séparées par joueur ;
+- stop/recréation/reset de Pierre lors d'une vraie bascule de profil.
+
+Point restant à valider en recette réseau réelle : le contrat de documentation accepte `metadata`; confirmer qu'un nouveau score publié revient bien avec `metadata.playerProfileId` dans `/sync`. Même si un serveur ancien omet metadata, les propres scores exacts du téléphone restent hydratables localement ; les scores distants d'autres joueurs sans id restent volontairement non attribués.
+
+
+### Validation finale technique Hall/progression
+Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f6cfa197e5998. Tests JVM + assemblePhone réussis, Pierre et banque sprites 240p vérifiés. Artefact GeckoDoku-v0.15.45-dev-phone ID 11876601009. APK SHA-256 eec808012b45e21a36a400672b1c50d7b2db41a27df9310db2df30eccef45981.
+La CI valide le code et l'APK. La seule inconnue externe restante est la conservation effective de metadata.playerProfileId par le serveur public réel ; le fallback local non ambigu protège les scores propres au téléphone si un ancien serveur omet ce champ.
+
+## 14/10/2026 — Repères humains trop grand et Pierre masqué par PopupWindow
+
+Retour Fab : à chaque ouverture de Repères humains, nécessité de déplacer/recompacter la fenêtre ; la zone titre + outils comporte trop de hauteur. Autre règle : quand Pierre parle, il doit passer momentanément devant puis rendre le premier plan aux outils précédemment visibles.
+
+Audit :
+- Repères avait une hauteur fixe 92 dp ; header 36 dp + zone outils 54 dp ;
+- position recalculée à chaque création mais jamais persistée ;
+- clavier, Repères et Aide sont des `PopupWindow`, donc ils peuvent masquer les vues Pierre de l'Activity même si `bringToFront()` est appelé dans la hiérarchie normale.
+
+Correction :
+- hauteur canonique 78 dp ; header 34 dp, outils 44 dp ;
+- placement calculé depuis `sudokuBoard` mesuré ;
+- géométrie Repères persistée ;
+- stratégie de foreground sans destruction : pendant la parole, PopupWindow déplacés hors écran avec clipping temporairement désactivé ; à la fin, restauration exacte.
+
+Risque à valider téléphone : comportement constructeur Android du déplacement offscreen des PopupWindow. La CI ne peut valider que compilation/tests ; la recette Samsung doit confirmer visuellement l'absence de clignotement et le retour exact.
+
+
+### Validation finale Repères compact / calques Pierre
+Run `38537609942` / #522 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11880727507`, APK SHA-256 `3f6dbba028b4bbb793ed16cbf3a9bd3eb237f36963c4e9fd8a292da21fed911c`.
+La CI valide code/tests/build ; la recette Samsung doit confirmer que Pierre apparaît réellement devant puis que les trois fenêtres reprennent exactement leur place.
+
+## 14/10/2026 — Clavier/Repères flottants bornés hors zone navigation Samsung
+
+Capture Fab Android 16 : barre de navigation à trois boutons au bas ; pavé Sudoku redimensionnable et fenêtre Repères glissable ne tenaient pas compte des bornes réellement accessibles ; une partie des outils Repères était horizontalement défilée. Cause relue dans `MainActivity.kt` : coordonnées `PopupWindow` calculées avec `screenRoot.height`, sans intersection explicite avec `WindowInsets` de navigation (alors que la grille utilise `protectFromSystemBars`). En outre certaines positions plateau étaient dérivées de coordonnées root-local plutôt que fenêtre.
+
+Correction mission `GECKO-SUDOKU-SYSTEM-BARS-005` : borne commune decor/root/insets, positions `getLocationInWindow`, drag+resize+placement bas-centre re-clampés, suivi des fenêtres déjà ouvertes lors d'un changement d'insets, reprise de Pierre intacte. Tests JVM ajoutés, **validation CI et Samsung non encore effectuées à cette note**. La ligne d'outils Repères reste horizontalement scrollable. Aucun merge ni Release.
+
+## 14/10/2026 — Projection humaine dessine une croix à tort (mission 006)
+
+Capture Fab : sur un 1 marqué dans la grille, la projection manuelle trace ligne et colonne alors que l'observation d'un alignement horizontal n'impose qu'une ligne ; vertical → colonne. La croix n'est légitime que pour une hypothèse posée. Audit : `SudokuValueOverlayView.drawManualPlayerAnnotations()` avait deux `canvas.drawLine` inconditionnels ; MainActivity annonçait explicitement « croix ligne-colonne ».
+
+Correction : politique pure `SudokuManualProjectionPolicy.axesFor` séparant repères d'un même chiffre (1 axe selon voisins, horizontal par défaut) des `hypothesisAt` (2 axes), dessin discret, messages conformes. Six tests spécialisés ajoutés. Aucun changement des notes ni du solveur. CI et recette réelle encore à valider ; ne pas confondre code poussé avec APK testé.
+
+## 14/10/2026 — Intro masquée par Repères + pavé sur lignes du bas (PUSH 007/008)
+
+Deux captures Samsung successives :
+1. Une vidéo d'introduction Gecko affichée plein écran est recouverte par le PopupWindow « Repères humains ». Source : `refreshSudokuUi()` postait l'ouverture sans vérifier la phase de l'intro ; le mode Sudoku sauvegardé présentait déjà un plateau sous la vidéo. Fix 007 : nouvelle politique d'admissibilité et vérification au moment de l'ouverture ; relance après intro/saut et quand Pierre cesse de parler.
+2. En jeu, Repères est au-dessus du plateau mais le pavé Sudoku bas-centre en masque la dernière rangée. Source : limitation du PopupWindow aux boutons Android uniquement, sans considérer le bas de la grille. Fix 008 : dock sous le plateau mesuré, réduction de la hauteur, déplacement et resize bornés à ce dock, recalage lors du layout.
+
+Tests purs ajoutés. Pas de refonte du gameplay, de Pierre ou du rendu du Sudoku. **La preuve CI et les essais réels sur Samsung restent à confirmer** ; attention à la place physiquement insuffisante en paysage ou très petit écran.
+
+### Preuve CI Samsung 007/008 — run #525
+Validation finale après les missions 007 et 008 : run [#525](https://github.com/greenpower2669/GeckoDoku/actions/runs/38587086273), workflow 38587086273 **GREEN**, commit de build `eee5347f52602ccbc91d1359aeacb161c427d9f1`. `testDebugUnitTest + assemblePhone` réussis ; vérification Pierre Sherpa/Piper et banque sprites 240p réussie. Artefact `GeckoDoku-v0.15.45-dev-phone` ID `11905448115` ; APK `GeckoDoku-v0.15.45-dev.apk` SHA-256 `23506e3a310401dcf4016c5544324913d9670bb54b70ce439da6b8356effcb51`, contrôlé après extraction. La recette Samsung demeure nécessaire. Aucun merge main / Release / Play.
+
+## Preuve GitHub — APK direct #525 (14/10/2026)
+Livraison APK brut run #525 : prérelease temporaire `temp-geckodoku-0.15.45-dev-run-525` créée et vérifiée par l'API GitHub. [Téléchargement direct .apk](https://github.com/greenpower2669/GeckoDoku/releases/download/temp-geckodoku-0.15.45-dev-run-525/GeckoDoku-v0.15.45-dev.apk), 299496421 octets, SHA-256 `23506e3a310401dcf4016c5544324913d9670bb54b70ce439da6b8356effcb51`. Workflow de publication #527 GREEN. La première tentative #526 (403 GitHub) a été corrigée en reprenant la méthode qui fonctionnait : checkout de la branche et création du tag sur le commit déclencheur. Aucun nouveau build Android, aucun merge main ou Release stable. Règle permanente de livraison d'APK direct enregistrée dans la section `Contrat FAB Copilot` d'`ordres-de-mission.md`.
+
+## 14/10/2026 — Pourquoi l'ancien dock ne réduisait pas le pavé (mission 009)
+
+Deux captures Fab : 16:45 grande palette chevauchant lignes 8/9 ; 18:40 disposition manuellement corrigée, palette compacte alignée à droite sous la grille. Erreur vérifiée : la palette était physiquement construite `PopupWindow(..., popupHeight)` AVANT le recalage géométrique `bottomCentered(dock)`. Seules les variables `popupWidth` et `popupHeight` étaient ensuite modifiées, pas l'objet PopupWindow ; `showAtLocation` ouvrait donc sa grande hauteur initiale. De plus, la branche palette déjà ouverte quittait la fonction sans vérifier taille réelle ni position. Fix : calculer compactKeypadBelowBoard avant constructeur, comparer taille physique et rect enregistrés au réemploi et après layout/insets, mise à jour réelle. Tests portrait capture, divergence physique, préservation position. Ne pas confondre GREEN CI avec validation visuelle Samsung.
+
+### CI #528 — test de géométrie ajusté (14/10/2026)
+
+Le premier run de vérification `38603247697` / #528 a compilé le Kotlin puis échoué sur **un unique test parmi 299** : `SudokuFloatingWindowGeometryTest.samsungScreenshotPortraitOpensCompactAtRightBelowCompleteGrid` (hauteur attendue 416 px, ligne 255). Cause précise : `compactKeypadBelowBoard` soustrayait deux fois la marge du bas (une fois comme `margin`, une seconde comme `bottomGap`) et ramenait la hauteur à 415 px. Correction du calcul : une marge haute + le plus grand de la marge basse et du bottomGap ; hauteur attendue 416 avec clavier entièrement sous le plateau. Aucun changement de gameplay.
+
+## 14/10/2026 — Signature Google Play et clé réinitialisée : merge protégé (mission 010)
+
+Deux branches historiques : `feature/play-upload-signing-v1` contient le protocole permanent et `build-play-aab.yml` ; `feature/sudoku-visual-reasoning-v1` est la version jouable 0.15.45-dev/code80 validée Samsung (run #529 GREEN) mais ne possédait pas de chaîne AAB dédiée. Notification Play reçue le 12/10 : nouvelle Upload Key active prévue 20:49 UTC le 14/10, SHA1 `27:AD:62:56:96:53:F9:82:37:F6:92:F7:9B:EA:DB:B8:EB:2E:25:C7`. Risque : utiliser l'ancien certificat du 07/10 et produire un AAB rejeté. Fix : réintégration du workflow et comparaison SHA1 publique, CI stop avant merge/release en cas de mismatch ; le keystore n'est jamais exposé. Vérifier l'acceptation effective côté Google Play séparément.

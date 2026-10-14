@@ -87,6 +87,34 @@ class GlobalHallProjectionTest {
     }
 
     @Test
+    fun `two separate global scores with same pseudo and time remain separate`() {
+        val raw =
+            """{"playerName":"GeckoTétu","mode":"GECKODOKU","difficulty":"EASY","size":5,"completed":true,"stars":5,"elapsedSeconds":42,"completedAt":123456789}"""
+        val a = GlobalScoreCacheEntry(
+            scoreId = "score-profile-a",
+            runId = "run-profile-a",
+            sequence = 1L,
+            receivedAt = 1000L,
+            normalizedJson = raw
+        )
+        val b = GlobalScoreCacheEntry(
+            scoreId = "score-profile-b",
+            runId = "run-profile-b",
+            sequence = 2L,
+            receivedAt = 1001L,
+            normalizedJson = raw
+        )
+        // Les entrées sont légitimement distinctes malgré un rendu identique.
+        assertEquals(
+            2,
+            GlobalHallProjection.merge(
+                local = emptyList(),
+                globalCache = listOf(a, b)
+            ).size
+        )
+    }
+
+    @Test
     fun `invalid or unfinished server rows are ignored`() {
         val invalid =
             GlobalScoreCacheEntry(
@@ -112,4 +140,165 @@ class GlobalHallProjectionTest {
 
         assertTrue(result.isEmpty())
     }
+
+    @Test
+    fun `global metadata carries stable player profile id`() {
+        val cached =
+            GlobalScoreCacheEntry(
+                scoreId =
+                    "score-profile",
+                runId =
+                    "run-profile",
+                sequence =
+                    10L,
+                receivedAt =
+                    1003L,
+                normalizedJson =
+                    """{"playerName":"GeckoTétu","mode":"SUDOKU","difficulty":"EXPERT","size":9,"completed":true,"stars":5,"elapsedSeconds":88,"completedAt":123456790,"metadata":{"playerProfileId":"11111111-1111-4111-8111-111111111111"}}"""
+            )
+
+        val result =
+            GlobalHallProjection
+                .fromCache(
+                    listOf(
+                        cached
+                    )
+                )
+                .single()
+
+        assertEquals(
+            "11111111-1111-4111-8111-111111111111",
+            result.playerProfileId
+        )
+    }
+
+    @Test
+    fun `exact local match can hydrate missing remote profile id without guessing by pseudo`() {
+        val local =
+            HallOfFameEntry(
+                playerName =
+                    "Fab",
+                mode =
+                    GameMode.SUDOKU,
+                size =
+                    9,
+                difficulty =
+                    GameDifficulty.EXPERT,
+                stars =
+                    4,
+                elapsedSeconds =
+                    91L,
+                completedAt =
+                    123456791L,
+                playerProfileId =
+                    "11111111-1111-4111-8111-111111111111"
+            )
+
+        val cached =
+            GlobalScoreCacheEntry(
+                scoreId =
+                    "score-hydrate",
+                runId =
+                    "run-hydrate",
+                sequence =
+                    11L,
+                receivedAt =
+                    1004L,
+                normalizedJson =
+                    """{"playerName":"Fab","mode":"SUDOKU","difficulty":"EXPERT","size":9,"completed":true,"stars":4,"elapsedSeconds":91,"completedAt":123456791}"""
+            )
+
+        val merged =
+            GlobalHallProjection
+                .merge(
+                    local =
+                        listOf(
+                            local
+                        ),
+                    globalCache =
+                        listOf(
+                            cached
+                        )
+                )
+
+        assertEquals(
+            1,
+            merged.size
+        )
+
+        assertEquals(
+            local.playerProfileId,
+            merged.single()
+                .playerProfileId
+        )
+    }
+
+
+    @Test
+    fun `known different profiles with identical visible score are never deduplicated`() {
+        val local =
+            HallOfFameEntry(
+                playerName =
+                    "GeckoTétu",
+                mode =
+                    GameMode.GECKODOKU,
+                size =
+                    5,
+                difficulty =
+                    GameDifficulty.EASY,
+                stars =
+                    5,
+                elapsedSeconds =
+                    42L,
+                completedAt =
+                    123456789L,
+                playerProfileId =
+                    "11111111-1111-4111-8111-111111111111"
+            )
+
+        val cached =
+            GlobalScoreCacheEntry(
+                scoreId =
+                    "score-profile-b",
+                runId =
+                    "run-profile-b",
+                sequence =
+                    12L,
+                receivedAt =
+                    1005L,
+                normalizedJson =
+                    """{"playerName":"GeckoTétu","mode":"GECKODOKU","difficulty":"EASY","size":5,"completed":true,"stars":5,"elapsedSeconds":42,"completedAt":123456789,"metadata":{"playerProfileId":"22222222-2222-4222-8222-222222222222"}}"""
+            )
+
+        val merged =
+            GlobalHallProjection
+                .merge(
+                    local =
+                        listOf(
+                            local
+                        ),
+                    globalCache =
+                        listOf(
+                            cached
+                        )
+                )
+
+        assertEquals(
+            2,
+            merged.size
+        )
+
+        assertTrue(
+            merged.mapNotNull {
+                it.playerProfileId
+            }
+                .containsAll(
+                    listOf(
+                        "11111111-1111-4111-8111-111111111111",
+                        "22222222-2222-4222-8222-222222222222"
+                    )
+                )
+        )
+    }
+
 }

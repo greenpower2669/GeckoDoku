@@ -19,6 +19,8 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.WindowInsets
 import android.widget.Button
+import android.widget.CheckBox
+import android.widget.HorizontalScrollView
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -100,11 +102,66 @@ class MainActivity : Activity() {
     private lateinit var sudokuRedoButton:
         Button
 
+    private lateinit var sudokuVisualToolsButton:
+        Button
+
     private var sudokuPalettePopup:
         PopupWindow? = null
 
+    private var sudokuManualToolsPopup:
+        PopupWindow? = null
+
+    private var sudokuSuperHelpPopup:
+        PopupWindow? = null
+
+    private var sudokuManualToolsGeometry:
+        SudokuFloatingWindowGeometry? = null
+
+    private var sudokuSuperHelpGeometry:
+        SudokuFloatingWindowGeometry? = null
+
+    private var sudokuPaletteGeometry:
+        SudokuFloatingWindowGeometry? = null
+
+    private var sudokuFloatingWindowsSuspendedForProfessor =
+        false
+
     private var sudokuPaletteView:
         SudokuQuickPaletteView? = null
+
+    // Modes visuels : indépendants du solveur, OFF au premier lancement.
+    private var sudokuVisualProjections = false
+    private var sudokuVisualPairs = false
+    private var sudokuVisualTriplets = false
+    private var sudokuVisualBinary = false
+    private var sudokuVisualCandidates = false
+    private var sudokuVisualCircles = false
+    private var sudokuVisualPulse = false
+    private var sudokuSuperHelpArmed = false
+
+    private var sudokuManualTool =
+        SudokuVisualToolMode.NONE
+
+    private var sudokuManualToolsDismissed =
+        false
+
+    private val sudokuManualPendingCells =
+        mutableListOf<Cell>()
+
+    private val sudokuManualProjectionRefs =
+        linkedSetOf<SudokuCandidateRef>()
+
+    private val sudokuManualCandidateRefs =
+        linkedSetOf<SudokuCandidateRef>()
+
+    private val sudokuManualPairGroups =
+        mutableListOf<Set<Cell>>()
+
+    private val sudokuManualTripletGroups =
+        mutableListOf<Set<Cell>>()
+
+    private var sudokuCircleAnchor: SudokuCandidateRef? = null
+    private val sudokuCircleLinks = linkedSetOf<SudokuVisualLink>()
 
     private val sudokuPopupPlacementPolicy =
         SudokuPopupPlacementPolicy()
@@ -476,18 +533,21 @@ class MainActivity : Activity() {
                 }
             }
 
+        playerProfileStore =
+            PlayerProfileStore(this)
+
+        statsStore =
+            PlayerStatsStore(
+                this,
+                playerProfileStore.activeProfileId
+            )
+
         professorLife =
             ProfessorLifeController
                 .create(this)
 
-        statsStore =
-            PlayerStatsStore(this)
-
         journalStore =
             PuzzleJournalStore(this)
-
-        playerProfileStore =
-            PlayerProfileStore(this)
 
         hallOfFameStore =
             HallOfFameStore(this)
@@ -775,7 +835,7 @@ class MainActivity : Activity() {
                     ).snapshot()
                 }
 
-                onCellSelected = {
+                onCellSelected = onSudokuCellSelected@ {
                         cell ->
 
                     sudokuSelectedCell =
@@ -787,6 +847,35 @@ class MainActivity : Activity() {
 
                     sudokuValueOverlay
                         .invalidate()
+
+                    if (sudokuSuperHelpArmed) {
+                        sudokuSuperHelpArmed =
+                            false
+
+                        sudokuPaletteView
+                            ?.setHelpMode(
+                                false
+                            )
+
+                        confirmSudokuSuperHumanHelp(
+                            cell
+                        )
+
+                        return@onSudokuCellSelected
+                    }
+
+                    if (
+                        sudokuManualTool ==
+                            SudokuVisualToolMode.PAIR ||
+                        sudokuManualTool ==
+                            SudokuVisualToolMode.TRIPLET
+                    ) {
+                        handleSudokuManualBoardTap(
+                            cell
+                        )
+
+                        return@onSudokuCellSelected
+                    }
 
                     if (
                         sudokuGesturePolicy
@@ -1090,6 +1179,7 @@ class MainActivity : Activity() {
                             .isInitialized
                     ) {
                         positionFloatingBoard()
+                        reconcileSudokuFloatingWindowsWithSafeBounds()
                     }
                 }
             }
@@ -1742,6 +1832,7 @@ class MainActivity : Activity() {
                 _ ->
 
             positionFloatingBoard()
+            maybeShowSudokuManualToolsAfterIntro()
         }
 
         aliveMascotOverlay =
@@ -3588,6 +3679,10 @@ class MainActivity : Activity() {
             )
         }
 
+        if (selectedGameMode == GameMode.SUDOKU) {
+            fitOpenSudokuPaletteToDock()
+        }
+
         if (
             ::aliveMascotOverlay
                 .isInitialized
@@ -3823,7 +3918,10 @@ class MainActivity : Activity() {
                             0L
                         ),
                     completedAt =
-                        completedAt
+                        completedAt,
+                    playerProfileId =
+                        playerProfileStore
+                            .activeProgressionId
                 )
             )
 
@@ -3832,6 +3930,9 @@ class MainActivity : Activity() {
                     globalScoreRuntime.publisher,
                 playerName =
                     playerProfileStore.playerName,
+                playerProfileId =
+                    playerProfileStore
+                        .activeProgressionId,
                 mode = mode,
                 size = size,
                 difficulty = difficulty,
@@ -4624,9 +4725,25 @@ class MainActivity : Activity() {
                         it.difficulty ==
                             difficulty
                 }
-                .take(
-                    10
+
+        if (
+            entries.isEmpty()
+        ) {
+            AlertDialog.Builder(this)
+                .setTitle(
+                    "🏆 " +
+                        difficulty.label
                 )
+                .setMessage(
+                    "Aucun score pour ce niveau."
+                )
+                .setPositiveButton(
+                    "Fermer",
+                    null
+                )
+                .show()
+            return
+        }
 
         val dateFormat =
             SimpleDateFormat(
@@ -4634,18 +4751,43 @@ class MainActivity : Activity() {
                 Locale.getDefault()
             )
 
+        val progressions =
+            HallPlayerProgressionProjection
+                .groups(
+                    entries
+                )
+
+        val unidentifiedCount =
+            HallPlayerProgressionProjection
+                .unidentifiedCount(
+                    entries
+                )
+
+        val activeProgressionId =
+            playerProfileStore
+                .activeProgressionId
+
         val ranking =
             TextView(this).apply {
-                textSize = 16f
+                textSize =
+                    16f
                 setTextColor(
                     Color.BLACK
                 )
 
                 setPadding(
-                    dp(12),
-                    dp(10),
-                    dp(12),
-                    dp(8)
+                    dp(
+                        12
+                    ),
+                    dp(
+                        10
+                    ),
+                    dp(
+                        12
+                    ),
+                    dp(
+                        8
+                    )
                 )
 
                 text =
@@ -4662,7 +4804,24 @@ class MainActivity : Activity() {
                             difficulty.label
                         )
                         append(
-                            "\n\n"
+                            "\n"
+                        )
+                        append(
+                            entries.size
+                        )
+                        append(
+                            " score"
+                        )
+                        if (
+                            entries.size >
+                                1
+                        ) {
+                            append(
+                                "s"
+                            )
+                        }
+                        append(
+                            " au total\n\n"
                         )
 
                         entries
@@ -4689,6 +4848,15 @@ class MainActivity : Activity() {
                                 append(
                                     entry.playerName
                                 )
+
+                                if (
+                                    entry.playerProfileId ==
+                                        activeProgressionId
+                                ) {
+                                    append(
+                                        "  ◀ moi"
+                                    )
+                                }
 
                                 if (
                                     entry.mode !=
@@ -4734,40 +4902,219 @@ class MainActivity : Activity() {
                     }
             }
 
-        val graph =
-            PlayerStatsTrendView(
-                this
-            ).apply {
-                setData(
-                    difficulty =
-                        difficulty,
-                    events =
-                        statsStore
-                            .eventsForModeAndDifficulty(
-                                mode,
-                                difficulty
-                            )
-                )
-            }
-
         val container =
             LinearLayout(this).apply {
                 orientation =
                     LinearLayout.VERTICAL
 
                 addView(
+                    TextView(
+                        this@MainActivity
+                    ).apply {
+                        text =
+                            "Classement global complet : tous les joueurs restent comparés ici. " +
+                                "Les progressions ci-dessous sont séparées par identité de joueur."
+                        textSize =
+                            16f
+                        setTextColor(
+                            Color.BLACK
+                        )
+                        setPadding(
+                            dp(
+                                12
+                            ),
+                            dp(
+                                12
+                            ),
+                            dp(
+                                12
+                            ),
+                            dp(
+                                6
+                            )
+                        )
+                    }
+                )
+
+                addView(
                     ranking
                 )
 
                 addView(
-                    graph,
-                    LinearLayout.LayoutParams(
-                        LinearLayout
-                            .LayoutParams
-                            .MATCH_PARENT,
-                        dp(340)
-                    )
+                    TextView(
+                        this@MainActivity
+                    ).apply {
+                        text =
+                            "\n📈 Progressions séparées par joueur"
+                        textSize =
+                            18f
+                        setTextColor(
+                            Color.BLACK
+                        )
+                        setPadding(
+                            dp(
+                                12
+                            ),
+                            dp(
+                                8
+                            ),
+                            dp(
+                                12
+                            ),
+                            dp(
+                                4
+                            )
+                        )
+                    }
                 )
+
+                progressions
+                    .forEach {
+                        progression ->
+
+                        addView(
+                            Button(
+                                this@MainActivity
+                            ).apply {
+                                isAllCaps =
+                                    false
+                                textSize =
+                                    15f
+                                minHeight =
+                                    dp(
+                                        52
+                                    )
+
+                                text =
+                                    buildString {
+                                        if (
+                                            progression
+                                                .playerProfileId ==
+                                                activeProgressionId
+                                        ) {
+                                            append(
+                                                "★ "
+                                            )
+                                        }
+
+                                        append(
+                                            progression
+                                                .displayName
+                                        )
+                                        append(
+                                            " • "
+                                        )
+                                        append(
+                                            progression
+                                                .entries
+                                                .size
+                                        )
+                                        append(
+                                            " score"
+                                        )
+
+                                        if (
+                                            progression
+                                                .entries
+                                                .size >
+                                                1
+                                        ) {
+                                            append(
+                                                "s"
+                                            )
+                                        }
+
+                                        if (
+                                            progression
+                                                .knownNames
+                                                .size >
+                                                1
+                                        ) {
+                                            append(
+                                                " • renommé"
+                                            )
+                                        }
+                                    }
+
+                                setOnClickListener {
+                                    showHallPlayerProgression(
+                                        progression =
+                                            progression,
+                                        mode =
+                                            mode,
+                                        difficulty =
+                                            difficulty
+                                    )
+                                }
+                            },
+                            LinearLayout
+                                .LayoutParams(
+                                    LinearLayout
+                                        .LayoutParams
+                                        .MATCH_PARENT,
+                                    LinearLayout
+                                        .LayoutParams
+                                        .WRAP_CONTENT
+                                ).apply {
+                                    topMargin =
+                                        dp(
+                                            4
+                                        )
+                                    leftMargin =
+                                        dp(
+                                            8
+                                        )
+                                    rightMargin =
+                                        dp(
+                                            8
+                                        )
+                                }
+                        )
+                    }
+
+                if (
+                    unidentifiedCount >
+                        0
+                ) {
+                    addView(
+                        TextView(
+                            this@MainActivity
+                        ).apply {
+                            text =
+                                "Historique non attribuable : " +
+                                    unidentifiedCount +
+                                    " score" +
+                                    if (
+                                        unidentifiedCount >
+                                            1
+                                    ) {
+                                        "s"
+                                    } else {
+                                        ""
+                                    } +
+                                    ". Ils restent visibles dans le classement global, mais ne sont ajoutés à aucune progression personnelle."
+                            textSize =
+                                15f
+                            setTextColor(
+                                Color.DKGRAY
+                            )
+                            setPadding(
+                                dp(
+                                    12
+                                ),
+                                dp(
+                                    12
+                                ),
+                                dp(
+                                    12
+                                ),
+                                dp(
+                                    10
+                                )
+                            )
+                        }
+                    )
+                }
             }
 
         val scroll =
@@ -4790,7 +5137,9 @@ class MainActivity : Activity() {
                 null
             )
             .setNeutralButton(
-                "📈 Stats du niveau"
+                "📈 Ma progression • " +
+                    playerProfileStore
+                        .playerName
             ) {
                     _,
                     _ ->
@@ -4801,6 +5150,239 @@ class MainActivity : Activity() {
                 )
             }
             .show()
+    }
+
+    private fun showHallPlayerProgression(
+        progression: HallPlayerProgression,
+        mode: GameMode,
+        difficulty: GameDifficulty
+    ) {
+        val dateFormat =
+            SimpleDateFormat(
+                "dd/MM/yy",
+                Locale.getDefault()
+            )
+
+        val isActiveProfile =
+            progression
+                .playerProfileId ==
+                playerProfileStore
+                    .activeProgressionId
+
+        val summary =
+            TextView(this).apply {
+                textSize =
+                    16f
+                setTextColor(
+                    Color.BLACK
+                )
+                setPadding(
+                    dp(
+                        12
+                    ),
+                    dp(
+                        10
+                    ),
+                    dp(
+                        12
+                    ),
+                    dp(
+                        8
+                    )
+                )
+
+                text =
+                    buildString {
+                        append(
+                            progression
+                                .displayName
+                        )
+
+                        if (
+                            isActiveProfile
+                        ) {
+                            append(
+                                " • profil actif"
+                            )
+                        }
+
+                        append(
+                            "\n"
+                        )
+                        append(
+                            gameModeLabel(
+                                mode
+                            )
+                        )
+                        append(
+                            " • "
+                        )
+                        append(
+                            difficulty.label
+                        )
+                        append(
+                            "\n\n"
+                        )
+
+                        append(
+                            "Scores : "
+                        )
+                        append(
+                            progression
+                                .entries
+                                .size
+                        )
+                        append(
+                            "\nMeilleur : "
+                        )
+                        append(
+                            CompletionRatingPolicy
+                                .symbols(
+                                    progression
+                                        .bestStars
+                                )
+                        )
+                        append(
+                            " • "
+                        )
+                        append(
+                            formatSeconds(
+                                progression
+                                    .bestSeconds
+                            )
+                        )
+                        append(
+                            "\nTemps : "
+                        )
+                        append(
+                            trendShortLabel(
+                                progression
+                                    .speedTrend
+                            )
+                        )
+                        append(
+                            "\nÉtoiles : "
+                        )
+                        append(
+                            trendShortLabel(
+                                progression
+                                    .starTrend
+                            )
+                        )
+
+                        if (
+                            progression
+                                .knownNames
+                                .size >
+                                1
+                        ) {
+                            append(
+                                "\n\nPseudos connus : "
+                            )
+                            append(
+                                progression
+                                    .knownNames
+                                    .joinToString(
+                                        " → "
+                                    )
+                            )
+                        }
+
+                        append(
+                            "\n\nHistorique chronologique :\n"
+                        )
+
+                        progression
+                            .entries
+                            .forEachIndexed {
+                                    index,
+                                    entry ->
+
+                                append(
+                                    index +
+                                        1
+                                )
+                                append(
+                                    ". "
+                                )
+                                append(
+                                    dateFormat.format(
+                                        Date(
+                                            entry.completedAt
+                                        )
+                                    )
+                                )
+                                append(
+                                    " • "
+                                )
+                                append(
+                                    entry.playerName
+                                )
+                                append(
+                                    " • "
+                                )
+                                append(
+                                    CompletionRatingPolicy
+                                        .symbols(
+                                            entry.stars
+                                        )
+                                )
+                                append(
+                                    " • "
+                                )
+                                append(
+                                    formatSeconds(
+                                        entry.elapsedSeconds
+                                    )
+                                )
+                                append(
+                                    "\n"
+                                )
+                            }
+                    }
+            }
+
+        val scroll =
+            ScrollView(this).apply {
+                addView(
+                    summary
+                )
+            }
+
+        val builder =
+            AlertDialog.Builder(this)
+                .setTitle(
+                    "📈 Progression • " +
+                        progression
+                            .displayName
+                )
+                .setView(
+                    scroll
+                )
+                .setPositiveButton(
+                    "Fermer",
+                    null
+                )
+
+        if (
+            isActiveProfile
+        ) {
+            builder.setNeutralButton(
+                "Mes stats détaillées"
+            ) {
+                    _,
+                    _ ->
+
+                showDifficultyStats(
+                    difficulty,
+                    mode
+                )
+            }
+        }
+
+        // Pas de narration de Pierre ici pour les autres profils :
+        // le Hall est comparatif, Pierre reste scoppé au profil actif.
+        builder.show()
     }
 
     private fun trendShortLabel(
@@ -4846,6 +5428,140 @@ class MainActivity : Activity() {
                 "pas encore deux parties terminées à comparer."
         }
 
+    /**
+     * Plusieurs personnes sur le même téléphone = plusieurs profils locaux.
+     * Renommer un pseudo ne crée pas un nouveau joueur.
+     */
+    private fun choosePlayerProfile() {
+        val profiles = playerProfileStore.profiles()
+        val labels = profiles.map {
+            (if (it.id == playerProfileStore.activeProfileId) "✓ " else "") +
+                it.name
+        } + listOf("➕ Nouveau joueur", "✏️ Renommer ce profil")
+
+        AlertDialog.Builder(this)
+            .setTitle("👤 Profils locaux • progressions séparées")
+            .setMessage(
+                "Choisis un profil pour ses propres statistiques. " +
+                    "Le Hall of Fame reste un classement global."
+            )
+            .setItems(labels.toTypedArray()) { _, position ->
+                when (position) {
+                    profiles.size -> createPlayerProfile()
+                    profiles.size + 1 -> editPlayerName()
+                    else -> {
+                        val profile = profiles[position]
+                        switchPlayerProfile(profile.id)
+                    }
+                }
+            }
+            .setNegativeButton("Fermer", null)
+            .show()
+    }
+
+    /**
+     * Changer de personne exige une nouvelle partie : jamais attribuer la
+     * fin d'une grille déjà commencée au nouveau joueur.
+     */
+    private fun changeProfileSafely(action: () -> Unit) {
+        if (!statsStore.hasActiveAttempt()) {
+            action()
+            return
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Changer de joueur ?")
+            .setMessage(
+                "La partie en cours appartient au joueur actuel. " +
+                    "Elle sera abandonnée, puis une nouvelle partie de " +
+                    "même mode commencera pour le prochain joueur."
+            )
+            .setPositiveButton("Changer et recommencer") { _, _ ->
+                statsStore.abandonActiveAttempt()
+                action()
+                replayCurrentPuzzle()
+            }
+            .setNegativeButton("Annuler", null)
+            .show()
+    }
+
+    private fun switchPlayerProfile(id: String) {
+        if (id == playerProfileStore.activeProfileId) return
+        changeProfileSafely {
+            if (playerProfileStore.activateProfile(id)) {
+                statsStore =
+                    PlayerStatsStore(
+                        this,
+                        id
+                    )
+                professorSpeech.stop(
+                    reason =
+                        SpeechStopReason
+                            .PUZZLE_RESET,
+                    caller =
+                        "switchPlayerProfile"
+                )
+                professorLife =
+                    ProfessorLifeController
+                        .create(this)
+                clearProfessorSession()
+                resetProfessorAmbientState()
+                status.text =
+                    "Profil actif : " +
+                        playerProfileStore
+                            .playerName
+            }
+        }
+    }
+
+    private fun createPlayerProfile() {
+        val input = EditText(this).apply {
+            hint = "Pseudo du nouveau joueur"
+            setSingleLine(true)
+            contentDescription = "Nom du nouveau profil"
+        }
+        AlertDialog.Builder(this)
+            .setTitle("➕ Nouveau joueur")
+            .setMessage(
+                "Le nouveau profil aura ses propres statistiques, " +
+                    "même s'il choisit un pseudo déjà utilisé."
+            )
+            .setView(input)
+            .setPositiveButton("Créer") { _, _ ->
+                val name = input.text?.toString().orEmpty().trim()
+                if (name.isBlank()) return@setPositiveButton
+                changeProfileSafely {
+                    val profile =
+                        playerProfileStore
+                            .createProfile(
+                                name
+                            )
+                    statsStore =
+                        PlayerStatsStore(
+                            this,
+                            profile.id
+                        )
+                    professorSpeech.stop(
+                        reason =
+                            SpeechStopReason
+                                .PUZZLE_RESET,
+                        caller =
+                            "createPlayerProfile"
+                    )
+                    professorLife =
+                        ProfessorLifeController
+                            .create(this)
+                    clearProfessorSession()
+                    resetProfessorAmbientState()
+                    status.text =
+                        "Nouveau profil : " +
+                            profile.name
+                }
+            }
+            .setNegativeButton("Annuler", null)
+            .show()
+    }
+
     private fun editPlayerName() {
         val input =
             EditText(this).apply {
@@ -4861,10 +5577,10 @@ class MainActivity : Activity() {
 
         AlertDialog.Builder(this)
             .setTitle(
-                "Nom du joueur"
+                "Choisir mon pseudo"
             )
             .setMessage(
-                "Ce nom sera utilisé pour les nouveaux résultats du Hall of Fame."
+                "Ce pseudo sera affiché pour tes nouveaux résultats du Hall of Fame. Ton profil local et tes statistiques restent les mêmes."
             )
             .setView(input)
             .setPositiveButton(
@@ -5681,6 +6397,14 @@ class MainActivity : Activity() {
         } else {
             cancelProfessorIdleAnimation()
         }
+
+        // Do not open any floating controls while intro media still covers
+        // the grid. The posted callback sees the final overlay state.
+        if (introPhase == IntroPhase.DONE &&
+            ::screenRoot.isInitialized
+        ) {
+            screenRoot.post { maybeShowSudokuManualToolsAfterIntro() }
+        }
     }
 
     private fun positionTitleIdentity() {
@@ -6098,6 +6822,38 @@ class MainActivity : Activity() {
             " s"
     }
 
+    /** Keep visible Sudoku PopupWindows inside the available system-safe region. */
+    private fun reconcileSudokuFloatingWindowsWithSafeBounds() {
+        if (!::screenRoot.isInitialized ||
+            selectedGameMode != GameMode.SUDOKU ||
+            sudokuFloatingWindowsSuspendedForProfessor ||
+            screenRoot.width <= 0 || screenRoot.height <= 0
+        ) return
+        val bounds = sudokuPopupSafeBounds()
+        fun reconcile(
+            popup: PopupWindow?,
+            geometry: SudokuFloatingWindowGeometry?,
+            minWidth: Int, minHeight: Int,
+            limits: SudokuFloatingWindowBounds = bounds
+        ): SudokuFloatingWindowGeometry? {
+            if (popup?.isShowing != true || geometry == null) return geometry
+            val fixed = SudokuFloatingWindowGeometryPolicy.clampToBounds(
+                geometry, limits, minWidth, minHeight, dp(4)
+            )
+            if (geometry != fixed) {
+                popup.update(fixed.x, fixed.y, fixed.width, fixed.height)
+            }
+            return fixed
+        }
+        sudokuManualToolsGeometry = reconcile(
+            sudokuManualToolsPopup, sudokuManualToolsGeometry, dp(280), dp(72)
+        )
+        sudokuSuperHelpGeometry = reconcile(
+            sudokuSuperHelpPopup, sudokuSuperHelpGeometry, dp(280), dp(80)
+        )
+        fitOpenSudokuPaletteToDock()
+    }
+
     private fun protectFromSystemBars(
         root: LinearLayout
     ) {
@@ -6133,6 +6889,7 @@ class MainActivity : Activity() {
                 ) {
                     view.post {
                         positionFloatingBoard()
+                        reconcileSudokuFloatingWindowsWithSafeBounds()
                     }
                 }
             } else {
@@ -6163,6 +6920,7 @@ class MainActivity : Activity() {
                 ) {
                     view.post {
                         positionFloatingBoard()
+                        reconcileSudokuFloatingWindowsWithSafeBounds()
                     }
                 }
             }
@@ -6292,6 +7050,21 @@ class MainActivity : Activity() {
                 }
             }
 
+        sudokuVisualToolsButton =
+            Button(this).apply {
+                text = "✎ Repères"
+                textSize = 14f
+                minHeight = dp(40)
+                contentDescription =
+                    "Ouvrir les repères visuels manuels"
+
+                setOnClickListener {
+                    sudokuManualToolsDismissed =
+                        false
+                    showSudokuManualToolsPopup()
+                }
+            }
+
         return LinearLayout(this).apply {
             orientation =
                 LinearLayout.HORIZONTAL
@@ -6307,6 +7080,15 @@ class MainActivity : Activity() {
 
             addView(
                 sudokuRedoButton,
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1f
+                )
+            )
+
+            addView(
+                sudokuVisualToolsButton,
                 LinearLayout.LayoutParams(
                     0,
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -6498,6 +7280,18 @@ class MainActivity : Activity() {
         sudokuProfessorInteractionPolicy
             .invalidate()
         dismissSudokuPalette()
+        dismissSudokuSuperHelpPopup()
+
+        val manualToolsWereDismissed =
+            sudokuManualToolsDismissed
+
+        dismissSudokuManualToolsPopup(
+            keepAvailable =
+                true
+        )
+
+        sudokuManualToolsDismissed =
+            manualToolsWereDismissed
 
         if (
             ::sudokuValueOverlay
@@ -9785,6 +10579,38 @@ class MainActivity : Activity() {
         sudokuProfessorInteractionPolicy
             .invalidate()
         dismissSudokuPalette()
+        dismissSudokuSuperHelpPopup()
+        dismissSudokuManualToolsPopup(
+            keepAvailable =
+                true
+        )
+
+        sudokuSuperHelpArmed =
+            false
+        sudokuManualToolsDismissed =
+            false
+        sudokuManualTool =
+            SudokuVisualToolMode.NONE
+
+        sudokuVisualProjections =
+            false
+        sudokuVisualPairs =
+            false
+        sudokuVisualTriplets =
+            false
+        sudokuVisualBinary =
+            false
+        sudokuVisualCandidates =
+            false
+        sudokuVisualCircles =
+            false
+        sudokuVisualPulse =
+            false
+
+        clearSudokuManualAnnotations(
+            announce =
+                false
+        )
 
         if (
             ::sudokuValueOverlay
@@ -9792,6 +10618,28 @@ class MainActivity : Activity() {
         ) {
             sudokuValueOverlay
                 .clearProfessorCandidates()
+
+            sudokuValueOverlay
+                .showVisualProjections =
+                false
+            sudokuValueOverlay
+                .showVisualPairs =
+                false
+            sudokuValueOverlay
+                .showVisualTriplets =
+                false
+            sudokuValueOverlay
+                .showVisualBinary =
+                false
+            sudokuValueOverlay
+                .showVisualCandidates =
+                false
+            sudokuValueOverlay
+                .showVisualCircles =
+                false
+            sudokuValueOverlay
+                .animateVisualGroups =
+                false
         }
 
         sudokuPuzzle = next
@@ -9803,6 +10651,11 @@ class MainActivity : Activity() {
 
         sudokuEngine =
             SudokuGameEngine(next)
+        sudokuCircleAnchor = null
+        sudokuCircleLinks.clear()
+        if (::sudokuValueOverlay.isInitialized) {
+            sudokuValueOverlay.playerCircleLinks = emptySet()
+        }
         sudokuSelectedCell = null
         sudokuNotesMode = false
         completionRecorded = false
@@ -9871,6 +10724,35 @@ class MainActivity : Activity() {
         clearProfessorSession()
     }
 
+    private fun canShowSudokuManualTools(): Boolean {
+        if (!::screenRoot.isInitialized || !::sudokuBoard.isInitialized ||
+            professorSpeechActive || sudokuFloatingWindowsSuspendedForProfessor
+        ) {
+            return false
+        }
+        val videoActive = ::richMediaOverlay.isInitialized &&
+            richMediaOverlay.hasActiveKind(RichMediaKind.INTRO)
+        val curtainVisible = ::launchCurtain.isInitialized &&
+            launchCurtain.visibility == View.VISIBLE
+        return SudokuFloatingStartupPolicy.canOpen(
+            sudokuMode = selectedGameMode == GameMode.SUDOKU,
+            introFinished = introPhase == IntroPhase.DONE,
+            introVideoActive = videoActive,
+            launchCurtainVisible = curtainVisible,
+            boardVisible = sudokuBoard.isShown,
+            boardMeasured = sudokuBoard.width > 0 && sudokuBoard.height > 0,
+            dismissed = sudokuManualToolsDismissed
+        )
+    }
+
+    private fun maybeShowSudokuManualToolsAfterIntro() {
+        if (canShowSudokuManualTools() &&
+            sudokuManualToolsPopup?.isShowing != true
+        ) {
+            showSudokuManualToolsPopup()
+        }
+    }
+
     private fun refreshSudokuUi() {
         val sudoku =
             sudokuPuzzle
@@ -9917,6 +10799,10 @@ class MainActivity : Activity() {
             "🧑‍🏫 Prof Gecko"
         professorButton.isEnabled =
             true
+
+        if (::screenRoot.isInitialized) {
+            screenRoot.post { maybeShowSudokuManualToolsAfterIntro() }
+        }
     }
 
     private fun applyGameModeVisibility() {
@@ -10103,6 +10989,7 @@ class MainActivity : Activity() {
         ) {
             screenRoot.post {
                 positionFloatingBoard()
+                maybeShowSudokuManualToolsAfterIntro()
             }
         }
     }
@@ -10869,7 +11756,7 @@ class MainActivity : Activity() {
         fx.blocked()
 
         showProfessorBubble(
-            "Je ne vois pas encore de déduction simple sûre. Vérifie les candidats déjà posés."
+            "Rien ne presse. Je ne vois pas encore de déduction simple et sûre. Regarde d'abord les lignes, les colonnes et les blocs où il reste peu de candidats."
         )
     }
 
@@ -11223,6 +12110,1733 @@ class MainActivity : Activity() {
             .show()
     }
 
+    private fun syncSudokuManualAnnotations() {
+        if (
+            !::sudokuValueOverlay
+                .isInitialized
+        ) {
+            return
+        }
+
+        sudokuValueOverlay
+            .manualProjectionRefs =
+            sudokuManualProjectionRefs
+                .toSet()
+
+        sudokuValueOverlay
+            .manualCandidateRefs =
+            sudokuManualCandidateRefs
+                .toSet()
+
+        sudokuValueOverlay
+            .manualPairGroups =
+            sudokuManualPairGroups
+                .map {
+                    it.toSet()
+                }
+
+        sudokuValueOverlay
+            .manualTripletGroups =
+            sudokuManualTripletGroups
+                .map {
+                    it.toSet()
+                }
+
+        sudokuValueOverlay
+            .manualPendingCells =
+            sudokuManualPendingCells
+                .toSet()
+    }
+
+    private fun clearSudokuManualAnnotations(
+        announce: Boolean = true
+    ) {
+        sudokuManualPendingCells
+            .clear()
+        sudokuManualProjectionRefs
+            .clear()
+        sudokuManualCandidateRefs
+            .clear()
+        sudokuManualPairGroups
+            .clear()
+        sudokuManualTripletGroups
+            .clear()
+
+        syncSudokuManualAnnotations()
+
+        if (announce) {
+            status.text =
+                "Repères graphiques effacés. La grille n'a pas été modifiée."
+        }
+    }
+
+    private fun setSudokuManualTool(
+        mode: SudokuVisualToolMode
+    ) {
+        sudokuManualTool =
+            mode
+        sudokuManualPendingCells
+            .clear()
+        syncSudokuManualAnnotations()
+
+        status.text =
+            when (mode) {
+                SudokuVisualToolMode.NONE ->
+                    "Repères manuels en pause."
+
+                SudokuVisualToolMode.PROJECTION ->
+                    "Projection manuelle : choisis une case et un chiffre dans Candidats. Une ligne par défaut ; deux repères du même chiffre superposés verticalement donnent une colonne. La croix est réservée aux hypothèses."
+
+                SudokuVisualToolMode.PAIR ->
+                    "Couple manuel : touche deux cases du plateau."
+
+                SudokuVisualToolMode.TRIPLET ->
+                    "Triplet manuel : touche trois cases du plateau."
+
+                SudokuVisualToolMode.CANDIDATE ->
+                    "Candidat manuel : touche une case, puis le chiffre dans Candidats."
+            }
+    }
+
+    private fun handleSudokuManualBoardTap(
+        cell: Cell
+    ) {
+        val snapshot =
+            sudokuEngine
+                ?.snapshot()
+                ?: return
+
+        if (
+            snapshot.valueAt(
+                cell
+            ) !=
+                0
+        ) {
+            fx.blocked()
+            status.text =
+                "Ce repère se pose sur une case vide."
+            return
+        }
+
+        val targetSize =
+            when (
+                sudokuManualTool
+            ) {
+                SudokuVisualToolMode.PAIR ->
+                    2
+
+                SudokuVisualToolMode.TRIPLET ->
+                    3
+
+                else ->
+                    return
+            }
+
+        if (
+            cell in
+                sudokuManualPendingCells
+        ) {
+            sudokuManualPendingCells
+                .remove(
+                    cell
+                )
+        } else {
+            sudokuManualPendingCells
+                .add(
+                    cell
+                )
+        }
+
+        if (
+            sudokuManualPendingCells
+                .size >=
+                targetSize
+        ) {
+            val group =
+                sudokuManualPendingCells
+                    .take(
+                        targetSize
+                    )
+                    .toSet()
+
+            if (
+                targetSize ==
+                    2
+            ) {
+                if (
+                    sudokuManualPairGroups
+                        .contains(
+                            group
+                        )
+                ) {
+                    sudokuManualPairGroups
+                        .remove(
+                            group
+                        )
+                    status.text =
+                        "Couple graphique retiré."
+                } else {
+                    sudokuManualPairGroups
+                        .add(
+                            group
+                        )
+                    status.text =
+                        "Couple graphique posé par toi."
+                }
+            } else {
+                if (
+                    sudokuManualTripletGroups
+                        .contains(
+                            group
+                        )
+                ) {
+                    sudokuManualTripletGroups
+                        .remove(
+                            group
+                        )
+                    status.text =
+                        "Triplet graphique retiré."
+                } else {
+                    sudokuManualTripletGroups
+                        .add(
+                            group
+                        )
+                    status.text =
+                        "Triplet graphique posé par toi."
+                }
+            }
+
+            sudokuManualPendingCells
+                .clear()
+        } else {
+            status.text =
+                sudokuManualTool
+                    .label +
+                    " • " +
+                    sudokuManualPendingCells
+                        .size +
+                    " / " +
+                    targetSize +
+                    " case(s) choisie(s)."
+        }
+
+        syncSudokuManualAnnotations()
+    }
+
+    private fun placeSudokuManualDigitMarker(
+        digit: Int
+    ) {
+        val cell =
+            sudokuSelectedCell
+                ?: run {
+                    fx.blocked()
+                    status.text =
+                        "Choisis d'abord une case."
+                    return
+                }
+
+        val snapshot =
+            sudokuEngine
+                ?.snapshot()
+                ?: return
+
+        if (
+            snapshot.valueAt(
+                cell
+            ) !=
+                0
+        ) {
+            fx.blocked()
+            status.text =
+                "Choisis une case vide pour ce repère."
+            return
+        }
+
+        val ref =
+            SudokuCandidateRef(
+                cell =
+                    cell,
+                digit =
+                    digit
+            )
+
+        when (
+            sudokuManualTool
+        ) {
+            SudokuVisualToolMode
+                .PROJECTION -> {
+                if (
+                    !sudokuManualProjectionRefs
+                        .add(
+                            ref
+                        )
+                ) {
+                    sudokuManualProjectionRefs
+                        .remove(
+                            ref
+                        )
+                    status.text =
+                        "Projection manuelle $digit retirée."
+                } else {
+                    val axes = SudokuManualProjectionPolicy.axesFor(
+                        ref, sudokuManualProjectionRefs
+                    )
+                    val direction =
+                        if (SudokuManualProjectionAxis.COLUMN in axes) {
+                            "colonne"
+                        } else {
+                            "ligne"
+                        }
+                    status.text =
+                        "Projection manuelle $digit : axe $direction posé. L'autre axe est réservé aux hypothèses."
+                }
+            }
+
+            SudokuVisualToolMode
+                .CANDIDATE -> {
+                if (
+                    !sudokuManualCandidateRefs
+                        .add(
+                            ref
+                        )
+                ) {
+                    sudokuManualCandidateRefs
+                        .remove(
+                            ref
+                        )
+                    status.text =
+                        "Candidat graphique $digit retiré."
+                } else {
+                    status.text =
+                        "Candidat graphique $digit posé par toi."
+                }
+            }
+
+            else -> {
+                fx.blocked()
+                return
+            }
+        }
+
+        syncSudokuManualAnnotations()
+    }
+
+    private fun confirmSudokuSuperHumanHelp(
+        cell: Cell
+    ) {
+        sudokuSelectedCell =
+            cell
+
+        val joke =
+            "Tu veux vraiment mes yeux de gecko en mode satellite ? Après, ne m'accuse pas de tricher, biloute !"
+
+        speakSimpleProfessorBubble(
+            text =
+                joke,
+            origin =
+                SpeechOrigin
+                    .QUICK_TALK
+        )
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Aide surhumaine"
+            )
+            .setMessage(
+                "Êtes-vous sûr de vouloir une aide de sur-humain ?\n\nPierre : « " +
+                    joke +
+                    " »"
+            )
+            .setPositiveButton(
+                "Oui, j'assume"
+            ) {
+                    _,
+                    _ ->
+
+                showSudokuSuperHelpPopup()
+            }
+            .setNegativeButton(
+                "Non, je garde mon cerveau",
+                null
+            )
+            .show()
+    }
+
+    /**
+     * PopupWindow.showAtLocation uses window coordinates. Intersect the
+     * measured root with the decor safe area so Samsung navigation/status
+     * bars remain untouchable even when Android draws edge-to-edge.
+     */
+    @Suppress("DEPRECATION")
+    private fun sudokuPopupSafeBounds(): SudokuFloatingWindowBounds {
+        val rootPosition = IntArray(2)
+        screenRoot.getLocationInWindow(rootPosition)
+        val decor = window.decorView
+        val insets = screenRoot.rootWindowInsets ?: decor.rootWindowInsets
+
+        val insetLeft: Int
+        val insetTop: Int
+        val insetRight: Int
+        val insetBottom: Int
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val bars = insets?.getInsets(
+                WindowInsets.Type.systemBars() or
+                    WindowInsets.Type.displayCutout()
+            )
+            insetLeft = bars?.left ?: 0
+            insetTop = bars?.top ?: 0
+            insetRight = bars?.right ?: 0
+            insetBottom = bars?.bottom ?: 0
+        } else {
+            insetLeft = insets?.systemWindowInsetLeft ?: 0
+            insetTop = insets?.systemWindowInsetTop ?: 0
+            insetRight = insets?.systemWindowInsetRight ?: 0
+            insetBottom = insets?.systemWindowInsetBottom ?: 0
+        }
+        return SudokuFloatingWindowGeometryPolicy.safeBounds(
+            rootX = rootPosition[0],
+            rootY = rootPosition[1],
+            rootWidth = screenRoot.width,
+            rootHeight = screenRoot.height,
+            windowWidth = decor.width.takeIf { it > 0 }
+                ?: rootPosition[0] + screenRoot.width,
+            windowHeight = decor.height.takeIf { it > 0 }
+                ?: rootPosition[1] + screenRoot.height,
+            insetLeft = insetLeft,
+            insetTop = insetTop,
+            insetRight = insetRight,
+            insetBottom = insetBottom
+        )
+    }
+
+    /** All keypad moves are constrained below the 9×9 board. */
+    private fun sudokuKeyboardDockBounds(): SudokuFloatingWindowBounds {
+        val safe = sudokuPopupSafeBounds()
+        if (!::sudokuBoard.isInitialized ||
+            sudokuBoard.width <= 0 || sudokuBoard.height <= 0
+        ) {
+            return safe
+        }
+        val origin = IntArray(2)
+        sudokuBoard.getLocationInWindow(origin)
+        return SudokuFloatingWindowGeometryPolicy.dockBelowBoard(
+            safe = safe,
+            boardBottom = origin[1] + sudokuBoard.height,
+            gap = dp(4)
+        )
+    }
+
+    /** Synchronize the physical PopupWindow size and its docked geometry. */
+    private fun fitOpenSudokuPaletteToDock() {
+        if (selectedGameMode != GameMode.SUDOKU ||
+            sudokuFloatingWindowsSuspendedForProfessor ||
+            !::sudokuBoard.isInitialized ||
+            sudokuBoard.width <= 0 || sudokuBoard.height <= 0
+        ) return
+        val popup = sudokuPalettePopup ?: return
+        if (!popup.isShowing) return
+        val current = sudokuPaletteGeometry ?: return
+        val fitted = SudokuFloatingWindowGeometryPolicy.clampToBounds(
+            current, sudokuKeyboardDockBounds(),
+            minimumWidth = dp(140), minimumHeight = dp(160), margin = dp(4)
+        )
+        if (SudokuFloatingWindowGeometryPolicy.needsPhysicalUpdate(
+                current, fitted, popup.width, popup.height
+            )
+        ) {
+            popup.update(fitted.x, fitted.y, fitted.width, fitted.height)
+        }
+        sudokuPaletteGeometry = fitted
+    }
+
+    private fun boardRelativeTop(
+        popupHeight: Int,
+        layer: Int
+    ): Int {
+        if (
+            !::screenRoot
+                .isInitialized ||
+            !::sudokuBoard
+                .isInitialized
+        ) {
+            return dp(
+                4
+            )
+        }
+
+        val boardLocation = IntArray(2)
+        sudokuBoard.getLocationInWindow(boardLocation)
+        val boardTop = boardLocation[1]
+
+        return (
+            boardTop -
+                popupHeight *
+                    layer -
+                dp(
+                    4 *
+                        layer
+                )
+            ).coerceAtLeast(
+            dp(
+                4
+            )
+        )
+    }
+
+    private fun defaultSudokuManualToolsGeometry():
+        SudokuFloatingWindowGeometry {
+        val safe = sudokuPopupSafeBounds()
+        val boardLocation = IntArray(2)
+        sudokuBoard.getLocationInWindow(boardLocation)
+        val boardWidth = sudokuBoard.width.takeIf { it > 0 }
+            ?: safe.width - dp(8)
+        // compactAboveBoard operates in safe-area-local coordinates.
+        val local = SudokuFloatingWindowGeometryPolicy.compactAboveBoard(
+            rootWidth = safe.width,
+            rootHeight = safe.height,
+            boardLeft = boardLocation[0] - safe.left,
+            boardTop = boardLocation[1] - safe.top,
+            boardWidth = boardWidth,
+            preferredHeight = dp(78),
+            minimumWidth = dp(280),
+            margin = dp(4),
+            gap = dp(3)
+        )
+        return SudokuFloatingWindowGeometryPolicy.clampToBounds(
+            local.copy(x = local.x + safe.left, y = local.y + safe.top),
+            safe,
+            minimumWidth = dp(280),
+            minimumHeight = dp(72),
+            margin = dp(4)
+        )
+    }
+
+    private fun loadSudokuManualToolsGeometry():
+        SudokuFloatingWindowGeometry {
+        val fallback =
+            defaultSudokuManualToolsGeometry()
+
+        val prefs =
+            getSharedPreferences(
+                "geckodoku_sudoku_floating_windows_v1",
+                MODE_PRIVATE
+            )
+
+        if (
+            !prefs.contains(
+                "manual_x"
+            )
+        ) {
+            return fallback
+        }
+
+        val restored =
+            SudokuFloatingWindowGeometry(
+                x =
+                    prefs.getInt(
+                        "manual_x",
+                        fallback.x
+                    ),
+                y =
+                    prefs.getInt(
+                        "manual_y",
+                        fallback.y
+                    ),
+                width =
+                    prefs.getInt(
+                        "manual_width",
+                        fallback.width
+                    ),
+                height =
+                    prefs.getInt(
+                        "manual_height",
+                        fallback.height
+                    )
+            )
+
+        return SudokuFloatingWindowGeometryPolicy.clampToBounds(
+            geometry = restored,
+            bounds = sudokuPopupSafeBounds(),
+            minimumWidth = dp(280),
+            minimumHeight = dp(72),
+            margin = dp(4)
+        )
+    }
+
+    private fun saveSudokuManualToolsGeometry(
+        geometry: SudokuFloatingWindowGeometry
+    ) {
+        sudokuManualToolsGeometry =
+            geometry
+
+        getSharedPreferences(
+            "geckodoku_sudoku_floating_windows_v1",
+            MODE_PRIVATE
+        )
+            .edit()
+            .putInt(
+                "manual_x",
+                geometry.x
+            )
+            .putInt(
+                "manual_y",
+                geometry.y
+            )
+            .putInt(
+                "manual_width",
+                geometry.width
+            )
+            .putInt(
+                "manual_height",
+                geometry.height
+            )
+            .apply()
+    }
+
+    private fun updateSudokuManualToolsGeometry(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        persist: Boolean
+    ) {
+        val geometry =
+            SudokuFloatingWindowGeometry(
+                x =
+                    x,
+                y =
+                    y,
+                width =
+                    width,
+                height =
+                    height
+            )
+
+        sudokuManualToolsGeometry =
+            geometry
+
+        if (persist) {
+            saveSudokuManualToolsGeometry(
+                geometry
+            )
+        }
+    }
+
+    private fun showSudokuManualToolsPopup() {
+        // Validate again when a deferred layout callback tries to open it.
+        if (!canShowSudokuManualTools()) {
+            return
+        }
+
+        if (
+            screenRoot.width <=
+                0 ||
+            screenRoot.height <=
+                0
+        ) {
+            screenRoot.post {
+                showSudokuManualToolsPopup()
+            }
+            return
+        }
+
+        if (
+            !::sudokuBoard
+                .isInitialized ||
+            sudokuBoard.width <=
+                0 ||
+            sudokuBoard.height <=
+                0
+        ) {
+            sudokuBoard.post {
+                showSudokuManualToolsPopup()
+            }
+            return
+        }
+
+        if (
+            sudokuManualToolsPopup
+                ?.isShowing ==
+                true
+        ) {
+            return
+        }
+
+        sudokuManualToolsDismissed =
+            false
+
+        val initialGeometry =
+            loadSudokuManualToolsGeometry()
+
+        var popupWidth =
+            initialGeometry
+                .width
+
+        var popupHeight =
+            initialGeometry
+                .height
+
+        var popupX =
+            initialGeometry
+                .x
+
+        var popupY =
+            initialGeometry
+                .y
+
+        updateSudokuManualToolsGeometry(
+            x =
+                popupX,
+            y =
+                popupY,
+            width =
+                popupWidth,
+            height =
+                popupHeight,
+            persist =
+                false
+        )
+
+        var popupRef:
+            PopupWindow? =
+            null
+
+        val header =
+            TextView(
+                this
+            ).apply {
+                text =
+                    "✎ Repères humains"
+                textSize =
+                    13.5f
+                contentDescription =
+                    "Repères humains. Glisser cette barre pour déplacer la fenêtre."
+                setTextColor(
+                    Color.WHITE
+                )
+                setBackgroundColor(
+                    Color.rgb(
+                        57,
+                        74,
+                        62
+                    )
+                )
+                gravity =
+                    Gravity.CENTER_VERTICAL
+                setPadding(
+                    dp(
+                        8
+                    ),
+                    0,
+                    dp(
+                        8
+                    ),
+                    0
+                )
+            }
+
+        var lastRawX =
+            0f
+        var lastRawY =
+            0f
+
+        header.setOnTouchListener {
+                _,
+                event ->
+
+            when (
+                event.actionMasked
+            ) {
+                android.view.MotionEvent
+                    .ACTION_DOWN -> {
+                    lastRawX =
+                        event.rawX
+                    lastRawY =
+                        event.rawY
+                    // The window may have been repositioned by insets.
+                    sudokuManualToolsGeometry?.let {
+                        popupX = it.x
+                        popupY = it.y
+                        popupWidth = it.width
+                        popupHeight = it.height
+                    }
+                    true
+                }
+
+                android.view.MotionEvent
+                    .ACTION_MOVE -> {
+                    val dx =
+                        (
+                            event.rawX -
+                                lastRawX
+                            ).toInt()
+                    val dy =
+                        (
+                            event.rawY -
+                                lastRawY
+                            ).toInt()
+
+                    lastRawX =
+                        event.rawX
+                    lastRawY =
+                        event.rawY
+
+                    val constrained = SudokuFloatingWindowGeometryPolicy
+                        .clampToBounds(
+                            SudokuFloatingWindowGeometry(
+                                popupX + dx, popupY + dy,
+                                popupWidth, popupHeight
+                            ),
+                            sudokuPopupSafeBounds(),
+                            minimumWidth = dp(280),
+                            minimumHeight = dp(72),
+                            margin = dp(4)
+                        )
+                    popupX = constrained.x
+                    popupY = constrained.y
+                    popupWidth = constrained.width
+                    popupHeight = constrained.height
+                    popupRef?.update(
+                        popupX, popupY, popupWidth, popupHeight
+                    )
+
+                    updateSudokuManualToolsGeometry(
+                        x =
+                            popupX,
+                        y =
+                            popupY,
+                        width =
+                            popupWidth,
+                        height =
+                            popupHeight,
+                        persist =
+                            false
+                    )
+
+                    true
+                }
+
+                android.view.MotionEvent.ACTION_UP,
+                android.view.MotionEvent.ACTION_CANCEL -> {
+                    updateSudokuManualToolsGeometry(
+                        x =
+                            popupX,
+                        y =
+                            popupY,
+                        width =
+                            popupWidth,
+                        height =
+                            popupHeight,
+                        persist =
+                            true
+                    )
+                    true
+                }
+
+                else ->
+                    false
+            }
+        }
+
+        val close =
+            Button(
+                this
+            ).apply {
+                text =
+                    "×"
+                textSize =
+                    18f
+                minWidth =
+                    dp(
+                        44
+                    )
+                minHeight =
+                    dp(
+                        36
+                    )
+            }
+
+        val headerRow =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+                addView(
+                    header,
+                    LinearLayout.LayoutParams(
+                        0,
+                        dp(
+                            34
+                        ),
+                        1f
+                    )
+                )
+                addView(
+                    close,
+                    LinearLayout.LayoutParams(
+                        dp(
+                            44
+                        ),
+                        dp(
+                            34
+                        )
+                    )
+                )
+            }
+
+        val toolsRow =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+                setPadding(
+                    1,
+                    0,
+                    1,
+                    0
+                )
+            }
+
+        val toolButtons =
+            linkedMapOf<
+                SudokuVisualToolMode,
+                Button
+                >()
+
+        fun refreshToolButtons() {
+            toolButtons
+                .forEach {
+                    (mode, button) ->
+
+                    button.text =
+                        if (
+                            sudokuManualTool ==
+                                mode
+                        ) {
+                            "✓ " +
+                                mode.label
+                        } else {
+                            mode.label
+                        }
+                }
+        }
+
+        listOf(
+            SudokuVisualToolMode
+                .PROJECTION,
+            SudokuVisualToolMode
+                .PAIR,
+            SudokuVisualToolMode
+                .TRIPLET,
+            SudokuVisualToolMode
+                .CANDIDATE
+        ).forEach {
+            mode ->
+
+            val button =
+                Button(
+                    this
+                ).apply {
+                    text =
+                        mode.label
+                    textSize =
+                        13f
+                    minHeight =
+                        dp(
+                            44
+                        )
+                    setOnClickListener {
+                        setSudokuManualTool(
+                            if (
+                                sudokuManualTool ==
+                                    mode
+                            ) {
+                                SudokuVisualToolMode
+                                    .NONE
+                            } else {
+                                mode
+                            }
+                        )
+                        refreshToolButtons()
+                    }
+                }
+
+            toolButtons[
+                mode
+            ] =
+                button
+
+            toolsRow.addView(
+                button
+            )
+        }
+
+        toolsRow.addView(
+            Button(
+                this
+            ).apply {
+                text =
+                    "Effacer"
+                textSize =
+                    13f
+                minHeight =
+                    dp(
+                        44
+                    )
+                setOnClickListener {
+                    clearSudokuManualAnnotations()
+                }
+            }
+        )
+
+        refreshToolButtons()
+
+        val content =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.VERTICAL
+                addView(
+                    headerRow
+                )
+                addView(
+                    HorizontalScrollView(
+                        this@MainActivity
+                    ).apply {
+                        isHorizontalScrollBarEnabled =
+                            false
+                        addView(
+                            toolsRow
+                        )
+                    },
+                    LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams
+                            .MATCH_PARENT,
+                        dp(
+                            44
+                        )
+                    )
+                )
+            }
+
+        val popup =
+            PopupWindow(
+                content,
+                popupWidth,
+                popupHeight,
+                false
+            ).apply {
+                isOutsideTouchable =
+                    false
+
+                if (
+                    android.os.Build.VERSION.SDK_INT >=
+                        android.os.Build.VERSION_CODES.Q
+                ) {
+                    setTouchModal(
+                        false
+                    )
+                }
+
+                setBackgroundDrawable(
+                    ColorDrawable(
+                        Color.WHITE
+                    )
+                )
+
+                elevation =
+                    dp(
+                        12
+                    ).toFloat()
+
+                setOnDismissListener {
+                    if (
+                        sudokuManualToolsPopup ===
+                            this
+                    ) {
+                        sudokuManualToolsPopup =
+                            null
+                        sudokuManualToolsDismissed =
+                            true
+                        setSudokuManualTool(
+                            SudokuVisualToolMode
+                                .NONE
+                        )
+                    }
+                }
+            }
+
+        popupRef =
+            popup
+        sudokuManualToolsPopup =
+            popup
+
+        close.setOnClickListener {
+            updateSudokuManualToolsGeometry(
+                x =
+                    popupX,
+                y =
+                    popupY,
+                width =
+                    popupWidth,
+                height =
+                    popupHeight,
+                persist =
+                    true
+            )
+            popup.dismiss()
+        }
+
+        popup.showAtLocation(
+            screenRoot,
+            Gravity.TOP or
+                Gravity.START,
+            popupX,
+            popupY
+        )
+
+        updateSudokuManualToolsGeometry(
+            x =
+                popupX,
+            y =
+                popupY,
+            width =
+                popupWidth,
+            height =
+                popupHeight,
+            persist =
+                false
+        )
+    }
+
+    private fun showSudokuSuperHelpPopup() {
+        if (
+            selectedGameMode !=
+                GameMode.SUDOKU ||
+            !::screenRoot
+                .isInitialized
+        ) {
+            return
+        }
+
+        if (
+            sudokuSuperHelpPopup
+                ?.isShowing ==
+                true
+        ) {
+            return
+        }
+
+        val safe = sudokuPopupSafeBounds()
+        val initialGeometry = SudokuFloatingWindowGeometryPolicy.clampToBounds(
+            SudokuFloatingWindowGeometry(
+                x = safe.left +
+                    (safe.width - minOf(safe.width - dp(12), dp(470))) / 2,
+                y = boardRelativeTop(
+                    dp(94),
+                    if (sudokuManualToolsPopup?.isShowing == true) 2 else 1
+                ),
+                width = minOf(safe.width - dp(12), dp(470)),
+                height = dp(94)
+            ),
+            safe,
+            minimumWidth = dp(280),
+            minimumHeight = dp(80),
+            margin = dp(4)
+        )
+        val popupWidth = initialGeometry.width
+        val popupHeight = initialGeometry.height
+        var popupX = initialGeometry.x
+        var popupY = initialGeometry.y
+
+        sudokuSuperHelpGeometry =
+            SudokuFloatingWindowGeometry(
+                x =
+                    popupX,
+                y =
+                    popupY,
+                width =
+                    popupWidth,
+                height =
+                    popupHeight
+            )
+
+        var popupRef:
+            PopupWindow? =
+            null
+
+        val header =
+            TextView(
+                this
+            ).apply {
+                text =
+                    "🧠 Aide surhumaine • glisser"
+                textSize =
+                    14f
+                setTextColor(
+                    Color.WHITE
+                )
+                setBackgroundColor(
+                    Color.rgb(
+                        88,
+                        65,
+                        98
+                    )
+                )
+                gravity =
+                    Gravity.CENTER_VERTICAL
+                setPadding(
+                    dp(
+                        8
+                    ),
+                    0,
+                    dp(
+                        8
+                    ),
+                    0
+                )
+            }
+
+        var lastRawX =
+            0f
+        var lastRawY =
+            0f
+
+        header.setOnTouchListener {
+                _,
+                event ->
+
+            when (
+                event.actionMasked
+            ) {
+                android.view.MotionEvent
+                    .ACTION_DOWN -> {
+                    lastRawX =
+                        event.rawX
+                    lastRawY =
+                        event.rawY
+                    sudokuSuperHelpGeometry?.let {
+                        popupX = it.x
+                        popupY = it.y
+                    }
+                    true
+                }
+
+                android.view.MotionEvent
+                    .ACTION_MOVE -> {
+                    val dx =
+                        (
+                            event.rawX -
+                                lastRawX
+                            ).toInt()
+                    val dy =
+                        (
+                            event.rawY -
+                                lastRawY
+                            ).toInt()
+
+                    lastRawX =
+                        event.rawX
+                    lastRawY =
+                        event.rawY
+
+                    val moved = SudokuFloatingWindowGeometryPolicy.clampToBounds(
+                        SudokuFloatingWindowGeometry(
+                            popupX + dx, popupY + dy,
+                            popupWidth, popupHeight
+                        ),
+                        sudokuPopupSafeBounds(),
+                        minimumWidth = dp(280),
+                        minimumHeight = dp(80),
+                        margin = dp(4)
+                    )
+                    popupX = moved.x
+                    popupY = moved.y
+                    popupRef?.update(popupX, popupY, -1, -1)
+
+                    sudokuSuperHelpGeometry =
+                        SudokuFloatingWindowGeometry(
+                            x =
+                                popupX,
+                            y =
+                                popupY,
+                            width =
+                                popupWidth,
+                            height =
+                                popupHeight
+                        )
+
+                    true
+                }
+
+                else ->
+                    false
+            }
+        }
+
+        val close =
+            Button(
+                this
+            ).apply {
+                text =
+                    "×"
+                textSize =
+                    18f
+                minWidth =
+                    dp(
+                        44
+                    )
+                minHeight =
+                    dp(
+                        36
+                    )
+            }
+
+        val headerRow =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+                addView(
+                    header,
+                    LinearLayout.LayoutParams(
+                        0,
+                        dp(
+                            36
+                        ),
+                        1f
+                    )
+                )
+                addView(
+                    close,
+                    LinearLayout.LayoutParams(
+                        dp(
+                            48
+                        ),
+                        dp(
+                            36
+                        )
+                    )
+                )
+            }
+
+        val options =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+                setPadding(
+                    1,
+                    1,
+                    1,
+                    1
+                )
+            }
+
+        fun addAutomaticOption(
+            label: String,
+            initial: Boolean,
+            change:
+                (Boolean) -> Unit
+        ) {
+            val option =
+                CheckBox(
+                    this
+                ).apply {
+                    text =
+                        label
+                    textSize =
+                        14f
+                    isChecked =
+                        initial
+                    minHeight =
+                        dp(
+                            44
+                        )
+                    setPadding(
+                        1,
+                        1,
+                        1,
+                        1
+                    )
+
+                    setOnCheckedChangeListener {
+                        _,
+                        enabled ->
+
+                        change(
+                            enabled
+                        )
+
+                        sudokuValueOverlay
+                            .invalidate()
+
+                        status.text =
+                            "Aide surhumaine • " +
+                                label +
+                                if (
+                                    enabled
+                                ) {
+                                    " activé."
+                                } else {
+                                    " désactivé."
+                                }
+                    }
+                }
+
+            options.addView(
+                option
+            )
+        }
+
+        addAutomaticOption(
+            "Projection",
+            sudokuVisualProjections
+        ) {
+            sudokuVisualProjections =
+                it
+            sudokuValueOverlay
+                .showVisualProjections =
+                it
+        }
+
+        addAutomaticOption(
+            "Couples",
+            sudokuVisualPairs
+        ) {
+            sudokuVisualPairs =
+                it
+            sudokuValueOverlay
+                .showVisualPairs =
+                it
+        }
+
+        addAutomaticOption(
+            "Triplets",
+            sudokuVisualTriplets
+        ) {
+            sudokuVisualTriplets =
+                it
+            sudokuValueOverlay
+                .showVisualTriplets =
+                it
+        }
+
+        addAutomaticOption(
+            "Candidats",
+            sudokuVisualCandidates
+        ) {
+            sudokuVisualCandidates =
+                it
+            sudokuValueOverlay
+                .showVisualCandidates =
+                it
+        }
+
+        addAutomaticOption(
+            "Binaire",
+            sudokuVisualBinary
+        ) {
+            sudokuVisualBinary =
+                it
+            sudokuValueOverlay
+                .showVisualBinary =
+                it
+        }
+
+        addAutomaticOption(
+            "Pulsation",
+            sudokuVisualPulse
+        ) {
+            sudokuVisualPulse =
+                it
+            sudokuValueOverlay
+                .animateVisualGroups =
+                it
+        }
+
+        val content =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.VERTICAL
+                addView(
+                    headerRow
+                )
+                addView(
+                    HorizontalScrollView(
+                        this@MainActivity
+                    ).apply {
+                        isHorizontalScrollBarEnabled =
+                            false
+                        addView(
+                            options
+                        )
+                    },
+                    LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams
+                            .MATCH_PARENT,
+                        dp(
+                            56
+                        )
+                    )
+                )
+            }
+
+        val popup =
+            PopupWindow(
+                content,
+                popupWidth,
+                popupHeight,
+                false
+            ).apply {
+                isOutsideTouchable =
+                    false
+
+                if (
+                    android.os.Build.VERSION.SDK_INT >=
+                        android.os.Build.VERSION_CODES.Q
+                ) {
+                    setTouchModal(
+                        false
+                    )
+                }
+
+                setBackgroundDrawable(
+                    ColorDrawable(
+                        Color.WHITE
+                    )
+                )
+
+                elevation =
+                    dp(
+                        12
+                    ).toFloat()
+
+                setOnDismissListener {
+                    if (
+                        sudokuSuperHelpPopup ===
+                            this
+                    ) {
+                        sudokuSuperHelpPopup =
+                            null
+                    }
+                }
+            }
+
+        popupRef =
+            popup
+        sudokuSuperHelpPopup =
+            popup
+
+        close.setOnClickListener {
+            popup.dismiss()
+        }
+
+        popup.showAtLocation(
+            screenRoot,
+            Gravity.TOP or
+                Gravity.START,
+            popupX,
+            popupY
+        )
+
+        sudokuSuperHelpGeometry =
+            SudokuFloatingWindowGeometry(
+                x =
+                    popupX,
+                y =
+                    popupY,
+                width =
+                    popupWidth,
+                height =
+                    popupHeight
+            )
+    }
+
+    private fun dismissSudokuManualToolsPopup(
+        keepAvailable: Boolean = true
+    ) {
+        val popup =
+            sudokuManualToolsPopup
+
+        sudokuManualToolsPopup =
+            null
+
+        if (
+            popup !=
+                null &&
+            popup.isShowing
+        ) {
+            popup.dismiss()
+        }
+
+        sudokuManualTool =
+            SudokuVisualToolMode.NONE
+        sudokuManualPendingCells
+            .clear()
+        syncSudokuManualAnnotations()
+
+        if (keepAvailable) {
+            sudokuManualToolsDismissed =
+                false
+        }
+    }
+
+    private fun dismissSudokuSuperHelpPopup() {
+        val popup =
+            sudokuSuperHelpPopup
+        sudokuSuperHelpPopup =
+            null
+
+        if (
+            popup !=
+                null &&
+            popup.isShowing
+        ) {
+            popup.dismiss()
+        }
+    }
+
+    /**
+     * En mode Entourer, les touches Candidats sélectionnent un lien,
+     * sans ajouter ni retirer de note au Sudoku.
+     */
+    private fun markSudokuCircleCandidate(
+        digit: Int
+    ) {
+        val cell =
+            sudokuSelectedCell
+                ?: return
+
+        val engine =
+            sudokuEngine
+                ?: return
+
+        val candidates =
+            SudokuVisualReasoning
+                .logicalCandidates(
+                    engine
+                        .snapshot()
+                        .values
+                )[
+                    cell
+                ].orEmpty()
+
+        if (
+            digit !in
+                candidates
+        ) {
+            status.text =
+                "Le $digit n'est pas candidat possible dans cette case."
+
+            sudokuPaletteView
+                ?.setPreviewMessage(
+                    "Entourer : le $digit n'est pas possible dans cette case."
+                )
+
+            return
+        }
+
+        val ref =
+            SudokuCandidateRef(
+                cell,
+                digit
+            )
+
+        val first =
+            sudokuCircleAnchor
+
+        if (
+            first == null ||
+            first.digit !=
+                digit ||
+            first.cell ==
+                cell
+        ) {
+            sudokuCircleAnchor =
+                ref
+
+            val message =
+                "Entourer : $digit choisi. Sélectionne le même candidat dans une autre case."
+
+            status.text =
+                message
+
+            sudokuPaletteView
+                ?.setPreviewMessage(
+                    message
+                )
+
+            return
+        }
+
+        val firstOrder =
+            first.cell.row *
+                9 +
+                first.cell.col
+
+        val nextOrder =
+            cell.row *
+                9 +
+                cell.col
+
+        val link =
+            if (
+                firstOrder <
+                    nextOrder
+            ) {
+                SudokuVisualLink(
+                    first,
+                    ref
+                )
+            } else {
+                SudokuVisualLink(
+                    ref,
+                    first
+                )
+            }
+
+        val message =
+            if (
+                !sudokuCircleLinks
+                    .add(
+                        link
+                    )
+            ) {
+                sudokuCircleLinks
+                    .remove(
+                        link
+                    )
+
+                "Lien $digit retiré."
+            } else {
+                "Lien $digit entouré. C'est un repère visuel, pas une exclusion."
+            }
+
+        status.text =
+            message
+
+        sudokuPaletteView
+            ?.setPreviewMessage(
+                message
+            )
+
+        sudokuCircleAnchor =
+            null
+
+        sudokuValueOverlay
+            .playerCircleLinks =
+            sudokuCircleLinks
+                .toSet()
+    }
+
     private fun showSudokuCellPalette(
         cell: Cell
     ) {
@@ -11254,6 +13868,7 @@ class MainActivity : Activity() {
                 null
         ) {
             refreshSudokuPersistentPalette()
+            fitOpenSudokuPaletteToDock()
 
             status.text =
                 "Sudoku • case " +
@@ -11265,33 +13880,19 @@ class MainActivity : Activity() {
             return
         }
 
-        var popupWidth =
-            minOf(
-                (
-                    screenRoot.width -
-                        dp(16)
-                    ).coerceAtLeast(
-                    dp(280)
-                ),
-                dp(360)
+        // Compute FINAL dimensions before constructing PopupWindow.
+        // Target: compact keyboard below the entire grid, on the right.
+        val openingGeometry =
+            SudokuFloatingWindowGeometryPolicy.compactKeypadBelowBoard(
+                dock = sudokuKeyboardDockBounds(),
+                preferredWidth = dp(315), preferredHeight = dp(225),
+                minimumWidth = dp(240), minimumHeight = dp(160),
+                margin = dp(4), bottomGap = dp(8)
             )
-
-        var popupHeight =
-            minOf(
-                (
-                    screenRoot.height -
-                        dp(24)
-                    ).coerceAtLeast(
-                    dp(320)
-                ),
-                dp(390)
-            )
-
-        var popupX =
-            0
-
-        var popupY =
-            0
+        var popupX = openingGeometry.x
+        var popupY = openingGeometry.y
+        var popupWidth = openingGeometry.width
+        var popupHeight = openingGeometry.height
 
         var popupRef:
             PopupWindow? =
@@ -11340,6 +13941,10 @@ class MainActivity : Activity() {
                 onValueDigit = {
                         digit ->
 
+                    setPreviewMessage(
+                        null
+                    )
+
                     setPendingValue(
                         digit
                     )
@@ -11353,14 +13958,47 @@ class MainActivity : Activity() {
                 onCandidateDigit = {
                         digit ->
 
-                    handleSudokuDigit(
-                        digit,
-                        notesModeOverride =
-                            true
-                    )
+                    when (
+                        sudokuManualTool
+                    ) {
+                        SudokuVisualToolMode
+                            .PROJECTION,
+                        SudokuVisualToolMode
+                            .CANDIDATE ->
+                            placeSudokuManualDigitMarker(
+                                digit
+                            )
+
+                        SudokuVisualToolMode
+                            .PAIR,
+                        SudokuVisualToolMode
+                            .TRIPLET -> {
+                            fx.blocked()
+                            status.text =
+                                "Pour " +
+                                    sudokuManualTool
+                                        .label +
+                                    ", touche directement les cases du plateau."
+                        }
+
+                        SudokuVisualToolMode
+                            .NONE ->
+                            if (
+                                sudokuVisualCircles
+                            ) {
+                                markSudokuCircleCandidate(
+                                    digit
+                                )
+                            } else {
+                                handleSudokuDigit(
+                                    digit,
+                                    notesModeOverride =
+                                        true
+                                )
+                            }
+                    }
 
                     refreshSudokuPersistentPalette()
-
                     sudokuValueOverlay
                         .invalidate()
                 }
@@ -11466,149 +14104,74 @@ class MainActivity : Activity() {
                 onHelpPanel = {
                         panel ->
 
+                    sudokuSuperHelpArmed =
+                        false
+
+                    setHelpMode(
+                        false
+                    )
+
                     speakSudokuPaletteHelp(
                         panel
                     )
+                }
+
+                onHelpModeChanged = {
+                        active ->
+
+                    sudokuSuperHelpArmed =
+                        active
+
+                    status.text =
+                        if (active) {
+                            "Aide armée • touche une zone du pavé, ou touche le plateau pour demander l'aide surhumaine."
+                        } else {
+                            "Aide du pavé désactivée."
+                        }
                 }
 
                 onClose = {
                     dismissSudokuPalette()
                 }
 
-                onDragDelta = {
-                        dx,
-                        dy ->
-
-                    val maxX =
-                        (
-                            screenRoot.width -
-                                popupWidth -
-                                dp(4)
-                            )
-                            .coerceAtLeast(
-                                dp(4)
-                            )
-
-                    val maxY =
-                        (
-                            screenRoot.height -
-                                popupHeight -
-                                dp(4)
-                            )
-                            .coerceAtLeast(
-                                dp(4)
-                            )
-
-                    popupX =
-                        (
-                            popupX +
-                                dx.toInt()
-                            )
-                            .coerceIn(
-                                dp(4),
-                                maxX
-                            )
-
-                    popupY =
-                        (
-                            popupY +
-                                dy.toInt()
-                            )
-                            .coerceIn(
-                                dp(4),
-                                maxY
-                            )
-
-                    popupRef
-                        ?.update(
-                            popupX,
-                            popupY,
-                            -1,
-                            -1
-                        )
+                onDragDelta = { dx, dy ->
+                    sudokuPaletteGeometry?.let {
+                        popupX = it.x; popupY = it.y
+                        popupWidth = it.width; popupHeight = it.height
+                    }
+                    val moved = SudokuFloatingWindowGeometryPolicy.clampToBounds(
+                        SudokuFloatingWindowGeometry(
+                            popupX + dx.toInt(), popupY + dy.toInt(),
+                            popupWidth, popupHeight
+                        ), sudokuKeyboardDockBounds(), dp(140), dp(160), dp(4)
+                    )
+                    popupX = moved.x; popupY = moved.y
+                    popupWidth = moved.width; popupHeight = moved.height
+                    popupRef?.update(popupX, popupY, popupWidth, popupHeight)
+                    sudokuPaletteGeometry = moved
                 }
 
-                onResizeDelta = {
-                        dx,
-                        dy ->
-
-                    val minWidth =
-                        dp(140)
-
-                    val minHeight =
-                        dp(160)
-
-                    val maxWidth =
-                        (
-                            screenRoot.width -
-                                dp(8)
-                            )
-                            .coerceAtLeast(
-                                minWidth
-                            )
-
-                    val maxHeight =
-                        (
-                            screenRoot.height -
-                                dp(8)
-                            )
-                            .coerceAtLeast(
-                                minHeight
-                            )
-
-                    popupWidth =
-                        (
-                            popupWidth +
-                                dx.toInt()
-                            )
-                            .coerceIn(
-                                minWidth,
-                                maxWidth
-                            )
-
-                    popupHeight =
-                        (
-                            popupHeight +
-                                dy.toInt()
-                            )
-                            .coerceIn(
-                                minHeight,
-                                maxHeight
-                            )
-
-                    popupX =
-                        popupX.coerceIn(
-                            dp(4),
-                            (
-                                screenRoot.width -
-                                    popupWidth -
-                                    dp(4)
-                                )
-                                .coerceAtLeast(
-                                    dp(4)
-                                )
-                        )
-
-                    popupY =
-                        popupY.coerceIn(
-                            dp(4),
-                            (
-                                screenRoot.height -
-                                    popupHeight -
-                                    dp(4)
-                                )
-                                .coerceAtLeast(
-                                    dp(4)
-                                )
-                        )
-
-                    popupRef
-                        ?.update(
-                            popupX,
-                            popupY,
-                            popupWidth,
-                            popupHeight
-                        )
+                onResizeDelta = { dx, dy ->
+                    sudokuPaletteGeometry?.let {
+                        popupX = it.x; popupY = it.y
+                        popupWidth = it.width; popupHeight = it.height
+                    }
+                    val dock = sudokuKeyboardDockBounds()
+                    val maxWidth = (dock.width - dp(8)).coerceAtLeast(1)
+                    val maxHeight = (dock.height - dp(8)).coerceAtLeast(1)
+                    val width = (popupWidth + dx.toInt()).coerceIn(
+                        dp(140).coerceAtMost(maxWidth), maxWidth
+                    )
+                    val height = (popupHeight + dy.toInt()).coerceIn(
+                        dp(160).coerceAtMost(maxHeight), maxHeight
+                    )
+                    val resized = SudokuFloatingWindowGeometryPolicy.bottomCentered(
+                        dock, width, height, dp(140), dp(160), dp(4), dp(8)
+                    )
+                    popupX = resized.x; popupY = resized.y
+                    popupWidth = resized.width; popupHeight = resized.height
+                    popupRef?.update(popupX, popupY, popupWidth, popupHeight)
+                    sudokuPaletteGeometry = resized
                 }
             }
 
@@ -11617,9 +14180,14 @@ class MainActivity : Activity() {
 
         refreshSudokuPersistentPalette()
 
+        // Les aides automatiques et les repères manuels vivent désormais
+        // dans leurs propres fenêtres flottantes, indépendantes du clavier.
+        val popupContent: View =
+            palette
+
         val popup =
             PopupWindow(
-                palette,
+                popupContent,
                 popupWidth,
                 popupHeight,
                 false
@@ -11663,74 +14231,7 @@ class MainActivity : Activity() {
         popupRef =
             popup
 
-        val rootLocation =
-            IntArray(2)
-
-        val boardLocation =
-            IntArray(2)
-
-        screenRoot.getLocationOnScreen(
-            rootLocation
-        )
-
-        sudokuBoard
-            .getLocationOnScreen(
-                boardLocation
-            )
-
-        val cellRect =
-            sudokuBoard
-                .cellRectLocal(
-                    cell
-                )
-
-        val anchor =
-            PixelBox(
-                left =
-                    boardLocation[0] -
-                        rootLocation[0] +
-                        cellRect.left
-                            .toInt(),
-                top =
-                    boardLocation[1] -
-                        rootLocation[1] +
-                        cellRect.top
-                            .toInt(),
-                right =
-                    boardLocation[0] -
-                        rootLocation[0] +
-                        cellRect.right
-                            .toInt(),
-                bottom =
-                    boardLocation[1] -
-                        rootLocation[1] +
-                        cellRect.bottom
-                            .toInt()
-            )
-
-        val position =
-            sudokuPopupPlacementPolicy
-                .place(
-                    screenWidth =
-                        screenRoot.width,
-                    screenHeight =
-                        screenRoot.height,
-                    anchor =
-                        anchor,
-                    popupWidth =
-                        popupWidth,
-                    popupHeight =
-                        popupHeight,
-                    margin =
-                        dp(8)
-                )
-
-        popupX =
-            position.x
-
-        popupY =
-            position.y
-
+        // PopupWindow already owns openingGeometry's actual dimensions.
         sudokuPalettePopup =
             popup
 
@@ -11741,6 +14242,18 @@ class MainActivity : Activity() {
             popupX,
             popupY
         )
+
+        sudokuPaletteGeometry =
+            SudokuFloatingWindowGeometry(
+                x =
+                    popupX,
+                y =
+                    popupY,
+                width =
+                    popupWidth,
+                height =
+                    popupHeight
+            )
 
         status.text =
             "Sudoku • pavé persistant • simple ou double clic pour changer de case • ? pour l'aide."
@@ -11821,16 +14334,16 @@ class MainActivity : Activity() {
         val message =
             when (panel) {
                 SudokuPalettePanel.VALUE ->
-                    "Choix sert à proposer la valeur définitive de la case. Je la montre d'abord dans Prévisu, puis tu confirmes Oui ou Non. Tant que tu n'as pas confirmé Oui, la grille n'est pas modifiée."
+                    "Choix : touche le chiffre que tu veux poser. Je le mets d'abord en prévisu. Ensuite tu confirmes tranquillement par Oui ou Non."
 
                 SudokuPalettePanel.CANDIDATE ->
-                    "Candidats sert uniquement à noter des chiffres possibles. Un candidat n'est ni une décision ni une hypothèse. Tu peux en garder plusieurs dans la même case pour préparer ton raisonnement."
+                    "Candidats : note simplement les chiffres encore possibles dans cette case. Ce sont des repères de travail, rien n'est validé."
 
                 SudokuPalettePanel.HYPOTHESIS ->
-                    "Hypothèse sert à explorer un raisonnement provisoire. Chaque branche reçoit une couleur. Une sous-hypothèse devient enfant de la précédente. Si une branche mène à contradiction, elle passe en sens interdit. Revenir en arrière supprime seulement ses descendants."
+                    "Hypothèse : teste une idée sans engager la grille. Garde une branche, observe les repères, et reviens en arrière si elle mène à une contradiction."
 
                 SudokuPalettePanel.PREVIEW ->
-                    "Prévisu protège des erreurs de saisie. Le chiffre choisi y apparaît avant toute validation. Oui l'inscrit réellement dans la grille. Non efface seulement la prévisualisation et laisse la case inchangée."
+                    "Prévisu : regarde une dernière fois ton choix. Oui le pose dans la grille. Non annule seulement ce choix."
             }
 
         status.text =
@@ -11862,6 +14375,8 @@ class MainActivity : Activity() {
         val popup =
             sudokuPalettePopup
 
+        sudokuSuperHelpArmed =
+            false
         sudokuPalettePopup = null
         sudokuPaletteView = null
 
@@ -11950,9 +14465,12 @@ class MainActivity : Activity() {
                         "📚 Journal de grilles"
 
                     SettingsEntry.PLAYER_NAME ->
-                        "👤 Joueur : " +
+                        "✏️ Pseudo : " +
                             playerProfileStore
                                 .playerName
+
+                    SettingsEntry.PLAYER_PROFILE ->
+                        "👥 Profils locaux"
 
                     SettingsEntry.HALL_OF_FAME ->
                         "🏆 Hall of Fame"
@@ -12063,6 +14581,11 @@ class MainActivity : Activity() {
                     SettingsEntry.PLAYER_NAME -> {
                         dialog.dismiss()
                         editPlayerName()
+                    }
+
+                    SettingsEntry.PLAYER_PROFILE -> {
+                        dialog.dismiss()
+                        choosePlayerProfile()
                     }
 
                     SettingsEntry.HALL_OF_FAME -> {
@@ -12491,6 +15014,15 @@ class MainActivity : Activity() {
                             )
 
                     applyProfessorIntroVisibility()
+                    if (introPhase == IntroPhase.DONE &&
+                        ::screenRoot.isInitialized
+                    ) {
+                        // RichMediaOverlay may dispose of its window on the
+                        // following frame after invoking onFinished.
+                        screenRoot.postDelayed(
+                            { maybeShowSudokuManualToolsAfterIntro() }, 120L
+                        )
+                    }
 
                     if (
                         introPhase !=
@@ -12524,6 +15056,13 @@ class MainActivity : Activity() {
                             )
 
                     applyProfessorIntroVisibility()
+                    if (introPhase == IntroPhase.DONE &&
+                        ::screenRoot.isInitialized
+                    ) {
+                        screenRoot.postDelayed(
+                            { maybeShowSudokuManualToolsAfterIntro() }, 120L
+                        )
+                    }
                 }
             )
 
@@ -13799,6 +16338,182 @@ class MainActivity : Activity() {
         scheduleProfessorIdleAnimation()
     }
 
+    private fun suspendSudokuFloatingWindowsForProfessor() {
+        if (
+            selectedGameMode !=
+                GameMode.SUDOKU ||
+            sudokuFloatingWindowsSuspendedForProfessor
+        ) {
+            return
+        }
+
+        val visible =
+            sudokuManualToolsPopup
+                ?.isShowing ==
+                true ||
+            sudokuSuperHelpPopup
+                ?.isShowing ==
+                true ||
+            sudokuPalettePopup
+                ?.isShowing ==
+                true
+
+        if (!visible) {
+            return
+        }
+
+        sudokuFloatingWindowsSuspendedForProfessor =
+            true
+
+        fun moveOffscreen(
+            popup: PopupWindow?,
+            geometry: SudokuFloatingWindowGeometry?
+        ) {
+            if (
+                popup == null ||
+                !popup.isShowing ||
+                geometry ==
+                    null
+            ) {
+                return
+            }
+
+            popup.isClippingEnabled =
+                false
+
+            popup.update(
+                -geometry.width -
+                    dp(
+                        32
+                    ),
+                -geometry.height -
+                    dp(
+                        32
+                    ),
+                geometry.width,
+                geometry.height
+            )
+        }
+
+        moveOffscreen(
+            sudokuManualToolsPopup,
+            sudokuManualToolsGeometry
+        )
+
+        moveOffscreen(
+            sudokuSuperHelpPopup,
+            sudokuSuperHelpGeometry
+        )
+
+        moveOffscreen(
+            sudokuPalettePopup,
+            sudokuPaletteGeometry
+        )
+
+        if (
+            ::professorButtonHost
+                .isInitialized
+        ) {
+            professorButtonHost
+                .bringToFront()
+        }
+
+        if (
+            ::professorPortrait
+                .isInitialized &&
+            professorPortrait.visibility ==
+                View.VISIBLE
+        ) {
+            professorPortrait
+                .bringToFront()
+        }
+
+        if (
+            ::professorVideo
+                .isInitialized &&
+            professorVideo.visibility ==
+                View.VISIBLE
+        ) {
+            professorVideo
+                .bringToFront()
+        }
+
+        if (
+            ::professorBubble
+                .isInitialized &&
+            professorBubble.visibility ==
+                View.VISIBLE
+        ) {
+            professorBubble
+                .bringToFront()
+        }
+
+        if (
+            ::screenRoot
+                .isInitialized
+        ) {
+            screenRoot.invalidate()
+        }
+    }
+
+    private fun restoreSudokuFloatingWindowsAfterProfessor() {
+        if (
+            !sudokuFloatingWindowsSuspendedForProfessor
+        ) {
+            return
+        }
+
+        fun restore(
+            popup: PopupWindow?,
+            geometry: SudokuFloatingWindowGeometry?
+        ) {
+            if (
+                popup == null ||
+                !popup.isShowing ||
+                geometry ==
+                    null
+            ) {
+                return
+            }
+
+            popup.update(
+                geometry.x,
+                geometry.y,
+                geometry.width,
+                geometry.height
+            )
+
+            popup.isClippingEnabled =
+                true
+        }
+
+        restore(
+            sudokuManualToolsPopup,
+            sudokuManualToolsGeometry
+        )
+
+        restore(
+            sudokuSuperHelpPopup,
+            sudokuSuperHelpGeometry
+        )
+
+        restore(
+            sudokuPalettePopup,
+            sudokuPaletteGeometry
+        )
+
+        sudokuFloatingWindowsSuspendedForProfessor =
+            false
+        reconcileSudokuFloatingWindowsWithSafeBounds()
+
+        if (
+            ::screenRoot
+                .isInitialized
+        ) {
+            screenRoot.invalidate()
+        }
+    }
+
     private fun handleProfessorSpeakingChanged(
         speaking: Boolean
     ) {
@@ -13819,6 +16534,8 @@ class MainActivity : Activity() {
             speaking
 
         if (speaking) {
+            suspendSudokuFloatingWindowsForProfessor()
+
             val now =
                 SystemClock
                     .elapsedRealtime()
@@ -13861,6 +16578,11 @@ class MainActivity : Activity() {
                 }
             }
         } else {
+            restoreSudokuFloatingWindowsAfterProfessor()
+            if (::screenRoot.isInitialized) {
+                screenRoot.post { maybeShowSudokuManualToolsAfterIntro() }
+            }
+
             if (
                 professorVisualPreparing ||
                 professorVisualPrepared
@@ -14237,10 +16959,13 @@ class MainActivity : Activity() {
         }
 
         val narration =
-            PlayerStatsNarration.build(
-                statsStore
-                    .professorLevels()
-            )
+            playerProfileStore
+                .playerName +
+                ", " +
+                PlayerStatsNarration.build(
+                    statsStore
+                        .professorLevels()
+                )
 
         speakSimpleProfessorBubble(
             text = narration,

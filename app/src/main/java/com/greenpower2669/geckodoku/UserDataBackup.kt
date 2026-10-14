@@ -17,12 +17,16 @@ class UserDataBackup(
         context.applicationContext
 
     fun exportJson(): String {
+        val names = preferenceNames + PlayerProfileStore(appContext)
+            .profiles()
+            .filter { it.id != PlayerProfileStore.LEGACY_PROFILE_ID }
+            .map { PlayerStatsStore.preferenceNameForProfile(it.id) }
         val preferences =
             JSONObject()
 
         for (
             name in
-            preferenceNames
+            names
         ) {
             val source =
                 appContext
@@ -73,6 +77,29 @@ class UserDataBackup(
                 )
             }
             .toString(2)
+    }
+
+    /**
+     * Reprendre uniquement les fichiers des profils explicitement présents
+     * dans la sauvegarde, jamais les statistiques d'un autre pseudo.
+     */
+    private fun importedProfileStatsNames(container: JSONObject): List<String> {
+        val encoded = container
+            .optJSONObject(PlayerProfileStore.PREFERENCES_NAME)
+            ?.optJSONObject("additional_profiles_v1")
+            ?.optString("value")
+            ?: return emptyList()
+        return runCatching {
+            val profiles = JSONArray(encoded)
+            buildList {
+                for (i in 0 until profiles.length()) {
+                    val id = profiles.optJSONObject(i)?.optString("id") ?: continue
+                    if (id.matches(Regex("[a-f0-9-]{36}"))) {
+                        add(PlayerStatsStore.preferenceNameForProfile(id))
+                    }
+                }
+            }.distinct()
+        }.getOrDefault(emptyList())
     }
 
     fun importJson(
@@ -129,6 +156,10 @@ class UserDataBackup(
                     "La section des données persistantes est absente."
                 )
 
+        val names = (
+            preferenceNames + importedProfileStatsNames(container)
+        ).distinct()
+
         val decoded =
             linkedMapOf<
                 String,
@@ -160,7 +191,7 @@ class UserDataBackup(
         }
 
         val snapshots =
-            preferenceNames
+            names
                 .associateWith {
                     name ->
                     snapshot(
@@ -174,7 +205,7 @@ class UserDataBackup(
 
         for (
             name in
-            preferenceNames
+            names
         ) {
             val prefs =
                 appContext
