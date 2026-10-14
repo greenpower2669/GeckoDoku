@@ -4,7 +4,6 @@ object GlobalScoreCompletionBridge {
     fun publish(
         publisher: GlobalScoreCompletionPublisher,
         playerName: String,
-        playerProfileId: String? = null,
         mode: GameMode,
         size: Int,
         difficulty: GameDifficulty,
@@ -19,7 +18,8 @@ object GlobalScoreCompletionBridge {
         gomokuSnapshot: GomokuSnapshot?,
         gomokuMatchMode: GomokuMatchMode?,
         beeGeckoPuzzle: BeeGeckoPuzzle?,
-        completedAt: Long
+        completedAt: Long,
+        playerProfileId: String? = null
     ): String? {
         val puzzleId: String?
         val seed: Long?
