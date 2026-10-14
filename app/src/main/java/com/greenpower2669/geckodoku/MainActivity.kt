@@ -13216,6 +13216,18 @@ class MainActivity : Activity() {
                 }
             )
 
+        sudokuSuperHelpGeometry =
+            SudokuFloatingWindowGeometry(
+                x =
+                    popupX,
+                y =
+                    popupY,
+                width =
+                    popupWidth,
+                height =
+                    popupHeight
+            )
+
         var popupRef:
             PopupWindow? =
             null
@@ -13339,6 +13351,18 @@ class MainActivity : Activity() {
                             popupY,
                             -1,
                             -1
+                        )
+
+                    sudokuSuperHelpGeometry =
+                        SudokuFloatingWindowGeometry(
+                            x =
+                                popupX,
+                            y =
+                                popupY,
+                            width =
+                                popupWidth,
+                            height =
+                                popupHeight
                         )
 
                     true
@@ -13618,6 +13642,18 @@ class MainActivity : Activity() {
             popupX,
             popupY
         )
+
+        sudokuSuperHelpGeometry =
+            SudokuFloatingWindowGeometry(
+                x =
+                    popupX,
+                y =
+                    popupY,
+                width =
+                    popupWidth,
+                height =
+                    popupHeight
+            )
     }
 
     private fun dismissSudokuManualToolsPopup(
