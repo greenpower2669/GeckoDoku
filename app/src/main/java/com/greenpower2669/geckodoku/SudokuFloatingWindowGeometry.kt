@@ -7,7 +7,95 @@ data class SudokuFloatingWindowGeometry(
     val height: Int
 )
 
+data class SudokuFloatingWindowBounds(
+    val left: Int,
+    val top: Int,
+    val right: Int,
+    val bottom: Int
+) {
+    val width: Int get() = (right - left).coerceAtLeast(0)
+    val height: Int get() = (bottom - top).coerceAtLeast(0)
+}
+
 object SudokuFloatingWindowGeometryPolicy {
+    /**
+     * All coordinates are PopupWindow.showAtLocation(GRAVITY_TOP | START)
+     * window coordinates, never root-view-local coordinates.
+     *
+     * Intersect the measured root with the safe area of the decor window.
+     * This avoids counting system bars twice when Android has already
+     * inset the content view and also works with edge-to-edge layouts.
+     */
+    fun safeBounds(
+        rootX: Int,
+        rootY: Int,
+        rootWidth: Int,
+        rootHeight: Int,
+        windowWidth: Int,
+        windowHeight: Int,
+        insetLeft: Int,
+        insetTop: Int,
+        insetRight: Int,
+        insetBottom: Int
+    ): SudokuFloatingWindowBounds {
+        val left = maxOf(rootX, insetLeft)
+        val top = maxOf(rootY, insetTop)
+        val right = minOf(
+            rootX + rootWidth.coerceAtLeast(0),
+            windowWidth - insetRight
+        ).coerceAtLeast(left)
+        val bottom = minOf(
+            rootY + rootHeight.coerceAtLeast(0),
+            windowHeight - insetBottom
+        ).coerceAtLeast(top)
+        return SudokuFloatingWindowBounds(left, top, right, bottom)
+    }
+
+    fun clampToBounds(
+        geometry: SudokuFloatingWindowGeometry,
+        bounds: SudokuFloatingWindowBounds,
+        minimumWidth: Int,
+        minimumHeight: Int,
+        margin: Int
+    ): SudokuFloatingWindowGeometry {
+        val inset = margin.coerceAtLeast(0)
+        val usableWidth = (bounds.width - inset * 2).coerceAtLeast(1)
+        val usableHeight = (bounds.height - inset * 2).coerceAtLeast(1)
+        // A minimum size can never be larger than the usable screen.
+        val width = geometry.width.coerceIn(
+            minimumWidth.coerceIn(1, usableWidth), usableWidth
+        )
+        val height = geometry.height.coerceIn(
+            minimumHeight.coerceIn(1, usableHeight), usableHeight
+        )
+        val minX = bounds.left + inset
+        val minY = bounds.top + inset
+        return SudokuFloatingWindowGeometry(
+            x = geometry.x.coerceIn(minX, bounds.right - inset - width),
+            y = geometry.y.coerceIn(minY, bounds.bottom - inset - height),
+            width = width,
+            height = height
+        )
+    }
+
+    fun bottomCentered(
+        bounds: SudokuFloatingWindowBounds,
+        width: Int,
+        height: Int,
+        minWidth: Int,
+        minHeight: Int,
+        margin: Int,
+        bottomGap: Int
+    ): SudokuFloatingWindowGeometry {
+        val preferred = SudokuFloatingWindowGeometry(
+            x = bounds.left + (bounds.width - width) / 2,
+            y = bounds.bottom - height - bottomGap,
+            width = width,
+            height = height
+        )
+        return clampToBounds(preferred, bounds, minWidth, minHeight, margin)
+    }
+
     fun compactAboveBoard(
         rootWidth: Int,
         rootHeight: Int,
