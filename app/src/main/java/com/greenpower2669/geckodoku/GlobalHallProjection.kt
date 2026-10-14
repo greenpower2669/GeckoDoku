@@ -18,18 +18,62 @@ object GlobalHallProjection {
         // dans GlobalScoreCacheStore. Ne JAMAIS utiliser le pseudo
         // comme clé unique : deux personnes peuvent porter le même nom
         // et même publier des scores statistiquement identiques.
-        val global = fromCache(globalCache)
-        val remainingLocal = local.toMutableList()
+        val global =
+            fromCache(
+                globalCache
+            )
+        val remainingLocal =
+            local.toMutableList()
 
-        global.forEach { remote ->
-            // Une copie locale correspondante est retirée UNE seule fois.
-            val index = remainingLocal.indexOfFirst {
-                identity(it) == identity(remote)
+        val hydratedGlobal =
+            global.map {
+                remote ->
+
+                // Une copie locale correspondante est retirée UNE seule fois.
+                // Si le serveur historique ne renvoie pas encore metadata,
+                // l'identité locale exacte peut enrichir CE score sans
+                // aucune déduction par pseudo.
+                val index =
+                    remainingLocal
+                        .indexOfFirst {
+                            identity(
+                                it
+                            ) ==
+                                identity(
+                                    remote
+                                )
+                        }
+
+                if (
+                    index <
+                        0
+                ) {
+                    remote
+                } else {
+                    val localMatch =
+                        remainingLocal
+                            .removeAt(
+                                index
+                            )
+
+                    if (
+                        remote.playerProfileId ==
+                            null &&
+                        localMatch.playerProfileId !=
+                            null
+                    ) {
+                        remote.copy(
+                            playerProfileId =
+                                localMatch
+                                    .playerProfileId
+                        )
+                    } else {
+                        remote
+                    }
+                }
             }
-            if (index >= 0) remainingLocal.removeAt(index)
-        }
 
-        return (global + remainingLocal).sortedWith(
+        return (hydratedGlobal + remainingLocal).sortedWith(
             compareBy<HallOfFameEntry> {
                 it.difficulty.ordinal
             }
