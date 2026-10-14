@@ -89,10 +89,10 @@ class HallOfFameStore(
             }
         )
 
+        // Le Hall est un historique comparatif complet : aucune
+        // troncature Top-N dans le stockage local.
         writeObjects(
-            all.take(
-                MAX_ENTRIES
-            )
+            all
         )
     }
 
@@ -268,7 +268,5 @@ class HallOfFameStore(
         private const val KEY_ENTRIES =
             "entries_v1"
 
-        private const val MAX_ENTRIES =
-            200
     }
 }
