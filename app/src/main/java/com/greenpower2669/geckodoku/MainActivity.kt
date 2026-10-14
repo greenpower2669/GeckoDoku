@@ -4707,9 +4707,25 @@ class MainActivity : Activity() {
                         it.difficulty ==
                             difficulty
                 }
-                .take(
-                    10
+
+        if (
+            entries.isEmpty()
+        ) {
+            AlertDialog.Builder(this)
+                .setTitle(
+                    "🏆 " +
+                        difficulty.label
                 )
+                .setMessage(
+                    "Aucun score pour ce niveau."
+                )
+                .setPositiveButton(
+                    "Fermer",
+                    null
+                )
+                .show()
+            return
+        }
 
         val dateFormat =
             SimpleDateFormat(
@@ -4717,18 +4733,43 @@ class MainActivity : Activity() {
                 Locale.getDefault()
             )
 
+        val progressions =
+            HallPlayerProgressionProjection
+                .groups(
+                    entries
+                )
+
+        val unidentifiedCount =
+            HallPlayerProgressionProjection
+                .unidentifiedCount(
+                    entries
+                )
+
+        val activeProgressionId =
+            playerProfileStore
+                .activeProgressionId
+
         val ranking =
             TextView(this).apply {
-                textSize = 16f
+                textSize =
+                    16f
                 setTextColor(
                     Color.BLACK
                 )
 
                 setPadding(
-                    dp(12),
-                    dp(10),
-                    dp(12),
-                    dp(8)
+                    dp(
+                        12
+                    ),
+                    dp(
+                        10
+                    ),
+                    dp(
+                        12
+                    ),
+                    dp(
+                        8
+                    )
                 )
 
                 text =
@@ -4745,7 +4786,24 @@ class MainActivity : Activity() {
                             difficulty.label
                         )
                         append(
-                            "\n\n"
+                            "\n"
+                        )
+                        append(
+                            entries.size
+                        )
+                        append(
+                            " score"
+                        )
+                        if (
+                            entries.size >
+                                1
+                        ) {
+                            append(
+                                "s"
+                            )
+                        }
+                        append(
+                            " au total\n\n"
                         )
 
                         entries
@@ -4772,6 +4830,15 @@ class MainActivity : Activity() {
                                 append(
                                     entry.playerName
                                 )
+
+                                if (
+                                    entry.playerProfileId ==
+                                        activeProgressionId
+                                ) {
+                                    append(
+                                        "  ◀ moi"
+                                    )
+                                }
 
                                 if (
                                     entry.mode !=
@@ -4817,29 +4884,219 @@ class MainActivity : Activity() {
                     }
             }
 
-        // Un classement global regroupe plusieurs joueurs.
-        // Ne jamais placer la courbe du profil local sous
-        // ces résultats : cela attribuait visuellement à tort
-        // la progression personnelle aux autres pseudonymes.
         val container =
             LinearLayout(this).apply {
                 orientation =
                     LinearLayout.VERTICAL
+
                 addView(
-                    TextView(this@MainActivity).apply {
+                    TextView(
+                        this@MainActivity
+                    ).apply {
                         text =
-                            "Classement global : plusieurs joueurs. " +
-                                "Les courbes personnelles se trouvent " +
-                                "dans « Stats du niveau » et ne " +
-                                "concernent que le profil actif."
-                        textSize = 16f
-                        setTextColor(Color.BLACK)
+                            "Classement global complet : tous les joueurs restent comparés ici. " +
+                                "Les progressions ci-dessous sont séparées par identité de joueur."
+                        textSize =
+                            16f
+                        setTextColor(
+                            Color.BLACK
+                        )
                         setPadding(
-                            dp(12), dp(12), dp(12), dp(6)
+                            dp(
+                                12
+                            ),
+                            dp(
+                                12
+                            ),
+                            dp(
+                                12
+                            ),
+                            dp(
+                                6
+                            )
                         )
                     }
                 )
-                addView(ranking)
+
+                addView(
+                    ranking
+                )
+
+                addView(
+                    TextView(
+                        this@MainActivity
+                    ).apply {
+                        text =
+                            "\n📈 Progressions séparées par joueur"
+                        textSize =
+                            18f
+                        setTextColor(
+                            Color.BLACK
+                        )
+                        setPadding(
+                            dp(
+                                12
+                            ),
+                            dp(
+                                8
+                            ),
+                            dp(
+                                12
+                            ),
+                            dp(
+                                4
+                            )
+                        )
+                    }
+                )
+
+                progressions
+                    .forEach {
+                        progression ->
+
+                        addView(
+                            Button(
+                                this@MainActivity
+                            ).apply {
+                                isAllCaps =
+                                    false
+                                textSize =
+                                    15f
+                                minHeight =
+                                    dp(
+                                        52
+                                    )
+
+                                text =
+                                    buildString {
+                                        if (
+                                            progression
+                                                .playerProfileId ==
+                                                activeProgressionId
+                                        ) {
+                                            append(
+                                                "★ "
+                                            )
+                                        }
+
+                                        append(
+                                            progression
+                                                .displayName
+                                        )
+                                        append(
+                                            " • "
+                                        )
+                                        append(
+                                            progression
+                                                .entries
+                                                .size
+                                        )
+                                        append(
+                                            " score"
+                                        )
+
+                                        if (
+                                            progression
+                                                .entries
+                                                .size >
+                                                1
+                                        ) {
+                                            append(
+                                                "s"
+                                            )
+                                        }
+
+                                        if (
+                                            progression
+                                                .knownNames
+                                                .size >
+                                                1
+                                        ) {
+                                            append(
+                                                " • renommé"
+                                            )
+                                        }
+                                    }
+
+                                setOnClickListener {
+                                    showHallPlayerProgression(
+                                        progression =
+                                            progression,
+                                        mode =
+                                            mode,
+                                        difficulty =
+                                            difficulty
+                                    )
+                                }
+                            },
+                            LinearLayout
+                                .LayoutParams(
+                                    LinearLayout
+                                        .LayoutParams
+                                        .MATCH_PARENT,
+                                    LinearLayout
+                                        .LayoutParams
+                                        .WRAP_CONTENT
+                                ).apply {
+                                    topMargin =
+                                        dp(
+                                            4
+                                        )
+                                    leftMargin =
+                                        dp(
+                                            8
+                                        )
+                                    rightMargin =
+                                        dp(
+                                            8
+                                        )
+                                }
+                        )
+                    }
+
+                if (
+                    unidentifiedCount >
+                        0
+                ) {
+                    addView(
+                        TextView(
+                            this@MainActivity
+                        ).apply {
+                            text =
+                                "Historique non attribuable : " +
+                                    unidentifiedCount +
+                                    " score" +
+                                    if (
+                                        unidentifiedCount >
+                                            1
+                                    ) {
+                                        "s"
+                                    } else {
+                                        ""
+                                    } +
+                                    ". Ils restent visibles dans le classement global, mais ne sont ajoutés à aucune progression personnelle."
+                            textSize =
+                                15f
+                            setTextColor(
+                                Color.DKGRAY
+                            )
+                            setPadding(
+                                dp(
+                                    12
+                                ),
+                                dp(
+                                    12
+                                ),
+                                dp(
+                                    12
+                                ),
+                                dp(
+                                    10
+                                )
+                            )
+                        }
+                    )
+                }
             }
 
         val scroll =
@@ -4862,7 +5119,9 @@ class MainActivity : Activity() {
                 null
             )
             .setNeutralButton(
-                "📈 Stats du niveau"
+                "📈 Ma progression • " +
+                    playerProfileStore
+                        .playerName
             ) {
                     _,
                     _ ->
@@ -4873,6 +5132,239 @@ class MainActivity : Activity() {
                 )
             }
             .show()
+    }
+
+    private fun showHallPlayerProgression(
+        progression: HallPlayerProgression,
+        mode: GameMode,
+        difficulty: GameDifficulty
+    ) {
+        val dateFormat =
+            SimpleDateFormat(
+                "dd/MM/yy",
+                Locale.getDefault()
+            )
+
+        val isActiveProfile =
+            progression
+                .playerProfileId ==
+                playerProfileStore
+                    .activeProgressionId
+
+        val summary =
+            TextView(this).apply {
+                textSize =
+                    16f
+                setTextColor(
+                    Color.BLACK
+                )
+                setPadding(
+                    dp(
+                        12
+                    ),
+                    dp(
+                        10
+                    ),
+                    dp(
+                        12
+                    ),
+                    dp(
+                        8
+                    )
+                )
+
+                text =
+                    buildString {
+                        append(
+                            progression
+                                .displayName
+                        )
+
+                        if (
+                            isActiveProfile
+                        ) {
+                            append(
+                                " • profil actif"
+                            )
+                        }
+
+                        append(
+                            "\n"
+                        )
+                        append(
+                            gameModeLabel(
+                                mode
+                            )
+                        )
+                        append(
+                            " • "
+                        )
+                        append(
+                            difficulty.label
+                        )
+                        append(
+                            "\n\n"
+                        )
+
+                        append(
+                            "Scores : "
+                        )
+                        append(
+                            progression
+                                .entries
+                                .size
+                        )
+                        append(
+                            "\nMeilleur : "
+                        )
+                        append(
+                            CompletionRatingPolicy
+                                .symbols(
+                                    progression
+                                        .bestStars
+                                )
+                        )
+                        append(
+                            " • "
+                        )
+                        append(
+                            formatSeconds(
+                                progression
+                                    .bestSeconds
+                            )
+                        )
+                        append(
+                            "\nTemps : "
+                        )
+                        append(
+                            trendShortLabel(
+                                progression
+                                    .speedTrend
+                            )
+                        )
+                        append(
+                            "\nÉtoiles : "
+                        )
+                        append(
+                            trendShortLabel(
+                                progression
+                                    .starTrend
+                            )
+                        )
+
+                        if (
+                            progression
+                                .knownNames
+                                .size >
+                                1
+                        ) {
+                            append(
+                                "\n\nPseudos connus : "
+                            )
+                            append(
+                                progression
+                                    .knownNames
+                                    .joinToString(
+                                        " → "
+                                    )
+                            )
+                        }
+
+                        append(
+                            "\n\nHistorique chronologique :\n"
+                        )
+
+                        progression
+                            .entries
+                            .forEachIndexed {
+                                    index,
+                                    entry ->
+
+                                append(
+                                    index +
+                                        1
+                                )
+                                append(
+                                    ". "
+                                )
+                                append(
+                                    dateFormat.format(
+                                        Date(
+                                            entry.completedAt
+                                        )
+                                    )
+                                )
+                                append(
+                                    " • "
+                                )
+                                append(
+                                    entry.playerName
+                                )
+                                append(
+                                    " • "
+                                )
+                                append(
+                                    CompletionRatingPolicy
+                                        .symbols(
+                                            entry.stars
+                                        )
+                                )
+                                append(
+                                    " • "
+                                )
+                                append(
+                                    formatSeconds(
+                                        entry.elapsedSeconds
+                                    )
+                                )
+                                append(
+                                    "\n"
+                                )
+                            }
+                    }
+            }
+
+        val scroll =
+            ScrollView(this).apply {
+                addView(
+                    summary
+                )
+            }
+
+        val builder =
+            AlertDialog.Builder(this)
+                .setTitle(
+                    "📈 Progression • " +
+                        progression
+                            .displayName
+                )
+                .setView(
+                    scroll
+                )
+                .setPositiveButton(
+                    "Fermer",
+                    null
+                )
+
+        if (
+            isActiveProfile
+        ) {
+            builder.setNeutralButton(
+                "Mes stats détaillées"
+            ) {
+                    _,
+                    _ ->
+
+                showDifficultyStats(
+                    difficulty,
+                    mode
+                )
+            }
+        }
+
+        // Pas de narration de Pierre ici pour les autres profils :
+        // le Hall est comparatif, Pierre reste scoppé au profil actif.
+        builder.show()
     }
 
     private fun trendShortLabel(
