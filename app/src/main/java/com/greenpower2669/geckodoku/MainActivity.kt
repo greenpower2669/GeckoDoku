@@ -12843,6 +12843,36 @@ class MainActivity : Activity() {
                             -1
                         )
 
+                    updateSudokuManualToolsGeometry(
+                        x =
+                            popupX,
+                        y =
+                            popupY,
+                        width =
+                            popupWidth,
+                        height =
+                            popupHeight,
+                        persist =
+                            false
+                    )
+
+                    true
+                }
+
+                android.view.MotionEvent.ACTION_UP,
+                android.view.MotionEvent.ACTION_CANCEL -> {
+                    updateSudokuManualToolsGeometry(
+                        x =
+                            popupX,
+                        y =
+                            popupY,
+                        width =
+                            popupWidth,
+                        height =
+                            popupHeight,
+                        persist =
+                            true
+                    )
                     true
                 }
 
@@ -13088,6 +13118,18 @@ class MainActivity : Activity() {
             popup
 
         close.setOnClickListener {
+            updateSudokuManualToolsGeometry(
+                x =
+                    popupX,
+                y =
+                    popupY,
+                width =
+                    popupWidth,
+                height =
+                    popupHeight,
+                persist =
+                    true
+            )
             popup.dismiss()
         }
 
@@ -13097,6 +13139,19 @@ class MainActivity : Activity() {
                 Gravity.START,
             popupX,
             popupY
+        )
+
+        updateSudokuManualToolsGeometry(
+            x =
+                popupX,
+            y =
+                popupY,
+            width =
+                popupWidth,
+            height =
+                popupHeight,
+            persist =
+                false
         )
     }
 
