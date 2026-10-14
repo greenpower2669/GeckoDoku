@@ -6829,11 +6829,12 @@ class MainActivity : Activity() {
         fun reconcile(
             popup: PopupWindow?,
             geometry: SudokuFloatingWindowGeometry?,
-            minWidth: Int, minHeight: Int
+            minWidth: Int, minHeight: Int,
+            limits: SudokuFloatingWindowBounds = bounds
         ): SudokuFloatingWindowGeometry? {
             if (popup?.isShowing != true || geometry == null) return geometry
             val fixed = SudokuFloatingWindowGeometryPolicy.clampToBounds(
-                geometry, bounds, minWidth, minHeight, dp(4)
+                geometry, limits, minWidth, minHeight, dp(4)
             )
             if (geometry != fixed) {
                 popup.update(fixed.x, fixed.y, fixed.width, fixed.height)
@@ -6847,7 +6848,8 @@ class MainActivity : Activity() {
             sudokuSuperHelpPopup, sudokuSuperHelpGeometry, dp(280), dp(80)
         )
         sudokuPaletteGeometry = reconcile(
-            sudokuPalettePopup, sudokuPaletteGeometry, dp(140), dp(160)
+            sudokuPalettePopup, sudokuPaletteGeometry,
+            dp(140), dp(160), sudokuKeyboardDockBounds()
         )
     }
 
@@ -12504,6 +12506,23 @@ class MainActivity : Activity() {
         )
     }
 
+    /** All keypad moves are constrained below the 9×9 board. */
+    private fun sudokuKeyboardDockBounds(): SudokuFloatingWindowBounds {
+        val safe = sudokuPopupSafeBounds()
+        if (!::sudokuBoard.isInitialized ||
+            sudokuBoard.width <= 0 || sudokuBoard.height <= 0
+        ) {
+            return safe
+        }
+        val origin = IntArray(2)
+        sudokuBoard.getLocationInWindow(origin)
+        return SudokuFloatingWindowGeometryPolicy.dockBelowBoard(
+            safe = safe,
+            boardBottom = origin[1] + sudokuBoard.height,
+            gap = dp(4)
+        )
+    }
+
     private fun boardRelativeTop(
         popupHeight: Int,
         layer: Int
@@ -14123,7 +14142,7 @@ class MainActivity : Activity() {
                         SudokuFloatingWindowGeometry(
                             popupX + dx.toInt(), popupY + dy.toInt(),
                             popupWidth, popupHeight
-                        ), sudokuPopupSafeBounds(), dp(140), dp(160), dp(4)
+                        ), sudokuKeyboardDockBounds(), dp(140), dp(160), dp(4)
                     )
                     popupX = moved.x; popupY = moved.y
                     popupWidth = moved.width; popupHeight = moved.height
@@ -14136,9 +14155,9 @@ class MainActivity : Activity() {
                         popupX = it.x; popupY = it.y
                         popupWidth = it.width; popupHeight = it.height
                     }
-                    val safe = sudokuPopupSafeBounds()
-                    val maxWidth = (safe.width - dp(8)).coerceAtLeast(1)
-                    val maxHeight = (safe.height - dp(8)).coerceAtLeast(1)
+                    val dock = sudokuKeyboardDockBounds()
+                    val maxWidth = (dock.width - dp(8)).coerceAtLeast(1)
+                    val maxHeight = (dock.height - dp(8)).coerceAtLeast(1)
                     val width = (popupWidth + dx.toInt()).coerceIn(
                         dp(140).coerceAtMost(maxWidth), maxWidth
                     )
@@ -14146,7 +14165,7 @@ class MainActivity : Activity() {
                         dp(160).coerceAtMost(maxHeight), maxHeight
                     )
                     val resized = SudokuFloatingWindowGeometryPolicy.bottomCentered(
-                        safe, width, height, dp(140), dp(160), dp(4), dp(8)
+                        dock, width, height, dp(140), dp(160), dp(4), dp(8)
                     )
                     popupX = resized.x; popupY = resized.y
                     popupWidth = resized.width; popupHeight = resized.height
@@ -14256,10 +14275,11 @@ class MainActivity : Activity() {
                             .toInt()
             )
 
-        // Ancrage bas-centre dans les limites utiles (barres Android exclues).
-        val safe = sudokuPopupSafeBounds()
+        // Dock dynamique sous la grille : le pavé réduit d'abord sa
+        // hauteur pour ne jamais masquer une case du Sudoku.
+        val dock = sudokuKeyboardDockBounds()
         val initial = SudokuFloatingWindowGeometryPolicy.bottomCentered(
-            safe, popupWidth, popupHeight, dp(140), dp(160), dp(4), dp(8)
+            dock, popupWidth, popupHeight, dp(140), dp(160), dp(4), dp(8)
         )
         popupX = initial.x; popupY = initial.y
         popupWidth = initial.width; popupHeight = initial.height
