@@ -1179,6 +1179,7 @@ class MainActivity : Activity() {
                             .isInitialized
                     ) {
                         positionFloatingBoard()
+                        reconcileSudokuFloatingWindowsWithSafeBounds()
                     }
                 }
             }
@@ -6808,6 +6809,39 @@ class MainActivity : Activity() {
             " s"
     }
 
+    /** Keep visible Sudoku PopupWindows inside the available system-safe region. */
+    private fun reconcileSudokuFloatingWindowsWithSafeBounds() {
+        if (!::screenRoot.isInitialized ||
+            selectedGameMode != GameMode.SUDOKU ||
+            sudokuFloatingWindowsSuspendedForProfessor ||
+            screenRoot.width <= 0 || screenRoot.height <= 0
+        ) return
+        val bounds = sudokuPopupSafeBounds()
+        fun reconcile(
+            popup: PopupWindow?,
+            geometry: SudokuFloatingWindowGeometry?,
+            minWidth: Int, minHeight: Int
+        ): SudokuFloatingWindowGeometry? {
+            if (popup?.isShowing != true || geometry == null) return geometry
+            val fixed = SudokuFloatingWindowGeometryPolicy.clampToBounds(
+                geometry, bounds, minWidth, minHeight, dp(4)
+            )
+            if (geometry != fixed) {
+                popup.update(fixed.x, fixed.y, fixed.width, fixed.height)
+            }
+            return fixed
+        }
+        sudokuManualToolsGeometry = reconcile(
+            sudokuManualToolsPopup, sudokuManualToolsGeometry, dp(280), dp(72)
+        )
+        sudokuSuperHelpGeometry = reconcile(
+            sudokuSuperHelpPopup, sudokuSuperHelpGeometry, dp(280), dp(80)
+        )
+        sudokuPaletteGeometry = reconcile(
+            sudokuPalettePopup, sudokuPaletteGeometry, dp(140), dp(160)
+        )
+    }
+
     private fun protectFromSystemBars(
         root: LinearLayout
     ) {
@@ -6843,6 +6877,7 @@ class MainActivity : Activity() {
                 ) {
                     view.post {
                         positionFloatingBoard()
+                        reconcileSudokuFloatingWindowsWithSafeBounds()
                     }
                 }
             } else {
@@ -6873,6 +6908,7 @@ class MainActivity : Activity() {
                 ) {
                     view.post {
                         positionFloatingBoard()
+                        reconcileSudokuFloatingWindowsWithSafeBounds()
                     }
                 }
             }
@@ -14052,159 +14088,44 @@ class MainActivity : Activity() {
                     dismissSudokuPalette()
                 }
 
-                onDragDelta = {
-                        dx,
-                        dy ->
-
-                    val maxX =
-                        (
-                            screenRoot.width -
-                                popupWidth -
-                                dp(4)
-                            )
-                            .coerceAtLeast(
-                                dp(4)
-                            )
-
-                    val maxY =
-                        (
-                            screenRoot.height -
-                                popupHeight -
-                                dp(4)
-                            )
-                            .coerceAtLeast(
-                                dp(4)
-                            )
-
-                    popupX =
-                        (
-                            popupX +
-                                dx.toInt()
-                            )
-                            .coerceIn(
-                                dp(4),
-                                maxX
-                            )
-
-                    popupY =
-                        (
-                            popupY +
-                                dy.toInt()
-                            )
-                            .coerceIn(
-                                dp(4),
-                                maxY
-                            )
-
-                    popupRef
-                        ?.update(
-                            popupX,
-                            popupY,
-                            -1,
-                            -1
-                        )
-
-                    sudokuPaletteGeometry =
+                onDragDelta = { dx, dy ->
+                    sudokuPaletteGeometry?.let {
+                        popupX = it.x; popupY = it.y
+                        popupWidth = it.width; popupHeight = it.height
+                    }
+                    val moved = SudokuFloatingWindowGeometryPolicy.clampToBounds(
                         SudokuFloatingWindowGeometry(
-                            x =
-                                popupX,
-                            y =
-                                popupY,
-                            width =
-                                popupWidth,
-                            height =
-                                popupHeight
-                        )
+                            popupX + dx.toInt(), popupY + dy.toInt(),
+                            popupWidth, popupHeight
+                        ), sudokuPopupSafeBounds(), dp(140), dp(160), dp(4)
+                    )
+                    popupX = moved.x; popupY = moved.y
+                    popupWidth = moved.width; popupHeight = moved.height
+                    popupRef?.update(popupX, popupY, popupWidth, popupHeight)
+                    sudokuPaletteGeometry = moved
                 }
 
-                onResizeDelta = {
-                        dx,
-                        dy ->
-
-                    val minWidth =
-                        dp(140)
-
-                    val minHeight =
-                        dp(160)
-
-                    val maxWidth =
-                        (
-                            screenRoot.width -
-                                dp(8)
-                            )
-                            .coerceAtLeast(
-                                minWidth
-                            )
-
-                    val maxHeight =
-                        (
-                            screenRoot.height -
-                                dp(8)
-                            )
-                            .coerceAtLeast(
-                                minHeight
-                            )
-
-                    popupWidth =
-                        (
-                            popupWidth +
-                                dx.toInt()
-                            )
-                            .coerceIn(
-                                minWidth,
-                                maxWidth
-                            )
-
-                    popupHeight =
-                        (
-                            popupHeight +
-                                dy.toInt()
-                            )
-                            .coerceIn(
-                                minHeight,
-                                maxHeight
-                            )
-
-                    // L'ancrage canonique reste bas-centre même après redimensionnement.
-                    popupX =
-                        (
-                            (
-                                screenRoot.width -
-                                    popupWidth
-                                ) /
-                                2
-                            ).coerceAtLeast(
-                            dp(4)
-                        )
-
-                    popupY =
-                        (
-                            screenRoot.height -
-                                popupHeight -
-                                dp(8)
-                            ).coerceAtLeast(
-                            dp(4)
-                        )
-
-                    popupRef
-                        ?.update(
-                            popupX,
-                            popupY,
-                            popupWidth,
-                            popupHeight
-                        )
-
-                    sudokuPaletteGeometry =
-                        SudokuFloatingWindowGeometry(
-                            x =
-                                popupX,
-                            y =
-                                popupY,
-                            width =
-                                popupWidth,
-                            height =
-                                popupHeight
-                        )
+                onResizeDelta = { dx, dy ->
+                    sudokuPaletteGeometry?.let {
+                        popupX = it.x; popupY = it.y
+                        popupWidth = it.width; popupHeight = it.height
+                    }
+                    val safe = sudokuPopupSafeBounds()
+                    val maxWidth = (safe.width - dp(8)).coerceAtLeast(1)
+                    val maxHeight = (safe.height - dp(8)).coerceAtLeast(1)
+                    val width = (popupWidth + dx.toInt()).coerceIn(
+                        dp(140).coerceAtMost(maxWidth), maxWidth
+                    )
+                    val height = (popupHeight + dy.toInt()).coerceIn(
+                        dp(160).coerceAtMost(maxHeight), maxHeight
+                    )
+                    val resized = SudokuFloatingWindowGeometryPolicy.bottomCentered(
+                        safe, width, height, dp(140), dp(160), dp(4), dp(8)
+                    )
+                    popupX = resized.x; popupY = resized.y
+                    popupWidth = resized.width; popupHeight = resized.height
+                    popupRef?.update(popupX, popupY, popupWidth, popupHeight)
+                    sudokuPaletteGeometry = resized
                 }
             }
 
@@ -14309,12 +14230,13 @@ class MainActivity : Activity() {
                             .toInt()
             )
 
-        // Le pavé ne poursuit plus la case : ancrage stable bas-centre.
-        // Il reste un PopupWindow, donc au-dessus des médias de Pierre.
-        popupX = ((screenRoot.width - popupWidth) / 2)
-            .coerceAtLeast(dp(4))
-        popupY = (screenRoot.height - popupHeight - dp(8))
-            .coerceAtLeast(dp(4))
+        // Ancrage bas-centre dans les limites utiles (barres Android exclues).
+        val safe = sudokuPopupSafeBounds()
+        val initial = SudokuFloatingWindowGeometryPolicy.bottomCentered(
+            safe, popupWidth, popupHeight, dp(140), dp(160), dp(4), dp(8)
+        )
+        popupX = initial.x; popupY = initial.y
+        popupWidth = initial.width; popupHeight = initial.height
 
         sudokuPalettePopup =
             popup
@@ -16572,6 +16494,7 @@ class MainActivity : Activity() {
 
         sudokuFloatingWindowsSuspendedForProfessor =
             false
+        reconcileSudokuFloatingWindowsWithSafeBounds()
 
         if (
             ::screenRoot
