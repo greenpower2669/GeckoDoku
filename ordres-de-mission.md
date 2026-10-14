@@ -228,3 +228,11 @@ Mission canonique : `missions/GECKO-SUDOKU-SYSTEM-BARS-005.md`. Conserver les mo
 Fab a validé explicitement le code de la correction « Parfait, code ça » suite à la capture Sudoku : si les marques du même chiffre sont alignées horizontalement, projeter uniquement la ligne ; verticalement, uniquement la colonne. La croix ligne+colonne est réservée aux hypothèses posées, pas aux simples repères manuels. Corriger `SudokuValueOverlayView`, messages et tests, sans toucher aux notes, solveur, Hall ou Pierre.
 
 Mission : `missions/GECKO-SUDOKU-MANUAL-PROJECTION-006.md`, branche `feature/sudoku-visual-reasoning-v1`. Les interdictions de merge main, Release, publication Play ou changement de signature restent en vigueur. Attendre preuve CI et essai Samsung avant livraison définitive.
+
+## Validation Fab — deux corrections ergonomiques Samsung, 14/10/2026
+
+Fab donne « Ok, fait les deux push » pour les deux problèmes apparus sur ses captures :
+1. La fenêtre Repères humains ne doit pas apparaître par-dessus l'intro ni avant la grille jouable.
+2. La grille Sudoku doit être entièrement visible, le pavé flottant occupant l'espace au-dessous sans empiéter sur les dernières lignes (le tout au-dessus des boutons Android).
+
+Travail sur `feature/sudoku-visual-reasoning-v1`. Passations séparées : `missions/GECKO-SUDOKU-INTRO-GATE-007.md` et `missions/GECKO-SUDOKU-KEYPAD-DOCK-008.md`. Relecture du code existant effectuée ; tests de géométrie et de cycle de vie ajoutés. Privilégier la lisibilité, préserver hypothèses, candidats, Pierre, sprites 240p, Hall, données, signature, modes et code de publication. Ne pas merger main, ne pas créer de Release, ne pas publier Play. Build CI GREEN et validation Samsung nécessaires.
