@@ -314,3 +314,18 @@ window.decorView / screenRoot + WindowInsets(systemBars, displayCutout)
 ```
 
 Référence : `missions/GECKO-SUDOKU-SYSTEM-BARS-005.md`. Aucun changement du moteur Sudoku ni de la signature. Preuve CI / APK et recette Samsung à compléter.
+
+## Projection manuelle vs hypothèse — mission 006 (14/10/2026)
+
+```text
+SudokuValueOverlayView
+├─ manualProjectionRefs -> SudokuManualProjectionPolicy.axesFor(ref, refs)
+│  ├─ références même chiffre sur une ligne -> ROW seulement
+│  ├─ références même chiffre sur une colonne -> COLUMN seulement
+│  └─ isolé/égalité -> ROW seulement
+├─ SudokuSnapshot.hypothesisAt(cell) -> axesFor(isHypothesis=true)
+│  └─ ROW + COLUMN (traits translucides, sous les chiffres)
+└─ autres visualisations (candidats/couples/triplets/prof) inchangées
+```
+
+`MainActivity.placeSudokuManualDigitMarker()` reflète la direction réelle dans son message. Tests dans `SudokuVisualReasoningTest.kt`. Mission `missions/GECKO-SUDOKU-MANUAL-PROJECTION-006.md`. CI phone à vérifier.
