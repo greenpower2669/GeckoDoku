@@ -185,6 +185,10 @@ Run `38519610024` / #472 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre e
 - [x] Ajouter checkboxes auto Projection / Couples / Triplets / Candidats / Binaire / Pulsation.
 - [x] Candidats auto rendu uniquement si checkbox Candidats active ; les autres aides ne montrent que leurs chiffres utiles.
 - [x] Toutes aides auto OFF sur nouvelle grille.
-- [ ] Confirmer le run final GREEN du dernier commit.
+- [x] Confirmer le run final GREEN du dernier commit.
 - [ ] Recette Samsung : interaction `?` → plateau, deux fenêtres, drag/close, outils manuels, non-modification de la grille.
 - [ ] Aucun merge main / Release avant validation Fab.
+
+
+### Preuve CI finale repères humains / aide surhumaine
+Run `38522492488` / #486 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11875030286`, APK SHA-256 `793a3878817fa04f9b2096d3ac032c8f235c98df50f6a7f56df0139dda062d15`.
