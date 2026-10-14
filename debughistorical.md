@@ -280,3 +280,6 @@ Deux captures Samsung successives :
 2. En jeu, Repères est au-dessus du plateau mais le pavé Sudoku bas-centre en masque la dernière rangée. Source : limitation du PopupWindow aux boutons Android uniquement, sans considérer le bas de la grille. Fix 008 : dock sous le plateau mesuré, réduction de la hauteur, déplacement et resize bornés à ce dock, recalage lors du layout.
 
 Tests purs ajoutés. Pas de refonte du gameplay, de Pierre ou du rendu du Sudoku. **La preuve CI et les essais réels sur Samsung restent à confirmer** ; attention à la place physiquement insuffisante en paysage ou très petit écran.
+
+### Preuve CI Samsung 007/008 — run #525
+Validation finale après les missions 007 et 008 : run [#525](https://github.com/greenpower2669/GeckoDoku/actions/runs/38587086273), workflow 38587086273 **GREEN**, commit de build `eee5347f52602ccbc91d1359aeacb161c427d9f1`. `testDebugUnitTest + assemblePhone` réussis ; vérification Pierre Sherpa/Piper et banque sprites 240p réussie. Artefact `GeckoDoku-v0.15.45-dev-phone` ID `11905448115` ; APK `GeckoDoku-v0.15.45-dev.apk` SHA-256 `23506e3a310401dcf4016c5544324913d9670bb54b70ce439da6b8356effcb51`, contrôlé après extraction. La recette Samsung demeure nécessaire. Aucun merge main / Release / Play.
