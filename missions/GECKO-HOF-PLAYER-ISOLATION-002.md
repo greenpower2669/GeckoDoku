@@ -89,3 +89,8 @@ Tests ajoutés/étendus :
 - profils connus différents avec score visuellement identique => jamais fusionnés.
 
 Historique : les anciennes lignes sans provenance fiable gardent `playerProfileId=null`. Aucune réattribution par pseudo.
+
+
+### Validation CI finale HOF isolation
+Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f6cfa197e5998. Tests JVM + assemblePhone réussis, Pierre et banque sprites 240p vérifiés. Artefact GeckoDoku-v0.15.45-dev-phone ID 11876601009. APK SHA-256 eec808012b45e21a36a400672b1c50d7b2db41a27df9310db2df30eccef45981.
+Recette téléphone/réseau encore requise pour confirmer le retour de metadata.playerProfileId via le serveur réel. Aucun merge/release/publication.
