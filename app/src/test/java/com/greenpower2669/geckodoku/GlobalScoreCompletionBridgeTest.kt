@@ -29,6 +29,8 @@ class GlobalScoreCompletionBridgeTest {
         GlobalScoreCompletionBridge.publish(
             publisher = publisher,
             playerName = "GeckoTétu",
+            playerProfileId =
+                "11111111-1111-4111-8111-111111111111",
             mode = GameMode.SUDOKU,
             size = 9,
             difficulty = GameDifficulty.EXPERT,
@@ -57,6 +59,17 @@ class GlobalScoreCompletionBridgeTest {
         assertEquals(
             1_791_266_500_123L,
             frozen.getLong("completedAt")
+        )
+
+        assertEquals(
+            "11111111-1111-4111-8111-111111111111",
+            frozen
+                .getJSONObject(
+                    "metadata"
+                )
+                .getString(
+                    "playerProfileId"
+                )
         )
     }
 }
