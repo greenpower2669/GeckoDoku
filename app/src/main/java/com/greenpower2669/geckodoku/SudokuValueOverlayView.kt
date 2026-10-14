@@ -279,6 +279,11 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         var animateMarker =
             false
 
+        // Les hypothèses actives projettent les deux conséquences possibles.
+        // Dessin sous les chiffres : jamais une croix pour le seul outil
+        // Projection manuelle.
+        drawHypothesisProjectionAxes(canvas, state)
+
         for (row in 0..8) {
             for (col in 0..8) {
                 val cell =
@@ -1106,6 +1111,48 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             Paint.Style.FILL
     }
 
+    /**
+     * Hypothèse réellement posée dans le moteur Sudoku : contrairement
+     * au repère manuel, elle se propage visuellement sur les deux axes.
+     * Le tracé reste translucide et ne modifie aucune valeur / note.
+     */
+    private fun drawHypothesisProjectionAxes(
+        canvas: Canvas,
+        state: SudokuSnapshot
+    ) {
+        paint.style = Paint.Style.STROKE
+        paint.pathEffect = null
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.strokeWidth = (cellSize * .018f).coerceAtLeast(dp(.8f))
+        for (row in 0..8) {
+            for (col in 0..8) {
+                val cell = Cell(row, col)
+                val hypothesis = state.hypothesisAt(cell) ?: continue
+                val rect = cellRect(cell)
+                val color = hypothesis.color
+                paint.color = Color.argb(
+                    58, color.red, color.green, color.blue
+                )
+                SudokuManualProjectionPolicy.axesFor(
+                    SudokuCandidateRef(cell, hypothesis.cell.digit),
+                    emptySet(),
+                    isHypothesis = true
+                ).forEach { axis ->
+                    when (axis) {
+                        SudokuManualProjectionAxis.ROW -> canvas.drawLine(
+                            boardRect.left, rect.centerY(),
+                            boardRect.right, rect.centerY(), paint
+                        )
+                        SudokuManualProjectionAxis.COLUMN -> canvas.drawLine(
+                            rect.centerX(), boardRect.top,
+                            rect.centerX(), boardRect.bottom, paint
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     private fun drawManualPlayerAnnotations(
         canvas: Canvas
     ) {
@@ -1206,8 +1253,8 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         paint.pathEffect =
             null
 
-        // Projection humaine : croix complète ligne + colonne depuis le
-        // candidat choisi par le joueur. Aucun calcul de solution ici.
+        // Projection humaine : un seul axe selon les repères de même
+        // chiffre, jamais la croix propre aux hypothèses de jeu.
         paint.strokeWidth =
             (
                 cellSize *
@@ -1274,21 +1321,22 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                         )
                     )
 
-                canvas.drawLine(
-                    boardRect.left,
-                    y,
-                    boardRect.right,
-                    y,
-                    paint
-                )
-
-                canvas.drawLine(
-                    x,
-                    boardRect.top,
-                    x,
-                    boardRect.bottom,
-                    paint
-                )
+                // Repère humain : un seul axe. Des occurrences du même
+                // chiffre sur une ligne donnent ROW, en colonne COLUMN.
+                // Jamais les deux sauf si une hypothèse est réellement posée.
+                SudokuManualProjectionPolicy.axesFor(
+                    ref,
+                    manualProjectionRefs
+                ).forEach { axis ->
+                    when (axis) {
+                        SudokuManualProjectionAxis.ROW -> canvas.drawLine(
+                            boardRect.left, y, boardRect.right, y, paint
+                        )
+                        SudokuManualProjectionAxis.COLUMN -> canvas.drawLine(
+                            x, boardRect.top, x, boardRect.bottom, paint
+                        )
+                    }
+                }
 
                 paint.color =
                     Color.argb(
