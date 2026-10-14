@@ -256,3 +256,17 @@ object SudokuFloatingWindowGeometryPolicy {
         )
     }
 }
+
+/** Popup tools belong to the playable Sudoku board, never its introduction. */
+object SudokuFloatingStartupPolicy {
+    fun canOpen(
+        sudokuMode: Boolean,
+        introFinished: Boolean,
+        introVideoActive: Boolean,
+        launchCurtainVisible: Boolean,
+        boardVisible: Boolean,
+        boardMeasured: Boolean,
+        dismissed: Boolean
+    ): Boolean = sudokuMode && introFinished && !introVideoActive &&
+        !launchCurtainVisible && boardVisible && boardMeasured && !dismissed
+}
