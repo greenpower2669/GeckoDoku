@@ -99,6 +99,9 @@ class SudokuValueOverlayView @JvmOverloads constructor(
     var showVisualBinary: Boolean = false
         set(value) { field = value; invalidate() }
 
+    var showVisualCandidates: Boolean = false
+        set(value) { field = value; invalidate() }
+
     var showVisualCircles: Boolean = false
         set(value) { field = value; invalidate() }
 
@@ -107,6 +110,22 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         set(value) { field = value; invalidate() }
 
     var playerCircleLinks: Set<SudokuVisualLink> = emptySet()
+        set(value) { field = value; invalidate() }
+
+    // Repères purement graphiques placés manuellement par le joueur.
+    var manualProjectionRefs: Set<SudokuCandidateRef> = emptySet()
+        set(value) { field = value; invalidate() }
+
+    var manualCandidateRefs: Set<SudokuCandidateRef> = emptySet()
+        set(value) { field = value; invalidate() }
+
+    var manualPairGroups: List<Set<Cell>> = emptyList()
+        set(value) { field = value; invalidate() }
+
+    var manualTripletGroups: List<Set<Cell>> = emptyList()
+        set(value) { field = value; invalidate() }
+
+    var manualPendingCells: Set<Cell> = emptySet()
         set(value) { field = value; invalidate() }
 
 
@@ -237,7 +256,8 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             snapshotProvider()
 
         val analyticalDisplay =
-            showVisualProjections ||
+            showVisualCandidates ||
+                showVisualProjections ||
                 showVisualPairs ||
                 showVisualTriplets ||
                 showVisualBinary ||
@@ -354,6 +374,7 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                         personalCandidates
 
                 if (
+                    showVisualCandidates &&
                     analyticalCandidates
                         .isNotEmpty()
                 ) {
@@ -410,6 +431,10 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                 canvas,
             candidates =
                 logicalCandidates
+        )
+
+        drawManualPlayerAnnotations(
+            canvas
         )
 
         if (
@@ -975,6 +1000,360 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                         y1,
                         cellSize *
                             .105f,
+                        paint
+                    )
+                }
+        }
+
+        paint.pathEffect =
+            null
+        paint.style =
+            Paint.Style.FILL
+    }
+
+    private fun drawManualPlayerAnnotations(
+        canvas: Canvas
+    ) {
+        if (
+            manualProjectionRefs.isEmpty() &&
+            manualCandidateRefs.isEmpty() &&
+            manualPairGroups.isEmpty() &&
+            manualTripletGroups.isEmpty() &&
+            manualPendingCells.isEmpty()
+        ) {
+            return
+        }
+
+        fun targetPoint(
+            ref: SudokuCandidateRef
+        ): Pair<Float, Float> {
+            val cell =
+                cellRect(
+                    ref.cell
+                )
+            val slot =
+                SudokuCandidateLayout
+                    .slot(
+                        ref.digit
+                    )
+
+            return (
+                cell.left +
+                    (
+                        slot.left +
+                            slot.right
+                        ) *
+                        cell.width() /
+                        2f
+                ) to
+                (
+                    cell.top +
+                        (
+                            slot.top +
+                                slot.bottom
+                            ) *
+                            cell.height() /
+                            2f
+                    )
+        }
+
+        paint.style =
+            Paint.Style.STROKE
+        paint.strokeCap =
+            Paint.Cap.ROUND
+        paint.pathEffect =
+            null
+
+        // Projection humaine : croix complète ligne + colonne depuis le
+        // candidat choisi par le joueur. Aucun calcul de solution ici.
+        paint.strokeWidth =
+            (
+                cellSize *
+                    .026f
+                ).coerceAtLeast(
+                dp(
+                    1f
+                )
+            )
+
+        manualProjectionRefs
+            .forEachIndexed {
+                index,
+                ref ->
+
+                val (
+                    x,
+                    y
+                ) =
+                    targetPoint(
+                        ref
+                    )
+
+                val colors =
+                    intArrayOf(
+                        Color.rgb(
+                            35,
+                            104,
+                            165
+                        ),
+                        Color.rgb(
+                            123,
+                            78,
+                            153
+                        ),
+                        Color.rgb(
+                            46,
+                            124,
+                            83
+                        )
+                    )
+
+                val color =
+                    colors[
+                        index %
+                            colors.size
+                        ]
+
+                paint.color =
+                    Color.argb(
+                        66,
+                        Color.red(
+                            color
+                        ),
+                        Color.green(
+                            color
+                        ),
+                        Color.blue(
+                            color
+                        )
+                    )
+
+                canvas.drawLine(
+                    boardRect.left,
+                    y,
+                    boardRect.right,
+                    y,
+                    paint
+                )
+
+                canvas.drawLine(
+                    x,
+                    boardRect.top,
+                    x,
+                    boardRect.bottom,
+                    paint
+                )
+
+                paint.color =
+                    Color.argb(
+                        190,
+                        Color.red(
+                            color
+                        ),
+                        Color.green(
+                            color
+                        ),
+                        Color.blue(
+                            color
+                        )
+                    )
+
+                canvas.drawCircle(
+                    x,
+                    y,
+                    cellSize *
+                        .085f,
+                    paint
+                )
+            }
+
+        // Candidat manuel : simple pièce graphique autour du petit chiffre.
+        paint.strokeWidth =
+            (
+                cellSize *
+                    .05f
+                ).coerceAtLeast(
+                    dp(
+                        1.4f
+                    )
+                )
+        paint.color =
+            Color.argb(
+                205,
+                33,
+                105,
+                82
+            )
+
+        manualCandidateRefs
+            .forEach {
+                ref ->
+
+                val (
+                    x,
+                    y
+                ) =
+                    targetPoint(
+                        ref
+                    )
+
+                canvas.drawCircle(
+                    x,
+                    y,
+                    cellSize *
+                        .11f,
+                    paint
+                )
+            }
+
+        fun drawCellGroups(
+            groups: List<Set<Cell>>,
+            triplet: Boolean
+        ) {
+            paint.strokeWidth =
+                (
+                    cellSize *
+                        .052f
+                    ).coerceAtLeast(
+                    dp(
+                        1.5f
+                    )
+                )
+
+            paint.color =
+                if (triplet) {
+                    Color.argb(
+                        190,
+                        139,
+                        70,
+                        149
+                    )
+                } else {
+                    Color.argb(
+                        190,
+                        21,
+                        109,
+                        162
+                    )
+                }
+
+            paint.pathEffect =
+                if (triplet) {
+                    android.graphics
+                        .DashPathEffect(
+                            floatArrayOf(
+                                cellSize *
+                                    .12f,
+                                cellSize *
+                                    .07f
+                            ),
+                            0f
+                        )
+                } else {
+                    null
+                }
+
+            groups.forEach {
+                group ->
+                group.forEach {
+                    cell ->
+
+                    val rect =
+                        cellRect(
+                            cell
+                        )
+                    val inset =
+                        cellSize *
+                            .07f
+
+                    canvas.drawRoundRect(
+                        rect.left +
+                            inset,
+                        rect.top +
+                            inset,
+                        rect.right -
+                            inset,
+                        rect.bottom -
+                            inset,
+                        cellSize *
+                            .11f,
+                        cellSize *
+                            .11f,
+                        paint
+                    )
+                }
+            }
+
+            paint.pathEffect =
+                null
+        }
+
+        drawCellGroups(
+            manualPairGroups,
+            false
+        )
+        drawCellGroups(
+            manualTripletGroups,
+            true
+        )
+
+        if (
+            manualPendingCells
+                .isNotEmpty()
+        ) {
+            paint.strokeWidth =
+                (
+                    cellSize *
+                        .035f
+                    ).coerceAtLeast(
+                    dp(
+                        1.2f
+                    )
+                )
+            paint.color =
+                Color.argb(
+                    150,
+                    80,
+                    80,
+                    80
+                )
+            paint.pathEffect =
+                android.graphics
+                    .DashPathEffect(
+                        floatArrayOf(
+                            cellSize *
+                                .09f,
+                            cellSize *
+                                .06f
+                        ),
+                        0f
+                    )
+
+            manualPendingCells
+                .forEach {
+                    cell ->
+
+                    val rect =
+                        cellRect(
+                            cell
+                        )
+                    val inset =
+                        cellSize *
+                            .11f
+
+                    canvas.drawRoundRect(
+                        rect.left +
+                            inset,
+                        rect.top +
+                            inset,
+                        rect.right -
+                            inset,
+                        rect.bottom -
+                            inset,
+                        cellSize *
+                            .09f,
+                        cellSize *
+                            .09f,
                         paint
                     )
                 }
