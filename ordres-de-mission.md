@@ -222,3 +222,9 @@ Recette Samsung encore requise pour valider visuellement le déplacement hors é
 À partir de la capture Samsung, Fab constate que les boutons de navigation Android bornent le mouvement et empêchent un bon redimensionnement des fenêtres flottantes. Ordre explicite « Ok, go » **pour coder le correctif**, pas pour merger, créer une Release ni publier.
 
 Mission canonique : `missions/GECKO-SUDOKU-SYSTEM-BARS-005.md`. Conserver les modes de jeu, la signature, l'identifiant, les médias Pierre et sprites 240p ; appliquer la géométrie sûre aux fenêtres Repères humains, Aide surhumaine et pavé. Maintenir les positions sauvegardées et les calques pendant la parole de Pierre. CI + APK de test nécessaires ; recette Samsung avant toute publication. **Aucun merge main / Release / Play autorisé.**
+
+## Ordre Fab — projection manuelle sur un seul axe (14/10/2026)
+
+Fab a validé explicitement le code de la correction « Parfait, code ça » suite à la capture Sudoku : si les marques du même chiffre sont alignées horizontalement, projeter uniquement la ligne ; verticalement, uniquement la colonne. La croix ligne+colonne est réservée aux hypothèses posées, pas aux simples repères manuels. Corriger `SudokuValueOverlayView`, messages et tests, sans toucher aux notes, solveur, Hall ou Pierre.
+
+Mission : `missions/GECKO-SUDOKU-MANUAL-PROJECTION-006.md`, branche `feature/sudoku-visual-reasoning-v1`. Les interdictions de merge main, Release, publication Play ou changement de signature restent en vigueur. Attendre preuve CI et essai Samsung avant livraison définitive.
