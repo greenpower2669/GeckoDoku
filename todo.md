@@ -209,7 +209,11 @@ Run `38522492488` / #486 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre e
 - [x] Couper une parole Pierre appartenant à l'ancien profil avant bascule.
 - [x] Narration de stats basée uniquement sur le `statsStore` actif et le pseudo actif.
 - [x] Ajouter tests identité / renommage / historique ambigu / >10 scores.
-- [ ] Confirmer le run final du dernier commit de code GREEN + artefact APK.
+- [x] Confirmer le run final du dernier commit de code GREEN + artefact APK.
 - [ ] Recette téléphone : plusieurs profils, mêmes pseudos, renommage, Hall complet, sous-progressions, changement de profil pendant/après partie.
 - [ ] Vérifier en vraie synchronisation serveur que `metadata.playerProfileId` revient bien via `/sync` pour les scores nouvellement publiés.
 - [ ] Aucun merge main / Release / Play avant ordre explicite.
+
+
+### Preuve CI finale Hall global / progression
+Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f6cfa197e5998. Tests JVM + assemblePhone réussis, Pierre et banque sprites 240p vérifiés. Artefact GeckoDoku-v0.15.45-dev-phone ID 11876601009. APK SHA-256 eec808012b45e21a36a400672b1c50d7b2db41a27df9310db2df30eccef45981.
