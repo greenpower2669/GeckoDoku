@@ -176,3 +176,6 @@ Le merge global ne confond jamais deux IDs connus différents. Un score distant 
 `HallPlayerProgressionProjection` regroupe uniquement par playerProfileId, conserve tous les scores chronologiquement, les changements de pseudo et calcule tendances temps/étoiles. Le Hall de niveau n'a plus `.take(10)` et le store local n'a plus de limite 200 : classement complet + boutons de sous-progressions séparées.
 
 Pierre : `statsStore` reste lié à `activeProfileId`. Au changement/création de profil, la parole en cours est stoppée, `ProfessorLifeController` est recréé, la session et l'état ambiant sont réinitialisés. `announcePlayerStats()` utilise exclusivement `statsStore.professorLevels()` et préfixe par le pseudo actif. Les progressions d'autres joueurs dans le Hall sont silencieuses.
+
+
+Preuve CI HOF global / progression : Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f6cfa197e5998. Tests JVM + assemblePhone réussis, Pierre et banque sprites 240p vérifiés. Artefact GeckoDoku-v0.15.45-dev-phone ID 11876601009. APK SHA-256 eec808012b45e21a36a400672b1c50d7b2db41a27df9310db2df30eccef45981. Fonctionnellement, la recette Samsung doit encore confirmer l'ergonomie des sous-progressions et la synchronisation réelle de metadata.
