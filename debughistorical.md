@@ -134,3 +134,27 @@ Cause finale du défaut acoustique à confirmer par test Samsung : l'hypothèse 
 
 
 Validation compilation : run `38436224654` / #450 GREEN après intégration complète du nouveau `VoicePcmPlayer` et de l'amorçage. Le run #449 rouge correspondait à l'état intermédiaire où le lecteur avait été remplacé avant l'adaptation de `PierrePiperSpeechEngine`; il n'est pas une régression finale.
+
+
+## 14/10/2026 — outils visuels Sudoku paraissent inactifs
+
+Signalement Fab : en recette téléphone, Entourer / Lignes / Couples / Triplets ne donnent aucun effet visible.
+
+Audit sans code :
+- checkboxes correctement branchées ;
+- overlay visible et invalidate appelé ;
+- cause commune : `drawPlayerReasoningAnnotations` construisait sa preuve uniquement depuis les **notes personnelles** ;
+- Lignes exigeait donc deux mêmes notes déjà saisies dans la même ligne ;
+- Couples/Triplets exigeaient des ensembles manuels exacts ;
+- Entourer interceptait la touche candidat mais refusait le chiffre s'il n'était pas déjà présent dans `snapshot.notesAt(cell)` ;
+- tests existants injectaient directement des cartes artificielles de notes et ne couvraient pas l'usage bout-en-bout.
+
+Correction autorisée ensuite par Fab :
+- candidats logiques calculés en lecture seule depuis les valeurs confirmées ;
+- Lignes/Couples/Triplets branchés dessus ;
+- Entourer branché sur la validité logique du candidat ;
+- Binaire exact-2 ajouté ligne/colonne/bloc ;
+- explication Prévisu + Pierre ;
+- compaction du pavé.
+
+Ne pas déclarer la correction visuelle validée avant recette Samsung, même si la CI devient GREEN.
