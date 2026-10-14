@@ -161,3 +161,6 @@ Checkbox
 ```
 
 Invariant : cette carte n'est jamais recopiée dans `SudokuGameEngine.notes`. Les annotations disparaissent/recalculent avec la grille, sans mutation de gameplay.
+
+
+Preuve build Binaire : Run `38504109994` / #464 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11867790810`, APK SHA-256 `356cb9973995d453d6e82e865b959f4648502624705322502e23d711ec52cb5e`.
