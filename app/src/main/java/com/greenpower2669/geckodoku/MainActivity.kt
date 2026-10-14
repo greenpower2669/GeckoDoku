@@ -1832,6 +1832,7 @@ class MainActivity : Activity() {
                 _ ->
 
             positionFloatingBoard()
+            maybeShowSudokuManualToolsAfterIntro()
         }
 
         aliveMascotOverlay =
@@ -6392,6 +6393,14 @@ class MainActivity : Activity() {
         } else {
             cancelProfessorIdleAnimation()
         }
+
+        // Do not open any floating controls while intro media still covers
+        // the grid. The posted callback sees the final overlay state.
+        if (introPhase == IntroPhase.DONE &&
+            ::screenRoot.isInitialized
+        ) {
+            screenRoot.post { maybeShowSudokuManualToolsAfterIntro() }
+        }
     }
 
     private fun positionTitleIdentity() {
@@ -10712,6 +10721,33 @@ class MainActivity : Activity() {
         clearProfessorSession()
     }
 
+    private fun canShowSudokuManualTools(): Boolean {
+        if (!::screenRoot.isInitialized || !::sudokuBoard.isInitialized) {
+            return false
+        }
+        val videoActive = ::richMediaOverlay.isInitialized &&
+            richMediaOverlay.hasActiveKind(RichMediaKind.INTRO)
+        val curtainVisible = ::launchCurtain.isInitialized &&
+            launchCurtain.visibility == View.VISIBLE
+        return SudokuFloatingStartupPolicy.canOpen(
+            sudokuMode = selectedGameMode == GameMode.SUDOKU,
+            introFinished = introPhase == IntroPhase.DONE,
+            introVideoActive = videoActive,
+            launchCurtainVisible = curtainVisible,
+            boardVisible = sudokuBoard.isShown,
+            boardMeasured = sudokuBoard.width > 0 && sudokuBoard.height > 0,
+            dismissed = sudokuManualToolsDismissed
+        )
+    }
+
+    private fun maybeShowSudokuManualToolsAfterIntro() {
+        if (canShowSudokuManualTools() &&
+            sudokuManualToolsPopup?.isShowing != true
+        ) {
+            showSudokuManualToolsPopup()
+        }
+    }
+
     private fun refreshSudokuUi() {
         val sudoku =
             sudokuPuzzle
@@ -10759,22 +10795,8 @@ class MainActivity : Activity() {
         professorButton.isEnabled =
             true
 
-        if (
-            !sudokuManualToolsDismissed &&
-            ::screenRoot
-                .isInitialized
-        ) {
-            screenRoot.post {
-                if (
-                    selectedGameMode ==
-                        GameMode.SUDOKU &&
-                    sudokuManualToolsPopup
-                        ?.isShowing !=
-                        true
-                ) {
-                    showSudokuManualToolsPopup()
-                }
-            }
+        if (::screenRoot.isInitialized) {
+            screenRoot.post { maybeShowSudokuManualToolsAfterIntro() }
         }
     }
 
@@ -10962,6 +10984,7 @@ class MainActivity : Activity() {
         ) {
             screenRoot.post {
                 positionFloatingBoard()
+                maybeShowSudokuManualToolsAfterIntro()
             }
         }
     }
@@ -12655,12 +12678,8 @@ class MainActivity : Activity() {
     }
 
     private fun showSudokuManualToolsPopup() {
-        if (
-            selectedGameMode !=
-                GameMode.SUDOKU ||
-            !::screenRoot
-                .isInitialized
-        ) {
+        // Validate again when a deferred layout callback tries to open it.
+        if (!canShowSudokuManualTools()) {
             return
         }
 
