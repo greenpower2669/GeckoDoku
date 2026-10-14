@@ -50,6 +50,10 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
         ((SudokuPalettePanel) -> Unit)? =
         null
 
+    var onHelpModeChanged:
+        ((Boolean) -> Unit)? =
+        null
+
     var onDragDelta:
         ((Float, Float) -> Unit)? =
         null
@@ -465,9 +469,17 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
 
                     SudokuPaletteAction
                         .Help -> {
-                        setHelpMode(
+                        val next =
                             !helpMode
+
+                        setHelpMode(
+                            next
                         )
+
+                        onHelpModeChanged
+                            ?.invoke(
+                                next
+                            )
                     }
 
                     SudokuPaletteAction
