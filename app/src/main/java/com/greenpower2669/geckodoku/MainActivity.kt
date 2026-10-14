@@ -10724,7 +10724,9 @@ class MainActivity : Activity() {
     }
 
     private fun canShowSudokuManualTools(): Boolean {
-        if (!::screenRoot.isInitialized || !::sudokuBoard.isInitialized) {
+        if (!::screenRoot.isInitialized || !::sudokuBoard.isInitialized ||
+            professorSpeechActive || sudokuFloatingWindowsSuspendedForProfessor
+        ) {
             return false
         }
         val videoActive = ::richMediaOverlay.isInitialized &&
@@ -15066,6 +15068,15 @@ class MainActivity : Activity() {
                             )
 
                     applyProfessorIntroVisibility()
+                    if (introPhase == IntroPhase.DONE &&
+                        ::screenRoot.isInitialized
+                    ) {
+                        // RichMediaOverlay may dispose of its window on the
+                        // following frame after invoking onFinished.
+                        screenRoot.postDelayed(
+                            { maybeShowSudokuManualToolsAfterIntro() }, 120L
+                        )
+                    }
 
                     if (
                         introPhase !=
@@ -15099,6 +15110,13 @@ class MainActivity : Activity() {
                             )
 
                     applyProfessorIntroVisibility()
+                    if (introPhase == IntroPhase.DONE &&
+                        ::screenRoot.isInitialized
+                    ) {
+                        screenRoot.postDelayed(
+                            { maybeShowSudokuManualToolsAfterIntro() }, 120L
+                        )
+                    }
                 }
             )
 
@@ -16615,6 +16633,9 @@ class MainActivity : Activity() {
             }
         } else {
             restoreSudokuFloatingWindowsAfterProfessor()
+            if (::screenRoot.isInitialized) {
+                screenRoot.post { maybeShowSudokuManualToolsAfterIntro() }
+            }
 
             if (
                 professorVisualPreparing ||
