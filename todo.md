@@ -294,3 +294,12 @@ Passations : `missions/GECKO-SUDOKU-INTRO-GATE-007.md` et `missions/GECKO-SUDOKU
 
 ### Preuve CI Samsung 007/008 — run #525
 Validation finale après les missions 007 et 008 : run [#525](https://github.com/greenpower2669/GeckoDoku/actions/runs/38587086273), workflow 38587086273 **GREEN**, commit de build `eee5347f52602ccbc91d1359aeacb161c427d9f1`. `testDebugUnitTest + assemblePhone` réussis ; vérification Pierre Sherpa/Piper et banque sprites 240p réussie. Artefact `GeckoDoku-v0.15.45-dev-phone` ID `11905448115` ; APK `GeckoDoku-v0.15.45-dev.apk` SHA-256 `23506e3a310401dcf4016c5544324913d9670bb54b70ce439da6b8356effcb51`, contrôlé après extraction. La recette Samsung demeure nécessaire. Aucun merge main / Release / Play.
+
+## Livraison directe APK #525 — prérelease TEMP (14/10/2026)
+
+- [x] Accord Fab pour un `.apk` direct sur GitHub ; règle permanente consignée dans `ordres-de-mission.md`.
+- [x] Intégrité vérifiée pour l'APK run #525 : `23506e3a310401dcf4016c5544324913d9670bb54b70ce439da6b8356effcb51`.
+- [x] Premier workflow publication #526 : artifact téléchargé et SHA OK ; `gh release create` refusé par GitHub **403 Resource not accessible by integration**. Aucun asset publié.
+- [ ] Nouvelle tentative via l'ancienne méthode prouvée (checkout + tag sur commit déclencheur), sans reconstruire Android.
+- [ ] Confirmer la prérelease `temp-geckodoku-0.15.45-dev-run-525`, son asset APK direct et son checksum par lecture API GitHub avant toute annonce.
+- [ ] Si refus 403 persiste : laisser blocage documenté et ne pas fabriquer d'URL directe.
