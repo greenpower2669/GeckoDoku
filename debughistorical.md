@@ -233,3 +233,8 @@ Correction :
 - stop/recréation/reset de Pierre lors d'une vraie bascule de profil.
 
 Point restant à valider en recette réseau réelle : le contrat de documentation accepte `metadata`; confirmer qu'un nouveau score publié revient bien avec `metadata.playerProfileId` dans `/sync`. Même si un serveur ancien omet metadata, les propres scores exacts du téléphone restent hydratables localement ; les scores distants d'autres joueurs sans id restent volontairement non attribués.
+
+
+### Validation finale technique Hall/progression
+Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f6cfa197e5998. Tests JVM + assemblePhone réussis, Pierre et banque sprites 240p vérifiés. Artefact GeckoDoku-v0.15.45-dev-phone ID 11876601009. APK SHA-256 eec808012b45e21a36a400672b1c50d7b2db41a27df9310db2df30eccef45981.
+La CI valide le code et l'APK. La seule inconnue externe restante est la conservation effective de metadata.playerProfileId par le serveur public réel ; le fallback local non ambigu protège les scores propres au téléphone si un ancien serveur omet ce champ.
