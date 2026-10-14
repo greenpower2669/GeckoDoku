@@ -507,10 +507,10 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             paint.strokeWidth =
                 (
                     cellSize *
-                        .045f
+                        .028f
                     ).coerceAtLeast(
                     dp(
-                        1.3f
+                        1.0f
                     )
                 )
 
@@ -540,9 +540,10 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                         ) %
                         255
 
+                // Très discret : la projection sert de repère, pas de mur.
                 paint.color =
                     Color.argb(
-                        135,
+                        72,
                         25 +
                             hue /
                                 4,
@@ -552,30 +553,61 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                         135
                     )
 
-                // La ligne dépasse le chiffre aux deux extrémités.
-                val direction =
-                    if (
-                        x1 >=
-                            x0
-                    ) {
-                        1f
-                    } else {
-                        -1f
-                    }
+                if (
+                    link.first.cell.row ==
+                        link.second.cell.row
+                ) {
+                    // Même ligne : l'axe traverse toute la grille.
+                    canvas.drawLine(
+                        boardRect.left,
+                        y0,
+                        boardRect.right,
+                        y0,
+                        paint
+                    )
+                } else if (
+                    link.first.cell.col ==
+                        link.second.cell.col
+                ) {
+                    // Même colonne : l'axe traverse toute la grille.
+                    canvas.drawLine(
+                        x0,
+                        boardRect.top,
+                        x0,
+                        boardRect.bottom,
+                        paint
+                    )
+                }
 
-                val overhang =
-                    cellSize *
-                        .11f
+                // Les deux extrémités logiques restent repérées avec un
+                // petit anneau afin de ne pas dépendre de la couleur seule.
+                paint.color =
+                    Color.argb(
+                        120,
+                        Color.red(
+                            paint.color
+                        ),
+                        Color.green(
+                            paint.color
+                        ),
+                        Color.blue(
+                            paint.color
+                        )
+                    )
 
-                canvas.drawLine(
-                    x0 -
-                        direction *
-                            overhang,
+                canvas.drawCircle(
+                    x0,
                     y0,
-                    x1 +
-                        direction *
-                            overhang,
+                    cellSize *
+                        .07f,
+                    paint
+                )
+
+                canvas.drawCircle(
+                    x1,
                     y1,
+                    cellSize *
+                        .07f,
                     paint
                 )
             }
@@ -1244,9 +1276,10 @@ class SudokuValueOverlayView @JvmOverloads constructor(
             paint.style =
                 Paint.Style.STROKE
             paint.strokeWidth =
-                cellSize * .075f
+                cellSize * .052f
             paint.color =
-                Color.rgb(
+                Color.argb(
+                    135,
                     172,
                     106,
                     0
