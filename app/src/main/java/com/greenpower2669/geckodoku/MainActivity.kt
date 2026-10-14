@@ -12157,7 +12157,7 @@ class MainActivity : Activity() {
                     "Repères manuels en pause."
 
                 SudokuVisualToolMode.PROJECTION ->
-                    "Projection manuelle : touche une case, puis un chiffre dans Candidats. Je tracerai ta croix ligne-colonne."
+                    "Projection manuelle : choisis une case et un chiffre dans Candidats. Une ligne par défaut ; deux repères du même chiffre superposés verticalement donnent une colonne. La croix est réservée aux hypothèses."
 
                 SudokuVisualToolMode.PAIR ->
                     "Couple manuel : touche deux cases du plateau."
@@ -12350,8 +12350,17 @@ class MainActivity : Activity() {
                     status.text =
                         "Projection manuelle $digit retirée."
                 } else {
+                    val axes = SudokuManualProjectionPolicy.axesFor(
+                        ref, sudokuManualProjectionRefs
+                    )
+                    val direction =
+                        if (SudokuManualProjectionAxis.COLUMN in axes) {
+                            "colonne"
+                        } else {
+                            "ligne"
+                        }
                     status.text =
-                        "Projection manuelle $digit : ta croix ligne-colonne est posée."
+                        "Projection manuelle $digit : axe $direction posé. L'autre axe est réservé aux hypothèses."
                 }
             }
 
