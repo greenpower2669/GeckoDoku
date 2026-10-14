@@ -36,12 +36,10 @@ object GlobalHallProjection {
                 val index =
                     remainingLocal
                         .indexOfFirst {
-                            identity(
-                                it
-                            ) ==
-                                identity(
-                                    remote
-                                )
+                            sameCompletion(
+                                it,
+                                remote
+                            )
                         }
 
                 if (
@@ -163,6 +161,34 @@ object GlobalHallProjection {
         } catch (_: Exception) {
             null
         }
+    }
+
+    private fun sameCompletion(
+        first: HallOfFameEntry,
+        second: HallOfFameEntry
+    ): Boolean {
+        if (
+            identity(
+                first
+            ) !=
+                identity(
+                    second
+                )
+        ) {
+            return false
+        }
+
+        val firstProfile =
+            first.playerProfileId
+        val secondProfile =
+            second.playerProfileId
+
+        return firstProfile ==
+            null ||
+            secondProfile ==
+                null ||
+            firstProfile ==
+                secondProfile
     }
 
     private fun identity(
