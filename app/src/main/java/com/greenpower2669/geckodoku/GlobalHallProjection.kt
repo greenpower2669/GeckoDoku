@@ -34,13 +34,10 @@ object GlobalHallProjection {
                 // l'identité locale exacte peut enrichir CE score sans
                 // aucune déduction par pseudo.
                 val index =
-                    remainingLocal
-                        .indexOfFirst {
-                            sameCompletion(
-                                it,
-                                remote
-                            )
-                        }
+                    matchingLocalIndex(
+                        remainingLocal,
+                        remote
+                    )
 
                 if (
                     index <
@@ -163,32 +160,92 @@ object GlobalHallProjection {
         }
     }
 
-    private fun sameCompletion(
-        first: HallOfFameEntry,
-        second: HallOfFameEntry
-    ): Boolean {
+    private fun matchingLocalIndex(
+        local: List<HallOfFameEntry>,
+        remote: HallOfFameEntry
+    ): Int {
+        val candidates =
+            local.indices
+                .filter {
+                    identity(
+                        local[
+                            it
+                        ]
+                    ) ==
+                        identity(
+                            remote
+                        )
+                }
+
         if (
-            identity(
-                first
-            ) !=
-                identity(
-                    second
-                )
+            candidates.isEmpty()
         ) {
-            return false
+            return -1
         }
 
-        val firstProfile =
-            first.playerProfileId
-        val secondProfile =
-            second.playerProfileId
+        val remoteProfile =
+            remote.playerProfileId
 
-        return firstProfile ==
-            null ||
-            secondProfile ==
-                null ||
-            firstProfile ==
-                secondProfile
+        if (
+            remoteProfile !=
+                null
+        ) {
+            // Une identité serveur connue ne peut correspondre qu'au même
+            // profil local, ou à une vieille ligne locale sans identité.
+            candidates
+                .firstOrNull {
+                    local[
+                        it
+                    ].playerProfileId ==
+                        remoteProfile
+                }
+                ?.let {
+                    return it
+                }
+
+            return candidates
+                .firstOrNull {
+                    local[
+                        it
+                    ].playerProfileId ==
+                        null
+                }
+                ?: -1
+        }
+
+        // Si le serveur historique ne fournit pas l'identité, préférer une
+        // ancienne ligne locale elle aussi non attribuée.
+        candidates
+            .firstOrNull {
+                local[
+                    it
+                ].playerProfileId ==
+                    null
+            }
+            ?.let {
+                return it
+            }
+
+        val knownProfiles =
+            candidates
+                .mapNotNull {
+                    local[
+                        it
+                    ].playerProfileId
+                }
+                .distinct()
+
+        // Hydrater n'est sûr que si toutes les copies candidates connues
+        // appartiennent au même profil. Sinon on garde le score distant
+        // non attribué plutôt que d'inventer un propriétaire.
+        return if (
+            knownProfiles.size ==
+                1
+        ) {
+            candidates.first()
+        } else {
+            -1
+        }
     }
 
     private fun identity(
