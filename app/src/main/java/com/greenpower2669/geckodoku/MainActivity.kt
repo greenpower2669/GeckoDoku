@@ -12389,6 +12389,56 @@ class MainActivity : Activity() {
             .show()
     }
 
+    /**
+     * PopupWindow.showAtLocation uses window coordinates. Intersect the
+     * measured root with the decor safe area so Samsung navigation/status
+     * bars remain untouchable even when Android draws edge-to-edge.
+     */
+    private fun sudokuPopupSafeBounds(): SudokuFloatingWindowBounds {
+        val rootPosition = IntArray(2)
+        screenRoot.getLocationInWindow(rootPosition)
+        val decor = window.decorView
+        val insets = screenRoot.rootWindowInsets ?: decor.rootWindowInsets
+
+        val insetLeft: Int
+        val insetTop: Int
+        val insetRight: Int
+        val insetBottom: Int
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val bars = insets?.getInsets(
+                WindowInsets.Type.systemBars() or
+                    WindowInsets.Type.displayCutout()
+            )
+            insetLeft = bars?.left ?: 0
+            insetTop = bars?.top ?: 0
+            insetRight = bars?.right ?: 0
+            insetBottom = bars?.bottom ?: 0
+        } else {
+            @Suppress("DEPRECATION")
+            insetLeft = insets?.systemWindowInsetLeft ?: 0
+            @Suppress("DEPRECATION")
+            insetTop = insets?.systemWindowInsetTop ?: 0
+            @Suppress("DEPRECATION")
+            insetRight = insets?.systemWindowInsetRight ?: 0
+            @Suppress("DEPRECATION")
+            insetBottom = insets?.systemWindowInsetBottom ?: 0
+        }
+        return SudokuFloatingWindowGeometryPolicy.safeBounds(
+            rootX = rootPosition[0],
+            rootY = rootPosition[1],
+            rootWidth = screenRoot.width,
+            rootHeight = screenRoot.height,
+            windowWidth = decor.width.takeIf { it > 0 }
+                ?: rootPosition[0] + screenRoot.width,
+            windowHeight = decor.height.takeIf { it > 0 }
+                ?: rootPosition[1] + screenRoot.height,
+            insetLeft = insetLeft,
+            insetTop = insetTop,
+            insetRight = insetRight,
+            insetBottom = insetBottom
+        )
+    }
+
     private fun boardRelativeTop(
         popupHeight: Int,
         layer: Int
@@ -12404,31 +12454,9 @@ class MainActivity : Activity() {
             )
         }
 
-        val rootLocation =
-            IntArray(
-                2
-            )
-        val boardLocation =
-            IntArray(
-                2
-            )
-
-        screenRoot
-            .getLocationOnScreen(
-                rootLocation
-            )
-        sudokuBoard
-            .getLocationOnScreen(
-                boardLocation
-            )
-
-        val boardTop =
-            boardLocation[
-                1
-            ] -
-                rootLocation[
-                    1
-                ]
+        val boardLocation = IntArray(2)
+        sudokuBoard.getLocationInWindow(boardLocation)
+        val boardTop = boardLocation[1]
 
         return (
             boardTop -
@@ -12447,83 +12475,30 @@ class MainActivity : Activity() {
 
     private fun defaultSudokuManualToolsGeometry():
         SudokuFloatingWindowGeometry {
-        val rootLocation =
-            IntArray(
-                2
-            )
-        val boardLocation =
-            IntArray(
-                2
-            )
-
-        screenRoot
-            .getLocationOnScreen(
-                rootLocation
-            )
-
-        sudokuBoard
-            .getLocationOnScreen(
-                boardLocation
-            )
-
-        val boardLeft =
-            boardLocation[
-                0
-            ] -
-                rootLocation[
-                    0
-                ]
-
-        val boardTop =
-            boardLocation[
-                1
-            ] -
-                rootLocation[
-                    1
-                ]
-
-        val boardWidth =
-            sudokuBoard.width
-                .takeIf {
-                    it >
-                        0
-                }
-                ?: (
-                    screenRoot.width -
-                        dp(
-                            8
-                        )
-                    )
-
-        return SudokuFloatingWindowGeometryPolicy
-            .compactAboveBoard(
-                rootWidth =
-                    screenRoot.width,
-                rootHeight =
-                    screenRoot.height,
-                boardLeft =
-                    boardLeft,
-                boardTop =
-                    boardTop,
-                boardWidth =
-                    boardWidth,
-                preferredHeight =
-                    dp(
-                        78
-                    ),
-                minimumWidth =
-                    dp(
-                        280
-                    ),
-                margin =
-                    dp(
-                        4
-                    ),
-                gap =
-                    dp(
-                        3
-                    )
-            )
+        val safe = sudokuPopupSafeBounds()
+        val boardLocation = IntArray(2)
+        sudokuBoard.getLocationInWindow(boardLocation)
+        val boardWidth = sudokuBoard.width.takeIf { it > 0 }
+            ?: safe.width - dp(8)
+        // compactAboveBoard operates in safe-area-local coordinates.
+        val local = SudokuFloatingWindowGeometryPolicy.compactAboveBoard(
+            rootWidth = safe.width,
+            rootHeight = safe.height,
+            boardLeft = boardLocation[0] - safe.left,
+            boardTop = boardLocation[1] - safe.top,
+            boardWidth = boardWidth,
+            preferredHeight = dp(78),
+            minimumWidth = dp(280),
+            margin = dp(4),
+            gap = dp(3)
+        )
+        return SudokuFloatingWindowGeometryPolicy.clampToBounds(
+            local.copy(x = local.x + safe.left, y = local.y + safe.top),
+            safe,
+            minimumWidth = dp(280),
+            minimumHeight = dp(72),
+            margin = dp(4)
+        )
     }
 
     private fun loadSudokuManualToolsGeometry():
@@ -12569,27 +12544,13 @@ class MainActivity : Activity() {
                     )
             )
 
-        return SudokuFloatingWindowGeometryPolicy
-            .clamp(
-                geometry =
-                    restored,
-                rootWidth =
-                    screenRoot.width,
-                rootHeight =
-                    screenRoot.height,
-                minimumWidth =
-                    dp(
-                        280
-                    ),
-                minimumHeight =
-                    dp(
-                        72
-                    ),
-                margin =
-                    dp(
-                        4
-                    )
-            )
+        return SudokuFloatingWindowGeometryPolicy.clampToBounds(
+            geometry = restored,
+            bounds = sudokuPopupSafeBounds(),
+            minimumWidth = dp(280),
+            minimumHeight = dp(72),
+            margin = dp(4)
+        )
     }
 
     private fun saveSudokuManualToolsGeometry(
@@ -12786,6 +12747,13 @@ class MainActivity : Activity() {
                         event.rawX
                     lastRawY =
                         event.rawY
+                    // The window may have been repositioned by insets.
+                    sudokuManualToolsGeometry?.let {
+                        popupX = it.x
+                        popupY = it.y
+                        popupWidth = it.width
+                        popupHeight = it.height
+                    }
                     true
                 }
 
@@ -12807,55 +12775,24 @@ class MainActivity : Activity() {
                     lastRawY =
                         event.rawY
 
-                    popupX =
-                        (
-                            popupX +
-                                dx
-                            ).coerceIn(
-                            dp(
-                                4
+                    val constrained = SudokuFloatingWindowGeometryPolicy
+                        .clampToBounds(
+                            SudokuFloatingWindowGeometry(
+                                popupX + dx, popupY + dy,
+                                popupWidth, popupHeight
                             ),
-                            (
-                                screenRoot.width -
-                                    popupWidth -
-                                    dp(
-                                        4
-                                    )
-                                ).coerceAtLeast(
-                                dp(
-                                    4
-                                )
-                            )
+                            sudokuPopupSafeBounds(),
+                            minimumWidth = dp(280),
+                            minimumHeight = dp(72),
+                            margin = dp(4)
                         )
-
-                    popupY =
-                        (
-                            popupY +
-                                dy
-                            ).coerceIn(
-                            dp(
-                                4
-                            ),
-                            (
-                                screenRoot.height -
-                                    popupHeight -
-                                    dp(
-                                        4
-                                    )
-                                ).coerceAtLeast(
-                                dp(
-                                    4
-                                )
-                            )
-                        )
-
-                    popupRef
-                        ?.update(
-                            popupX,
-                            popupY,
-                            -1,
-                            -1
-                        )
+                    popupX = constrained.x
+                    popupY = constrained.y
+                    popupWidth = constrained.width
+                    popupHeight = constrained.height
+                    popupRef?.update(
+                        popupX, popupY, popupWidth, popupHeight
+                    )
 
                     updateSudokuManualToolsGeometry(
                         x =
@@ -13187,48 +13124,26 @@ class MainActivity : Activity() {
             return
         }
 
-        val popupWidth =
-            minOf(
-                (
-                    screenRoot.width -
-                        dp(
-                            12
-                        )
-                    ).coerceAtLeast(
-                    dp(
-                        280
-                    )
+        val safe = sudokuPopupSafeBounds()
+        val initialGeometry = SudokuFloatingWindowGeometryPolicy.clampToBounds(
+            SudokuFloatingWindowGeometry(
+                x = safe.left + (safe.width - dp(470)) / 2,
+                y = boardRelativeTop(
+                    dp(94),
+                    if (sudokuManualToolsPopup?.isShowing == true) 2 else 1
                 ),
-                dp(
-                    470
-                )
-            )
-
-        val popupHeight =
-            dp(
-                94
-            )
-
-        var popupX =
-            (
-                screenRoot.width -
-                    popupWidth
-                ) /
-                2
-
-        var popupY =
-            boardRelativeTop(
-                popupHeight,
-                if (
-                    sudokuManualToolsPopup
-                        ?.isShowing ==
-                        true
-                ) {
-                    2
-                } else {
-                    1
-                }
-            )
+                width = minOf(safe.width - dp(12), dp(470)),
+                height = dp(94)
+            ),
+            safe,
+            minimumWidth = dp(280),
+            minimumHeight = dp(80),
+            margin = dp(4)
+        )
+        val popupWidth = initialGeometry.width
+        val popupHeight = initialGeometry.height
+        var popupX = initialGeometry.x
+        var popupY = initialGeometry.y
 
         sudokuSuperHelpGeometry =
             SudokuFloatingWindowGeometry(
@@ -13296,6 +13211,10 @@ class MainActivity : Activity() {
                         event.rawX
                     lastRawY =
                         event.rawY
+                    sudokuSuperHelpGeometry?.let {
+                        popupX = it.x
+                        popupY = it.y
+                    }
                     true
                 }
 
@@ -13317,55 +13236,19 @@ class MainActivity : Activity() {
                     lastRawY =
                         event.rawY
 
-                    popupX =
-                        (
-                            popupX +
-                                dx
-                            ).coerceIn(
-                            dp(
-                                4
-                            ),
-                            (
-                                screenRoot.width -
-                                    popupWidth -
-                                    dp(
-                                        4
-                                    )
-                                ).coerceAtLeast(
-                                dp(
-                                    4
-                                )
-                            )
-                        )
-
-                    popupY =
-                        (
-                            popupY +
-                                dy
-                            ).coerceIn(
-                            dp(
-                                4
-                            ),
-                            (
-                                screenRoot.height -
-                                    popupHeight -
-                                    dp(
-                                        4
-                                    )
-                                ).coerceAtLeast(
-                                dp(
-                                    4
-                                )
-                            )
-                        )
-
-                    popupRef
-                        ?.update(
-                            popupX,
-                            popupY,
-                            -1,
-                            -1
-                        )
+                    val moved = SudokuFloatingWindowGeometryPolicy.clampToBounds(
+                        SudokuFloatingWindowGeometry(
+                            popupX + dx, popupY + dy,
+                            popupWidth, popupHeight
+                        ),
+                        sudokuPopupSafeBounds(),
+                        minimumWidth = dp(280),
+                        minimumHeight = dp(80),
+                        margin = dp(4)
+                    )
+                    popupX = moved.x
+                    popupY = moved.y
+                    popupRef?.update(popupX, popupY, -1, -1)
 
                     sudokuSuperHelpGeometry =
                         SudokuFloatingWindowGeometry(
