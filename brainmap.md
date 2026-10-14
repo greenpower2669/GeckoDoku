@@ -329,3 +329,23 @@ SudokuValueOverlayView
 ```
 
 `MainActivity.placeSudokuManualDigitMarker()` reflète la direction réelle dans son message. Tests dans `SudokuVisualReasoningTest.kt`. Mission `missions/GECKO-SUDOKU-MANUAL-PROJECTION-006.md`. CI phone à vérifier.
+
+## Fenêtres Sudoku — correctifs intro et clavier (missions 007/008)
+
+```text
+refreshSudokuUi + applyGameModeVisibility + onLayout / intro terminée
+→ canShowSudokuManualTools()
+   → SudokuFloatingStartupPolicy.canOpen()
+   → mode SUDOKU + intro DONE + vidéo absente
+   → grille visible, mesurée + non fermé manuellement
+   → ouverture de Repères autorisée
+Pendant la parole Pierre → blocage ouverture; reprise après restitution
+
+sudokuBoard.getLocationInWindow() + hauteur
+→ SudokuFloatingWindowGeometryPolicy.dockBelowBoard(safe,inset,gap)
+→ showSudokuCellPalette : bottomCentered(dock)
+→ onDragDelta / onResizeDelta / reconcile : clamp(dock)
+→ clavier sous la grille sans cacher la ligne 9 (portrait normal)
+```
+
+Références : `missions/GECKO-SUDOKU-INTRO-GATE-007.md` et `missions/GECKO-SUDOKU-KEYPAD-DOCK-008.md`. Ne pas modifier les règles de jeu ; CI et recette Samsung à enregistrer.
