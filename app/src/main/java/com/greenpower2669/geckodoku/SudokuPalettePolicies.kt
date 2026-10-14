@@ -582,10 +582,10 @@ class SudokuPaletteLayoutPolicy {
 
     companion object {
         private const val HEADER_FRACTION =
-            .105f
+            .075f
 
         private const val PANEL_TITLE_FRACTION =
-            .20f
+            .12f
     }
 }
 
