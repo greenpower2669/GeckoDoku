@@ -11877,6 +11877,18 @@ class MainActivity : Activity() {
         }
 
         if (
+            screenRoot.width <=
+                0 ||
+            screenRoot.height <=
+                0
+        ) {
+            screenRoot.post {
+                showSudokuManualToolsPopup()
+            }
+            return
+        }
+
+        if (
             sudokuManualToolsPopup
                 ?.isShowing ==
                 true
@@ -12766,6 +12778,7 @@ class MainActivity : Activity() {
     ) {
         val popup =
             sudokuManualToolsPopup
+
         sudokuManualToolsPopup =
             null
 
@@ -12776,6 +12789,12 @@ class MainActivity : Activity() {
         ) {
             popup.dismiss()
         }
+
+        sudokuManualTool =
+            SudokuVisualToolMode.NONE
+        sudokuManualPendingCells
+            .clear()
+        syncSudokuManualAnnotations()
 
         if (keepAvailable) {
             sudokuManualToolsDismissed =
