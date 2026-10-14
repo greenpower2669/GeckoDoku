@@ -185,4 +185,56 @@ class SudokuFloatingWindowGeometryTest {
         assertTrue(!allowed(sudoku = false))
     }
 
+    @Test
+    fun keyboardDockNeverCoversBottomRowInPortrait() {
+        val safe = SudokuFloatingWindowBounds(0, 60, 1080, 2390)
+        val dock = SudokuFloatingWindowGeometryPolicy.dockBelowBoard(
+            safe, boardBottom = 1710, gap = 12
+        )
+        val popup = SudokuFloatingWindowGeometryPolicy.bottomCentered(
+            dock,
+            width = 900,
+            height = 800,
+            minWidth = 280,
+            minHeight = 160,
+            margin = 8,
+            bottomGap = 16
+        )
+        assertEquals(1722, dock.top)
+        assertTrue(popup.y >= 1710 + 12)
+        assertTrue(popup.y + popup.height <= 2390 - 8)
+        assertTrue(popup.height < 800) // Dynamic shrink, not board overlap.
+    }
+
+    @Test
+    fun keyboardDragAndResizeStayInsideItsDock() {
+        val safe = SudokuFloatingWindowBounds(0, 60, 1080, 2390)
+        val dock = SudokuFloatingWindowGeometryPolicy.dockBelowBoard(
+            safe, boardBottom = 1730, gap = 12
+        )
+        val dragged = SudokuFloatingWindowGeometryPolicy.clampToBounds(
+            SudokuFloatingWindowGeometry(0, 0, 850, 750),
+            dock, minimumWidth = 280, minimumHeight = 160, margin = 8
+        )
+        assertTrue(dragged.y >= dock.top + 8)
+        assertTrue(dragged.y + dragged.height <= dock.bottom - 8)
+        val resized = SudokuFloatingWindowGeometryPolicy.bottomCentered(
+            dock, 850, 1300, 280, 160, 8, 16
+        )
+        assertTrue(resized.y >= dock.top + 8)
+        assertTrue(resized.y + resized.height <= dock.bottom - 8)
+    }
+
+    @Test
+    fun keyboardDockChangesWithMeasuredBoardBottom() {
+        val safe = SudokuFloatingWindowBounds(0, 50, 1080, 2370)
+        val before = SudokuFloatingWindowGeometryPolicy.dockBelowBoard(
+            safe, boardBottom = 1710, gap = 8
+        )
+        val after = SudokuFloatingWindowGeometryPolicy.dockBelowBoard(
+            safe, boardBottom = 1810, gap = 8
+        )
+        assertEquals(100, after.top - before.top)
+    }
+
 }
