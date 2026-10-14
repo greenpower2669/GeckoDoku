@@ -256,3 +256,7 @@ Feu vert « Go » après comparaison des captures 16:45 (palette trop grande, ma
 ### Mission 009 — correction après CI de contrôle
 
 Le run #528 `38603247697` a révélé 1 échec sur 299 tests malgré compilation Kotlin réussie, dû à une marge inférieure comptée deux fois dans le calcul du pavé compact. Politique corrigée sur la même branche (cf. `debughistorical.md`). Une nouvelle CI est exigée avant livraison ; ne pas présenter le run #528 comme valide.
+
+## Preuve CI / livraison du pavé compact — mission 009 (14/10/2026)
+
+Run `#529` (`38603852806`) **GREEN** sur le commit `a699757ec88c15cecc0de24568b02037f45b17e5` : 299 tests JVM, build Android phone, contrôle embarquement Pierre + banque sprites 240p et contrôle SHA-256 réussis. Artefact `GeckoDoku-v0.15.45-dev-phone`, id `11913804772`. APK `GeckoDoku-v0.15.45-dev.apk`, SHA-256 `28d0995d5e4b1948ff2351b34d3b99638b225b2f755e856fd036d5238ea8a86e`. Publication du seul APK direct dans prérelease TEMP demandée par le contrat immuable, tag `temp-geckodoku-0.15.45-dev-run-529` ; **aucun merge `main`, aucune Release stable, aucun Play**. Recette visuelle Samsung encore nécessaire.
