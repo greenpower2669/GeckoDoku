@@ -129,7 +129,7 @@ object SudokuFloatingWindowGeometryPolicy {
         margin: Int,
         bottomGap: Int
     ): SudokuFloatingWindowGeometry {
-        val room = (dock.height - 2 * margin - bottomGap).coerceAtLeast(1)
+        val room = (dock.height - margin - maxOf(margin, bottomGap)).coerceAtLeast(1)
         val targetHeight = preferredHeight.coerceAtMost(room)
         val preferred = SudokuFloatingWindowGeometry(
             x = dock.right - margin - preferredWidth,
