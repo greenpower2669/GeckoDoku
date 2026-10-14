@@ -96,6 +96,9 @@ class SudokuValueOverlayView @JvmOverloads constructor(
     var showVisualTriplets: Boolean = false
         set(value) { field = value; invalidate() }
 
+    var showVisualBinary: Boolean = false
+        set(value) { field = value; invalidate() }
+
     var showVisualCircles: Boolean = false
         set(value) { field = value; invalidate() }
 
@@ -233,6 +236,26 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         val state =
             snapshotProvider()
 
+        val analyticalDisplay =
+            showVisualProjections ||
+                showVisualPairs ||
+                showVisualTriplets ||
+                showVisualBinary ||
+                showVisualCircles
+
+        // Les candidats de raisonnement sont calculés depuis la grille
+        // confirmée. Ils restent strictement visuels et ne touchent jamais
+        // aux notes personnelles enregistrées dans le moteur.
+        val logicalCandidates =
+            if (analyticalDisplay) {
+                SudokuVisualReasoning
+                    .logicalCandidates(
+                        state.values
+                    )
+            } else {
+                emptyMap()
+            }
+
         var animateMarker =
             false
 
@@ -305,32 +328,64 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                     )
                 }
 
-                val candidates =
+                val personalCandidates =
                     linkedSetOf<Int>()
+                        .apply {
+                            addAll(
+                                state.notesAt(
+                                    cell
+                                )
+                            )
 
-                candidates.addAll(
-                    state.notesAt(
+                            if (
+                                professorCell ==
+                                    cell
+                            ) {
+                                addAll(
+                                    professorCandidates
+                                )
+                            }
+                        }
+
+                val analyticalCandidates =
+                    logicalCandidates[
                         cell
-                    )
-                )
+                    ].orEmpty() -
+                        personalCandidates
 
                 if (
-                    professorCell ==
-                        cell
+                    analyticalCandidates
+                        .isNotEmpty()
                 ) {
-                    candidates.addAll(
-                        professorCandidates
+                    drawCandidates(
+                        canvas =
+                            canvas,
+                        cellRect =
+                            rect,
+                        cell =
+                            cell,
+                        candidates =
+                            analyticalCandidates,
+                        normalAlpha =
+                            150
                     )
                 }
 
                 if (
-                    candidates.isNotEmpty()
+                    personalCandidates
+                        .isNotEmpty()
                 ) {
                     drawCandidates(
-                        canvas,
-                        rect,
-                        cell,
-                        candidates
+                        canvas =
+                            canvas,
+                        cellRect =
+                            rect,
+                        cell =
+                            cell,
+                        candidates =
+                            personalCandidates,
+                        normalAlpha =
+                            225
                     )
                 }
 
@@ -350,10 +405,26 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         )
 
         // Annotations en surimpression, sans toucher aux notes de jeu.
-        drawPlayerReasoningAnnotations(canvas, state)
+        drawPlayerReasoningAnnotations(
+            canvas =
+                canvas,
+            candidates =
+                logicalCandidates
+        )
 
-        if (animateVisualGroups && (showVisualPairs || showVisualTriplets)) {
-            postInvalidateDelayed(220L)
+        if (
+            (
+                animateVisualGroups &&
+                (
+                    showVisualPairs ||
+                    showVisualTriplets
+                )
+            ) ||
+            showVisualBinary
+        ) {
+            postInvalidateDelayed(
+                180L
+            )
         }
 
         if (
@@ -372,128 +443,515 @@ class SudokuValueOverlayView @JvmOverloads constructor(
      */
     private fun drawPlayerReasoningAnnotations(
         canvas: Canvas,
-        snapshot: SudokuSnapshot
+        candidates:
+            Map<Cell, Set<Int>>
     ) {
         if (
             !showVisualProjections &&
             !showVisualPairs &&
             !showVisualTriplets &&
+            !showVisualBinary &&
             !showVisualCircles
-        ) return
-
-        val notes = buildMap<Cell, Set<Int>> {
-            for (row in 0..8) {
-                for (col in 0..8) {
-                    val cell = Cell(row, col)
-                    if (snapshot.valueAt(cell) == 0) {
-                        val values = snapshot.notesAt(cell).filter { it in 1..9 }.toSet()
-                        if (values.isNotEmpty()) put(cell, values)
-                    }
-                }
-            }
+        ) {
+            return
         }
 
-        fun targetPoint(ref: SudokuCandidateRef): Pair<Float, Float> {
-            val cell = cellRect(ref.cell)
-            val slot = SudokuCandidateLayout.slot(ref.digit)
+        fun targetPoint(
+            ref: SudokuCandidateRef
+        ): Pair<Float, Float> {
+            val cell =
+                cellRect(
+                    ref.cell
+                )
+
+            val slot =
+                SudokuCandidateLayout
+                    .slot(
+                        ref.digit
+                    )
+
             return (
-                cell.left + (slot.left + slot.right) * cell.width() / 2f
-            ) to (
-                cell.top + (slot.top + slot.bottom) * cell.height() / 2f
-            )
+                cell.left +
+                    (
+                        slot.left +
+                            slot.right
+                        ) *
+                        cell.width() /
+                        2f
+                ) to
+                (
+                    cell.top +
+                        (
+                            slot.top +
+                                slot.bottom
+                            ) *
+                            cell.height() /
+                            2f
+                    )
         }
 
-        paint.style = Paint.Style.STROKE
-        paint.strokeCap = Paint.Cap.ROUND
-        paint.pathEffect = null
+        paint.style =
+            Paint.Style.STROKE
+        paint.strokeCap =
+            Paint.Cap.ROUND
+        paint.pathEffect =
+            null
+
         if (showVisualProjections) {
-            val links = SudokuVisualReasoning.projectionSegments(notes)
-            paint.strokeWidth = (cellSize * .045f).coerceAtLeast(dp(1.3f))
-            links.forEach { link ->
-                val (x0, y0) = targetPoint(link.first)
-                val (x1, y1) = targetPoint(link.second)
-                val hue = (link.first.digit * 37) % 255
-                paint.color = Color.argb(115, 25 + hue / 4, 75 + hue / 3, 135)
-                // Le trait dépasse légèrement les chiffres aux deux extrémités
-                // afin que la projection reste perceptible même avec une basse vision.
-                val direction = if (x1 >= x0) 1f else -1f
-                val overhang = cellSize * .11f
+            val links =
+                SudokuVisualReasoning
+                    .projectionSegments(
+                        candidates
+                    )
+
+            paint.strokeWidth =
+                (
+                    cellSize *
+                        .045f
+                    ).coerceAtLeast(
+                    dp(
+                        1.3f
+                    )
+                )
+
+            links.forEach {
+                link ->
+
+                val (
+                    x0,
+                    y0
+                ) =
+                    targetPoint(
+                        link.first
+                    )
+
+                val (
+                    x1,
+                    y1
+                ) =
+                    targetPoint(
+                        link.second
+                    )
+
+                val hue =
+                    (
+                        link.first.digit *
+                            37
+                        ) %
+                        255
+
+                paint.color =
+                    Color.argb(
+                        135,
+                        25 +
+                            hue /
+                                4,
+                        75 +
+                            hue /
+                                3,
+                        135
+                    )
+
+                // La ligne dépasse le chiffre aux deux extrémités.
+                val direction =
+                    if (
+                        x1 >=
+                            x0
+                    ) {
+                        1f
+                    } else {
+                        -1f
+                    }
+
+                val overhang =
+                    cellSize *
+                        .11f
+
                 canvas.drawLine(
-                    x0 - direction * overhang,
+                    x0 -
+                        direction *
+                            overhang,
                     y0,
-                    x1 + direction * overhang,
+                    x1 +
+                        direction *
+                            overhang,
                     y1,
                     paint
                 )
             }
         }
 
-        // Pas de clignotement rapide pour les personnes photosensibles :
-        // contour fixe contrasté, présence indiquée sans dépendre de la couleur.
-        for ((enabled, size) in listOf(
-            showVisualPairs to 2,
-            showVisualTriplets to 3
-        )) {
-            if (!enabled) continue
-            val alpha = if (animateVisualGroups) {
-                // période 3 secondes, alpha jamais inférieur à 125.
-                val phase = (
-                    android.os.SystemClock.uptimeMillis() % 3000L
-                ).toDouble() / 3000.0 * (2.0 * Math.PI)
-                (170 + 45 * kotlin.math.sin(phase)).toInt()
-                    .coerceIn(125, 215)
-            } else 195
-            paint.color = if (size == 2) Color.argb(alpha, 22, 105, 160)
-            else Color.argb(alpha, 143, 64, 150)
-            paint.strokeWidth = (cellSize * .055f).coerceAtLeast(dp(1.5f))
-            paint.pathEffect = if (size == 3) {
-                android.graphics.DashPathEffect(
-                    floatArrayOf(cellSize * .12f, cellSize * .07f), 0f
+        // Pas de flash rapide : la pulsation est lente, douce et ne fait
+        // jamais disparaître un repère.
+        for (
+            (enabled, size) in
+                listOf(
+                    showVisualPairs to
+                        2,
+                    showVisualTriplets to
+                        3
                 )
-            } else null
-            val highlighted = SudokuVisualReasoning.nakedGroups(notes, size)
-                .flatMap { it.cells }.toSet()
-            highlighted.forEach { cell ->
-                val rect = cellRect(cell)
-                val inset = cellSize * .055f
+        ) {
+            if (!enabled) {
+                continue
+            }
+
+            val alpha =
+                if (
+                    animateVisualGroups
+                ) {
+                    val phase =
+                        (
+                            SystemClock
+                                .uptimeMillis() %
+                                3000L
+                            ).toDouble() /
+                            3000.0 *
+                            (
+                                2.0 *
+                                    Math.PI
+                                )
+
+                    (
+                        170 +
+                            45 *
+                            sin(
+                                phase
+                            )
+                        ).toInt()
+                        .coerceIn(
+                            125,
+                            215
+                        )
+                } else {
+                    195
+                }
+
+            paint.color =
+                if (size == 2) {
+                    Color.argb(
+                        alpha,
+                        22,
+                        105,
+                        160
+                    )
+                } else {
+                    Color.argb(
+                        alpha,
+                        143,
+                        64,
+                        150
+                    )
+                }
+
+            paint.strokeWidth =
+                (
+                    cellSize *
+                        .055f
+                    ).coerceAtLeast(
+                    dp(
+                        1.5f
+                    )
+                )
+
+            paint.pathEffect =
+                if (size == 3) {
+                    android.graphics
+                        .DashPathEffect(
+                            floatArrayOf(
+                                cellSize *
+                                    .12f,
+                                cellSize *
+                                    .07f
+                            ),
+                            0f
+                        )
+                } else {
+                    null
+                }
+
+            val highlighted =
+                SudokuVisualReasoning
+                    .nakedGroups(
+                        candidates,
+                        size
+                    )
+                    .flatMap {
+                        it.cells
+                    }
+                    .toSet()
+
+            highlighted.forEach {
+                cell ->
+
+                val rect =
+                    cellRect(
+                        cell
+                    )
+
+                val inset =
+                    cellSize *
+                        .055f
+
                 canvas.drawRoundRect(
-                    rect.left + inset, rect.top + inset,
-                    rect.right - inset, rect.bottom - inset,
-                    cellSize * .12f, cellSize * .12f, paint
+                    rect.left +
+                        inset,
+                    rect.top +
+                        inset,
+                    rect.right -
+                        inset,
+                    rect.bottom -
+                        inset,
+                    cellSize *
+                        .12f,
+                    cellSize *
+                        .12f,
+                    paint
                 )
             }
-            paint.pathEffect = null
+
+            paint.pathEffect =
+                null
+        }
+
+        if (showVisualBinary) {
+            val phase =
+                (
+                    SystemClock
+                        .uptimeMillis() %
+                        2400L
+                    ).toDouble() /
+                    2400.0 *
+                    (
+                        2.0 *
+                            Math.PI
+                        )
+
+            val alpha =
+                (
+                    185 +
+                        55 *
+                        sin(
+                            phase
+                        )
+                    ).toInt()
+                    .coerceIn(
+                        120,
+                        240
+                    )
+
+            paint.strokeWidth =
+                (
+                    cellSize *
+                        .065f
+                    ).coerceAtLeast(
+                    dp(
+                        1.8f
+                    )
+                )
+
+            paint.pathEffect =
+                null
+
+            SudokuVisualReasoning
+                .binaryGroups(
+                    candidates
+                )
+                .forEach {
+                    group ->
+
+                    val hue =
+                        (
+                            group.digit *
+                                41
+                            ) %
+                            255
+
+                    paint.color =
+                        Color.argb(
+                            alpha,
+                            30 +
+                                hue /
+                                    5,
+                            95 +
+                                hue /
+                                    4,
+                            42 +
+                                hue /
+                                    3
+                        )
+
+                    group.cells
+                        .forEach {
+                            cell ->
+
+                            val (
+                                x,
+                                y
+                            ) =
+                                targetPoint(
+                                    SudokuCandidateRef(
+                                        cell =
+                                            cell,
+                                        digit =
+                                            group.digit
+                                    )
+                                )
+
+                            canvas.drawCircle(
+                                x,
+                                y,
+                                cellSize *
+                                    .125f,
+                                paint
+                            )
+
+                            // Petit second anneau : lisible sans dépendre
+                            // uniquement de la couleur.
+                            canvas.drawCircle(
+                                x,
+                                y,
+                                cellSize *
+                                    .155f,
+                                paint
+                            )
+                        }
+                }
         }
 
         if (showVisualCircles) {
-            paint.strokeWidth = (cellSize * .055f).coerceAtLeast(dp(1.4f))
-            playerCircleLinks.forEachIndexed { index, link ->
-                if (
-                    link.first.digit !in notes[link.first.cell].orEmpty() ||
-                    link.second.digit !in notes[link.second.cell].orEmpty()
-                ) return@forEachIndexed
-                val colors = intArrayOf(
-                    Color.rgb(15, 108, 171),
-                    Color.rgb(145, 48, 143),
-                    Color.rgb(30, 127, 75),
-                    Color.rgb(165, 97, 17)
+            paint.strokeWidth =
+                (
+                    cellSize *
+                        .055f
+                    ).coerceAtLeast(
+                    dp(
+                        1.4f
+                    )
                 )
-                val color = colors[index % colors.size]
-                val (x0, y0) = targetPoint(link.first)
-                val (x1, y1) = targetPoint(link.second)
-                paint.color = Color.argb(
-                    100, Color.red(color), Color.green(color), Color.blue(color)
-                )
-                canvas.drawLine(x0, y0, x1, y1, paint)
-                paint.color = Color.argb(
-                    210, Color.red(color), Color.green(color), Color.blue(color)
-                )
-                canvas.drawCircle(x0, y0, cellSize * .105f, paint)
-                canvas.drawCircle(x1, y1, cellSize * .105f, paint)
-            }
+
+            playerCircleLinks
+                .forEachIndexed {
+                    index,
+                    link ->
+
+                    if (
+                        link.first.digit !in
+                            candidates[
+                                link.first.cell
+                            ].orEmpty() ||
+                        link.second.digit !in
+                            candidates[
+                                link.second.cell
+                            ].orEmpty()
+                    ) {
+                        return@forEachIndexed
+                    }
+
+                    val colors =
+                        intArrayOf(
+                            Color.rgb(
+                                15,
+                                108,
+                                171
+                            ),
+                            Color.rgb(
+                                145,
+                                48,
+                                143
+                            ),
+                            Color.rgb(
+                                30,
+                                127,
+                                75
+                            ),
+                            Color.rgb(
+                                165,
+                                97,
+                                17
+                            )
+                        )
+
+                    val color =
+                        colors[
+                            index %
+                                colors.size
+                            ]
+
+                    val (
+                        x0,
+                        y0
+                    ) =
+                        targetPoint(
+                            link.first
+                        )
+
+                    val (
+                        x1,
+                        y1
+                    ) =
+                        targetPoint(
+                            link.second
+                        )
+
+                    paint.color =
+                        Color.argb(
+                            110,
+                            Color.red(
+                                color
+                            ),
+                            Color.green(
+                                color
+                            ),
+                            Color.blue(
+                                color
+                            )
+                        )
+
+                    canvas.drawLine(
+                        x0,
+                        y0,
+                        x1,
+                        y1,
+                        paint
+                    )
+
+                    paint.color =
+                        Color.argb(
+                            220,
+                            Color.red(
+                                color
+                            ),
+                            Color.green(
+                                color
+                            ),
+                            Color.blue(
+                                color
+                            )
+                        )
+
+                    canvas.drawCircle(
+                        x0,
+                        y0,
+                        cellSize *
+                            .105f,
+                        paint
+                    )
+
+                    canvas.drawCircle(
+                        x1,
+                        y1,
+                        cellSize *
+                            .105f,
+                        paint
+                    )
+                }
         }
-        paint.pathEffect = null
-        paint.style = Paint.Style.FILL
+
+        paint.pathEffect =
+            null
+        paint.style =
+            Paint.Style.FILL
     }
 
     private fun drawHypothesisAura(
@@ -1010,7 +1468,8 @@ class SudokuValueOverlayView @JvmOverloads constructor(
         canvas: Canvas,
         cellRect: RectF,
         cell: Cell,
-        candidates: Set<Int>
+        candidates: Set<Int>,
+        normalAlpha: Int
     ) {
         for (
             digit in
@@ -1095,7 +1554,7 @@ class SudokuValueOverlayView @JvmOverloads constructor(
                     ) {
                         255
                     } else {
-                        225
+                        normalAlpha
                     }
             )
         }
