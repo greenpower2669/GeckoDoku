@@ -136,3 +136,8 @@ Fab autorise le correctif complet du pavé Sudoku après audit de l'impression �
 - Tests unitaires ajoutés pour candidats calculés et Binaire.
 - Branche uniquement : `feature/sudoku-visual-reasoning-v1`. Aucun merge main / Release / Play sans nouvel ordre.
 - Run final attendu : #464, à valider avant annonce de livraison.
+
+
+### Validation CI Binaire / candidats réels
+Run `38504109994` / #464 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11867790810`, APK SHA-256 `356cb9973995d453d6e82e865b959f4648502624705322502e23d711ec52cb5e`.
+Recette Samsung encore requise avant toute validation fonctionnelle finale. Aucun merge/release/publication.
