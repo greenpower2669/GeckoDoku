@@ -56,3 +56,36 @@ Les deux missions sont **distinctes**, même branche demandée : une concerne le
 - **Pas de merge `main`, pas de Release, pas de publication, pas de modification de signature / applicationId sans ordre explicite de Fab.**
 
 **Critère de succès :** le Hall reste réellement **global**, mais aucune personne ne voit les statistiques/progressions de plusieurs profils mélangées comme si elles appartenaient au même joueur, et cela fonctionne pour les quatre modes.
+
+## Mise en œuvre — Hall comparatif / progression personnelle (14/10/2026)
+
+Formulation canonique validée par Fab :
+- **Hall of Fame = comparatif global entre joueurs.**
+- **Progression = analyse strictement personnelle d'une identité joueur.**
+
+Implémentation :
+- suppression du `take(10)` dans l'écran de niveau : tous les scores filtrés restent consultables ;
+- suppression de la troncature locale `MAX_ENTRIES=200` du Hall local ;
+- ajout de `playerProfileId` nullable à `HallOfFameEntry`, rétrocompatible avec l'historique ;
+- `PlayerProfileStore` expose un `activeProgressionId` opaque et stable : UUID dédié pour le profil historique, UUID existant réutilisé pour les profils locaux supplémentaires ;
+- publication des nouveaux scores via `metadata.playerProfileId`, sans compte, appareil, email ou secret ;
+- lecture du même champ depuis le cache global ;
+- si un serveur ancien omet metadata, une copie locale strictement identique peut hydrater l'identité uniquement lorsqu'elle est non ambiguë ;
+- deux profils connus différents ne sont jamais dédupliqués ensemble, même avec pseudo, score et date identiques ;
+- les scores historiques sans identité prouvée restent au classement mais sont exclus de toute sous-progression ;
+- nouvelle projection `HallPlayerProgressionProjection` groupée exclusivement par `playerProfileId`, jamais par pseudo ;
+- écran Hall : classement global complet + sous-progressions séparées par joueur ; renommage conservé comme une seule progression via l'identifiant stable ;
+- bouton local renommé conceptuellement en « Ma progression • <pseudo actif> » ;
+- Pierre utilise uniquement `statsStore` du profil actif pour ses statistiques, préfixe la narration par le pseudo actif, coupe toute parole précédente puis recrée son contexte vivant et son état ambiant lors d'un changement/création de profil ;
+- aucune narration Pierre n'est lancée pour la sous-progression d'un autre joueur.
+
+Tests ajoutés/étendus :
+- même pseudo + profils distincts => progressions distinctes ;
+- renommage + même id => progression continue ;
+- historique sans id => classement seulement ;
+- plus de 10 scores => aucune troncature de progression ;
+- metadata globale => profile id conservé ;
+- fallback local exact => hydratation prouvée ;
+- profils connus différents avec score visuellement identique => jamais fusionnés.
+
+Historique : les anciennes lignes sans provenance fiable gardent `playerProfileId=null`. Aucune réattribution par pseudo.
