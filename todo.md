@@ -325,3 +325,15 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 - [x] #528 : compilateur Kotlin passé, 298/299 tests OK ; 1 test révèle double déduction du dégagement bas dans `compactKeypadBelowBoard`.
 - [x] Correction ciblée : `room = dock.height - margin - maxOf(margin, bottomGap)`, conserve 416 px sans recouvrir la grille.
 - [ ] Relancer CI complète après correction ; n'annoncer GREEN qu'avec réussite de tous les tests / build et présence assets.
+
+## Mission 010 — merge + Release AAB signée via Secrets
+
+- [x] Autorisation explicite Fab « merge release avec la secret key » le 14/10/2026.
+- [x] Lire le protocole signature immuable sur `feature/play-upload-signing-v1` et le transposer sans copier de secret.
+- [x] Créer `build-play-aab.yml` sur la branche Sudoku avec contrôle bloquant SHA-1 du nouveau certificat Play.
+- [x] Publication Release de l'AAB signée possible uniquement sur main et seulement après succès signature/tests.
+- [ ] Avant merge : vérifier les GitHub Secrets par le workflow, JKS reconstruit, empreinte SHA1 identique, tests et AAB signé.
+- [ ] Merge PR #4 si GREEN ; ne jamais fusionner après mismatch.
+- [ ] Signer AAB depuis main après merge, publier Release GitHub .aab + sha256 et contrôler les URLs réelles.
+- [ ] Confirmer séparément l'acceptation Play Console et la sauvegarde externe du JKS.
+- [ ] Écrire SHA-256, run et tags finaux dans les cinq mémoires.
