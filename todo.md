@@ -147,3 +147,20 @@ Mission détaillée : `missions/GECKO-PIERRE-WARMUP-003.md`.
 
 ### Preuve CI finale Binaire / candidats réels
 Run `38504109994` / #464 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11867790810`, APK SHA-256 `356cb9973995d453d6e82e865b959f4648502624705322502e23d711ec52cb5e`.
+
+
+## Projection complète / pseudo / Pierre — 14/10/2026
+
+- [x] Restaurer le choix direct du pseudo sans supprimer les profils séparés.
+- [x] Ajouter une entrée distincte Profils locaux.
+- [x] Renommer « Lignes » en « Projection ».
+- [x] Projection sur ligne ET colonne.
+- [x] Ne projeter un axe que si le chiffre a exactement deux positions candidates dans cet axe.
+- [x] Étendre le trait sur toute la grille, semi-transparent et discret.
+- [x] Garder un petit repère aux deux occurrences.
+- [x] Simplifier les narrations Sudoku de Pierre et limiter le nombre d'étapes parlées.
+- [x] Adoucir les repères visuels de raisonnement de Pierre.
+- [x] Tests projection ligne/colonne et présence Pseudo + Profils.
+- [ ] Confirmer le run final #472 GREEN.
+- [ ] Recette Samsung : pseudo, projection horizontale/verticale, lisibilité et rythme de Pierre.
+- [ ] Aucun merge main / Release avant feu vert explicite.
