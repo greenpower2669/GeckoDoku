@@ -14206,6 +14206,18 @@ class MainActivity : Activity() {
                             -1,
                             -1
                         )
+
+                    sudokuPaletteGeometry =
+                        SudokuFloatingWindowGeometry(
+                            x =
+                                popupX,
+                            y =
+                                popupY,
+                            width =
+                                popupWidth,
+                            height =
+                                popupHeight
+                        )
                 }
 
                 onResizeDelta = {
@@ -14283,6 +14295,18 @@ class MainActivity : Activity() {
                             popupY,
                             popupWidth,
                             popupHeight
+                        )
+
+                    sudokuPaletteGeometry =
+                        SudokuFloatingWindowGeometry(
+                            x =
+                                popupX,
+                            y =
+                                popupY,
+                            width =
+                                popupWidth,
+                            height =
+                                popupHeight
                         )
                 }
             }
@@ -14405,6 +14429,18 @@ class MainActivity : Activity() {
             popupX,
             popupY
         )
+
+        sudokuPaletteGeometry =
+            SudokuFloatingWindowGeometry(
+                x =
+                    popupX,
+                y =
+                    popupY,
+                width =
+                    popupWidth,
+                height =
+                    popupHeight
+            )
 
         status.text =
             "Sudoku • pavé persistant • simple ou double clic pour changer de case • ? pour l'aide."
