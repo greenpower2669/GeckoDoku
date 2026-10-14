@@ -178,3 +178,16 @@ Ordre Fab implémenté sur `feature/sudoku-visual-reasoning-v1`.
 ### Validation CI repères humains / aide surhumaine
 Run `38522492488` / #486 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11875030286`, APK SHA-256 `793a3878817fa04f9b2096d3ac032c8f235c98df50f6a7f56df0139dda062d15`.
 Recette Samsung encore requise. Aucun merge/release/publication.
+
+## GECKO-HOF-PLAYER-ISOLATION-002 — Hall comparatif / progression perso (14/10/2026)
+
+Ordre Fab exécuté sur `feature/sudoku-visual-reasoning-v1` :
+- Hall global = tous les joueurs et tous les scores accessibles ; aucun Top 10 fonctionnel ;
+- progression = groupement exclusif par identité opaque `playerProfileId`, jamais par pseudo ;
+- sous-progressions visuelles séparées dans le Hall ;
+- vieux scores sans identité sûre visibles mais non attribués ;
+- nouveaux scores publient `metadata.playerProfileId` ;
+- Pierre ne commente que le profil actif et son contexte est réinitialisé au changement de joueur ;
+- pas de merge main, pas de Release, pas de publication Play.
+
+Le run de validation final du dernier commit de code doit être GREEN avant annonce de livraison.
