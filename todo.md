@@ -337,3 +337,16 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 - [ ] Signer AAB depuis main après merge, publier Release GitHub .aab + sha256 et contrôler les URLs réelles.
 - [ ] Confirmer séparément l'acceptation Play Console et la sauvegarde externe du JKS.
 - [ ] Écrire SHA-256, run et tags finaux dans les cinq mémoires.
+
+## GECKO-PLAY-MERGE-SIGNED-RELEASE-010 — clôture
+
+- [x] Protocole signature immuable sur main et workflow AAB depuis Secrets.
+- [x] Match SHA-1 du certificat upload Google Play après rotation, depuis JKS reconstruit (sans lecture des secrets par l'assistant).
+- [x] Pré-merge AAB signé / tests / Pierre / sprites GREEN (`38636402228`).
+- [x] Merge PR #4 sur main (`f48dcd7`).
+- [x] Rebuild AAB signé `main` GREEN (`38636963727`).
+- [x] Release stable GitHub AAB code80 + sha256 publiée et vérifiée.
+- [ ] À réaliser sur Play Console : déposer l'AAB et vérifier acceptation/rollout (aucun envoi effectué).
+- [ ] Vérifier sauvegarde hors GitHub du keystore chiffré, et conservation séparée des mots de passe.
+
+**Clôture validée 14/10/2026 — mission 010.** Feu vert de Fab « merge release avec la secret key ». PR #4 mergée sur `main`, SHA merge `f48dcd7d6898793ccd6d63b22c0bc20644d6966a`. Contrôle pré-merge AAB sur branche : workflow `38636402228` GREEN (certificat Upload Key conforme au Play SHA-1 `27:AD:62:56:96:53:F9:82:37:F6:92:F7:9B:EA:DB:B8:EB:2E:25:C7`, tests, Pierre et sprites 240p, `jarsigner -verify`). Build officiel depuis main : workflow `38636963727` GREEN, tests + `bundleRelease`, même contrôle certificat, `jar verified.`. GitHub Release **publique/stable** : https://github.com/greenpower2669/GeckoDoku/releases/tag/geckodoku-v0.15.45-dev-code80 ; AAB signé direct : https://github.com/greenpower2669/GeckoDoku/releases/download/geckodoku-v0.15.45-dev-code80/GeckoDoku-v0.15.45-dev-code80-signed.aab ; SHA-256 `08390c0e502380ee5d3b6e2e77e01d491ff2a9535c61524b9b5270eb92cd755c`. Application `com.greenpower2669.geckodoku`, versionName `0.15.45-dev`, versionCode `80`. L'APK téléphone précédent reste un build à signature test : NE PAS le présenter comme signé Play. Aucun envoi à Play Console réalisé ; l'acceptation de l'AAB par Google n'est pas encore démontrée. Aucune clé privée ni valeur de Secret dans Git.
