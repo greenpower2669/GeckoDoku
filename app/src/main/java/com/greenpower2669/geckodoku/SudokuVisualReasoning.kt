@@ -99,41 +99,86 @@ object SudokuVisualReasoning {
         }
     }
 
+    /**
+     * Projection visuelle des candidats conjugués.
+     *
+     * Un axe n'est retenu que lorsqu'un chiffre possède exactement deux
+     * positions possibles dans cette ligne OU cette colonne. Le rendu peut
+     * alors prolonger discrètement l'axe sur toute la grille.
+     */
     fun projectionSegments(
-        notes: Map<Cell, Set<Int>>
+        candidates:
+            Map<Cell, Set<Int>>
     ): List<SudokuVisualLink> =
         buildList {
-            for (row in 0..8) {
-                for (digit in 1..9) {
+            for (digit in 1..9) {
+                for (row in 0..8) {
                     val cells =
-                        notes.entries
-                            .filter {
-                                (cell, digits) ->
-                                cell.row ==
-                                    row &&
-                                    digit in
-                                        digits
-                            }
+                        (0..8)
                             .map {
-                                it.key
+                                col ->
+                                Cell(
+                                    row,
+                                    col
+                                )
                             }
-                            .sortedBy {
-                                it.col
+                            .filter {
+                                cell ->
+                                digit in
+                                    candidates[
+                                        cell
+                                    ].orEmpty()
                             }
 
-                    for (
-                        index in
-                            0 until
-                                cells.lastIndex
+                    if (
+                        cells.size ==
+                            2
                     ) {
                         add(
                             SudokuVisualLink(
                                 SudokuCandidateRef(
-                                    cells[index],
+                                    cells[0],
                                     digit
                                 ),
                                 SudokuCandidateRef(
-                                    cells[index + 1],
+                                    cells[1],
+                                    digit
+                                )
+                            )
+                        )
+                    }
+                }
+
+                for (col in 0..8) {
+                    val cells =
+                        (0..8)
+                            .map {
+                                row ->
+                                Cell(
+                                    row,
+                                    col
+                                )
+                            }
+                            .filter {
+                                cell ->
+                                digit in
+                                    candidates[
+                                        cell
+                                    ].orEmpty()
+                            }
+
+                    if (
+                        cells.size ==
+                            2
+                    ) {
+                        add(
+                            SudokuVisualLink(
+                                SudokuCandidateRef(
+                                    cells[0],
+                                    digit
+                                ),
+                                SudokuCandidateRef(
+                                    cells[1],
                                     digit
                                 )
                             )
