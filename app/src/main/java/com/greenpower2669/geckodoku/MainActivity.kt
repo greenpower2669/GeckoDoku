@@ -12674,6 +12674,20 @@ class MainActivity : Activity() {
         }
 
         if (
+            !::sudokuBoard
+                .isInitialized ||
+            sudokuBoard.width <=
+                0 ||
+            sudokuBoard.height <=
+                0
+        ) {
+            sudokuBoard.post {
+                showSudokuManualToolsPopup()
+            }
+            return
+        }
+
+        if (
             sudokuManualToolsPopup
                 ?.isShowing ==
                 true
