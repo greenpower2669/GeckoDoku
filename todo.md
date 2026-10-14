@@ -217,3 +217,20 @@ Run `38522492488` / #486 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre e
 
 ### Preuve CI finale Hall global / progression
 Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f6cfa197e5998. Tests JVM + assemblePhone réussis, Pierre et banque sprites 240p vérifiés. Artefact GeckoDoku-v0.15.45-dev-phone ID 11876601009. APK SHA-256 eec808012b45e21a36a400672b1c50d7b2db41a27df9310db2df30eccef45981.
+
+## Fenêtre Repères compacte / calques Pierre — 14/10/2026
+
+- [x] Calculer le placement initial Repères depuis la géométrie réelle du plateau.
+- [x] Attendre le layout réel du plateau avant placement.
+- [x] Réduire la fenêtre Repères à deux rangées utiles, ~78 dp.
+- [x] Réduire la barre titre à « ✎ Repères humains ».
+- [x] Supprimer les marges verticales inutiles entre titre et outils.
+- [x] Mémoriser x/y et width/height de Repères.
+- [x] Restaurer puis re-clamper la géométrie à l’ouverture suivante.
+- [x] Suivre la géométrie runtime de Repères / Aide surhumaine / pavé Sudoku.
+- [x] Pendant la parole de Pierre, sortir temporairement les PopupWindow de la zone visible sans les détruire.
+- [x] À la fin de la parole, restaurer chaque fenêtre à sa géométrie précédente.
+- [x] Ajouter tests purs du placement compact et du clamp.
+- [ ] Confirmer CI finale du commit code `423f1a1729024abdeaf524bcde24e08aed1a6516`.
+- [ ] Recette Samsung : ouverture directe, déplacement mémorisé, Pierre devant puis retour exact des fenêtres.
+- [ ] Aucun merge main / Release avant validation Fab.
