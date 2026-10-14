@@ -130,3 +130,6 @@ Lignes, Couples et Triplets utilisent la carte logique. Quand un outil analytiqu
 Nouvelle option **Binaire** : recherche, pour chaque chiffre et chaque ligne/colonne/bloc, d'exactement deux occurrences candidates. Même paire multi-unité dédoublonnée. Les deux chiffres reçoivent deux anneaux et une pulsation lente (2,4 s, jamais disparition complète). Plusieurs binaires simultanés sont autorisés.
 
 Le panneau Prévisu reçoit maintenant un texte d'aide multi-ligne sur l'option togglée ; Pierre lit la même explication. Le pavé est compacté : header à 7,5 %, titre de sous-panneau à 12 %, 1 px d'espace visuel entre tuiles, barre d'options 46 dp et padding 1 px.
+
+
+Preuve CI Binaire : Run `38504109994` / #464 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11867790810`, APK SHA-256 `356cb9973995d453d6e82e865b959f4648502624705322502e23d711ec52cb5e`. La logique compile et les tests passent ; l'ergonomie réelle reste à confirmer sur Samsung.
