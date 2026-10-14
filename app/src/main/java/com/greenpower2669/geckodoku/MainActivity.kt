@@ -6681,6 +6681,18 @@ class MainActivity : Activity() {
         sudokuProfessorInteractionPolicy
             .invalidate()
         dismissSudokuPalette()
+        dismissSudokuSuperHelpPopup()
+
+        val manualToolsWereDismissed =
+            sudokuManualToolsDismissed
+
+        dismissSudokuManualToolsPopup(
+            keepAvailable =
+                true
+        )
+
+        sudokuManualToolsDismissed =
+            manualToolsWereDismissed
 
         if (
             ::sudokuValueOverlay
@@ -9968,6 +9980,38 @@ class MainActivity : Activity() {
         sudokuProfessorInteractionPolicy
             .invalidate()
         dismissSudokuPalette()
+        dismissSudokuSuperHelpPopup()
+        dismissSudokuManualToolsPopup(
+            keepAvailable =
+                true
+        )
+
+        sudokuSuperHelpArmed =
+            false
+        sudokuManualToolsDismissed =
+            false
+        sudokuManualTool =
+            SudokuVisualToolMode.NONE
+
+        sudokuVisualProjections =
+            false
+        sudokuVisualPairs =
+            false
+        sudokuVisualTriplets =
+            false
+        sudokuVisualBinary =
+            false
+        sudokuVisualCandidates =
+            false
+        sudokuVisualCircles =
+            false
+        sudokuVisualPulse =
+            false
+
+        clearSudokuManualAnnotations(
+            announce =
+                false
+        )
 
         if (
             ::sudokuValueOverlay
@@ -9975,6 +10019,28 @@ class MainActivity : Activity() {
         ) {
             sudokuValueOverlay
                 .clearProfessorCandidates()
+
+            sudokuValueOverlay
+                .showVisualProjections =
+                false
+            sudokuValueOverlay
+                .showVisualPairs =
+                false
+            sudokuValueOverlay
+                .showVisualTriplets =
+                false
+            sudokuValueOverlay
+                .showVisualBinary =
+                false
+            sudokuValueOverlay
+                .showVisualCandidates =
+                false
+            sudokuValueOverlay
+                .showVisualCircles =
+                false
+            sudokuValueOverlay
+                .animateVisualGroups =
+                false
         }
 
         sudokuPuzzle = next
@@ -10105,6 +10171,24 @@ class MainActivity : Activity() {
             "🧑‍🏫 Prof Gecko"
         professorButton.isEnabled =
             true
+
+        if (
+            !sudokuManualToolsDismissed &&
+            ::screenRoot
+                .isInitialized
+        ) {
+            screenRoot.post {
+                if (
+                    selectedGameMode ==
+                        GameMode.SUDOKU &&
+                    sudokuManualToolsPopup
+                        ?.isShowing !=
+                        true
+                ) {
+                    showSudokuManualToolsPopup()
+                }
+            }
+        }
     }
 
     private fun applyGameModeVisibility() {
@@ -13540,6 +13624,8 @@ class MainActivity : Activity() {
         val popup =
             sudokuPalettePopup
 
+        sudokuSuperHelpArmed =
+            false
         sudokuPalettePopup = null
         sudokuPaletteView = null
 
