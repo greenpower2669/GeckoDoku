@@ -112,3 +112,35 @@ Décisions :
 - aucune projection automatique de bloc sous forme de ligne : le bloc garde ses propres repères.
 
 Aucun changement aux règles du Sudoku, aux notes sauvegardées, au score, au package/signature ni au Hall global.
+
+## L. Avenant Fab — repères humains séparés / aide surhumaine volontaire (14/10/2026)
+
+Retour Fab : les anciennes checkboxes donnent désormais des déductions calculées, ce qui est utile pour apprendre, mais ne doit jamais se déclencher comme si le joueur avait lui-même posé les repères.
+
+### Deux couches distinctes
+
+**1. Repères humains — purement graphiques, sans avertissement**
+- fenêtre flottante dédiée, indépendante du clavier Sudoku ;
+- affichée au-dessus du plateau, déplaçable et fermable ;
+- bouton permanent `✎ Repères` pour la rouvrir ;
+- outils dans l'ordre : **Projection**, **Couple**, **Triplet**, **Candidat**, puis Effacer ;
+- Projection : le joueur choisit une case puis un chiffre dans la zone Candidats du clavier ; une croix semi-transparente ligne + colonne est tracée à travers le petit candidat choisi et le candidat est rendu comme une petite pièce graphique ;
+- Couple : le joueur touche lui-même deux cases ;
+- Triplet : le joueur touche lui-même trois cases ;
+- Candidat : le joueur choisit case + chiffre ; le petit chiffre est rendu comme une pièce entourée ;
+- aucun de ces repères ne vérifie ni ne révèle automatiquement la solution et aucun n'écrit dans les notes ou le solveur ;
+- cliquer à nouveau sur l'outil actif le met en pause ; refaire le même groupe retire le groupe ; Effacer supprime uniquement les repères graphiques.
+
+**2. Aide surhumaine — calculée, uniquement après choix explicite**
+- les anciennes checkboxes automatiques sont retirées du clavier ;
+- appui sur `?` du clavier : le prochain clic décide du type d'aide ;
+- si ce second clic est sur une zone du clavier, Pierre explique simplement cette zone ;
+- si ce second clic est sur le plateau, afficher la confirmation exacte : **« Êtes-vous sûr de vouloir une aide de sur-humain ? »** ;
+- Pierre accompagne la confirmation d'une phrase humoristique courte ;
+- seulement après validation, ouvrir une deuxième fenêtre flottante, déplaçable et fermable, nommée **Aide surhumaine** ;
+- options automatiques : Projection, Couples, Triplets, Candidats, Binaire, Pulsation ;
+- tout est OFF à chaque nouvelle grille ;
+- chaque checkbox ne révèle que le type d'indice choisi : Projection montre les deux candidats utiles et l'axe ; Couples/Triplets montrent les candidats du groupe ; Binaire montre les deux candidats ; Candidats révèle tous les candidats logiquement possibles ;
+- fermer la fenêtre ne modifie pas la grille ; nouvelle grille = aides automatiques remises OFF.
+
+Invariant : repères humains et aide calculée sont deux espaces UI et deux sources de données différentes. Ne jamais confondre un dessin du joueur avec une déduction du solveur.
