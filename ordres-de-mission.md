@@ -191,3 +191,8 @@ Ordre Fab exécuté sur `feature/sudoku-visual-reasoning-v1` :
 - pas de merge main, pas de Release, pas de publication Play.
 
 Le run de validation final du dernier commit de code doit être GREEN avant annonce de livraison.
+
+
+### Validation CI GECKO-HOF-PLAYER-ISOLATION-002
+Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f6cfa197e5998. Tests JVM + assemblePhone réussis, Pierre et banque sprites 240p vérifiés. Artefact GeckoDoku-v0.15.45-dev-phone ID 11876601009. APK SHA-256 eec808012b45e21a36a400672b1c50d7b2db41a27df9310db2df30eccef45981.
+Reste la recette Samsung et la vérification serveur metadata. Aucun merge main / Release / Play.
