@@ -198,3 +198,9 @@ Voir `missions/GECKO-SUDOKU-SYSTEM-BARS-005.md`. `sudokuPopupSafeBounds()` dédu
 ## Projection humaine / hypothèse : axes distincts — 14/10/2026
 
 `GECKO-SUDOKU-MANUAL-PROJECTION-006` corrige la croix systématique des repères humains. `SudokuManualProjectionPolicy.axesFor()` retient une ligne si les marques du même chiffre sont alignées en ligne, une colonne si elles sont verticales ; repère isolé / égalité = ligne (jamais les deux axes). Une hypothèse réellement présente dans `SudokuSnapshot.hypothesisAt` projette ligne+colonne, très discrètement sous les chiffres. `SudokuValueOverlayView` ne change pas les notes/valeurs. Messages MainActivity corrigés ; tests unitaires ajoutés. CI et validation Samsung à confirmer.
+
+## Correctifs Samsung : intro + pavé sous la grille (14/10/2026) — missions 007/008
+
+PUSH 1 : `SudokuFloatingStartupPolicy` et `canShowSudokuManualTools()` empêchent Repères humains d'apparaître pendant la vidéo d'introduction / rideau de lancement et avant la présence du plateau Sudoku mesuré, ou pendant la parole de Pierre. Les rappels d'ouverture sont différés après fin/saut d'introduction et à la fin de parole. Réouverture manuelle et sauvegarde de position conservées.
+
+PUSH 2 : `SudokuFloatingWindowGeometryPolicy.dockBelowBoard()` établit la zone du pavé à partir du bas réel du plateau et des insets Android ; placement initial, drag, resize et recalage à l'écran exploitent cette zone. La hauteur du pavé s'adapte pour ne pas recouvrir les dernières lignes du Sudoku sur un écran disposant de l'espace requis. Tests JVM ajoutés. Petits écrans/paysage à vérifier sur téléphone avant toute garantie générale.
