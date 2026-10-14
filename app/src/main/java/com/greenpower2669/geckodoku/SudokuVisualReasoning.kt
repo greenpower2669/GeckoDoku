@@ -50,6 +50,49 @@ private data class SudokuBinaryAccumulator(
         LinkedHashSet<String>
 )
 
+/**
+ * Une projection humaine suit UN seul axe ; une hypothèse peut tester
+ * simultanément les conséquences en ligne et en colonne.
+ */
+enum class SudokuManualProjectionAxis {
+    ROW,
+    COLUMN
+}
+
+/** Orientation des traits : pure, indépendante du solveur et des notes. */
+object SudokuManualProjectionPolicy {
+    fun axesFor(
+        ref: SudokuCandidateRef,
+        selected: Set<SudokuCandidateRef>,
+        isHypothesis: Boolean = false
+    ): Set<SudokuManualProjectionAxis> {
+        if (isHypothesis) {
+            return setOf(
+                SudokuManualProjectionAxis.ROW,
+                SudokuManualProjectionAxis.COLUMN
+            )
+        }
+
+        // Compter uniquement les mêmes chiffres marqués par l'humain.
+        // Des 1 empilés => colonne ; des 1 côte à côte => ligne.
+        val peers = selected.filter {
+            it != ref && it.digit == ref.digit
+        }
+        val rowPeers = peers.count { it.cell.row == ref.cell.row }
+        val columnPeers = peers.count { it.cell.col == ref.cell.col }
+
+        // En cas d'égalité ou de repère isolé, rester sur la ligne :
+        // jamais de croix automatique pour une projection manuelle.
+        return setOf(
+            if (columnPeers > rowPeers) {
+                SudokuManualProjectionAxis.COLUMN
+            } else {
+                SudokuManualProjectionAxis.ROW
+            }
+        )
+    }
+}
+
 /** Calcul de tracés et de motifs logiques sans élimination automatique. */
 object SudokuVisualReasoning {
     /**
