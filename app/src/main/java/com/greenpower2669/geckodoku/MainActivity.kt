@@ -5013,9 +5013,23 @@ class MainActivity : Activity() {
                 val name = input.text?.toString().orEmpty().trim()
                 if (name.isBlank()) return@setPositiveButton
                 changeProfileSafely {
-                    val profile = playerProfileStore.createProfile(name)
-                    statsStore = PlayerStatsStore(this, profile.id)
-                    status.text = "Nouveau profil : " + profile.name
+                    val profile =
+                        playerProfileStore
+                            .createProfile(
+                                name
+                            )
+                    statsStore =
+                        PlayerStatsStore(
+                            this,
+                            profile.id
+                        )
+                    professorLife =
+                        ProfessorLifeController
+                            .create(this)
+                    clearProfessorSession()
+                    status.text =
+                        "Nouveau profil : " +
+                            profile.name
                 }
             }
             .setNegativeButton("Annuler", null)
