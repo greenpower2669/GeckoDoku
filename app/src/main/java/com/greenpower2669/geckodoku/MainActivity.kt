@@ -102,7 +102,16 @@ class MainActivity : Activity() {
     private lateinit var sudokuRedoButton:
         Button
 
+    private lateinit var sudokuVisualToolsButton:
+        Button
+
     private var sudokuPalettePopup:
+        PopupWindow? = null
+
+    private var sudokuManualToolsPopup:
+        PopupWindow? = null
+
+    private var sudokuSuperHelpPopup:
         PopupWindow? = null
 
     private var sudokuPaletteView:
@@ -113,8 +122,32 @@ class MainActivity : Activity() {
     private var sudokuVisualPairs = false
     private var sudokuVisualTriplets = false
     private var sudokuVisualBinary = false
+    private var sudokuVisualCandidates = false
     private var sudokuVisualCircles = false
     private var sudokuVisualPulse = false
+    private var sudokuSuperHelpArmed = false
+
+    private var sudokuManualTool =
+        SudokuVisualToolMode.NONE
+
+    private var sudokuManualToolsDismissed =
+        false
+
+    private val sudokuManualPendingCells =
+        mutableListOf<Cell>()
+
+    private val sudokuManualProjectionRefs =
+        linkedSetOf<SudokuCandidateRef>()
+
+    private val sudokuManualCandidateRefs =
+        linkedSetOf<SudokuCandidateRef>()
+
+    private val sudokuManualPairGroups =
+        mutableListOf<Set<Cell>>()
+
+    private val sudokuManualTripletGroups =
+        mutableListOf<Set<Cell>>()
+
     private var sudokuCircleAnchor: SudokuCandidateRef? = null
     private val sudokuCircleLinks = linkedSetOf<SudokuVisualLink>()
 
