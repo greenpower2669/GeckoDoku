@@ -76,3 +76,19 @@ Cases cochables/décochables par tap successif, états et retours visuels évide
 ## I. Mission complémentaire (même lot de développement, logique distincte)
 
 Fab a signalé le 12/10/2026 une **fusion incorrecte apparente de statistiques/progressions entre plusieurs pseudonymes du Hall global**. L'isolation des profils est indispensable dans **les 4 modes**. Voir l'ordre de mission autonome [`GECKO-HOF-PLAYER-ISOLATION-002.md`](GECKO-HOF-PLAYER-ISOLATION-002.md). Ce chantier traite les données de scores/progression et ne doit pas être confondu avec l'assistance graphique Sudoku. Le **signalement est à auditer et reproduire** ; aucune correction de code n'a encore été réalisée. Les agrégations personnelles ne doivent jamais mélanger plusieurs identités, même si les pseudonymes sont identiques, tandis que le Hall global peut afficher tous les utilisateurs. Faire des commits et tests distincts pour chaque mission.
+
+
+## J. Avenant Fab — Binaire, explications et compaction (14/10/2026)
+
+Retour Samsung : les options Lignes / Couples / Triplets / Entourer paraissaient inactives car elles ne travaillaient que sur les notes manuelles déjà saisies.
+
+Décision Fab :
+- les outils de raisonnement visuel doivent s'appuyer sur les **candidats logiquement possibles de la grille courante**, calculés sans modifier les notes personnelles ;
+- la zone **Prévisu** explique l'option activée et Pierre donne aussi l'explication oralement ;
+- ajouter une case **Binaire** : pour chaque chiffre 1..9, dans chaque ligne, colonne ou bloc 3×3, si ce chiffre possède **exactement deux positions candidates**, entourer ces deux occurrences et les faire pulser doucement ; si un troisième emplacement apparaît, le marquage de cette unité disparaît ;
+- plusieurs chiffres binaires peuvent être affichés simultanément ;
+- si une même paire est binaire dans plusieurs unités, ne pas superposer plusieurs cercles identiques ;
+- Entourer doit accepter un candidat logiquement possible même s'il n'a pas été saisi comme note personnelle ;
+- compacter le pavé : réduire les marges mortes du bandeau haut, du bandeau bas, des titres de sous-panneaux et des espaces visuels entre touches ; viser environ 1 px d'espace visuel là où cela n'enlève pas la cible tactile.
+
+Implémentation : `SudokuVisualReasoning.logicalCandidates` fournit une carte calculée read-only ; Lignes, Couples, Triplets, Binaire et Entourer l'utilisent uniquement pour l'affichage. Les notes du moteur, le solveur, le score et la sauvegarde restent inchangés. Binaire utilise une pulsation lente sans flash brutal.
