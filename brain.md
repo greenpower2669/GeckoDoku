@@ -119,3 +119,14 @@ Mission `GECKO-PIERRE-WARMUP-003`. Le premier début de mot Piper/Sherpa pouvait
 
 
 Validation CI de l'amorçage : run `38436224654` / #450 GREEN ; build phone, tests, packaging Pierre et sprites réussis. La résolution acoustique reste conditionnée au test réel Samsung.
+
+
+## Sudoku visuel — candidats calculés et Binaire (14/10/2026)
+
+L'audit Samsung a montré que les anciens outils paraissaient morts car `SudokuValueOverlayView` ne raisonnait que sur `snapshot.notesAt(cell)`. Désormais `SudokuVisualReasoning.logicalCandidates(values)` calcule les candidats possibles via `SudokuSolver.candidateMask`. Cette carte est purement visuelle et ne modifie ni les notes du joueur ni le moteur.
+
+Lignes, Couples et Triplets utilisent la carte logique. Quand un outil analytique est actif, les candidats calculés non saisis manuellement sont rendus plus légers pour que les repères correspondent à des chiffres visibles. Entourer valide aussi contre cette carte et peut donc fonctionner sans préparation manuelle des notes.
+
+Nouvelle option **Binaire** : recherche, pour chaque chiffre et chaque ligne/colonne/bloc, d'exactement deux occurrences candidates. Même paire multi-unité dédoublonnée. Les deux chiffres reçoivent deux anneaux et une pulsation lente (2,4 s, jamais disparition complète). Plusieurs binaires simultanés sont autorisés.
+
+Le panneau Prévisu reçoit maintenant un texte d'aide multi-ligne sur l'option togglée ; Pierre lit la même explication. Le pavé est compacté : header à 7,5 %, titre de sous-panneau à 12 %, 1 px d'espace visuel entre tuiles, barre d'options 46 dp et padding 1 px.
