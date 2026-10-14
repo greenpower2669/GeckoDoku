@@ -16509,6 +16509,181 @@ class MainActivity : Activity() {
         scheduleProfessorIdleAnimation()
     }
 
+    private fun suspendSudokuFloatingWindowsForProfessor() {
+        if (
+            selectedGameMode !=
+                GameMode.SUDOKU ||
+            sudokuFloatingWindowsSuspendedForProfessor
+        ) {
+            return
+        }
+
+        val visible =
+            sudokuManualToolsPopup
+                ?.isShowing ==
+                true ||
+            sudokuSuperHelpPopup
+                ?.isShowing ==
+                true ||
+            sudokuPalettePopup
+                ?.isShowing ==
+                true
+
+        if (!visible) {
+            return
+        }
+
+        sudokuFloatingWindowsSuspendedForProfessor =
+            true
+
+        fun moveOffscreen(
+            popup: PopupWindow?,
+            geometry: SudokuFloatingWindowGeometry?
+        ) {
+            if (
+                popup == null ||
+                !popup.isShowing ||
+                geometry ==
+                    null
+            ) {
+                return
+            }
+
+            popup.isClippingEnabled =
+                false
+
+            popup.update(
+                -geometry.width -
+                    dp(
+                        32
+                    ),
+                -geometry.height -
+                    dp(
+                        32
+                    ),
+                geometry.width,
+                geometry.height
+            )
+        }
+
+        moveOffscreen(
+            sudokuManualToolsPopup,
+            sudokuManualToolsGeometry
+        )
+
+        moveOffscreen(
+            sudokuSuperHelpPopup,
+            sudokuSuperHelpGeometry
+        )
+
+        moveOffscreen(
+            sudokuPalettePopup,
+            sudokuPaletteGeometry
+        )
+
+        if (
+            ::professorButtonHost
+                .isInitialized
+        ) {
+            professorButtonHost
+                .bringToFront()
+        }
+
+        if (
+            ::professorPortrait
+                .isInitialized &&
+            professorPortrait.visibility ==
+                View.VISIBLE
+        ) {
+            professorPortrait
+                .bringToFront()
+        }
+
+        if (
+            ::professorVideo
+                .isInitialized &&
+            professorVideo.visibility ==
+                View.VISIBLE
+        ) {
+            professorVideo
+                .bringToFront()
+        }
+
+        if (
+            ::professorBubble
+                .isInitialized &&
+            professorBubble.visibility ==
+                View.VISIBLE
+        ) {
+            professorBubble
+                .bringToFront()
+        }
+
+        if (
+            ::screenRoot
+                .isInitialized
+        ) {
+            screenRoot.invalidate()
+        }
+    }
+
+    private fun restoreSudokuFloatingWindowsAfterProfessor() {
+        if (
+            !sudokuFloatingWindowsSuspendedForProfessor
+        ) {
+            return
+        }
+
+        fun restore(
+            popup: PopupWindow?,
+            geometry: SudokuFloatingWindowGeometry?
+        ) {
+            if (
+                popup == null ||
+                !popup.isShowing ||
+                geometry ==
+                    null
+            ) {
+                return
+            }
+
+            popup.update(
+                geometry.x,
+                geometry.y,
+                geometry.width,
+                geometry.height
+            )
+
+            popup.isClippingEnabled =
+                true
+        }
+
+        restore(
+            sudokuManualToolsPopup,
+            sudokuManualToolsGeometry
+        )
+
+        restore(
+            sudokuSuperHelpPopup,
+            sudokuSuperHelpGeometry
+        )
+
+        restore(
+            sudokuPalettePopup,
+            sudokuPaletteGeometry
+        )
+
+        sudokuFloatingWindowsSuspendedForProfessor =
+            false
+
+        if (
+            ::screenRoot
+                .isInitialized
+        ) {
+            screenRoot.invalidate()
+        }
+    }
+
     private fun handleProfessorSpeakingChanged(
         speaking: Boolean
     ) {
