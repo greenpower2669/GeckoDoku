@@ -234,3 +234,39 @@ Invariant : `manual*` ne devient jamais une preuve logique. L'auto reste explici
 
 
 Preuve build repères humains : Run `38522492488` / #486 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11875030286`, APK SHA-256 `793a3878817fa04f9b2096d3ac032c8f235c98df50f6a7f56df0139dda062d15`.
+
+## Carte — Hall comparatif / progression personnelle (14/10/2026)
+
+```text
+PlayerProfileStore
+├─ local id → PlayerStatsStore(profile) → progression/stats personnelles
+└─ progressionId UUID opaque
+   ├─ HallOfFameEntry.playerProfileId
+   └─ GlobalScore metadata.playerProfileId
+
+Partie terminée
+→ score local Hall (pseudo + progressionId)
+→ payload global metadata.playerProfileId
+→ /sync
+→ GlobalScoreCacheStore
+→ GlobalHallProjection
+   ├─ classement global : TOUS les scores
+   ├─ remote id connu → conserve id
+   ├─ remote id absent + copie locale exacte non ambiguë → hydrate
+   └─ ambigu / historique → id null, classement seulement
+
+Hall niveau mode+difficulté
+├─ classement global complet
+└─ HallPlayerProgressionProjection
+   └─ GROUP BY playerProfileId uniquement
+      ├─ pseudo courant / anciens pseudos
+      ├─ historique chronologique
+      ├─ tendance temps
+      └─ tendance étoiles
+
+Pierre
+→ profil actif
+→ statsStore actif uniquement
+→ changement profil : stop voix + nouveau ProfessorLife + reset ambient
+→ jamais d'analyse parlée des autres sous-progressions
+```
