@@ -238,3 +238,20 @@ Point restant à valider en recette réseau réelle : le contrat de documentatio
 ### Validation finale technique Hall/progression
 Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f6cfa197e5998. Tests JVM + assemblePhone réussis, Pierre et banque sprites 240p vérifiés. Artefact GeckoDoku-v0.15.45-dev-phone ID 11876601009. APK SHA-256 eec808012b45e21a36a400672b1c50d7b2db41a27df9310db2df30eccef45981.
 La CI valide le code et l'APK. La seule inconnue externe restante est la conservation effective de metadata.playerProfileId par le serveur public réel ; le fallback local non ambigu protège les scores propres au téléphone si un ancien serveur omet ce champ.
+
+## 14/10/2026 — Repères humains trop grand et Pierre masqué par PopupWindow
+
+Retour Fab : à chaque ouverture de Repères humains, nécessité de déplacer/recompacter la fenêtre ; la zone titre + outils comporte trop de hauteur. Autre règle : quand Pierre parle, il doit passer momentanément devant puis rendre le premier plan aux outils précédemment visibles.
+
+Audit :
+- Repères avait une hauteur fixe 92 dp ; header 36 dp + zone outils 54 dp ;
+- position recalculée à chaque création mais jamais persistée ;
+- clavier, Repères et Aide sont des `PopupWindow`, donc ils peuvent masquer les vues Pierre de l'Activity même si `bringToFront()` est appelé dans la hiérarchie normale.
+
+Correction :
+- hauteur canonique 78 dp ; header 34 dp, outils 44 dp ;
+- placement calculé depuis `sudokuBoard` mesuré ;
+- géométrie Repères persistée ;
+- stratégie de foreground sans destruction : pendant la parole, PopupWindow déplacés hors écran avec clipping temporairement désactivé ; à la fin, restauration exacte.
+
+Risque à valider téléphone : comportement constructeur Android du déplacement offscreen des PopupWindow. La CI ne peut valider que compilation/tests ; la recette Samsung doit confirmer visuellement l'absence de clignotement et le retour exact.
