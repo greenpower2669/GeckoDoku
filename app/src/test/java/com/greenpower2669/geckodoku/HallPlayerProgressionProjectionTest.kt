@@ -167,4 +167,44 @@ class HallPlayerProgressionProjectionTest {
                 )
         )
     }
+
+    @Test
+    fun fullProgressionKeepsMoreThanTenScores() {
+        val id =
+            "11111111-1111-4111-8111-111111111111"
+
+        val values =
+            (1..25).map {
+                index ->
+
+                entry(
+                    profileId =
+                        id,
+                    name =
+                        "Fab",
+                    seconds =
+                        200L -
+                            index,
+                    stars =
+                        5,
+                    at =
+                        index.toLong()
+                )
+            }
+
+        val progression =
+            HallPlayerProgressionProjection
+                .groups(
+                    values
+                )
+                .single()
+
+        assertEquals(
+            25,
+            progression
+                .entries
+                .size
+        )
+    }
+
 }
