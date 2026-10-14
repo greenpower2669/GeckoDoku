@@ -266,3 +266,9 @@ La CI valide code/tests/build ; la recette Samsung doit confirmer que Pierre app
 Capture Fab Android 16 : barre de navigation à trois boutons au bas ; pavé Sudoku redimensionnable et fenêtre Repères glissable ne tenaient pas compte des bornes réellement accessibles ; une partie des outils Repères était horizontalement défilée. Cause relue dans `MainActivity.kt` : coordonnées `PopupWindow` calculées avec `screenRoot.height`, sans intersection explicite avec `WindowInsets` de navigation (alors que la grille utilise `protectFromSystemBars`). En outre certaines positions plateau étaient dérivées de coordonnées root-local plutôt que fenêtre.
 
 Correction mission `GECKO-SUDOKU-SYSTEM-BARS-005` : borne commune decor/root/insets, positions `getLocationInWindow`, drag+resize+placement bas-centre re-clampés, suivi des fenêtres déjà ouvertes lors d'un changement d'insets, reprise de Pierre intacte. Tests JVM ajoutés, **validation CI et Samsung non encore effectuées à cette note**. La ligne d'outils Repères reste horizontalement scrollable. Aucun merge ni Release.
+
+## 14/10/2026 — Projection humaine dessine une croix à tort (mission 006)
+
+Capture Fab : sur un 1 marqué dans la grille, la projection manuelle trace ligne et colonne alors que l'observation d'un alignement horizontal n'impose qu'une ligne ; vertical → colonne. La croix n'est légitime que pour une hypothèse posée. Audit : `SudokuValueOverlayView.drawManualPlayerAnnotations()` avait deux `canvas.drawLine` inconditionnels ; MainActivity annonçait explicitement « croix ligne-colonne ».
+
+Correction : politique pure `SudokuManualProjectionPolicy.axesFor` séparant repères d'un même chiffre (1 axe selon voisins, horizontal par défaut) des `hypothesisAt` (2 axes), dessin discret, messages conformes. Six tests spécialisés ajoutés. Aucun changement des notes ni du solveur. CI et recette réelle encore à valider ; ne pas confondre code poussé avec APK testé.
