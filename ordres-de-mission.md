@@ -216,3 +216,9 @@ Aucun merge main / Release / Play sans ordre explicite.
 ### Validation CI Repères compact / calques Pierre
 Run `38537609942` / #522 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11880727507`, APK SHA-256 `3f6dbba028b4bbb793ed16cbf3a9bd3eb237f36963c4e9fd8a292da21fed911c`.
 Recette Samsung encore requise pour valider visuellement le déplacement hors écran/restauration des PopupWindow. Aucun merge/release/publication.
+
+## Feu vert Fab — correctif navigation Android / panneaux Sudoku (14/10/2026)
+
+À partir de la capture Samsung, Fab constate que les boutons de navigation Android bornent le mouvement et empêchent un bon redimensionnement des fenêtres flottantes. Ordre explicite « Ok, go » **pour coder le correctif**, pas pour merger, créer une Release ni publier.
+
+Mission canonique : `missions/GECKO-SUDOKU-SYSTEM-BARS-005.md`. Conserver les modes de jeu, la signature, l'identifiant, les médias Pierre et sprites 240p ; appliquer la géométrie sûre aux fenêtres Repères humains, Aide surhumaine et pavé. Maintenir les positions sauvegardées et les calques pendant la parole de Pierre. CI + APK de test nécessaires ; recette Samsung avant toute publication. **Aucun merge main / Release / Play autorisé.**
