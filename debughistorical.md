@@ -203,3 +203,8 @@ Correction :
 - nouvelle grille remet les flags auto OFF.
 
 Les runs rouges #478–#480 correspondent à des commits intermédiaires où MainActivity référençait des fonctions ajoutées dans les commits suivants ; ne pas les considérer comme état final. Run #481 a déjà validé la création complète des deux fenêtres. La preuve finale doit être prise sur le dernier commit fonctionnel.
+
+
+### Validation finale repères humains / aide surhumaine
+Run `38522492488` / #486 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11875030286`, APK SHA-256 `793a3878817fa04f9b2096d3ac032c8f235c98df50f6a7f56df0139dda062d15`.
+Le run #486 est la preuve finale du lot complet ; les runs rouges précédents restent des états intermédiaires partiels.
