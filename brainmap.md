@@ -355,3 +355,23 @@ Validation finale après les missions 007 et 008 : run [#525](https://github.com
 
 ## Preuve GitHub — APK direct #525 (14/10/2026)
 Livraison APK brut run #525 : prérelease temporaire `temp-geckodoku-0.15.45-dev-run-525` créée et vérifiée par l'API GitHub. [Téléchargement direct .apk](https://github.com/greenpower2669/GeckoDoku/releases/download/temp-geckodoku-0.15.45-dev-run-525/GeckoDoku-v0.15.45-dev.apk), 299496421 octets, SHA-256 `23506e3a310401dcf4016c5544324913d9670bb54b70ce439da6b8356effcb51`. Workflow de publication #527 GREEN. La première tentative #526 (403 GitHub) a été corrigée en reprenant la méthode qui fonctionnait : checkout de la branche et création du tag sur le commit déclencheur. Aucun nouveau build Android, aucun merge main ou Release stable. Règle permanente de livraison d'APK direct enregistrée dans la section `Contrat FAB Copilot` d'`ordres-de-mission.md`.
+
+## Flux pavé Sudoku compact dès l'ouverture — mission 009
+
+```text
+showSudokuCellPalette(cell)
+├─ palette existante → refreshSudokuPersistentPalette()
+│                      → fitOpenSudokuPaletteToDock() (contrôle fenêtre réelle)
+└─ nouvelle palette
+   → sudokuKeyboardDockBounds() (bord inférieur du plateau + insets)
+   → SudokuFloatingWindowGeometryPolicy.compactKeypadBelowBoard()
+   → popupX/Y/Width/Height = géométrie finale
+   → PopupWindow(palette, largeur FINALE, hauteur FINALE)
+   → showAtLocation(x/y)
+layout / insets
+→ fitOpenSudokuPaletteToDock()
+→ compare geometry ET popup.width/height
+→ update(...) seulement si divergent
+```
+
+Conserver taille grille, repères au-dessus, fenêtre sous grille, calques Pierre, préférences de l'utilisateur. Mission `GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009`. Validation CI et recette Samsung non achevées à la rédaction.
