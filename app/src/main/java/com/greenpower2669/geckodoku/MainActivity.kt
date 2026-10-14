@@ -12445,6 +12445,212 @@ class MainActivity : Activity() {
         )
     }
 
+    private fun defaultSudokuManualToolsGeometry():
+        SudokuFloatingWindowGeometry {
+        val rootLocation =
+            IntArray(
+                2
+            )
+        val boardLocation =
+            IntArray(
+                2
+            )
+
+        screenRoot
+            .getLocationOnScreen(
+                rootLocation
+            )
+
+        sudokuBoard
+            .getLocationOnScreen(
+                boardLocation
+            )
+
+        val boardLeft =
+            boardLocation[
+                0
+            ] -
+                rootLocation[
+                    0
+                ]
+
+        val boardTop =
+            boardLocation[
+                1
+            ] -
+                rootLocation[
+                    1
+                ]
+
+        val boardWidth =
+            sudokuBoard.width
+                .takeIf {
+                    it >
+                        0
+                }
+                ?: (
+                    screenRoot.width -
+                        dp(
+                            8
+                        )
+                    )
+
+        return SudokuFloatingWindowGeometryPolicy
+            .compactAboveBoard(
+                rootWidth =
+                    screenRoot.width,
+                rootHeight =
+                    screenRoot.height,
+                boardLeft =
+                    boardLeft,
+                boardTop =
+                    boardTop,
+                boardWidth =
+                    boardWidth,
+                preferredHeight =
+                    dp(
+                        78
+                    ),
+                minimumWidth =
+                    dp(
+                        280
+                    ),
+                margin =
+                    dp(
+                        4
+                    ),
+                gap =
+                    dp(
+                        3
+                    )
+            )
+    }
+
+    private fun loadSudokuManualToolsGeometry():
+        SudokuFloatingWindowGeometry {
+        val fallback =
+            defaultSudokuManualToolsGeometry()
+
+        val prefs =
+            getSharedPreferences(
+                "geckodoku_sudoku_floating_windows_v1",
+                MODE_PRIVATE
+            )
+
+        if (
+            !prefs.contains(
+                "manual_x"
+            )
+        ) {
+            return fallback
+        }
+
+        val restored =
+            SudokuFloatingWindowGeometry(
+                x =
+                    prefs.getInt(
+                        "manual_x",
+                        fallback.x
+                    ),
+                y =
+                    prefs.getInt(
+                        "manual_y",
+                        fallback.y
+                    ),
+                width =
+                    prefs.getInt(
+                        "manual_width",
+                        fallback.width
+                    ),
+                height =
+                    prefs.getInt(
+                        "manual_height",
+                        fallback.height
+                    )
+            )
+
+        return SudokuFloatingWindowGeometryPolicy
+            .clamp(
+                geometry =
+                    restored,
+                rootWidth =
+                    screenRoot.width,
+                rootHeight =
+                    screenRoot.height,
+                minimumWidth =
+                    dp(
+                        280
+                    ),
+                minimumHeight =
+                    dp(
+                        72
+                    ),
+                margin =
+                    dp(
+                        4
+                    )
+            )
+    }
+
+    private fun saveSudokuManualToolsGeometry(
+        geometry: SudokuFloatingWindowGeometry
+    ) {
+        sudokuManualToolsGeometry =
+            geometry
+
+        getSharedPreferences(
+            "geckodoku_sudoku_floating_windows_v1",
+            MODE_PRIVATE
+        )
+            .edit()
+            .putInt(
+                "manual_x",
+                geometry.x
+            )
+            .putInt(
+                "manual_y",
+                geometry.y
+            )
+            .putInt(
+                "manual_width",
+                geometry.width
+            )
+            .putInt(
+                "manual_height",
+                geometry.height
+            )
+            .apply()
+    }
+
+    private fun updateSudokuManualToolsGeometry(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        persist: Boolean
+    ) {
+        val geometry =
+            SudokuFloatingWindowGeometry(
+                x =
+                    x,
+                y =
+                    y,
+                width =
+                    width,
+                height =
+                    height
+            )
+
+        sudokuManualToolsGeometry =
+            geometry
+
+        if (persist) {
+            saveSudokuManualToolsGeometry(
+                geometry
+            )
+        }
+    }
+
     private fun showSudokuManualToolsPopup() {
         if (
             selectedGameMode !=
