@@ -92,3 +92,23 @@ Décision Fab :
 - compacter le pavé : réduire les marges mortes du bandeau haut, du bandeau bas, des titres de sous-panneaux et des espaces visuels entre touches ; viser environ 1 px d'espace visuel là où cela n'enlève pas la cible tactile.
 
 Implémentation : `SudokuVisualReasoning.logicalCandidates` fournit une carte calculée read-only ; Lignes, Couples, Triplets, Binaire et Entourer l'utilisent uniquement pour l'affichage. Les notes du moteur, le solveur, le score et la sauvegarde restent inchangés. Binaire utilise une pulsation lente sans flash brutal.
+
+
+## K. Avenant Fab — projection complète, pseudo et Pierre humain (14/10/2026)
+
+Retour Samsung après le lot Binaire :
+- régression mineure : le choix du pseudo n'est plus suffisamment direct ;
+- les explications Sudoku de Pierre sont trop longues / techniques ;
+- la commande « Lignes » doit redevenir une vraie **Projection** : ligne ET colonne, sur toute la grille, discrète et semi-transparente ;
+- projection utile quand un même chiffre candidat n'a **exactement que deux positions possibles** sur une même ligne ou une même colonne.
+
+Décisions :
+- restaurer un accès direct « Pseudo » dans Réglages, distinct de la gestion des profils locaux afin de ne pas casser l'isolation des statistiques ;
+- garder les profils locaux séparés sous leur propre entrée ;
+- raccourcir et humaniser Pierre : ordre visuel calme ligne → colonne → bloc, phrases courtes, conclusion simple ;
+- les repères de raisonnement du Prof deviennent moins agressifs visuellement ;
+- renommer la checkbox « Lignes » en « Projection » ;
+- projection : exact-2 en ligne ou colonne, axe prolongé sur toute la grille, alpha faible, anneaux discrets sur les deux candidats ;
+- aucune projection automatique de bloc sous forme de ligne : le bloc garde ses propres repères.
+
+Aucun changement aux règles du Sudoku, aux notes sauvegardées, au score, au package/signature ni au Hall global.
