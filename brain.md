@@ -133,3 +133,12 @@ Le panneau Prévisu reçoit maintenant un texte d'aide multi-ligne sur l'option 
 
 
 Preuve CI Binaire : Run `38504109994` / #464 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11867790810`, APK SHA-256 `356cb9973995d453d6e82e865b959f4648502624705322502e23d711ec52cb5e`. La logique compile et les tests passent ; l'ergonomie réelle reste à confirmer sur Samsung.
+
+
+## Projection complète et pseudo direct — 14/10/2026
+
+Régression UI corrigée : `SettingsEntry.PLAYER_NAME` redevient un accès direct au pseudo public (`editPlayerName`), tandis qu'un nouveau `PLAYER_PROFILE` ouvre la gestion des identités locales séparées. Ainsi modifier son pseudo n'efface ni ne fusionne les statistiques du profil.
+
+Projection Sudoku : `projectionSegments` détecte désormais exactement deux occurrences candidates d'un chiffre dans chaque ligne et chaque colonne. L'overlay prolonge l'axe correspondant sur toute la grille avec faible alpha et faible épaisseur, plus deux anneaux discrets sur les occurrences. « Lignes » devient « Projection ». Les blocs 3×3 restent couverts par Binaire et les repères du Prof, pas par une ligne artificielle.
+
+Pierre : les traces Sudoku sont regroupées par type de projection (ligne, colonne, bloc), au maximum quelques étapes courtes au lieu d'une phrase par source. Vocabulaire plus humain et ordre calme. Les tracés orange du raisonnement sont semi-transparents et plus fins.
