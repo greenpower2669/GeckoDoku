@@ -43,6 +43,13 @@ data class SudokuBinaryGroup(
     }
 }
 
+private data class SudokuBinaryAccumulator(
+    val digit: Int,
+    val cells: Set<Cell>,
+    val units:
+        LinkedHashSet<String>
+)
+
 /** Calcul de tracés et de motifs logiques sans élimination automatique. */
 object SudokuVisualReasoning {
     /**
@@ -236,17 +243,10 @@ object SudokuVisualReasoning {
         candidates:
             Map<Cell, Set<Int>>
     ): List<SudokuBinaryGroup> {
-        data class Accumulator(
-            val digit: Int,
-            val cells: Set<Cell>,
-            val units:
-                LinkedHashSet<String>
-        )
-
         val grouped =
             linkedMapOf<
                 String,
-                Accumulator
+                SudokuBinaryAccumulator
                 >()
 
         for (
@@ -306,7 +306,7 @@ object SudokuVisualReasoning {
 
                 if (existing == null) {
                     grouped[key] =
-                        Accumulator(
+                        SudokuBinaryAccumulator(
                             digit =
                                 digit,
                             cells =
