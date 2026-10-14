@@ -237,4 +237,69 @@ class SudokuFloatingWindowGeometryTest {
         assertEquals(100, after.top - before.top)
     }
 
+    @Test
+    fun samsungScreenshotPortraitOpensCompactAtRightBelowCompleteGrid() {
+        // Screen-space geometry approximates Fab's second screenshot.
+        val safe = SudokuFloatingWindowBounds(0, 45, 709, 1460)
+        val dock = SudokuFloatingWindowGeometryPolicy.dockBelowBoard(
+            safe, boardBottom = 1005, gap = 8
+        )
+        val opening = SudokuFloatingWindowGeometryPolicy.compactKeypadBelowBoard(
+            dock,
+            preferredWidth = 584, preferredHeight = 416,
+            minimumWidth = 440, minimumHeight = 320,
+            margin = 8, bottomGap = 16
+        )
+        assertEquals(117, opening.x)
+        assertEquals(584, opening.width)
+        assertEquals(416, opening.height)
+        assertTrue(opening.y >= 1013)
+        assertTrue(opening.y + opening.height <= 1460 - 8)
+    }
+
+    @Test
+    fun physicalPopupMustUpdateEvenIfStoredGeometryMatchesDock() {
+        val stored = SudokuFloatingWindowGeometry(
+            x = 117, y = 1028, width = 584, height = 416
+        )
+        val dock = SudokuFloatingWindowBounds(0, 1013, 709, 1460)
+        val fitted = SudokuFloatingWindowGeometryPolicy.clampToBounds(
+            stored, dock, 440, 320, 8
+        )
+        assertEquals(stored, fitted)
+        assertTrue(
+            SudokuFloatingWindowGeometryPolicy.needsPhysicalUpdate(
+                stored, fitted, actualWidth = 584, actualHeight = 598
+            )
+        )
+        assertTrue(
+            !SudokuFloatingWindowGeometryPolicy.needsPhysicalUpdate(
+                stored, fitted, actualWidth = 584, actualHeight = 416
+            )
+        )
+    }
+
+    @Test
+    fun reusedKeyboardPreservesValidUserPlacementButClampsOverlap() {
+        val dock = SudokuFloatingWindowBounds(0, 1013, 709, 1460)
+        val userPlacement = SudokuFloatingWindowGeometry(
+            x = 110, y = 1030, width = 580, height = 410
+        )
+        assertEquals(
+            userPlacement,
+            SudokuFloatingWindowGeometryPolicy.clampToBounds(
+                userPlacement, dock, 440, 320, 8
+            )
+        )
+        val oldOversized = SudokuFloatingWindowGeometry(
+            x = 50, y = 840, width = 610, height = 600
+        )
+        val corrected = SudokuFloatingWindowGeometryPolicy.clampToBounds(
+            oldOversized, dock, 440, 320, 8
+        )
+        assertTrue(corrected.y >= dock.top + 8)
+        assertTrue(corrected.y + corrected.height <= dock.bottom - 8)
+        assertTrue(corrected.height < oldOversized.height)
+    }
+
 }
