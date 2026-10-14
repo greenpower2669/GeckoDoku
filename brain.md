@@ -142,3 +142,6 @@ Régression UI corrigée : `SettingsEntry.PLAYER_NAME` redevient un accès direc
 Projection Sudoku : `projectionSegments` détecte désormais exactement deux occurrences candidates d'un chiffre dans chaque ligne et chaque colonne. L'overlay prolonge l'axe correspondant sur toute la grille avec faible alpha et faible épaisseur, plus deux anneaux discrets sur les occurrences. « Lignes » devient « Projection ». Les blocs 3×3 restent couverts par Binaire et les repères du Prof, pas par une ligne artificielle.
 
 Pierre : les traces Sudoku sont regroupées par type de projection (ligne, colonne, bloc), au maximum quelques étapes courtes au lieu d'une phrase par source. Vocabulaire plus humain et ordre calme. Les tracés orange du raisonnement sont semi-transparents et plus fins.
+
+
+Preuve CI projection complète : Run `38519610024` / #472 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11873097206`, APK SHA-256 `562218c0d5cc2622e106a582bd5ba8a9bdec667fbec84fc72d0bedb3052ec4b7`. La compilation et les tests passent ; la validation d'usage reste le test Samsung.
