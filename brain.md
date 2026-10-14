@@ -162,3 +162,17 @@ Le `?` de `SudokuQuickPaletteView` expose maintenant `onHelpModeChanged`. Si le 
 
 
 Preuve CI repères humains / aide surhumaine : Run `38522492488` / #486 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11875030286`, APK SHA-256 `793a3878817fa04f9b2096d3ac032c8f235c98df50f6a7f56df0139dda062d15`. La compilation et les tests passent ; la validation d'ergonomie reste à faire sur Samsung.
+
+## HOF global complet / progression mono-joueur (14/10/2026)
+
+Règle canonique : le Hall est un comparatif global ; la progression est une analyse personnelle. Le pseudo est seulement un libellé public, jamais une clé d'identité.
+
+`PlayerProfileStore` possède désormais deux notions : `id` pour le stockage local des stats et `progressionId` opaque pour relier les scores Hall d'un même joueur. Le profil historique reçoit un UUID persistant `legacy_progression_id_v1`; les profils UUID existants réutilisent leur UUID comme progressionId. Renommer un profil ne change pas progressionId.
+
+`HallOfFameEntry.playerProfileId` est nullable. Les nouvelles lignes locales le reçoivent ; `GlobalScoreCompletionBridge` publie `metadata.playerProfileId`; `GlobalHallProjection` le relit. Les anciennes lignes sans preuve restent null et ne nourrissent aucune sous-progression.
+
+Le merge global ne confond jamais deux IDs connus différents. Un score distant sans metadata ne peut emprunter l'identité locale que sur correspondance sportive exacte et non ambiguë ; en cas d'ambiguïté, aucune identité n'est inventée.
+
+`HallPlayerProgressionProjection` regroupe uniquement par playerProfileId, conserve tous les scores chronologiquement, les changements de pseudo et calcule tendances temps/étoiles. Le Hall de niveau n'a plus `.take(10)` et le store local n'a plus de limite 200 : classement complet + boutons de sous-progressions séparées.
+
+Pierre : `statsStore` reste lié à `activeProfileId`. Au changement/création de profil, la parole en cours est stoppée, `ProfessorLifeController` est recréé, la session et l'état ambiant sont réinitialisés. `announcePlayerStats()` utilise exclusivement `statsStore.professorLevels()` et préfixe par le pseudo actif. Les progressions d'autres joueurs dans le Hall sont silencieuses.
