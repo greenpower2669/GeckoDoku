@@ -11411,6 +11411,1309 @@ class MainActivity : Activity() {
             .show()
     }
 
+    private fun syncSudokuManualAnnotations() {
+        if (
+            !::sudokuValueOverlay
+                .isInitialized
+        ) {
+            return
+        }
+
+        sudokuValueOverlay
+            .manualProjectionRefs =
+            sudokuManualProjectionRefs
+                .toSet()
+
+        sudokuValueOverlay
+            .manualCandidateRefs =
+            sudokuManualCandidateRefs
+                .toSet()
+
+        sudokuValueOverlay
+            .manualPairGroups =
+            sudokuManualPairGroups
+                .map {
+                    it.toSet()
+                }
+
+        sudokuValueOverlay
+            .manualTripletGroups =
+            sudokuManualTripletGroups
+                .map {
+                    it.toSet()
+                }
+
+        sudokuValueOverlay
+            .manualPendingCells =
+            sudokuManualPendingCells
+                .toSet()
+    }
+
+    private fun clearSudokuManualAnnotations(
+        announce: Boolean = true
+    ) {
+        sudokuManualPendingCells
+            .clear()
+        sudokuManualProjectionRefs
+            .clear()
+        sudokuManualCandidateRefs
+            .clear()
+        sudokuManualPairGroups
+            .clear()
+        sudokuManualTripletGroups
+            .clear()
+
+        syncSudokuManualAnnotations()
+
+        if (announce) {
+            status.text =
+                "Repères graphiques effacés. La grille n'a pas été modifiée."
+        }
+    }
+
+    private fun setSudokuManualTool(
+        mode: SudokuVisualToolMode
+    ) {
+        sudokuManualTool =
+            mode
+        sudokuManualPendingCells
+            .clear()
+        syncSudokuManualAnnotations()
+
+        status.text =
+            when (mode) {
+                SudokuVisualToolMode.NONE ->
+                    "Repères manuels en pause."
+
+                SudokuVisualToolMode.PROJECTION ->
+                    "Projection manuelle : touche une case, puis un chiffre dans Candidats. Je tracerai ta croix ligne-colonne."
+
+                SudokuVisualToolMode.PAIR ->
+                    "Couple manuel : touche deux cases du plateau."
+
+                SudokuVisualToolMode.TRIPLET ->
+                    "Triplet manuel : touche trois cases du plateau."
+
+                SudokuVisualToolMode.CANDIDATE ->
+                    "Candidat manuel : touche une case, puis le chiffre dans Candidats."
+            }
+    }
+
+    private fun handleSudokuManualBoardTap(
+        cell: Cell
+    ) {
+        val snapshot =
+            sudokuEngine
+                ?.snapshot()
+                ?: return
+
+        if (
+            snapshot.valueAt(
+                cell
+            ) !=
+                0
+        ) {
+            fx.blocked()
+            status.text =
+                "Ce repère se pose sur une case vide."
+            return
+        }
+
+        val targetSize =
+            when (
+                sudokuManualTool
+            ) {
+                SudokuVisualToolMode.PAIR ->
+                    2
+
+                SudokuVisualToolMode.TRIPLET ->
+                    3
+
+                else ->
+                    return
+            }
+
+        if (
+            cell in
+                sudokuManualPendingCells
+        ) {
+            sudokuManualPendingCells
+                .remove(
+                    cell
+                )
+        } else {
+            sudokuManualPendingCells
+                .add(
+                    cell
+                )
+        }
+
+        if (
+            sudokuManualPendingCells
+                .size >=
+                targetSize
+        ) {
+            val group =
+                sudokuManualPendingCells
+                    .take(
+                        targetSize
+                    )
+                    .toSet()
+
+            if (
+                targetSize ==
+                    2
+            ) {
+                sudokuManualPairGroups
+                    .add(
+                        group
+                    )
+                status.text =
+                    "Couple graphique posé par toi."
+            } else {
+                sudokuManualTripletGroups
+                    .add(
+                        group
+                    )
+                status.text =
+                    "Triplet graphique posé par toi."
+            }
+
+            sudokuManualPendingCells
+                .clear()
+        } else {
+            status.text =
+                sudokuManualTool
+                    .label +
+                    " • " +
+                    sudokuManualPendingCells
+                        .size +
+                    " / " +
+                    targetSize +
+                    " case(s) choisie(s)."
+        }
+
+        syncSudokuManualAnnotations()
+    }
+
+    private fun placeSudokuManualDigitMarker(
+        digit: Int
+    ) {
+        val cell =
+            sudokuSelectedCell
+                ?: run {
+                    fx.blocked()
+                    status.text =
+                        "Choisis d'abord une case."
+                    return
+                }
+
+        val snapshot =
+            sudokuEngine
+                ?.snapshot()
+                ?: return
+
+        if (
+            snapshot.valueAt(
+                cell
+            ) !=
+                0
+        ) {
+            fx.blocked()
+            status.text =
+                "Choisis une case vide pour ce repère."
+            return
+        }
+
+        val ref =
+            SudokuCandidateRef(
+                cell =
+                    cell,
+                digit =
+                    digit
+            )
+
+        when (
+            sudokuManualTool
+        ) {
+            SudokuVisualToolMode
+                .PROJECTION -> {
+                if (
+                    !sudokuManualProjectionRefs
+                        .add(
+                            ref
+                        )
+                ) {
+                    sudokuManualProjectionRefs
+                        .remove(
+                            ref
+                        )
+                    status.text =
+                        "Projection manuelle $digit retirée."
+                } else {
+                    status.text =
+                        "Projection manuelle $digit : ta croix ligne-colonne est posée."
+                }
+            }
+
+            SudokuVisualToolMode
+                .CANDIDATE -> {
+                if (
+                    !sudokuManualCandidateRefs
+                        .add(
+                            ref
+                        )
+                ) {
+                    sudokuManualCandidateRefs
+                        .remove(
+                            ref
+                        )
+                    status.text =
+                        "Candidat graphique $digit retiré."
+                } else {
+                    status.text =
+                        "Candidat graphique $digit posé par toi."
+                }
+            }
+
+            else -> {
+                fx.blocked()
+                return
+            }
+        }
+
+        syncSudokuManualAnnotations()
+    }
+
+    private fun confirmSudokuSuperHumanHelp(
+        cell: Cell
+    ) {
+        sudokuSelectedCell =
+            cell
+
+        val joke =
+            "Tu veux vraiment mes yeux de gecko en mode satellite ? Après, ne m'accuse pas de tricher, biloute !"
+
+        speakSimpleProfessorBubble(
+            text =
+                joke,
+            origin =
+                SpeechOrigin
+                    .QUICK_TALK
+        )
+
+        AlertDialog.Builder(this)
+            .setTitle(
+                "Aide surhumaine"
+            )
+            .setMessage(
+                "Êtes-vous sûr de vouloir une aide de sur-humain ?\n\nPierre : « " +
+                    joke +
+                    " »"
+            )
+            .setPositiveButton(
+                "Oui, j'assume"
+            ) {
+                    _,
+                    _ ->
+
+                showSudokuSuperHelpPopup()
+            }
+            .setNegativeButton(
+                "Non, je garde mon cerveau",
+                null
+            )
+            .show()
+    }
+
+    private fun boardRelativeTop(
+        popupHeight: Int,
+        layer: Int
+    ): Int {
+        if (
+            !::screenRoot
+                .isInitialized ||
+            !::sudokuBoard
+                .isInitialized
+        ) {
+            return dp(
+                4
+            )
+        }
+
+        val rootLocation =
+            IntArray(
+                2
+            )
+        val boardLocation =
+            IntArray(
+                2
+            )
+
+        screenRoot
+            .getLocationOnScreen(
+                rootLocation
+            )
+        sudokuBoard
+            .getLocationOnScreen(
+                boardLocation
+            )
+
+        val boardTop =
+            boardLocation[
+                1
+            ] -
+                rootLocation[
+                    1
+                ]
+
+        return (
+            boardTop -
+                popupHeight *
+                    layer -
+                dp(
+                    4 *
+                        layer
+                )
+            ).coerceAtLeast(
+            dp(
+                4
+            )
+        )
+    }
+
+    private fun showSudokuManualToolsPopup() {
+        if (
+            selectedGameMode !=
+                GameMode.SUDOKU ||
+            !::screenRoot
+                .isInitialized
+        ) {
+            return
+        }
+
+        if (
+            sudokuManualToolsPopup
+                ?.isShowing ==
+                true
+        ) {
+            return
+        }
+
+        sudokuManualToolsDismissed =
+            false
+
+        val popupWidth =
+            minOf(
+                (
+                    screenRoot.width -
+                        dp(
+                            12
+                        )
+                    ).coerceAtLeast(
+                    dp(
+                        280
+                    )
+                ),
+                dp(
+                    430
+                )
+            )
+
+        val popupHeight =
+            dp(
+                92
+            )
+
+        var popupX =
+            (
+                screenRoot.width -
+                    popupWidth
+                ) /
+                2
+
+        var popupY =
+            boardRelativeTop(
+                popupHeight,
+                1
+            )
+
+        var popupRef:
+            PopupWindow? =
+            null
+
+        val header =
+            TextView(
+                this
+            ).apply {
+                text =
+                    "✎ Repères humains • glisser"
+                textSize =
+                    14f
+                setTextColor(
+                    Color.WHITE
+                )
+                setBackgroundColor(
+                    Color.rgb(
+                        57,
+                        74,
+                        62
+                    )
+                )
+                gravity =
+                    Gravity.CENTER_VERTICAL
+                setPadding(
+                    dp(
+                        8
+                    ),
+                    0,
+                    dp(
+                        8
+                    ),
+                    0
+                )
+            }
+
+        var lastRawX =
+            0f
+        var lastRawY =
+            0f
+
+        header.setOnTouchListener {
+                _,
+                event ->
+
+            when (
+                event.actionMasked
+            ) {
+                android.view.MotionEvent
+                    .ACTION_DOWN -> {
+                    lastRawX =
+                        event.rawX
+                    lastRawY =
+                        event.rawY
+                    true
+                }
+
+                android.view.MotionEvent
+                    .ACTION_MOVE -> {
+                    val dx =
+                        (
+                            event.rawX -
+                                lastRawX
+                            ).toInt()
+                    val dy =
+                        (
+                            event.rawY -
+                                lastRawY
+                            ).toInt()
+
+                    lastRawX =
+                        event.rawX
+                    lastRawY =
+                        event.rawY
+
+                    popupX =
+                        (
+                            popupX +
+                                dx
+                            ).coerceIn(
+                            dp(
+                                4
+                            ),
+                            (
+                                screenRoot.width -
+                                    popupWidth -
+                                    dp(
+                                        4
+                                    )
+                                ).coerceAtLeast(
+                                dp(
+                                    4
+                                )
+                            )
+                        )
+
+                    popupY =
+                        (
+                            popupY +
+                                dy
+                            ).coerceIn(
+                            dp(
+                                4
+                            ),
+                            (
+                                screenRoot.height -
+                                    popupHeight -
+                                    dp(
+                                        4
+                                    )
+                                ).coerceAtLeast(
+                                dp(
+                                    4
+                                )
+                            )
+                        )
+
+                    popupRef
+                        ?.update(
+                            popupX,
+                            popupY,
+                            -1,
+                            -1
+                        )
+
+                    true
+                }
+
+                else ->
+                    false
+            }
+        }
+
+        val close =
+            Button(
+                this
+            ).apply {
+                text =
+                    "×"
+                textSize =
+                    18f
+                minWidth =
+                    dp(
+                        44
+                    )
+                minHeight =
+                    dp(
+                        36
+                    )
+            }
+
+        val headerRow =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+                addView(
+                    header,
+                    LinearLayout.LayoutParams(
+                        0,
+                        dp(
+                            36
+                        ),
+                        1f
+                    )
+                )
+                addView(
+                    close,
+                    LinearLayout.LayoutParams(
+                        dp(
+                            48
+                        ),
+                        dp(
+                            36
+                        )
+                    )
+                )
+            }
+
+        val toolsRow =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+                setPadding(
+                    1,
+                    1,
+                    1,
+                    1
+                )
+            }
+
+        val toolButtons =
+            linkedMapOf<
+                SudokuVisualToolMode,
+                Button
+                >()
+
+        fun refreshToolButtons() {
+            toolButtons
+                .forEach {
+                    (mode, button) ->
+
+                    button.text =
+                        if (
+                            sudokuManualTool ==
+                                mode
+                        ) {
+                            "✓ " +
+                                mode.label
+                        } else {
+                            mode.label
+                        }
+                }
+        }
+
+        listOf(
+            SudokuVisualToolMode
+                .PROJECTION,
+            SudokuVisualToolMode
+                .PAIR,
+            SudokuVisualToolMode
+                .TRIPLET,
+            SudokuVisualToolMode
+                .CANDIDATE
+        ).forEach {
+            mode ->
+
+            val button =
+                Button(
+                    this
+                ).apply {
+                    text =
+                        mode.label
+                    textSize =
+                        13f
+                    minHeight =
+                        dp(
+                            44
+                        )
+                    setOnClickListener {
+                        setSudokuManualTool(
+                            mode
+                        )
+                        refreshToolButtons()
+                    }
+                }
+
+            toolButtons[
+                mode
+            ] =
+                button
+
+            toolsRow.addView(
+                button
+            )
+        }
+
+        toolsRow.addView(
+            Button(
+                this
+            ).apply {
+                text =
+                    "Effacer"
+                textSize =
+                    13f
+                minHeight =
+                    dp(
+                        44
+                    )
+                setOnClickListener {
+                    clearSudokuManualAnnotations()
+                }
+            }
+        )
+
+        refreshToolButtons()
+
+        val content =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.VERTICAL
+                addView(
+                    headerRow
+                )
+                addView(
+                    HorizontalScrollView(
+                        this@MainActivity
+                    ).apply {
+                        isHorizontalScrollBarEnabled =
+                            false
+                        addView(
+                            toolsRow
+                        )
+                    },
+                    LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams
+                            .MATCH_PARENT,
+                        dp(
+                            54
+                        )
+                    )
+                )
+            }
+
+        val popup =
+            PopupWindow(
+                content,
+                popupWidth,
+                popupHeight,
+                false
+            ).apply {
+                isOutsideTouchable =
+                    false
+
+                if (
+                    android.os.Build.VERSION.SDK_INT >=
+                        android.os.Build.VERSION_CODES.Q
+                ) {
+                    setTouchModal(
+                        false
+                    )
+                }
+
+                setBackgroundDrawable(
+                    ColorDrawable(
+                        Color.WHITE
+                    )
+                )
+
+                elevation =
+                    dp(
+                        12
+                    ).toFloat()
+
+                setOnDismissListener {
+                    if (
+                        sudokuManualToolsPopup ===
+                            this
+                    ) {
+                        sudokuManualToolsPopup =
+                            null
+                        sudokuManualToolsDismissed =
+                            true
+                        setSudokuManualTool(
+                            SudokuVisualToolMode
+                                .NONE
+                        )
+                    }
+                }
+            }
+
+        popupRef =
+            popup
+        sudokuManualToolsPopup =
+            popup
+
+        close.setOnClickListener {
+            popup.dismiss()
+        }
+
+        popup.showAtLocation(
+            screenRoot,
+            Gravity.TOP or
+                Gravity.START,
+            popupX,
+            popupY
+        )
+    }
+
+    private fun showSudokuSuperHelpPopup() {
+        if (
+            selectedGameMode !=
+                GameMode.SUDOKU ||
+            !::screenRoot
+                .isInitialized
+        ) {
+            return
+        }
+
+        if (
+            sudokuSuperHelpPopup
+                ?.isShowing ==
+                true
+        ) {
+            return
+        }
+
+        val popupWidth =
+            minOf(
+                (
+                    screenRoot.width -
+                        dp(
+                            12
+                        )
+                    ).coerceAtLeast(
+                    dp(
+                        280
+                    )
+                ),
+                dp(
+                    470
+                )
+            )
+
+        val popupHeight =
+            dp(
+                94
+            )
+
+        var popupX =
+            (
+                screenRoot.width -
+                    popupWidth
+                ) /
+                2
+
+        var popupY =
+            boardRelativeTop(
+                popupHeight,
+                if (
+                    sudokuManualToolsPopup
+                        ?.isShowing ==
+                        true
+                ) {
+                    2
+                } else {
+                    1
+                }
+            )
+
+        var popupRef:
+            PopupWindow? =
+            null
+
+        val header =
+            TextView(
+                this
+            ).apply {
+                text =
+                    "🧠 Aide surhumaine • glisser"
+                textSize =
+                    14f
+                setTextColor(
+                    Color.WHITE
+                )
+                setBackgroundColor(
+                    Color.rgb(
+                        88,
+                        65,
+                        98
+                    )
+                )
+                gravity =
+                    Gravity.CENTER_VERTICAL
+                setPadding(
+                    dp(
+                        8
+                    ),
+                    0,
+                    dp(
+                        8
+                    ),
+                    0
+                )
+            }
+
+        var lastRawX =
+            0f
+        var lastRawY =
+            0f
+
+        header.setOnTouchListener {
+                _,
+                event ->
+
+            when (
+                event.actionMasked
+            ) {
+                android.view.MotionEvent
+                    .ACTION_DOWN -> {
+                    lastRawX =
+                        event.rawX
+                    lastRawY =
+                        event.rawY
+                    true
+                }
+
+                android.view.MotionEvent
+                    .ACTION_MOVE -> {
+                    val dx =
+                        (
+                            event.rawX -
+                                lastRawX
+                            ).toInt()
+                    val dy =
+                        (
+                            event.rawY -
+                                lastRawY
+                            ).toInt()
+
+                    lastRawX =
+                        event.rawX
+                    lastRawY =
+                        event.rawY
+
+                    popupX =
+                        (
+                            popupX +
+                                dx
+                            ).coerceIn(
+                            dp(
+                                4
+                            ),
+                            (
+                                screenRoot.width -
+                                    popupWidth -
+                                    dp(
+                                        4
+                                    )
+                                ).coerceAtLeast(
+                                dp(
+                                    4
+                                )
+                            )
+                        )
+
+                    popupY =
+                        (
+                            popupY +
+                                dy
+                            ).coerceIn(
+                            dp(
+                                4
+                            ),
+                            (
+                                screenRoot.height -
+                                    popupHeight -
+                                    dp(
+                                        4
+                                    )
+                                ).coerceAtLeast(
+                                dp(
+                                    4
+                                )
+                            )
+                        )
+
+                    popupRef
+                        ?.update(
+                            popupX,
+                            popupY,
+                            -1,
+                            -1
+                        )
+
+                    true
+                }
+
+                else ->
+                    false
+            }
+        }
+
+        val close =
+            Button(
+                this
+            ).apply {
+                text =
+                    "×"
+                textSize =
+                    18f
+                minWidth =
+                    dp(
+                        44
+                    )
+                minHeight =
+                    dp(
+                        36
+                    )
+            }
+
+        val headerRow =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+                addView(
+                    header,
+                    LinearLayout.LayoutParams(
+                        0,
+                        dp(
+                            36
+                        ),
+                        1f
+                    )
+                )
+                addView(
+                    close,
+                    LinearLayout.LayoutParams(
+                        dp(
+                            48
+                        ),
+                        dp(
+                            36
+                        )
+                    )
+                )
+            }
+
+        val options =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.HORIZONTAL
+                setPadding(
+                    1,
+                    1,
+                    1,
+                    1
+                )
+            }
+
+        fun addAutomaticOption(
+            label: String,
+            initial: Boolean,
+            change:
+                (Boolean) -> Unit
+        ) {
+            val option =
+                CheckBox(
+                    this
+                ).apply {
+                    text =
+                        label
+                    textSize =
+                        14f
+                    isChecked =
+                        initial
+                    minHeight =
+                        dp(
+                            44
+                        )
+                    setPadding(
+                        1,
+                        1,
+                        1,
+                        1
+                    )
+
+                    setOnCheckedChangeListener {
+                        _,
+                        enabled ->
+
+                        change(
+                            enabled
+                        )
+
+                        sudokuValueOverlay
+                            .invalidate()
+
+                        status.text =
+                            "Aide surhumaine • " +
+                                label +
+                                if (
+                                    enabled
+                                ) {
+                                    " activé."
+                                } else {
+                                    " désactivé."
+                                }
+                    }
+                }
+
+            options.addView(
+                option
+            )
+        }
+
+        addAutomaticOption(
+            "Projection",
+            sudokuVisualProjections
+        ) {
+            sudokuVisualProjections =
+                it
+            sudokuValueOverlay
+                .showVisualProjections =
+                it
+        }
+
+        addAutomaticOption(
+            "Couples",
+            sudokuVisualPairs
+        ) {
+            sudokuVisualPairs =
+                it
+            sudokuValueOverlay
+                .showVisualPairs =
+                it
+        }
+
+        addAutomaticOption(
+            "Triplets",
+            sudokuVisualTriplets
+        ) {
+            sudokuVisualTriplets =
+                it
+            sudokuValueOverlay
+                .showVisualTriplets =
+                it
+        }
+
+        addAutomaticOption(
+            "Candidats",
+            sudokuVisualCandidates
+        ) {
+            sudokuVisualCandidates =
+                it
+            sudokuValueOverlay
+                .showVisualCandidates =
+                it
+        }
+
+        addAutomaticOption(
+            "Binaire",
+            sudokuVisualBinary
+        ) {
+            sudokuVisualBinary =
+                it
+            sudokuValueOverlay
+                .showVisualBinary =
+                it
+        }
+
+        addAutomaticOption(
+            "Pulsation",
+            sudokuVisualPulse
+        ) {
+            sudokuVisualPulse =
+                it
+            sudokuValueOverlay
+                .animateVisualGroups =
+                it
+        }
+
+        val content =
+            LinearLayout(
+                this
+            ).apply {
+                orientation =
+                    LinearLayout.VERTICAL
+                addView(
+                    headerRow
+                )
+                addView(
+                    HorizontalScrollView(
+                        this@MainActivity
+                    ).apply {
+                        isHorizontalScrollBarEnabled =
+                            false
+                        addView(
+                            options
+                        )
+                    },
+                    LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams
+                            .MATCH_PARENT,
+                        dp(
+                            56
+                        )
+                    )
+                )
+            }
+
+        val popup =
+            PopupWindow(
+                content,
+                popupWidth,
+                popupHeight,
+                false
+            ).apply {
+                isOutsideTouchable =
+                    false
+
+                if (
+                    android.os.Build.VERSION.SDK_INT >=
+                        android.os.Build.VERSION_CODES.Q
+                ) {
+                    setTouchModal(
+                        false
+                    )
+                }
+
+                setBackgroundDrawable(
+                    ColorDrawable(
+                        Color.WHITE
+                    )
+                )
+
+                elevation =
+                    dp(
+                        12
+                    ).toFloat()
+
+                setOnDismissListener {
+                    if (
+                        sudokuSuperHelpPopup ===
+                            this
+                    ) {
+                        sudokuSuperHelpPopup =
+                            null
+                    }
+                }
+            }
+
+        popupRef =
+            popup
+        sudokuSuperHelpPopup =
+            popup
+
+        close.setOnClickListener {
+            popup.dismiss()
+        }
+
+        popup.showAtLocation(
+            screenRoot,
+            Gravity.TOP or
+                Gravity.START,
+            popupX,
+            popupY
+        )
+    }
+
+    private fun dismissSudokuManualToolsPopup(
+        keepAvailable: Boolean = true
+    ) {
+        val popup =
+            sudokuManualToolsPopup
+        sudokuManualToolsPopup =
+            null
+
+        if (
+            popup !=
+                null &&
+            popup.isShowing
+        ) {
+            popup.dismiss()
+        }
+
+        if (keepAvailable) {
+            sudokuManualToolsDismissed =
+                false
+        }
+    }
+
+    private fun dismissSudokuSuperHelpPopup() {
+        val popup =
+            sudokuSuperHelpPopup
+        sudokuSuperHelpPopup =
+            null
+
+        if (
+            popup !=
+                null &&
+            popup.isShowing
+        ) {
+            popup.dismiss()
+        }
+    }
+
     /**
      * En mode Entourer, les touches Candidats sélectionnent un lien,
      * sans ajouter ni retirer de note au Sudoku.
