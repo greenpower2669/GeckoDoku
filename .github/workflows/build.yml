@@ -7,9 +7,46 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
+  # Explicit opt-in only. Publish the EXACT validated phone APK from run #525
+  # as an unpacked GitHub Release asset; never copy it to the Git tree.
+  publish_temp_apk_525:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run525]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download validated run 525 APK and publish temporary prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="temp-geckodoku-0.15.45-dev-run-525"
+          dest="temp/GeckoDoku-run525"
+          mkdir -p "$dest"
+          gh run download 38587086273 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "GeckoDoku-v0.15.45-dev-phone" \
+            --dir "$dest"
+          cd "$dest"
+          sha256sum -c GeckoDoku-v0.15.45-dev.apk.sha256
+          actual="$(sha256sum GeckoDoku-v0.15.45-dev.apk | cut -d' ' -f1)"
+          expected="23506e3a310401dcf4016c5544324913d9670bb54b70ce439da6b8356effcb51"
+          test "$actual" = "$expected"
+          test -s GeckoDoku-v0.15.45-dev.apk
+          gh release create "$tag" \
+            "GeckoDoku-v0.15.45-dev.apk#GeckoDoku-v0.15.45-dev.apk" \
+            "GeckoDoku-v0.15.45-dev.apk.sha256#GeckoDoku-v0.15.45-dev.apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target eee5347f52602ccbc91d1359aeacb161c427d9f1 \
+            --title "TEMP GeckoDoku 0.15.45-dev • run 525" \
+            --notes "APK de test signé Android, issu du run #525 GREEN. Fichier APK direct, sans ZIP; ne pas publier sur Google Play." \
+            --prerelease
+          echo "APK direct : https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
+
   android:
+    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run525]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
