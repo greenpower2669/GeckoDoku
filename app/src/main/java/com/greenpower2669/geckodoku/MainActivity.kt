@@ -521,10 +521,6 @@ class MainActivity : Activity() {
                 }
             }
 
-        professorLife =
-            ProfessorLifeController
-                .create(this)
-
         playerProfileStore =
             PlayerProfileStore(this)
 
@@ -533,6 +529,10 @@ class MainActivity : Activity() {
                 this,
                 playerProfileStore.activeProfileId
             )
+
+        professorLife =
+            ProfessorLifeController
+                .create(this)
 
         journalStore =
             PuzzleJournalStore(this)
