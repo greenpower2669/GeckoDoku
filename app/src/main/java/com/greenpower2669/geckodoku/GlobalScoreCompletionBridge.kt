@@ -4,6 +4,7 @@ object GlobalScoreCompletionBridge {
     fun publish(
         publisher: GlobalScoreCompletionPublisher,
         playerName: String,
+        playerProfileId: String?,
         mode: GameMode,
         size: Int,
         difficulty: GameDifficulty,
@@ -86,6 +87,23 @@ object GlobalScoreCompletionBridge {
             puzzleId = puzzleId,
             seed = seed,
             details = details,
+            metadata =
+                buildMap {
+                    playerProfileId
+                        ?.takeIf {
+                            it.matches(
+                                Regex(
+                                    "[a-fA-F0-9-]{36}"
+                                )
+                            )
+                        }
+                        ?.let {
+                            put(
+                                "playerProfileId",
+                                it
+                            )
+                        }
+                },
             completedAt = completedAt
         )
     }
