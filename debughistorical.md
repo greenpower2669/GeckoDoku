@@ -294,3 +294,7 @@ Deux captures Fab : 16:45 grande palette chevauchant lignes 8/9 ; 18:40 disposit
 ### CI #528 — test de géométrie ajusté (14/10/2026)
 
 Le premier run de vérification `38603247697` / #528 a compilé le Kotlin puis échoué sur **un unique test parmi 299** : `SudokuFloatingWindowGeometryTest.samsungScreenshotPortraitOpensCompactAtRightBelowCompleteGrid` (hauteur attendue 416 px, ligne 255). Cause précise : `compactKeypadBelowBoard` soustrayait deux fois la marge du bas (une fois comme `margin`, une seconde comme `bottomGap`) et ramenait la hauteur à 415 px. Correction du calcul : une marge haute + le plus grand de la marge basse et du bottomGap ; hauteur attendue 416 avec clavier entièrement sous le plateau. Aucun changement de gameplay.
+
+## 14/10/2026 — Signature Google Play et clé réinitialisée : merge protégé (mission 010)
+
+Deux branches historiques : `feature/play-upload-signing-v1` contient le protocole permanent et `build-play-aab.yml` ; `feature/sudoku-visual-reasoning-v1` est la version jouable 0.15.45-dev/code80 validée Samsung (run #529 GREEN) mais ne possédait pas de chaîne AAB dédiée. Notification Play reçue le 12/10 : nouvelle Upload Key active prévue 20:49 UTC le 14/10, SHA1 `27:AD:62:56:96:53:F9:82:37:F6:92:F7:9B:EA:DB:B8:EB:2E:25:C7`. Risque : utiliser l'ancien certificat du 07/10 et produire un AAB rejeté. Fix : réintégration du workflow et comparaison SHA1 publique, CI stop avant merge/release en cas de mismatch ; le keystore n'est jamais exposé. Vérifier l'acceptation effective côté Google Play séparément.
