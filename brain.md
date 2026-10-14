@@ -187,3 +187,6 @@ Preuve CI HOF global / progression : Run 38526555276 / #510 : GREEN. Commit code
 `showSudokuManualToolsPopup()` attend désormais un plateau réellement mesuré, ouvre Repères sur la largeur du plateau et une hauteur nominale de 78 dp (barre 34 dp + outils 44 dp), titre raccourci `✎ Repères humains`. Le drag mémorise x/y ; width/height sont aussi persistés pour compatibilité avec tout redimensionnement futur.
 
 Les géométries runtime des trois PopupWindow Sudoku sont suivies : Repères humains, Aide surhumaine, pavé/clavier. Quand `ProfessorSpeech.onSpeakingChanged(true)` arrive, les PopupWindow restent vivants mais sont déplacés hors écran avec clipping désactivé ; Pierre (portrait/vidéo/bulle) devient visuellement prioritaire. Quand `speaking=false`, les PopupWindow sont replacés à leurs coordonnées/taille précédentes et le clipping est restauré. Aucun dismiss/recreate, donc aucun listener de fermeture ni état outil/clavier perdu.
+
+
+Preuve CI Repères compact / foreground Pierre : Run `38537609942` / #522 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11880727507`, APK SHA-256 `3f6dbba028b4bbb793ed16cbf3a9bd3eb237f36963c4e9fd8a292da21fed911c`.
