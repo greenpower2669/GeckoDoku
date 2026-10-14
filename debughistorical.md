@@ -163,3 +163,24 @@ Ne pas déclarer la correction visuelle validée avant recette Samsung, même si
 ### Validation finale du correctif visuel
 Run `38504109994` / #464 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11867790810`, APK SHA-256 `356cb9973995d453d6e82e865b959f4648502624705322502e23d711ec52cb5e`.
 Le défaut d'usage n'est pas déclaré résolu tant que Fab n'a pas validé visuellement Lignes/Couples/Triplets/Binaire/Entourer sur Samsung.
+
+
+## 14/10/2026 — retour Samsung projection/pseudo/Pierre
+
+Retour Fab après APK run #464 :
+1. choix du pseudo perçu comme perdu depuis l'introduction des profils ;
+2. narrations Sudoku de Pierre jugées « imbuvables » ;
+3. « Lignes » ne projette que l'horizontal et manque la colonne / l'axe complet.
+
+Audit :
+- le renommage existait encore mais était enfoui dans le dialogue Profils, d'où la régression d'usage ;
+- `SudokuHintEngine` produisait une étape parlée par source de conflit, donc trop de phrases ;
+- `projectionSegments` ne parcourait que les lignes et l'overlay reliait uniquement les deux points.
+
+Correction :
+- pseudo direct + profils séparés ;
+- narrations regroupées par ligne/colonne/bloc ;
+- projection exact-2 horizontale ou verticale, prolongée sur tout le plateau, discrète et semi-transparente ;
+- tests adaptés.
+
+Les runs intermédiaires #465 et #467 peuvent être rouges car ils correspondent à des commits partiels (nouvel enum avant adaptation exhaustive de MainActivity, puis nouvelle règle projection avant mise à jour du test historique). Seul le run final du commit complet fait foi.
