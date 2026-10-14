@@ -1,5 +1,29 @@
 # GeckoDoku — ordre de mission courant
 
+## PROTOCOLE PERMANENT — SIGNATURE ANDROID / GOOGLE PLAY (À PRÉSERVER)
+
+> Contrat de travail figé **par convention**, pas verrou GitHub technique. Ne jamais supprimer, remplacer ni réécrire cette procédure sans validation explicite de Fab ; tout incident ou changement de clé se consigne dans un avenant daté plus bas. **Aucun secret ni clé privée dans ce document.**
+
+1. **Séparer les deux clés.** La **clé de signature de l'application** (App Signing Key) est gérée par Google Play App Signing. La **clé d'importation** (Upload Key) privée sert seulement à signer les AAB transmis à Google. Ne jamais demander le changement de la première lorsqu'on a perdu la seconde.
+2. **Signature dédiée à GeckoDoku.** Package `com.greenpower2669.geckodoku`. Clé d'importation RSA 4096, magasin JKS, alias attendu `geckodoku-upload` (par défaut dans le workflow). Conserver le certificat public `.pem` et son empreinte SHA-256 ; ne pas confondre avec le certificat de signature de l'application distribué par Google.
+3. **Création sans ordinateur via GitHub Actions.** Workflow historique `.github/workflows/setup-play-upload-key.yml` sur `feature/play-upload-signing-v1`. Son bootstrap `[bootstrap-play-once]` génère le JKS dans le runner temporaire, exporte le certificat public, chiffre le JKS par AES-256-CBC/PBKDF2 (300 000 itérations), émet une remise (handoff) **éphémère de 1 jour**, puis compile/teste/signe le premier AAB. Le bootstrap doit rester protégé contre la régénération accidentelle.
+4. **Quatre noms de secrets canoniques du dépôt** (noms seulement, jamais valeurs) :
+   - `ANDROID_UPLOAD_STORE_PASSWORD` — mot de passe du magasin et du chiffrement de remise ;
+   - `ANDROID_UPLOAD_KEY_PASSWORD` — mot de passe de la clé ;
+   - `ANDROID_UPLOAD_KEY_ALIAS` — alias, facultatif si le défaut `geckodoku-upload` est conservé ;
+   - `ANDROID_UPLOAD_KEYSTORE_BASE64` — Base64 du **JKS déjà chiffré** AES-256-CBC/PBKDF2, **pas** Base64 du JKS nu. Source : `ANDROID_UPLOAD_KEYSTORE_BASE64.txt` de la remise.
+5. **Obligation de sauvegarde avant de terminer le bootstrap.** Copier le contenu chiffré dans le secret `ANDROID_UPLOAD_KEYSTORE_BASE64` **et** en conserver une copie durable hors GitHub, sécurisée, avec les informations de déchiffrement conservées séparément. Le handoff d'un jour n'est **jamais** une sauvegarde. Vérifier une reconstruction réelle du JKS, la correspondance du certificat et la capacité à signer un AAB avant de considérer le dispositif fiable.
+6. **AAB ultérieurs.** Workflow `.github/workflows/build-play-aab.yml` : restituer le JKS temporairement depuis les Secrets, préparer Pierre + sprites 240p, lancer tests et `bundleRelease`, signer avec `jarsigner`, vérifier la signature, publier uniquement l'artefact AAB et supprimer les fichiers privés temporaires. Les APK téléphone de test restent signés par leur clé de test : **ne jamais les utiliser comme AAB Google Play**.
+7. **Perte de l'Upload Key.** Examiner sauvegarde hors dépôt, Secrets et éventuel artefact encore valide. Ni les mots de passe, ni un AAB signé, ni le certificat public `.pem` ne permettent de reconstituer la clé privée. Si elle est introuvable, créer **une nouvelle Upload Key**, en sauvegarder immédiatement le JKS chiffré, exporter le **nouveau** certificat public `.pem`, puis demander la **réinitialisation de la clé d'importation** dans Play Console. Attendre la confirmation Google avant d'envoyer un AAB signé avec la nouvelle clé. Vérifier que Play App Signing est activé.
+8. **Interdictions.** Jamais de JKS (même chiffré), Base64 privé, mots de passe ou clés dans le dépôt, les logs, les mémoires ou un artefact public non maîtrisé ; jamais de merge `main`, Release GitHub, publication Play ni changement irréversible sans ordre explicite de Fab. Ne pas exposer les secrets dans le chat.
+
+Référence Google : https://developer.android.com/studio/publish/app-signing?hl=fr — rubrique « Réinitialiser une clé d'importation privée perdue ou compromise ».
+
+
+### Validation Google Play du 12/10/2026 — rappel
+Notification Play Console : nouvelle Upload Key prévue active le 14/10/2026 à **20:49 UTC** (22:49 à Lyon). Empreinte SHA-1 publique du nouveau certificat : `27:AD:62:56:96:53:F9:82:37:F6:92:F7:9B:EA:DB:B8:EB:2E:25:C7`. Une empreinte historique du 07/10 ne suffit pas ; **une comparaison calculée dans le runner depuis le JKS restauré** et l'empreinte Play doit réussir AVANT merge/release. Ne jamais exposer la clé privée, les mots de passe ou le Base64.
+
+
 ## Mission active
 
 `GECKO-HOF-SYNC-001` — Hall of Fame global v1.
