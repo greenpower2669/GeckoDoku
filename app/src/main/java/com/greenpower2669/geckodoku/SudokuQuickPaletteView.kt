@@ -78,6 +78,9 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
     private var currentValueDigit:
         Int? = null
 
+    private var previewMessage:
+        String? = null
+
     private var helpMode =
         false
 
@@ -189,6 +192,19 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
             digit
                 ?.takeIf {
                     it in 1..9
+                }
+
+        invalidate()
+    }
+
+    fun setPreviewMessage(
+        message: String?
+    ) {
+        previewMessage =
+            message
+                ?.trim()
+                ?.takeIf {
+                    it.isNotEmpty()
                 }
 
         invalidate()
@@ -781,7 +797,7 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                     Paint.Align.CENTER
                 paint.textSize =
                     rect.height() *
-                        .095f
+                        .075f
                 paint.color =
                     Color.rgb(
                         43,
@@ -815,7 +831,7 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                     rect.centerX(),
                     rect.top +
                         rect.height() *
-                            .13f -
+                            .072f -
                         (
                             paint.ascent() +
                                 paint.descent()
@@ -859,9 +875,11 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                     .toFloat()
             )
 
+        // Fab : quasiment aucun espace perdu entre les touches.
+        // Les zones tactiles restent les tuiles complètes ; seul le dessin
+        // garde un filet visuel d'un pixel.
         val inset =
-            rect.width() *
-                .07f
+            1f
 
         val inner =
             RectF(
@@ -1059,16 +1077,16 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                     RectF(
                         rect.left +
                             rect.width() *
-                                .30f,
+                                .35f,
                         rect.top +
                             rect.height() *
-                                .23f,
+                                .20f,
                         rect.right -
                             rect.width() *
-                                .30f,
+                                .35f,
                         rect.top +
                             rect.height() *
-                                .58f
+                                .48f
                     ),
                 digit =
                     digit,
@@ -1085,13 +1103,35 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
             pendingValueDigit ==
                 null
         ) {
+            val message =
+                previewMessage
+                    ?: if (
+                        digit ==
+                            null
+                    ) {
+                        "Choisis un nombre"
+                    } else {
+                        "Valeur actuelle"
+                    }
+
             paint.style =
                 Paint.Style.FILL
             paint.textAlign =
                 Paint.Align.CENTER
+            paint.isFakeBoldText =
+                previewMessage !=
+                    null
             paint.textSize =
-                rect.height() *
-                    .085f
+                if (
+                    previewMessage !=
+                        null
+                ) {
+                    rect.height() *
+                        .070f
+                } else {
+                    rect.height() *
+                        .085f
+                }
             paint.color =
                 Color.rgb(
                     72,
@@ -1099,18 +1139,43 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
                     73
                 )
 
-            canvas.drawText(
-                if (digit == null) {
-                    "Choisis un nombre"
-                } else {
-                    "Valeur actuelle"
-                },
-                rect.centerX(),
-                rect.bottom -
-                    rect.height() *
-                        .10f,
-                paint
+            drawWrappedCenteredText(
+                canvas =
+                    canvas,
+                text =
+                    message,
+                left =
+                    rect.left +
+                        1f,
+                right =
+                    rect.right -
+                        1f,
+                centerY =
+                    if (
+                        digit ==
+                            null
+                    ) {
+                        rect.centerY() +
+                            rect.height() *
+                                .10f
+                    } else {
+                        rect.bottom -
+                            rect.height() *
+                                .17f
+                    },
+                maxLines =
+                    if (
+                        previewMessage !=
+                            null
+                    ) {
+                        4
+                    } else {
+                        1
+                    }
             )
+
+            paint.isFakeBoldText =
+                false
 
             return
         }
@@ -1136,7 +1201,7 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
             rect.centerX(),
             rect.top +
                 rect.height() *
-                    .60f,
+                    .55f,
             paint
         )
 
@@ -1174,6 +1239,128 @@ class SudokuQuickPaletteView @JvmOverloads constructor(
 
         paint.isFakeBoldText =
             false
+    }
+
+    private fun drawWrappedCenteredText(
+        canvas: Canvas,
+        text: String,
+        left: Float,
+        right: Float,
+        centerY: Float,
+        maxLines: Int
+    ) {
+        val available =
+            (
+                right -
+                    left
+                ).coerceAtLeast(
+                1f
+            )
+
+        val words =
+            text.split(
+                Regex(
+                    "\\s+"
+                )
+            )
+                .filter {
+                    it.isNotBlank()
+                }
+
+        if (words.isEmpty()) {
+            return
+        }
+
+        val lines =
+            mutableListOf<String>()
+
+        var current =
+            ""
+
+        for (word in words) {
+            val candidate =
+                if (
+                    current.isEmpty()
+                ) {
+                    word
+                } else {
+                    "$current $word"
+                }
+
+            if (
+                paint.measureText(
+                    candidate
+                ) <=
+                    available ||
+                current.isEmpty()
+            ) {
+                current =
+                    candidate
+            } else {
+                lines.add(
+                    current
+                )
+                current =
+                    word
+
+                if (
+                    lines.size >=
+                        maxLines -
+                            1
+                ) {
+                    break
+                }
+            }
+        }
+
+        if (
+            current.isNotEmpty() &&
+            lines.size <
+                maxLines
+        ) {
+            lines.add(
+                current
+            )
+        }
+
+        val lineHeight =
+            (
+                paint.descent() -
+                    paint.ascent()
+                ) *
+                1.08f
+
+        val firstBaseline =
+            centerY -
+                (
+                    lines.size -
+                        1
+                    ) *
+                    lineHeight /
+                    2f -
+                (
+                    paint.ascent() +
+                        paint.descent()
+                    ) /
+                    2f
+
+        lines.forEachIndexed {
+            index,
+            line ->
+
+            canvas.drawText(
+                line,
+                (
+                    left +
+                        right
+                    ) /
+                    2f,
+                firstBaseline +
+                    index *
+                        lineHeight,
+                paint
+            )
+        }
     }
 
     private fun drawConfirmationButton(
