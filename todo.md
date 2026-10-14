@@ -238,3 +238,18 @@ Run 38526555276 / #510 : GREEN. Commit code validé 29151fc63bd9f8b05d5ba188276f
 
 ### Preuve CI finale Repères / calques Pierre
 Run `38537609942` / #522 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11880727507`, APK SHA-256 `3f6dbba028b4bbb793ed16cbf3a9bd3eb237f36963c4e9fd8a292da21fed911c`.
+
+## Zone Android utile — GECKO-SUDOKU-SYSTEM-BARS-005 (14/10/2026)
+
+- [x] Auditer la capture Samsung et les calculs de `PopupWindow` dans `MainActivity.kt`.
+- [x] Déduire limites root/decor/WindowInsets en coordonnées fenêtre sans double comptage.
+- [x] Corriger placement, déplacement, resize de Repères / Aide surhumaine / pavé.
+- [x] Re-clamper les PopupWindow visibles à changement d'insets ; préserver temporairement leur suspension Pierre.
+- [x] Ajouter tests unitaires edge-to-edge / navigation / root déjà inset / rotation / clavier.
+- [ ] CI `testDebugUnitTest + assemblePhone` GREEN du dernier code de la mission.
+- [ ] Vérifier artefact APK : Pierre UPMC medium + sprites 240p et SHA-256.
+- [ ] Recette Samsung : déplacer jusqu'au-dessus des trois touches Android sans débord, redimensionner, rotation/reprise, Pierre devant/restitution sans perte.
+- [ ] Vérifier ruban horizontal Repères ; ne pas cacher le bouton Projection au premier affichage.
+- [ ] Aucun merge main, Release ou Play sans validation de Fab.
+
+Mission : `missions/GECKO-SUDOKU-SYSTEM-BARS-005.md`.
