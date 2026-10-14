@@ -4,7 +4,7 @@ object GlobalScoreCompletionBridge {
     fun publish(
         publisher: GlobalScoreCompletionPublisher,
         playerName: String,
-        playerProfileId: String?,
+        playerProfileId: String? = null,
         mode: GameMode,
         size: Int,
         difficulty: GameDifficulty,
