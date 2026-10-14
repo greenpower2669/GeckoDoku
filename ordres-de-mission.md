@@ -159,3 +159,17 @@ Branche uniquement `feature/sudoku-visual-reasoning-v1`. Aucun merge main / Rele
 ### Validation CI projection complète / pseudo / Pierre
 Run `38519610024` / #472 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11873097206`, APK SHA-256 `562218c0d5cc2622e106a582bd5ba8a9bdec667fbec84fc72d0bedb3052ec4b7`.
 Recette Samsung encore requise. Aucun merge/release/publication.
+
+## Avenant repères humains / aide surhumaine volontaire — 14/10/2026
+
+Ordre Fab implémenté sur `feature/sudoku-visual-reasoning-v1`.
+
+- Sortir la barre d'outils du clavier Sudoku.
+- Fenêtre **Repères humains** : flottante, déplaçable, fermable, sans confirmation ; outils Projection / Couple / Triplet / Candidat / Effacer.
+- Le joueur place lui-même tous les repères. Projection manuelle = croix ligne-colonne à travers le candidat choisi.
+- `?` du clavier arme une aide contextuelle. Si le clic suivant est sur le plateau, demander : « Êtes-vous sûr de vouloir une aide de sur-humain ? » avec une courte blague de Pierre.
+- Après Oui seulement : fenêtre **Aide surhumaine** flottante, déplaçable, fermable.
+- Aide auto : Projection / Couples / Triplets / Candidats / Binaire / Pulsation, toutes OFF sur nouvelle grille.
+- Le bouton Candidats auto est le seul qui révèle tous les candidats ; les autres outils ne rendent que leurs candidats utiles.
+- Aucun merge main / Release / Play sans feu vert explicite.
+- CI finale du commit de code complet à confirmer avant livraison.
