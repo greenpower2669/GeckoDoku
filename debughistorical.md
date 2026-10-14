@@ -189,3 +189,17 @@ Les runs intermédiaires #465 et #467 peuvent être rouges car ils correspondent
 ### Validation finale du lot projection/pseudo/Pierre
 Run `38519610024` / #472 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11873097206`, APK SHA-256 `562218c0d5cc2622e106a582bd5ba8a9bdec667fbec84fc72d0bedb3052ec4b7`.
 Les runs intermédiaires rouges correspondaient aux commits partiels décrits plus haut ; #472 est la preuve finale du lot complet.
+
+## 14/10/2026 — ambiguïté outils humains / solutions automatiques
+
+Retour Fab : après le correctif projection/Binaire, les checkboxes sont techniquement efficaces mais elles calculent les candidats et motifs à la place du joueur. C'est intéressant pédagogiquement, mais l'UI les présentait encore comme de simples repères personnels, créant une ambiguïté « j'ai dessiné » vs « le solveur m'a montré ».
+
+Correction :
+- retrait de la barre auto du clavier ;
+- couche manuelle autonome et purement graphique ;
+- couche automatique renommée implicitement Aide surhumaine, protégée par confirmation explicite ;
+- point d'interrogation utilisé comme geste en deux temps : `?` puis zone du pavé = explication ; `?` puis plateau = demande d'aide calculée ;
+- candidats auto découplés : les autres modes n'affichent plus tous les candidats par défaut ;
+- nouvelle grille remet les flags auto OFF.
+
+Les runs rouges #478–#480 correspondent à des commits intermédiaires où MainActivity référençait des fonctions ajoutées dans les commits suivants ; ne pas les considérer comme état final. Run #481 a déjà validé la création complète des deux fenêtres. La preuve finale doit être prise sur le dernier commit fonctionnel.
