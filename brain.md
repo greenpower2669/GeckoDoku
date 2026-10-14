@@ -194,3 +194,7 @@ Preuve CI Repères compact / foreground Pierre : Run `38537609942` / #522 : GREE
 ## Correctif zone sûre PopupWindow Sudoku — 14/10/2026
 
 Voir `missions/GECKO-SUDOKU-SYSTEM-BARS-005.md`. `sudokuPopupSafeBounds()` déduit les bornes en coordonnées de fenêtre par intersection root mesuré / insets `systemBars|displayCutout`, sans retrancher deux fois les barres déjà appliquées au root. `SudokuFloatingWindowGeometryPolicy.clampToBounds()` et `bottomCentered()` gouvernent désormais Repères, Aide et pavé pour drag / reprise de géométrie / resize / placement par défaut. Les popups ouverts sont reconciliés après changement des insets ; le système de calques Pierre ne ferme toujours rien. Tests géométrie de navigation Android, edge-to-edge, rotation ajoutés ; compilation CI et validation Samsung en attente.
+
+## Projection humaine / hypothèse : axes distincts — 14/10/2026
+
+`GECKO-SUDOKU-MANUAL-PROJECTION-006` corrige la croix systématique des repères humains. `SudokuManualProjectionPolicy.axesFor()` retient une ligne si les marques du même chiffre sont alignées en ligne, une colonne si elles sont verticales ; repère isolé / égalité = ligne (jamais les deux axes). Une hypothèse réellement présente dans `SudokuSnapshot.hypothesisAt` projette ligne+colonne, très discrètement sous les chiffres. `SudokuValueOverlayView` ne change pas les notes/valeurs. Messages MainActivity corrigés ; tests unitaires ajoutés. CI et validation Samsung à confirmer.
