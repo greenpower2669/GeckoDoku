@@ -191,3 +191,43 @@ Pierre Sudoku
 
 
 Preuve build projection complète : Run `38519610024` / #472 : GREEN. Tests JVM + `assemblePhone` réussis, Pierre et banque sprites 240p vérifiés, artefact `GeckoDoku-v0.15.45-dev-phone` ID `11873097206`, APK SHA-256 `562218c0d5cc2622e106a582bd5ba8a9bdec667fbec84fc72d0bedb3052ec4b7`.
+
+## Sudoku — architecture repères humains / aide surhumaine (14/10/2026)
+
+```text
+Pavé Sudoku
+├─ saisie valeur / note / hypothèse
+└─ ?
+   ├─ 2e clic sur zone du pavé
+   │  → aide locale Pierre
+   └─ 2e clic sur plateau
+      → confirmation « aide de sur-humain ? »
+      → Oui
+         → popup Aide surhumaine
+            ├─ Projection auto
+            ├─ Couples auto
+            ├─ Triplets auto
+            ├─ Candidats auto
+            ├─ Binaire auto
+            └─ Pulsation
+
+Bouton ✎ Repères
+→ popup Repères humains
+   ├─ Projection
+   │  → sélectionner cellule
+   │  → chiffre via zone Candidats
+   │  → petite pièce + croix ligne/colonne
+   ├─ Couple
+   │  → 2 taps cellules
+   ├─ Triplet
+   │  → 3 taps cellules
+   ├─ Candidat
+   │  → cellule + chiffre
+   └─ Effacer
+
+SudokuValueOverlayView
+├─ auto: logicalCandidates() (read-only)
+└─ manuel: manual* (aucun appel solveur)
+```
+
+Invariant : `manual*` ne devient jamais une preuve logique. L'auto reste explicitement opt-in.
