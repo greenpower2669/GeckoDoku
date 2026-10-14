@@ -4979,8 +4979,19 @@ class MainActivity : Activity() {
         if (id == playerProfileStore.activeProfileId) return
         changeProfileSafely {
             if (playerProfileStore.activateProfile(id)) {
-                statsStore = PlayerStatsStore(this, id)
-                status.text = "Profil actif : " + playerProfileStore.playerName
+                statsStore =
+                    PlayerStatsStore(
+                        this,
+                        id
+                    )
+                professorLife =
+                    ProfessorLifeController
+                        .create(this)
+                clearProfessorSession()
+                status.text =
+                    "Profil actif : " +
+                        playerProfileStore
+                            .playerName
             }
         }
     }
