@@ -252,3 +252,7 @@ Livraison APK brut run #525 : prérelease temporaire `temp-geckodoku-0.15.45-dev
 ## Ordre Fab — pavé compact physique sous grille (14/10/2026)
 
 Feu vert « Go » après comparaison des captures 16:45 (palette trop grande, masque la grille) et 18:40 (palette compactée manuellement sous la grille, à droite). Objectif : obtenir la seconde disposition automatiquement, sans déplacer/redimensionner à chaque fois, conserver le Sudoku pleine taille et toutes les cases visibles. Cause réelle auditée : le PopupWindow a été créé avec les grandes dimensions avant de calculer le dock compact ; ses dimensions physiques n'étaient jamais corrigées. Correctif dans `MainActivity` + `SudokuFloatingWindowGeometryPolicy`, tests JVM. Mission `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`. CI puis recette téléphone avant déclaration de réussite. Toujours pas de merge main ni Release stable / Play.
+
+### Mission 009 — correction après CI de contrôle
+
+Le run #528 `38603247697` a révélé 1 échec sur 299 tests malgré compilation Kotlin réussie, dû à une marge inférieure comptée deux fois dans le calcul du pavé compact. Politique corrigée sur la même branche (cf. `debughistorical.md`). Une nouvelle CI est exigée avant livraison ; ne pas présenter le run #528 comme valide.
