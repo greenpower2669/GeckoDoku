@@ -71,8 +71,12 @@ object SudokuFloatingWindowGeometryPolicy {
         val minX = bounds.left + inset
         val minY = bounds.top + inset
         return SudokuFloatingWindowGeometry(
-            x = geometry.x.coerceIn(minX, bounds.right - inset - width),
-            y = geometry.y.coerceIn(minY, bounds.bottom - inset - height),
+            x = geometry.x.coerceIn(
+                minX, (bounds.right - inset - width).coerceAtLeast(minX)
+            ),
+            y = geometry.y.coerceIn(
+                minY, (bounds.bottom - inset - height).coerceAtLeast(minY)
+            ),
             width = width,
             height = height
         )
