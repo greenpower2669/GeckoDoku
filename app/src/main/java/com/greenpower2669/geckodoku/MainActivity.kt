@@ -3900,7 +3900,10 @@ class MainActivity : Activity() {
                             0L
                         ),
                     completedAt =
-                        completedAt
+                        completedAt,
+                    playerProfileId =
+                        playerProfileStore
+                            .activeProgressionId
                 )
             )
 
@@ -3909,6 +3912,9 @@ class MainActivity : Activity() {
                     globalScoreRuntime.publisher,
                 playerName =
                     playerProfileStore.playerName,
+                playerProfileId =
+                    playerProfileStore
+                        .activeProgressionId,
                 mode = mode,
                 size = size,
                 difficulty = difficulty,
