@@ -226,3 +226,5 @@ La procédure immuable de signature de la branche `feature/play-upload-signing-v
 
 ## 15/10/2026 — GECKO-INFERNAL-NESTED-011
 Ordre explicite Fab « Ok, code ça entre à 3 imbrication ou plus ». En mode GeckoDoku CLASSIC uniquement, épuiser les techniques déterministes avant chaque hypothèse. Mission Impossible = une hypothèse (profondeur 1). Infernal = contradiction démontrée à au moins trois niveaux H1 → H2 → H3 imbriqués, et non par trois hypothèses successives indépendantes. Une branche indécise à la limite de recherche n'est pas une solution ni une contradiction. Unicité indépendante de toute grille : exactement une solution complète. Recherche bornée à profondeur 3 dans cette première réalisation. Branche feature/infernal-nested-depth3-v1 ; aucun merge, Release ni Play autorisé.
+
+Preuve CI du commit fonctionnel d394a65 : run 38800346305 / #533 GREEN, tests JVM + assemblePhone + vérifications Pierre/sprites. Artefact GeckoDoku-v0.15.45-dev-phone (ID 12003858392), APK de test SHA-256 ce9b504397cfad14c733636ac2dd3016e4aa6e108d1acb9ee556921eb022e3f3. Validation profondeurs sur une grille réelle et Samsung encore à faire.

@@ -21,3 +21,6 @@ Date : 15/10/2026. Départ : main. Branche : feature/infernal-nested-depth3-v1.
 
 ## Validation à compléter
 CI Android + JVM, APK de test, seed certifiée profondeur 3, recette Samsung, mesure du temps de recherche et test complet de la démonstration. La trace contient actuellement l'hypothèse externe et la profondeur, pas tout l'arbre explicatif H1/H2/H3. Aucune fusion main ni Release sans feu vert distinct.
+
+## Preuve CI initiale
+Run 38800346305 / #533 GREEN sur commit d394a65 ; tests JVM + assemblePhone, Pierre et sprites 240p. APK test SHA-256 ce9b504397cfad14c733636ac2dd3016e4aa6e108d1acb9ee556921eb022e3f3, artifact 12003858392. Sans certificat de puzzle triple imbriqué, ne pas annoncer validation gameplay complète.

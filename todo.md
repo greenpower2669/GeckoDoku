@@ -365,3 +365,8 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 - [ ] Valider un cycle H1 → H2 → H3 et les explications de Pierre sur Samsung.
 - [ ] Étudier une narration complète de l'arbre interne (non enregistrée à ce stade), si demandée.
 - [ ] Ne pas merger ni publier sans nouvelle autorisation explicite de Fab.
+
+### Preuve CI mission 011 — 15/10/2026
+- [x] CI #533 / 38800346305 GREEN : JVM tests, assemblePhone, Pierre, banque 240p.
+- [x] Artefact phone ID 12003858392 ; APK test SHA-256 ce9b504397cfad14c733636ac2dd3016e4aa6e108d1acb9ee556921eb022e3f3.
+- [ ] La ligne de checklist CI initiale est satisfaite, mais seed profondeur 3 et essais Samsung restent obligatoires.

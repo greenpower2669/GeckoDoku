@@ -298,3 +298,6 @@ Le protocole permanent demeure immuable. **Prochaine action distincte :** import
 
 ## Mission GECKO-INFERNAL-NESTED-011 — ordre Fab du 15/10/2026
 « Ok, code ça entre à 3 imbrication ou plus ». Le contrat Classic doit faire passer toutes les techniques déterministes avant chaque hypothèse. Mission Impossible = une hypothèse par contradiction (profondeur 1). Infernal = au moins 3 hypothèses réellement imbriquées dans une preuve de contradiction, pas seulement 3 hypothèses indépendantes. L'épuisement d'une profondeur de recherche n'est jamais une preuve de seconde solution. Vérifier indépendamment une seule solution complète avec countSolutions == 1. Feu vert code, tests et mémoire sur branche dédiée feature/infernal-nested-depth3-v1 ; aucune permission de merge main, Release, Play ou changement de signature. Garder intacts les autres modes, assets et le protocole de signature permanent.
+
+### Mission 011 — compilation vérifiée, sans publication
+Run Actions #533 / 38800346305 GREEN pour commit d394a65 (tests + APK phone, Pierre, sprites). Artefact Actions 12003858392 ; APK de test SHA-256 ce9b504397cfad14c733636ac2dd3016e4aa6e108d1acb9ee556921eb022e3f3. Aucune Release, aucun merge main ni Play. Contrôle fonctionnel de graine à profondeur 3 non encore certifié.

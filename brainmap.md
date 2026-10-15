@@ -408,3 +408,5 @@ Secrets GitHub -> Upload Key reconstruite temporairement
 
 ## Mission 011 — Infernal Classic (15/10/2026)
 GECKO-INFERNAL-NESTED-011 → missions/GECKO-INFERNAL-NESTED-011.md. HypothesisSolver : Impossible / Solved / Inconclusive, profondeur réellement conservée. DifficultyIndexer : profondeur 1 → profondeur 2 hors profil → profondeur 3 Infernal. PuzzleGenerator : profil strict et countSolutions == 1 ; ProfessorGecko : recherche à profondeur 3. Branche feature/infernal-nested-depth3-v1, validations CI et Samsung dans todo.md. Pas de merge/release.
+
+Preuve compilation 011 : run #533 (38800346305) GREEN, commit d394a65, artefact téléphone ID 12003858392 (APK de test uniquement). Tests de génération réellement imbriquée et Samsung restent ouverts.
