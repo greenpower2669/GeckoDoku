@@ -301,3 +301,7 @@ Le protocole permanent demeure immuable. **Prochaine action distincte :** import
 
 ### Mission 011 — compilation vérifiée, sans publication
 Run Actions #533 / 38800346305 GREEN pour commit d394a65 (tests + APK phone, Pierre, sprites). Artefact Actions 12003858392 ; APK de test SHA-256 ce9b504397cfad14c733636ac2dd3016e4aa6e108d1acb9ee556921eb022e3f3. Aucune Release, aucun merge main ni Play. Contrôle fonctionnel de graine à profondeur 3 non encore certifié.
+
+
+### Livraison ponctuelle de l'APK brut de la mission Infernal (15/10/2026)
+Ordre Fab : « Demande à git de décompresser apk en fichiers accessible décompresser dans un dossier git temp ». Exécution limitée à la branche `feature/infernal-nested-depth3-v1`, job `publish_temp_apk_533` (run 38802231998 / #534 GREEN). Extraction dans `temp/GeckoDoku-infernal-depth3-run533` du runner GitHub Actions (espace éphémère), sans commit du binaire. Publication de l'APK brut en prérelease TEMP tag `temp-geckodoku-infernal-depth3-run533`, contrôlé par API GitHub : https://github.com/greenpower2669/GeckoDoku/releases/download/temp-geckodoku-infernal-depth3-run533/GeckoDoku-v0.15.45-dev.apk, taille 299496421 octets, SHA-256 `ce9b504397cfad14c733636ac2dd3016e4aa6e108d1acb9ee556921eb022e3f3`, fichier `.sha256` également publié. Aucune Release stable, aucun merge main, aucun AAB, aucun Play. La livraison du fichier ne vaut pas validation de la difficulté Infernal en conditions réelles.

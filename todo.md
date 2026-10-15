@@ -370,3 +370,11 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 - [x] CI #533 / 38800346305 GREEN : JVM tests, assemblePhone, Pierre, banque 240p.
 - [x] Artefact phone ID 12003858392 ; APK test SHA-256 ce9b504397cfad14c733636ac2dd3016e4aa6e108d1acb9ee556921eb022e3f3.
 - [ ] La ligne de checklist CI initiale est satisfaite, mais seed profondeur 3 et essais Samsung restent obligatoires.
+
+
+### Livraison décompressée — Mission 011 / #534
+- [x] Décompresser l'artefact #533 dans `temp/GeckoDoku-infernal-depth3-run533` (dossier temporaire Actions).
+- [x] Vérifier le SHA-256 `ce9b504397cfad14c733636ac2dd3016e4aa6e108d1acb9ee556921eb022e3f3`.
+- [x] Publier APK autonome `GeckoDoku-v0.15.45-dev.apk` et `.sha256` sous prérelease TEMP (run #534 GREEN) : https://github.com/greenpower2669/GeckoDoku/releases/download/temp-geckodoku-infernal-depth3-run533/GeckoDoku-v0.15.45-dev.apk.
+- [x] Vérifier asset réel accessible via API GitHub (299496421 octets) ; ne pas confondre Actions ZIP et APK.
+- [ ] Recette fonctionnelle d'une grille à 3 hypothèses imbriquées et tests Samsung restent à faire avant publication.
