@@ -350,3 +350,18 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 - [ ] Vérifier sauvegarde hors GitHub du keystore chiffré, et conservation séparée des mots de passe.
 
 **Clôture validée 14/10/2026 — mission 010.** Feu vert de Fab « merge release avec la secret key ». PR #4 mergée sur `main`, SHA merge `f48dcd7d6898793ccd6d63b22c0bc20644d6966a`. Contrôle pré-merge AAB sur branche : workflow `38636402228` GREEN (certificat Upload Key conforme au Play SHA-1 `27:AD:62:56:96:53:F9:82:37:F6:92:F7:9B:EA:DB:B8:EB:2E:25:C7`, tests, Pierre et sprites 240p, `jarsigner -verify`). Build officiel depuis main : workflow `38636963727` GREEN, tests + `bundleRelease`, même contrôle certificat, `jar verified.`. GitHub Release **publique/stable** : https://github.com/greenpower2669/GeckoDoku/releases/tag/geckodoku-v0.15.45-dev-code80 ; AAB signé direct : https://github.com/greenpower2669/GeckoDoku/releases/download/geckodoku-v0.15.45-dev-code80/GeckoDoku-v0.15.45-dev-code80-signed.aab ; SHA-256 `08390c0e502380ee5d3b6e2e77e01d491ff2a9535c61524b9b5270eb92cd755c`. Application `com.greenpower2669.geckodoku`, versionName `0.15.45-dev`, versionCode `80`. L'APK téléphone précédent reste un build à signature test : NE PAS le présenter comme signé Play. Aucun envoi à Play Console réalisé ; l'acceptation de l'AAB par Google n'est pas encore démontrée. Aucune clé privée ni valeur de Secret dans Git.
+
+
+## GECKO-INFERNAL-NESTED-011 — suite et qualité (15/10/2026)
+- [x] Auditer les contrats Classic et le solveur d'hypothèses avant modification.
+- [x] Inférer une contradiction prouvée à profondeur imbriquée au moins 3, sans accepter 2 hypothèses indépendantes.
+- [x] Préserver Mission Impossible : une hypothèse de profondeur 1.
+- [x] Séparer les issues contradiction / solution complète / branche indécise ; préserver profondeur des preuves intermédiaires.
+- [x] Vérifier profil Infernal dans la génération exacte avec unicité indépendante et trace Professeur à profondeur 3.
+- [x] Ajouter tests de frontière et activer CI de la branche.
+- [ ] Confirmer la CI testDebugUnitTest + assemblePhone, Pierre et sprites, SHA/APK.
+- [ ] Trouver et fixer un seed de grille à véritable profondeur 3 ; prouver unicité et trace complète par test end-to-end.
+- [ ] Mesurer le temps de génération exacte Infernal par taille, préserver annulation ; refuser les faux Infernal.
+- [ ] Valider un cycle H1 → H2 → H3 et les explications de Pierre sur Samsung.
+- [ ] Étudier une narration complète de l'arbre interne (non enregistrée à ce stade), si demandée.
+- [ ] Ne pas merger ni publier sans nouvelle autorisation explicite de Fab.
