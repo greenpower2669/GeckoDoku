@@ -46,8 +46,49 @@ jobs:
             --prerelease
           echo "APK direct : https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
 
+  # Explicit one-time delivery of the validated run #533 phone APK.
+  # GitHub Actions ZIP is extracted into temp/ in the runner workspace.
+  # Publish the raw APK as a TEMP prerelease asset; never commit a large binary.
+  publish_temp_apk_533:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run533]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract verified run 533 phone APK into temp and publish direct file
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="temp-geckodoku-infernal-depth3-run533"
+          dest="temp/GeckoDoku-infernal-depth3-run533"
+          mkdir -p "$dest"
+          gh run download 38800346305 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "GeckoDoku-v0.15.45-dev-phone" \
+            --dir "$dest"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk.sha256"
+          (
+            cd "$dest"
+            sha256sum -c GeckoDoku-v0.15.45-dev.apk.sha256
+            actual="$(sha256sum GeckoDoku-v0.15.45-dev.apk | cut -d ' ' -f1)"
+            expected="ce9b504397cfad14c733636ac2dd3016e4aa6e108d1acb9ee556921eb022e3f3"
+            test "$actual" = "$expected"
+          )
+          gh release create "$tag" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk#GeckoDoku-v0.15.45-dev.apk" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk.sha256#GeckoDoku-v0.15.45-dev.apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "TEMP GeckoDoku Infernal depth 3 • run #533" \
+            --notes "Build de test du commit d394a65d (run #533 GREEN). APK téléphone non signé Play. ZIP Actions extrait dans temp/GeckoDoku-infernal-depth3-run533 ; APK brut publié sans ZIP ; tests de grilles réelles toujours à compléter. Ne pas publier sur Google Play." \
+            --prerelease
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isPrerelease,assets | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null)'
+          echo "APK direct : https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
+
   android:
-    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') && !contains(github.event.head_commit.message, '[temp-apk-run533]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
