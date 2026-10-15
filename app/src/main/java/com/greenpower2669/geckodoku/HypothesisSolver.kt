@@ -19,9 +19,12 @@ private data class BinaryChoice(
     val axis: String
 )
 
-private data class ContradictionProof(
-    val depth: Int
-)
+// A depth-exhausted branch is not a contradiction or a solution.
+private sealed class BranchOutcome {
+    data class Contradiction(val depth: Int) : BranchOutcome()
+    object Solved : BranchOutcome()
+    object Inconclusive : BranchOutcome()
+}
 
 object HypothesisSolver {
     fun analyze(
@@ -174,8 +177,8 @@ object HypothesisSolver {
                     maxDepth - 1
                 )
 
-            if (firstProof != null &&
-                secondProof == null
+            if (firstProof is BranchOutcome.Contradiction &&
+                secondProof !is BranchOutcome.Contradiction
             ) {
                 val depth =
                     1 + firstProof.depth
@@ -197,8 +200,8 @@ object HypothesisSolver {
                 )
             }
 
-            if (secondProof != null &&
-                firstProof == null
+            if (secondProof is BranchOutcome.Contradiction &&
+                firstProof !is BranchOutcome.Contradiction
             ) {
                 val depth =
                     1 + secondProof.depth
@@ -229,114 +232,90 @@ object HypothesisSolver {
         initialConfirmed: Set<Cell>,
         initialExcluded: Set<Cell>,
         remainingDepth: Int
-    ): ContradictionProof? {
-        val state =
-            LogicState(
-                linkedSetOf<Cell>().apply {
-                    addAll(initialConfirmed)
-                },
-                linkedSetOf<Cell>().apply {
-                    addAll(initialExcluded)
-                }
-            )
+    ): BranchOutcome {
+        val state = LogicState(
+            linkedSetOf<Cell>().apply { addAll(initialConfirmed) },
+            linkedSetOf<Cell>().apply { addAll(initialExcluded) }
+        )
+
+        // Account for inner proofs even when deterministic steps occur
+        // between the nested decisions and the eventual contradiction.
+        var nestedDepthUsed = 0
 
         repeat(puzzle.size * puzzle.size * 20) {
             if (hasContradiction(
-                    puzzle,
-                    state.confirmed,
-                    state.excluded
+                    puzzle, state.confirmed, state.excluded
                 )
             ) {
-                return ContradictionProof(0)
+                return BranchOutcome.Contradiction(nestedDepthUsed)
             }
 
             if (state.confirmed.size == puzzle.size) {
-                return null
+                return BranchOutcome.Solved
             }
 
-            val step =
-                HumanSolver.nextStep(
-                    puzzle,
-                    state.confirmed,
-                    state.excluded,
-                    SolverRules.FULL
-                )
-
+            val step = HumanSolver.nextStep(
+                puzzle, state.confirmed, state.excluded, SolverRules.FULL
+            )
             if (step != null) {
-                applyStep(
-                    step,
-                    state
-                )
+                applyStep(step, state)
                 return@repeat
             }
 
             if (remainingDepth <= 0) {
-                return null
+                return BranchOutcome.Inconclusive
             }
 
-            val choice =
-                binaryChoices(
-                    puzzle,
-                    state.confirmed,
-                    state.excluded
-                ).firstOrNull()
-                    ?: return null
+            val choice = binaryChoices(
+                puzzle, state.confirmed, state.excluded
+            ).firstOrNull() ?: return BranchOutcome.Inconclusive
 
-            val a =
-                proveContradiction(
-                    puzzle,
-                    state.confirmed +
-                        choice.first,
-                    state.excluded,
-                    remainingDepth - 1
-                )
+            val first = proveContradiction(
+                puzzle, state.confirmed + choice.first,
+                state.excluded, remainingDepth - 1
+            )
+            val second = proveContradiction(
+                puzzle, state.confirmed + choice.second,
+                state.excluded, remainingDepth - 1
+            )
 
-            val b =
-                proveContradiction(
-                    puzzle,
-                    state.confirmed +
-                        choice.second,
-                    state.excluded,
-                    remainingDepth - 1
-                )
-
-            if (a != null && b != null) {
-                return ContradictionProof(
-                    1 +
-                        maxOf(
-                            a.depth,
-                            b.depth
-                        )
+            if (first is BranchOutcome.Contradiction &&
+                second is BranchOutcome.Contradiction
+            ) {
+                return BranchOutcome.Contradiction(
+                    maxOf(nestedDepthUsed, 1 + maxOf(first.depth, second.depth))
                 )
             }
 
-            if (a != null && b == null) {
-                state.confirmed.add(
-                    choice.second
-                )
+            // A completed solution is not an impossible branch.
+            if (first is BranchOutcome.Solved ||
+                second is BranchOutcome.Solved
+            ) {
+                return BranchOutcome.Solved
+            }
+
+            if (first is BranchOutcome.Contradiction) {
+                nestedDepthUsed = maxOf(nestedDepthUsed, 1 + first.depth)
+                state.confirmed.add(choice.second)
+                return@repeat
+            }
+            if (second is BranchOutcome.Contradiction) {
+                nestedDepthUsed = maxOf(nestedDepthUsed, 1 + second.depth)
+                state.confirmed.add(choice.first)
                 return@repeat
             }
 
-            if (b != null && a == null) {
-                state.confirmed.add(
-                    choice.first
-                )
-                return@repeat
-            }
-
-            return null
+            // Both branches are still undecidable at this depth.
+            return BranchOutcome.Inconclusive
         }
 
-        return if (
-            hasContradiction(
-                puzzle,
-                state.confirmed,
-                state.excluded
+        return if (hasContradiction(
+                puzzle, state.confirmed, state.excluded
             )
         ) {
-            ContradictionProof(0)
+            BranchOutcome.Contradiction(nestedDepthUsed)
         } else {
-            null
+            BranchOutcome.Inconclusive
         }
     }
 
@@ -492,6 +471,8 @@ object HypothesisSolver {
         confirmed: Set<Cell>,
         excluded: Set<Cell>
     ): Boolean {
+        if (confirmed.any { it in excluded }) return true
+
         val confirmedList =
             confirmed.toList()
 

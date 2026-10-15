@@ -69,6 +69,10 @@ class HeuristicDifficultyModel :
 
         val hypothesisPart =
             when {
+                features.hypothesisDepth >= 3 ->
+                    48 +
+                        features.hypothesisCount * 8
+
                 features.hypothesisDepth >= 2 ->
                     38 +
                         features.hypothesisCount * 8
@@ -140,15 +144,27 @@ object DifficultyIndexer {
                 null
             }
 
-        val infernal =
-            if (
-                !full.solved &&
-                mission?.solved != true
-            ) {
+        // Two independent guesses or depth two are not Infernal.
+        val depthTwo =
+            if (!full.solved && mission?.solved != true) {
                 HypothesisSolver.analyze(
                     puzzle,
                     maxDepth = 2,
-                    maxHypothesisSteps = 2
+                    maxHypothesisSteps = puzzle.size
+                )
+            } else {
+                null
+            }
+
+        val infernal =
+            if (!full.solved &&
+                mission?.solved != true &&
+                depthTwo?.solved != true
+            ) {
+                HypothesisSolver.analyze(
+                    puzzle,
+                    maxDepth = InfernalDepthPolicy.SEARCH_DEPTH,
+                    maxHypothesisSteps = puzzle.size
                 )
             } else {
                 null
@@ -191,9 +207,15 @@ object DifficultyIndexer {
                 mission?.solved == true ->
                     GameDifficulty.MISSION_IMPOSSIBLE
 
-                infernal?.solved == true ->
+                infernal?.solved == true &&
+                    InfernalDepthPolicy.accepts(
+                        true,
+                        infernal.maxHypothesisDepth
+                    ) ->
                     GameDifficulty.INFERNAL
 
+                // Provisional label only: exact generation rejects an
+                // unproved grid or a depth-two intermediate puzzle.
                 else ->
                     GameDifficulty.INFERNAL
             }
@@ -209,6 +231,9 @@ object DifficultyIndexer {
                 infernal?.solved == true ->
                     infernal.steps
 
+                depthTwo?.solved == true ->
+                    depthTwo.steps
+
                 else ->
                     emptyList()
             }
@@ -221,6 +246,9 @@ object DifficultyIndexer {
                 infernal?.solved == true ->
                     infernal.hypothesisCount
 
+                depthTwo?.solved == true ->
+                    depthTwo.hypothesisCount
+
                 else -> 0
             }
 
@@ -231,6 +259,9 @@ object DifficultyIndexer {
 
                 infernal?.solved == true ->
                     infernal.maxHypothesisDepth
+
+                depthTwo?.solved == true ->
+                    depthTwo.maxHypothesisDepth
 
                 else -> 0
             }
@@ -284,7 +315,8 @@ object DifficultyIndexer {
         val logicallySolvable =
             full.solved ||
                 mission?.solved == true ||
-                infernal?.solved == true
+                infernal?.solved == true ||
+                depthTwo?.solved == true
 
         return DifficultyReport(
             index =

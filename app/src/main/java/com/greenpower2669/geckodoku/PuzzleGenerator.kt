@@ -167,8 +167,8 @@ object PuzzleGenerator {
                 GameDifficulty.INFERNAL ->
                     HypothesisSolver.analyze(
                         puzzle,
-                        maxDepth = 2,
-                        maxHypothesisSteps = 2
+                        maxDepth = InfernalDepthPolicy.SEARCH_DEPTH,
+                        maxHypothesisSteps = puzzle.size
                     ).steps
 
                 else ->
@@ -305,9 +305,9 @@ object PuzzleGenerator {
             GameDifficulty.INFERNAL ->
                 report.ratedDifficulty ==
                     GameDifficulty.INFERNAL &&
-                    (
-                        f.hypothesisCount >= 2 ||
-                        f.hypothesisDepth >= 2
+                    InfernalDepthPolicy.accepts(
+                        report.logicallySolvable,
+                        f.hypothesisDepth
                     )
         }
     }
@@ -371,13 +371,18 @@ object PuzzleGenerator {
                 }
 
             GameDifficulty.INFERNAL ->
-                if (
-                    f.hypothesisCount >= 2 ||
-                    f.hypothesisDepth >= 2
+                if (InfernalDepthPolicy.accepts(
+                        report.logicallySolvable,
+                        f.hypothesisDepth
+                    )
                 ) {
                     0
                 } else {
-                    55
+                    55 * maxOf(
+                        1,
+                        InfernalDepthPolicy.MINIMUM_DEPTH -
+                            f.hypothesisDepth
+                    )
                 }
         }
 

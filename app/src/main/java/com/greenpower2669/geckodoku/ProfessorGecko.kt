@@ -40,7 +40,7 @@ object ProfessorGecko {
                             puzzle.difficulty ==
                             GameDifficulty.INFERNAL
                         ) {
-                            2
+                            InfernalDepthPolicy.SEARCH_DEPTH
                         } else {
                             1
                         }
@@ -108,7 +108,9 @@ object ProfessorGecko {
                     (step.axis ?: "cette paire") + "."
 
             SolveTechnique.DOUBLE_HYPOTHESIS ->
-                "Prof Gecko : niveau Infernal… cette paire demande une hypothèse dans l'hypothèse. Suis bien les cases surlignées."
+                "Prof Gecko : cette paire demande " +
+                    step.hypothesisDepth +
+                    " niveaux d'hypothèses imbriquées. Suis les cases surlignées."
 
             SolveTechnique.GIVEN ->
                 "Prof Gecko : pars des geckos déjà donnés."
@@ -161,9 +163,12 @@ object ProfessorGecko {
                         (bad.row + 1) +
                         ", colonne " +
                         (bad.col + 1) +
-                        " ne se contredit qu'après un second test logique. Cette branche entière est impossible : l'autre candidat est forcé."
+                        " aboutit à une contradiction après " +
+                        step.hypothesisDepth +
+                        " niveaux de tests imbriqués. L'autre candidat est donc forcé."
                 } else {
-                    "Il faut deux niveaux de test pour obtenir la contradiction. C'est une vraie déduction Infernal, pas un hasard."
+                    "Il faut " + step.hypothesisDepth +
+                        " niveaux d'hypothèses imbriquées pour obtenir cette contradiction, pas de hasard."
                 }
             }
 

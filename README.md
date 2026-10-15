@@ -97,3 +97,18 @@ GitHub Actions produit GeckoDoku-v0.4.0-dev.apk.
 - Les hauts niveaux ajoutent un accent final plus long.
 - Désactiver FX coupe aussi les sons de célébration.
 - Fermer le feu d'artifice visuel arrête les sons de célébration encore programmés.
+
+
+## Contrat Infernal — 15/10/2026 (branche de validation)
+
+Le mode GeckoDoku classique **Infernal** nécessite au moins **trois niveaux
+réels d'hypothèses imbriquées** pour démontrer une contradiction. Deux
+hypothèses successives indépendantes ne satisfont pas ce contrat. Les
+techniques déterministes s'épuisent avant chaque hypothèse.
+**Mission Impossible** conserve un seul niveau et une seule hypothèse.
+
+Un chemin épuisant sa profondeur de recherche reste **indécidé**, ni
+contradiction ni solution validée. Le générateur exact vérifie en plus
+l'unicité par une recherche complète distincte. Les preuves sont bornées à
+trois niveaux dans cette version ; chercher quatre niveaux ou davantage
+nécessitera un budget de calcul étudié séparément. Les autres modes sont inchangés.
