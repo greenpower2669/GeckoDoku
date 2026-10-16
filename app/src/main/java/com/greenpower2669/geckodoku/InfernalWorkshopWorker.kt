@@ -51,6 +51,13 @@ object InfernalWorkshopScheduler {
     fun lastError(context: Context): String =
         prefs(context).getString("last_error_v3", "") ?: ""
 
+    fun phase(context: Context): String =
+        prefs(context).getString("phase_v3", "INACTIVE") ?: "INACTIVE"
+
+    internal fun setPhase(context: Context, value: String) {
+        prefs(context).edit().putString("phase_v3", value.take(100)).commit()
+    }
+
     fun lastHeartbeat(context: Context): Long =
         prefs(context).getLong("heartbeat_v3", 0L)
 
@@ -69,6 +76,7 @@ object InfernalWorkshopScheduler {
         }
         prefs(context).edit()
             .putBoolean("enabled", true)
+            .putString("phase_v3", "DÉMARRAGE")
             .putString("last_error_v3", "")
             .commit()
         val intent = Intent(context, InfernalWorkshopService::class.java)
@@ -96,7 +104,9 @@ object InfernalWorkshopScheduler {
     }
 
     fun pause(context: Context) {
-        prefs(context).edit().putBoolean("enabled", false).commit()
+        prefs(context).edit()
+            .putBoolean("enabled", false)
+            .putString("phase_v3", "ARRÊT DEMANDÉ").commit()
         context.startService(
             Intent(context, InfernalWorkshopService::class.java)
                 .setAction(InfernalWorkshopService.ACTION_STOP)
@@ -114,6 +124,7 @@ object InfernalWorkshopScheduler {
     internal fun serviceStarted(context: Context) {
         prefs(context).edit()
             .putBoolean("service_active_v3", true)
+            .putString("phase_v3", "SERVICE ACTIF")
             .putLong("heartbeat_v3", System.currentTimeMillis())
             .commit()
     }
@@ -121,6 +132,7 @@ object InfernalWorkshopScheduler {
     internal fun serviceStopped(context: Context) {
         prefs(context).edit()
             .putBoolean("service_active_v3", false)
+            .putString("phase_v3", "SERVICE ARRÊTÉ")
             .putInt("current_size_v3", 0)
             .commit()
     }

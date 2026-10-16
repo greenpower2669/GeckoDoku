@@ -105,6 +105,7 @@ class InfernalWorkshopService : Service() {
                 if (Build.VERSION.SDK_INT >= 29 &&
                     power.currentThermalStatus >= PowerManager.THERMAL_STATUS_SEVERE
                 ) {
+                    InfernalWorkshopScheduler.setPhase(this, "PAUSE THERMIQUE")
                     notifyProgress(manager, "Pause thermique • reprise automatique", true)
                     Log.w(LOG, "THERMAL_PAUSE")
                     MediaTrace.event(
@@ -115,6 +116,7 @@ class InfernalWorkshopService : Service() {
                     continue
                 }
                 if (power.isPowerSaveMode) {
+                    InfernalWorkshopScheduler.setPhase(this, "PAUSE ÉCONOMIE DE BATTERIE")
                     notifyProgress(manager, "Économie de batterie • pause de recherche", true)
                     Log.i(LOG, "BATTERY_SAVER_PAUSE")
                     MediaTrace.event(source = LOG, event = "BATTERY_SAVER_PAUSE")
@@ -123,6 +125,7 @@ class InfernalWorkshopService : Service() {
                 }
 
                 val size = InfernalWorkshopScheduler.claimNextSize(this)
+                InfernalWorkshopScheduler.setPhase(this, "RECHERCHE ${size}×${size}")
                 val total = InfernalWorkshopScheduler.attempts(this)
                 Log.i(LOG, "SEARCH_START size=${size}x${size} attempt=$total")
                 MediaTrace.event(
@@ -165,7 +168,10 @@ class InfernalWorkshopService : Service() {
                     detail = "size=${size}x${size} " +
                         "saved=$saved error=${error ?: "none"}"
                 )
-                if (error != null) InfernalWorkshopScheduler.reportProblem(this, error)
+                if (error != null) {
+                    InfernalWorkshopScheduler.setPhase(this, "ERREUR ${size}×${size}")
+                    InfernalWorkshopScheduler.reportProblem(this, error)
+                }
                 if (!rest(250L)) break
             }
         } catch (fatal: Exception) {

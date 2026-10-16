@@ -14580,6 +14580,7 @@ class MainActivity : Activity() {
             .create()
             .also { dialog ->
                 dialog.show()
+                dialog.setMessage(workshopLiveCounters())
                 // Live display: the user need not close and reopen the
                 // dialog to see the search counter increment.
                 val handler = android.os.Handler(android.os.Looper.getMainLooper())
@@ -14622,6 +14623,7 @@ class MainActivity : Activity() {
             "il y a " + ((System.currentTimeMillis() - heartbeat)
                 .coerceAtLeast(0L) / 1000L) + " secondes"
         return "RECHERCHE $label" +
+            "\nMOTEUR : " + InfernalWorkshopScheduler.phase(this) +
             "\nLANCÉES : $count • TERMINÉES : $completed" +
             "\nGRILLES SAUVEGARDÉES : $saved • ERREURS : $errors" +
             "\nTOTAL BIBLIOTHÈQUE : $totalInLibrary" +
