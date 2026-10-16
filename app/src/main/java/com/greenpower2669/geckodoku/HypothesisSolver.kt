@@ -4,7 +4,8 @@ data class HypothesisAnalysis(
     val solved: Boolean,
     val steps: List<SolveStep>,
     val hypothesisCount: Int,
-    val maxHypothesisDepth: Int
+    val maxHypothesisDepth: Int,
+    val exhaustedBudget: Boolean = false
 )
 
 private data class LogicState(
@@ -69,6 +70,7 @@ object HypothesisSolver {
         val steps = mutableListOf<SolveStep>()
         var hypotheses = 0
         var maxUsedDepth = 0
+        var proofBudgetExhausted = false
 
         repeat(puzzle.size * puzzle.size * 30) {
             if (shouldCancel() || Thread.currentThread().isInterrupted) {
@@ -139,12 +141,14 @@ object HypothesisSolver {
                     state.confirmed,
                     state.excluded,
                     maxDepth,
-                    shouldCancel
+                    shouldCancel,
+                    onLimitHit = { proofBudgetExhausted = true }
                 ) ?: return HypothesisAnalysis(
                     false,
                     steps,
                     hypotheses,
-                    maxUsedDepth
+                    maxUsedDepth,
+                    proofBudgetExhausted
                 )
 
             val recorded =
@@ -182,7 +186,8 @@ object HypothesisSolver {
         confirmed: Set<Cell>,
         excluded: Set<Cell>,
         maxDepth: Int,
-        shouldCancel: () -> Boolean = { false }
+        shouldCancel: () -> Boolean = { false },
+        onLimitHit: () -> Unit = {}
     ): SolveStep? {
         if (maxDepth <= 0 || shouldCancel() ||
             Thread.currentThread().isInterrupted) {
@@ -270,7 +275,10 @@ object HypothesisSolver {
                 }
             }
 
-            if (context.truncated) return null
+            if (context.truncated) {
+                onLimitHit()
+                return null
+            }
         }
         return null
     }

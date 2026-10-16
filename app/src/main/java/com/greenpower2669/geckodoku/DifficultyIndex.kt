@@ -148,7 +148,10 @@ object DifficultyIndexer {
 
         // Two independent guesses or depth two are not Infernal.
         val depthTwo =
-            if (!full.solved && mission?.solved != true) {
+            if (!full.solved &&
+                mission?.solved != true &&
+                mission?.exhaustedBudget != true
+            ) {
                 HypothesisSolver.analyze(
                     puzzle,
                     maxDepth = 2,
@@ -162,7 +165,9 @@ object DifficultyIndexer {
         val infernal =
             if (!full.solved &&
                 mission?.solved != true &&
-                depthTwo?.solved != true
+                mission?.exhaustedBudget != true &&
+                depthTwo?.solved != true &&
+                depthTwo?.exhaustedBudget != true
             ) {
                 HypothesisSolver.analyze(
                     puzzle,
