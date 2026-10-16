@@ -1,149 +1,198 @@
 package com.greenpower2669.geckodoku
 
 import android.content.Context
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.Worker
-import androidx.work.WorkerParameters
+import android.content.Intent
+import android.os.Build
+import android.util.Log
 import androidx.work.WorkManager
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.ReentrantLock
 
-/**
- * The next grid size and attempt counts survive activity recreation,
- * app restarts and Android's rescheduling of WorkManager.
- */
+/** Continuous user-initiated service, with durable per-size progress. */
 object InfernalWorkshopScheduler {
     private const val PREF = "infernal_workshop_state"
     private const val PERIODIC = "infernal_workshop_periodic_v1"
     private const val ONCE = "infernal_workshop_once_v1"
     private const val NEXT_SIZE = "next_size_v2"
     private const val ATTEMPTS = "attempts"
-    private val cursorLock = Any()
-    internal val workerLock = ReentrantLock()
+    private val lock = Any()
 
-    fun running(context: Context): Boolean =
-        context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
-            .getBoolean("enabled", false)
+    fun enabled(context: Context): Boolean =
+        prefs(context).getBoolean("enabled", false)
+
+    /** Backward-compatible UI alias, NOT proof a service is alive. */
+    fun running(context: Context): Boolean = enabled(context)
+
+    fun status(context: Context): ContinuousWorkshopStatus =
+        ContinuousWorkshopStatus.from(
+            enabled(context),
+            prefs(context).getBoolean("service_active_v3", false),
+            prefs(context).getLong("heartbeat_v3", 0L),
+            System.currentTimeMillis()
+        )
 
     fun nextSize(context: Context): Int =
-        context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
-            .getInt(NEXT_SIZE, InfernalWorkshopPolicy.MIN_SIZE)
+        prefs(context).getInt(NEXT_SIZE, InfernalWorkshopPolicy.MIN_SIZE)
             .takeIf { it in InfernalWorkshopPolicy.sizes }
             ?: InfernalWorkshopPolicy.MIN_SIZE
 
-    fun attempts(context: Context): Long =
-        context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
-            .getLong(ATTEMPTS, 0L)
+    fun attempts(context: Context): Long = prefs(context).getLong(ATTEMPTS, 0L)
 
-    fun attemptsFor(context: Context, size: Int): Long {
-        require(size in InfernalWorkshopPolicy.sizes)
-        return context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
-            .getLong("attempts_v2_$size", 0L)
-    }
+    fun attemptsFor(context: Context, size: Int): Long =
+        prefs(context).getLong("attempts_v2_$size", 0L)
 
-    fun lastAttemptAt(context: Context, size: Int): Long {
-        require(size in InfernalWorkshopPolicy.sizes)
-        return context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
-            .getLong("last_attempt_v2_$size", 0L)
-    }
+    fun completedFor(context: Context, size: Int): Long =
+        prefs(context).getLong("completed_v3_$size", 0L)
+
+    fun savedFor(context: Context, size: Int): Long =
+        prefs(context).getLong("saved_v3_$size", 0L)
+
+    fun errorsFor(context: Context, size: Int): Long =
+        prefs(context).getLong("errors_v3_$size", 0L)
+
+    fun lastError(context: Context): String =
+        prefs(context).getString("last_error_v3", "") ?: ""
+
+    fun lastHeartbeat(context: Context): Long =
+        prefs(context).getLong("heartbeat_v3", 0L)
+
+    fun lastAttemptAt(context: Context, size: Int): Long =
+        prefs(context).getLong("last_attempt_v2_$size", 0L)
+
+    fun currentSize(context: Context): Int =
+        prefs(context).getInt("current_size_v3", 0)
 
     fun start(context: Context) {
-        context.getSharedPreferences(PREF, Context.MODE_PRIVATE).edit()
-            .putBoolean("enabled", true).commit()
-        val manager = WorkManager.getInstance(context.applicationContext)
-        val constraints = Constraints.Builder()
-            .setRequiresCharging(true)
-            .setRequiresBatteryNotLow(true)
-            .build()
-        val periodic = PeriodicWorkRequestBuilder<InfernalWorkshopWorker>(
-            15, TimeUnit.MINUTES
-        ).setConstraints(constraints).build()
-        // KEEP preserves the existing periodic job after an APK update.
-        manager.enqueueUniquePeriodicWork(
-            PERIODIC, ExistingPeriodicWorkPolicy.KEEP, periodic
-        )
-        runNow(context)
-    }
-
-    fun runNow(context: Context) {
-        if (!running(context)) return
-        val job = OneTimeWorkRequestBuilder<InfernalWorkshopWorker>()
-            .setConstraints(Constraints.Builder()
-                .setRequiresBatteryNotLow(true).build())
-            .build()
-        WorkManager.getInstance(context.applicationContext)
-            .enqueueUniqueWork(ONCE, ExistingWorkPolicy.KEEP, job)
+        // The old periodic jobs had battery/charging constraints and
+        // could remain at zero attempts indefinitely. Retire both.
+        WorkManager.getInstance(context.applicationContext).apply {
+            cancelUniqueWork(PERIODIC)
+            cancelUniqueWork(ONCE)
+        }
+        prefs(context).edit()
+            .putBoolean("enabled", true)
+            .putString("last_error_v3", "")
+            .commit()
+        val intent = Intent(context, InfernalWorkshopService::class.java)
+            .setAction(InfernalWorkshopService.ACTION_START)
+        try {
+            if (Build.VERSION.SDK_INT >= 26) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+            Log.i("InfernalWorkshop", "START_REQUEST user action")
+        } catch (error: RuntimeException) {
+            prefs(context).edit()
+                .putBoolean("enabled", false)
+                .putBoolean("service_active_v3", false)
+                .putString("last_error_v3",
+                    "START_FAILED: " + error.javaClass.simpleName + ": " +
+                        (error.message ?: "").take(180))
+                .commit()
+            Log.e("InfernalWorkshop", "START_FAILED", error)
+            throw error
+        }
     }
 
     fun pause(context: Context) {
-        context.getSharedPreferences(PREF, Context.MODE_PRIVATE).edit()
-            .putBoolean("enabled", false).commit()
-        val manager = WorkManager.getInstance(context.applicationContext)
-        manager.cancelUniqueWork(ONCE)
-        manager.cancelUniqueWork(PERIODIC)
+        prefs(context).edit().putBoolean("enabled", false).commit()
+        context.startService(
+            Intent(context, InfernalWorkshopService::class.java)
+                .setAction(InfernalWorkshopService.ACTION_STOP)
+        )
+        WorkManager.getInstance(context.applicationContext).apply {
+            cancelUniqueWork(PERIODIC)
+            cancelUniqueWork(ONCE)
+        }
+        Log.i("InfernalWorkshop", "STOP_REQUEST user action")
     }
 
-    /** Reserve the next size BEFORE work begins to avoid starvation on timeout. */
-    internal fun claimNextSize(context: Context): Int = synchronized(cursorLock) {
-        val prefs = context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+    internal fun isEnabled(context: Context): Boolean = enabled(context)
+
+    internal fun serviceStarted(context: Context) {
+        prefs(context).edit()
+            .putBoolean("service_active_v3", true)
+            .putLong("heartbeat_v3", System.currentTimeMillis())
+            .commit()
+    }
+
+    internal fun serviceStopped(context: Context) {
+        prefs(context).edit()
+            .putBoolean("service_active_v3", false)
+            .putInt("current_size_v3", 0)
+            .commit()
+    }
+
+    internal fun heartbeat(context: Context) {
+        prefs(context).edit()
+            .putLong("heartbeat_v3", System.currentTimeMillis()).commit()
+    }
+
+    internal fun reportProblem(context: Context, message: String) {
+        prefs(context).edit()
+            .putString("last_error_v3", message.take(240))
+            .commit()
+        Log.e("InfernalWorkshop", message.take(240))
+    }
+
+    /** A counter increment means a search has actually started. */
+    internal fun claimNextSize(context: Context): Int = synchronized(lock) {
+        val p = prefs(context)
         val size = nextSize(context)
         val key = "attempts_v2_$size"
-        prefs.edit()
+        val ok = p.edit()
             .putInt(NEXT_SIZE, InfernalWorkshopPolicy.nextSize(size))
-            .putLong(ATTEMPTS, prefs.getLong(ATTEMPTS, 0L) + 1L)
-            .putLong(key, prefs.getLong(key, 0L) + 1L)
+            .putInt("current_size_v3", size)
+            .putLong(ATTEMPTS, p.getLong(ATTEMPTS, 0L) + 1)
+            .putLong(key, p.getLong(key, 0L) + 1)
             .putLong("last_attempt_v2_$size", System.currentTimeMillis())
+            .putLong("heartbeat_v3", System.currentTimeMillis())
             .commit()
+        check(ok) { "Le compteur d'essais n'a pas pu être sauvegardé." }
         size
+    }
+
+    internal fun recordFinish(context: Context, size: Int, saved: Boolean, error: String? = null) =
+        synchronized(lock) {
+            val p = prefs(context)
+            val key = if (error != null) "errors_v3_$size" else "completed_v3_$size"
+            val edit = p.edit()
+                .putLong(key, p.getLong(key, 0L) + 1L)
+                .putLong("heartbeat_v3", System.currentTimeMillis())
+            if (saved) {
+                val foundKey = "saved_v3_$size"
+                edit.putLong(foundKey, p.getLong(foundKey, 0L) + 1L)
+            }
+            if (error != null) edit.putString("last_error_v3", error.take(240))
+            edit.commit()
+        }
+
+    private fun prefs(context: Context) =
+        context.applicationContext.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+}
+
+enum class ContinuousWorkshopStatus {
+    STOPPED, STARTING, RUNNING, INTERRUPTED;
+
+    companion object {
+        fun from(
+            enabled: Boolean,
+            serviceActive: Boolean,
+            heartbeat: Long,
+            now: Long
+        ): ContinuousWorkshopStatus = when {
+            !enabled -> STOPPED
+            serviceActive && heartbeat > 0 &&
+                now >= heartbeat && now - heartbeat <= 120_000L -> RUNNING
+            heartbeat == 0L -> STARTING
+            else -> INTERRUPTED
+        }
     }
 }
 
+/** Disable the legacy jobs from installed earlier test builds. */
 class InfernalWorkshopWorker(
     context: Context,
-    parameters: WorkerParameters
-) : Worker(context, parameters) {
-    override fun doWork(): Result {
-        val context = applicationContext
-        if (!InfernalWorkshopScheduler.running(context)) return Result.success()
-        // A periodic job and a manual one must not run simultaneous searches.
-        if (!InfernalWorkshopScheduler.workerLock.tryLock()) return Result.success()
-        try {
-            val store = InfernalWorkshopStore(context)
-            val deadline = System.nanoTime() + 25_000_000_000L
-            var turn = 0
-            while (turn < 3 && !isStopped &&
-                InfernalWorkshopScheduler.running(context) &&
-                System.nanoTime() < deadline
-            ) {
-                val size = InfernalWorkshopScheduler.claimNextSize(context)
-                val seed = System.nanoTime() xor
-                    (System.currentTimeMillis() + turn * 104_729L)
-                try {
-                    val proof = PuzzleGenerator.generateWorkshopCandidate(
-                        size, seed
-                    ) {
-                        isStopped ||
-                            !InfernalWorkshopScheduler.running(context) ||
-                            System.nanoTime() >= deadline
-                    }
-                    if (proof != null && !isStopped &&
-                        InfernalWorkshopScheduler.running(context) &&
-                        System.nanoTime() < deadline
-                    ) {
-                        store.add(proof)
-                    }
-                } catch (_: Exception) {
-                    // A bad candidate must not destroy the next size's turn.
-                }
-                turn++
-            }
-            return Result.success()
-        } finally {
-            InfernalWorkshopScheduler.workerLock.unlock()
-        }
-    }
+    parameters: androidx.work.WorkerParameters
+) : androidx.work.Worker(context, parameters) {
+    override fun doWork(): Result = Result.success()
 }
