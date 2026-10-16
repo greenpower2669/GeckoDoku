@@ -30,7 +30,8 @@ private sealed class BranchOutcome {
 // Shared by every tested bifurcation at a given search depth.
 private class ProofSearchContext(
     private val nodeLimit: Int,
-    private val deadlineNanos: Long
+    private val deadlineNanos: Long,
+    private val shouldCancel: () -> Boolean
 ) {
     val memo = HashMap<String, BranchOutcome>()
     var visited = 0
@@ -41,7 +42,8 @@ private class ProofSearchContext(
     fun allowVisit(): Boolean {
         if (visited >= nodeLimit ||
             System.nanoTime() >= deadlineNanos ||
-            Thread.currentThread().isInterrupted
+            Thread.currentThread().isInterrupted ||
+            shouldCancel()
         ) {
             truncated = true
             return false
@@ -55,7 +57,8 @@ object HypothesisSolver {
     fun analyze(
         puzzle: Puzzle,
         maxDepth: Int,
-        maxHypothesisSteps: Int
+        maxHypothesisSteps: Int,
+        shouldCancel: () -> Boolean = { false }
     ): HypothesisAnalysis {
         val state = LogicState(
             linkedSetOf<Cell>().apply {
@@ -68,6 +71,9 @@ object HypothesisSolver {
         var maxUsedDepth = 0
 
         repeat(puzzle.size * puzzle.size * 30) {
+            if (shouldCancel() || Thread.currentThread().isInterrupted) {
+                return HypothesisAnalysis(false, steps, hypotheses, maxUsedDepth)
+            }
             val contradiction =
                 hasContradiction(
                     puzzle,
@@ -132,7 +138,8 @@ object HypothesisSolver {
                     puzzle,
                     state.confirmed,
                     state.excluded,
-                    maxDepth
+                    maxDepth,
+                    shouldCancel
                 ) ?: return HypothesisAnalysis(
                     false,
                     steps,
@@ -174,9 +181,11 @@ object HypothesisSolver {
         puzzle: Puzzle,
         confirmed: Set<Cell>,
         excluded: Set<Cell>,
-        maxDepth: Int
+        maxDepth: Int,
+        shouldCancel: () -> Boolean = { false }
     ): SolveStep? {
-        if (maxDepth <= 0 || Thread.currentThread().isInterrupted) {
+        if (maxDepth <= 0 || shouldCancel() ||
+            Thread.currentThread().isInterrupted) {
             return null
         }
 
@@ -189,7 +198,8 @@ object HypothesisSolver {
             val context = ProofSearchContext(
                 nodeLimit = if (depth >= 3) 4000 else 2500,
                 deadlineNanos = System.nanoTime() +
-                    if (depth >= 3) 1_500_000_000L else 850_000_000L
+                    if (depth >= 3) 1_500_000_000L else 850_000_000L,
+                shouldCancel = shouldCancel
             )
 
             for (choice in choices) {
@@ -287,10 +297,7 @@ object HypothesisSolver {
         var outcome: BranchOutcome = BranchOutcome.Inconclusive
 
         for (iteration in 0 until puzzle.size * puzzle.size * 20) {
-            if (Thread.currentThread().isInterrupted) {
-                context.allowVisit()
-                break
-            }
+            if (!context.allowVisit()) break
             if (hasContradiction(
                     puzzle, state.confirmed, state.excluded
                 )

@@ -60,13 +60,13 @@ object PuzzleGenerator {
 
             if (shouldCancel()) return@repeat
             val report =
-                DifficultyIndexer.analyze(tuned)
+                DifficultyIndexer.analyze(tuned, shouldCancel = shouldCancel)
 
             if (!report.logicallySolvable) {
                 return@repeat
             }
 
-            if (countSolutions(tuned, 2) != 1) {
+            if (countSolutions(tuned, 2, shouldCancel) != 1) {
                 return@repeat
             }
 
@@ -144,7 +144,9 @@ object PuzzleGenerator {
 
             val report =
                 DifficultyIndexer
-                    .analyze(candidate)
+                    .analyze(candidate, shouldCancel = {
+                        shouldCancel() || System.nanoTime() >= deadline
+                    })
 
             if (
                 report.logicallySolvable &&
@@ -156,7 +158,8 @@ object PuzzleGenerator {
                 ) &&
                 countSolutions(
                     candidate,
-                    2
+                    2,
+                    { shouldCancel() || System.nanoTime() >= deadline }
                 ) ==
                     1
             ) {
@@ -236,13 +239,13 @@ object PuzzleGenerator {
                 val probe =
                     base.copy(givens = chosen.toSet())
 
-                if (countSolutions(probe, 2) != 1) {
+                if (countSolutions(probe, 2, shouldCancel) != 1) {
                     chosen.add(cell)
                     continue
                 }
 
                 val report =
-                    DifficultyIndexer.analyze(probe)
+                    DifficultyIndexer.analyze(probe, shouldCancel = shouldCancel)
 
                 if (!report.logicallySolvable) {
                     chosen.add(cell)
@@ -556,7 +559,8 @@ object PuzzleGenerator {
 
     private fun countSolutions(
         puzzle: Puzzle,
-        limit: Int
+        limit: Int,
+        shouldCancel: () -> Boolean = { false }
     ): Int {
         val size = puzzle.size
         val usedCols = BooleanArray(size)
@@ -576,6 +580,10 @@ object PuzzleGenerator {
             IntArray(size) { -1 }
 
         fun search(row: Int) {
+            if (shouldCancel() || Thread.currentThread().isInterrupted) {
+                count = limit
+                return
+            }
             if (count >= limit) return
 
             if (row == size) {

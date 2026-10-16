@@ -103,7 +103,8 @@ object DifficultyIndexer {
     fun analyze(
         puzzle: Puzzle,
         model: DifficultyModel =
-            HeuristicDifficultyModel()
+            HeuristicDifficultyModel(),
+        shouldCancel: () -> Boolean = { false }
     ): DifficultyReport {
         val full =
             HumanSolver.analyze(
@@ -138,7 +139,8 @@ object DifficultyIndexer {
                 HypothesisSolver.analyze(
                     puzzle,
                     maxDepth = 1,
-                    maxHypothesisSteps = 1
+                    maxHypothesisSteps = 1,
+                    shouldCancel = shouldCancel
                 )
             } else {
                 null
@@ -150,7 +152,8 @@ object DifficultyIndexer {
                 HypothesisSolver.analyze(
                     puzzle,
                     maxDepth = 2,
-                    maxHypothesisSteps = puzzle.size
+                    maxHypothesisSteps = puzzle.size,
+                    shouldCancel = shouldCancel
                 )
             } else {
                 null
@@ -164,7 +167,8 @@ object DifficultyIndexer {
                 HypothesisSolver.analyze(
                     puzzle,
                     maxDepth = InfernalDepthPolicy.SEARCH_DEPTH,
-                    maxHypothesisSteps = puzzle.size
+                    maxHypothesisSteps = puzzle.size,
+                    shouldCancel = shouldCancel
                 )
             } else {
                 null
