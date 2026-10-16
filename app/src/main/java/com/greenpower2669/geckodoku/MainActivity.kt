@@ -14484,7 +14484,8 @@ class MainActivity : Activity() {
                 "▶ Démarrer la génération automatique",
             "🔁 Lancer un lot maintenant (batterie suffisante)",
             "📤 Exporter toutes les grilles en ZIP (solutions incluses)",
-            "📥 Importer un lot ZIP pour réanalyse"
+            "📥 Importer un lot ZIP pour réanalyse",
+            "📊 Bilan des recherches : 5×5 à 12×12"
         )
         val shown = all.take(60)
         val labels = header + shown.map { item ->
@@ -14501,12 +14502,18 @@ class MainActivity : Activity() {
         AlertDialog.Builder(this)
             .setTitle("🧪 Atelier Infernal • " + all.size + " grilles")
             .setMessage(
-                "Recherche : " + if (running) "active" else "suspendue" +
+                "Recherche : " +
+                    (if (running) "active" else "suspendue") +
                 " • essais : " + InfernalWorkshopScheduler.attempts(this) +
+                " • prochaine : " + InfernalWorkshopScheduler.nextSize(this) + "×" +
+                    InfernalWorkshopScheduler.nextSize(this) +
                 " • candidats : " +
                 (sizes[WorkshopStatus.CANDIDATE] ?: 0) +
                 " • validées : " + (sizes[WorkshopStatus.VALIDATED] ?: 0) +
-                ".\n\nLes recherches périodiques ont lieu de préférence sur chargeur."
+                ".\n\nRotation automatique de 5×5 à 12×12. " +
+                "X-Wing facultatif jusqu'à 7×7. " +
+                "Recherche jusqu'à H4 ; priorité aux preuves vérifiables. " +
+                "Calculs périodiques surtout sur chargeur."
             )
             .setItems(labels) { _, index ->
                 when (index) {
@@ -14515,15 +14522,14 @@ class MainActivity : Activity() {
                             InfernalWorkshopScheduler.pause(this)
                             status.text = "Atelier suspendu. Candidats conservés."
                         } else {
-                            InfernalWorkshopScheduler.start(this, selectedSize)
-                            status.text = "Atelier activé en arrière-plan • " +
-                                selectedSize + "×" + selectedSize
+                            InfernalWorkshopScheduler.start(this)
+                            status.text = "Atelier activé : rotation 5×5 à 12×12"
                         }
                         showInfernalWorkshop()
                     }
                     1 -> {
                         if (!running) {
-                            InfernalWorkshopScheduler.start(this, selectedSize)
+                            InfernalWorkshopScheduler.start(this)
                         } else {
                             InfernalWorkshopScheduler.runNow(this)
                         }
@@ -14531,8 +14537,77 @@ class MainActivity : Activity() {
                     }
                     2 -> exportInfernalWorkshop()
                     3 -> importInfernalWorkshop()
+                    4 -> showInfernalWorkshopStats()
                     else -> showInfernalWorkshopEntry(shown[index - header.size])
                 }
+            }
+            .setNegativeButton("Fermer", null)
+            .show()
+    }
+
+    private fun showInfernalWorkshopStats() {
+        val stored = InfernalWorkshopStore(this).list()
+        val labels = InfernalWorkshopPolicy.sizes.map { size ->
+            val puzzles = stored.filter { it.puzzle.size == size }
+            val approved = puzzles.count {
+                it.status == WorkshopStatus.VALIDATED
+            }
+            val trials = InfernalWorkshopScheduler.attemptsFor(this, size)
+            val condition = if (InfernalWorkshopPolicy.requiresXWing(size)) {
+                "X-Wing requis"
+            } else {
+                "X-Wing facultatif"
+            }
+            "$size×$size • $trials essais • ${puzzles.size} grilles " +
+                "($approved validées) • $condition"
+        }.toTypedArray()
+
+        AlertDialog.Builder(this)
+            .setTitle("📊 Atelier — 8 tailles / H2 à H4")
+            .setMessage(
+                "Répartition équilibrée : un essai par taille, " +
+                "puis reprise au 5×5. " +
+                "Prochaine : " + InfernalWorkshopScheduler.nextSize(this) +
+                "×" + InfernalWorkshopScheduler.nextSize(this) +
+                ". Les résultats sont conservés et exportables."
+            )
+            .setItems(labels) { _, position ->
+                showInfernalWorkshopSize(
+                    InfernalWorkshopPolicy.MIN_SIZE + position
+                )
+            }
+            .setNegativeButton("Fermer", null)
+            .show()
+    }
+
+    private fun showInfernalWorkshopSize(size: Int) {
+        val found = InfernalWorkshopStore(this).list()
+            .filter { it.puzzle.size == size }
+        if (found.isEmpty()) {
+            AlertDialog.Builder(this)
+                .setTitle("$size×$size • aucune grille trouvée")
+                .setMessage(
+                    "Les essais sont comptabilisés, même si aucune " +
+                    "grille H2 avec le contrat de cette taille n'a été trouvée."
+                )
+                .setPositiveButton("OK", null)
+                .show()
+            return
+        }
+        val shown = found.take(80)
+        val labels = shown.map { entry ->
+            val wing = if (entry.xWingCount > 0) {
+                "X-Wing ${entry.xWingCount}"
+            } else {
+                "sans X-Wing"
+            }
+            "H${entry.nestedDepth} • $wing • ${entry.status.name} • " +
+                entry.id.take(8)
+        }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("🦎 Grilles $size×$size : ${found.size}")
+            .setItems(labels) { _, which ->
+                showInfernalWorkshopEntry(shown[which])
             }
             .setNegativeButton("Fermer", null)
             .show()
@@ -14586,11 +14661,13 @@ class MainActivity : Activity() {
                 "Statut : " + entry.status.name +
                 "\nHypothèses : " + entry.hypothesisCount +
                 "\nModèle sans X-Wing : " +
-                if (entry.xWingExclusionModelComplete) {
-                    "non résolu (dans le budget)"
+                (if (entry.xWingCount == 0) {
+                    "sans objet (facultatif pour cette taille)"
+                } else if (entry.xWingExclusionModelComplete) {
+                    "non résolu dans le modèle testé"
                 } else {
                     "recherche indécise, à auditer"
-                } +
+                }) +
                 "\nTaille : " + entry.puzzle.size +
                 "\nSolution : unique (vérification indépendante)" +
                 "\nObservations : " + entry.notes +
