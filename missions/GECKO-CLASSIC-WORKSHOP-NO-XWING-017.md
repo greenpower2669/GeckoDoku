@@ -15,3 +15,6 @@
 
 ## Suite si zéro candidat
 Après quelques centaines de recherches terminées avec 0 candidat enregistré, comparer le taux par taille et instrumenter les raisons de rejet (unicité, profondeur H2, temps imparti, etc.). Ne pas conclure que le X-Wing seul était responsable sans expérience.
+
+### Résultat et APK expérimental sans X-Wing (16/10/2026)
+Après échec du premier CI #562 (1 test d'un Puzzle artificiel 12×12 mal construit avec tableaux 5×5, **pas** un bogue générateur), le test fut corrigé. CI #563 run `38957467342` GREEN, 323 tests JVM/compilation téléphone/ressources OK, commit code `811da1b90303764862db671f669544855ea60771`. APK phone brut SHA-256 `1b42e0575c6f18d9294ed85853dd16e4915157cd47f0c1d7c89c3a3a18715bb3`, artifact GitHub Actions `12072180081`. Livraison vérifiée CI #564 `38957908216` GREEN, prérelease TEMP `temp-geckodoku-workshop-no-xwing-run563` contenant l'asset APK brut 300771417 octets et fichier .sha256 ; lien direct : https://github.com/greenpower2669/GeckoDoku/releases/download/temp-geckodoku-workshop-no-xwing-run563/GeckoDoku-v0.15.45-dev.apk . GitHub API confirme asset réel. Aucun merge main, aucune Release stable, aucun Play. Après installation Samsung, appuyer DÉMARRER/REPRENDRE, relever le compteur **NOUVEAUX ESSAIS** et les candidats du test A/B, sans prendre les compteurs historiques comme résultat expérimental.
