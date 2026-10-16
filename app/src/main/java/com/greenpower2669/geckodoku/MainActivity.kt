@@ -14626,6 +14626,21 @@ class MainActivity : Activity() {
                             .show()
                     }
                     2 -> {
+                        // A generated entry cannot be promoted before
+                        // the player has actually opened it for testing.
+                        if (entry.status != WorkshopStatus.TESTING &&
+                            entry.status != WorkshopStatus.VALIDATED
+                        ) {
+                            AlertDialog.Builder(this)
+                                .setTitle("Test requis")
+                                .setMessage(
+                                    "Ouvre cette grille dans l'atelier avant de " +
+                                        "la valider pour le niveau Infernal."
+                                )
+                                .setPositiveButton("OK", null)
+                                .show()
+                            return@setItems
+                        }
                         // Explicit human validation, never automatic.
                         store.update(
                             entry.id, WorkshopStatus.VALIDATED, entry.notes
