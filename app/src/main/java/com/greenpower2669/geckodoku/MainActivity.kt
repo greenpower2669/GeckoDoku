@@ -14473,42 +14473,26 @@ class MainActivity : Activity() {
     }
 
 
-    /** Foreground exploration is deliberately user-started and user-stopped. */
+    /**
+     * On Android AlertDialog, setMessage() hides the setItems() list.
+     * The commands MUST live in an items-only dialog; counters have
+     * their own live-updating message dialog.
+     */
     private fun showInfernalWorkshop() {
-        val store = InfernalWorkshopStore(this)
-        val all = store.list()
-        val runningState = InfernalWorkshopScheduler.status(this)
-        val running = runningState == ContinuousWorkshopStatus.RUNNING ||
-            runningState == ContinuousWorkshopStatus.STARTING
-        val sizes = all.groupingBy { it.status }.eachCount()
-        val statusLabel = when (runningState) {
-            ContinuousWorkshopStatus.RUNNING -> "ACTIVE (notification Android)"
-            ContinuousWorkshopStatus.STARTING -> "DÉMARRAGE DEMANDÉ"
-            ContinuousWorkshopStatus.INTERRUPTED -> "INTERROMPUE (relancer)"
-            ContinuousWorkshopStatus.STOPPED -> "ARRÊTÉE"
-        }
-        val total = InfernalWorkshopScheduler.attempts(this)
-        val completed = InfernalWorkshopPolicy.sizes.sumOf {
-            InfernalWorkshopScheduler.completedFor(this, it)
-        }
-        val errors = InfernalWorkshopPolicy.sizes.sumOf {
-            InfernalWorkshopScheduler.errorsFor(this, it)
-        }
-        val lastHeartbeat = InfernalWorkshopScheduler.lastHeartbeat(this)
-        val ageSeconds = if (lastHeartbeat > 0L) {
-            ((System.currentTimeMillis() - lastHeartbeat)
-                .coerceAtLeast(0L) / 1000L)
-        } else -1L
+        val entries = InfernalWorkshopStore(this).list()
+        val state = InfernalWorkshopScheduler.status(this)
+        val running = state == ContinuousWorkshopStatus.RUNNING ||
+            state == ContinuousWorkshopStatus.STARTING
         val header = arrayOf(
             if (running) "⏹ ARRÊTER la recherche continue" else
                 "▶ DÉMARRER / REPRENDRE la recherche continue",
-            "🔄 Actualiser les compteurs maintenant",
+            "📈 Voir les compteurs EN DIRECT",
             "📤 Exporter toutes les grilles en ZIP (solutions incluses)",
             "📥 Importer un lot ZIP pour réanalyse",
             "📊 Bilan des recherches : 5×5 à 12×12"
         )
-        val shown = all.take(60)
-        val labels = header + shown.map { item ->
+        val displayed = entries.take(60)
+        val labels = header + displayed.map { item ->
             val stage = when (item.status) {
                 WorkshopStatus.CANDIDATE -> "À tester"
                 WorkshopStatus.TESTING -> "En cours"
@@ -14519,27 +14503,14 @@ class MainActivity : Activity() {
                 "• X-Wing ${item.xWingCount} • $stage • " +
                 item.id.take(8)
         }
+        val stateTitle = when (state) {
+            ContinuousWorkshopStatus.RUNNING -> "ACTIVE"
+            ContinuousWorkshopStatus.STARTING -> "DÉMARRAGE"
+            ContinuousWorkshopStatus.INTERRUPTED -> "INTERROMPUE"
+            ContinuousWorkshopStatus.STOPPED -> "ARRÊTÉE"
+        }
         AlertDialog.Builder(this)
-            .setTitle("🧪 Atelier Infernal • " + all.size + " grilles")
-            .setMessage(
-                "Recherche : " + statusLabel +
-                "\nRecherches lancées : " + total +
-                " • terminées : " + completed +
-                " • erreurs : " + errors +
-                "\nEn cours : " + InfernalWorkshopScheduler.currentSize(this) + "×" +
-                    InfernalWorkshopScheduler.currentSize(this) +
-                " • prochaine : " + InfernalWorkshopScheduler.nextSize(this) + "×" +
-                    InfernalWorkshopScheduler.nextSize(this) +
-                "\nDernier signal du moteur : " +
-                    (if (ageSeconds < 0L) "aucun" else "il y a ${ageSeconds}s") +
-                "\nCandidats : " + (sizes[WorkshopStatus.CANDIDATE] ?: 0) +
-                " • validées : " + (sizes[WorkshopStatus.VALIDATED] ?: 0) +
-                "\nDernière erreur : " +
-                    (InfernalWorkshopScheduler.lastError(this).ifBlank { "aucune" }) +
-                "\n\nRecherche continue 5×5 à 12×12 avec notification " +
-                "et bouton Arrêter. Pause thermique et économie de batterie ; " +
-                "Android peut interrompre le service."
-            )
+            .setTitle("🧪 Atelier Infernal • ${entries.size} grilles • $stateTitle")
             .setItems(labels) { _, index ->
                 when (index) {
                     0 -> {
@@ -14567,35 +14538,47 @@ class MainActivity : Activity() {
                             status.text = "Démarrage impossible : " +
                                 (error.message ?: error.javaClass.simpleName)
                         }
-                        showInfernalWorkshop()
+                        showInfernalWorkshopLiveCounters()
                     }
-                    1 -> showInfernalWorkshop()
+                    1 -> showInfernalWorkshopLiveCounters()
                     2 -> exportInfernalWorkshop()
                     3 -> importInfernalWorkshop()
                     4 -> showInfernalWorkshopStats()
-                    else -> showInfernalWorkshopEntry(shown[index - header.size])
+                    else -> showInfernalWorkshopEntry(
+                        displayed[index - header.size]
+                    )
                 }
             }
             .setNegativeButton("Fermer", null)
-            .create()
-            .also { dialog ->
-                dialog.show()
-                dialog.setMessage(workshopLiveCounters())
-                // Live display: the user need not close and reopen the
-                // dialog to see the search counter increment.
-                val handler = android.os.Handler(android.os.Looper.getMainLooper())
-                val ticker = object : Runnable {
-                    override fun run() {
-                        if (!dialog.isShowing) return
-                        dialog.setMessage(workshopLiveCounters())
-                        handler.postDelayed(this, 1_500L)
-                    }
-                }
-                handler.postDelayed(ticker, 1_500L)
-                dialog.setOnDismissListener {
-                    handler.removeCallbacks(ticker)
-                }
+            .show()
+    }
+
+    private fun showInfernalWorkshopLiveCounters() {
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("📈 Atelier • recherches en direct")
+            .setMessage(workshopLiveCounters())
+            .setPositiveButton("Commandes") { _, _ ->
+                showInfernalWorkshop()
             }
+            .setNeutralButton("ARRÊTER") { _, _ ->
+                InfernalWorkshopScheduler.pause(this)
+                showInfernalWorkshop()
+            }
+            .setNegativeButton("Fermer", null)
+            .create()
+        dialog.show()
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        val ticker = object : Runnable {
+            override fun run() {
+                if (!dialog.isShowing) return
+                dialog.setMessage(workshopLiveCounters())
+                handler.postDelayed(this, 1_500L)
+            }
+        }
+        handler.postDelayed(ticker, 1_500L)
+        dialog.setOnDismissListener {
+            handler.removeCallbacks(ticker)
+        }
     }
 
     private fun workshopLiveCounters(): String {
@@ -14661,14 +14644,6 @@ class MainActivity : Activity() {
 
         AlertDialog.Builder(this)
             .setTitle("📊 Atelier — 8 tailles / H2 à H4")
-            .setMessage(
-                "Exploration continue, taille par taille ; " +
-                "compteurs persistants, même sans candidat. " +
-                "État : " + InfernalWorkshopScheduler.status(this) +
-                ". Prochaine : " + InfernalWorkshopScheduler.nextSize(this) +
-                "×" + InfernalWorkshopScheduler.nextSize(this) +
-                ". Les résultats sont conservés et exportables."
-            )
             .setItems(labels) { _, position ->
                 showInfernalWorkshopSize(
                     InfernalWorkshopPolicy.MIN_SIZE + position
@@ -14755,22 +14730,6 @@ class MainActivity : Activity() {
             .setTitle("🦎 " + entry.id.take(12) +
                 " • H" + entry.nestedDepth + " • X-Wing " +
                 entry.xWingCount)
-            .setMessage(
-                "Statut : " + entry.status.name +
-                "\nHypothèses : " + entry.hypothesisCount +
-                "\nModèle sans X-Wing : " +
-                (if (entry.xWingCount == 0) {
-                    "sans objet (facultatif pour cette taille)"
-                } else if (entry.xWingExclusionModelComplete) {
-                    "non résolu dans le modèle testé"
-                } else {
-                    "recherche indécise, à auditer"
-                }) +
-                "\nTaille : " + entry.puzzle.size +
-                "\nSolution : unique (vérification indépendante)" +
-                "\nObservations : " + entry.notes +
-                "\n\nUne validation H2 n'est jamais présentée comme H3."
-            )
             .setItems(actions) { _, which ->
                 when (which) {
                     0 -> {
@@ -14843,6 +14802,27 @@ class MainActivity : Activity() {
                         showInfernalWorkshop()
                     }
                 }
+            }
+            .setNeutralButton("Détails") { _, _ ->
+                val information = "Statut : " + entry.status.name +
+                        "\nHypothèses : " + entry.hypothesisCount +
+                        "\nModèle sans X-Wing : " +
+                        (if (entry.xWingCount == 0) {
+                            "sans objet (facultatif pour cette taille)"
+                        } else if (entry.xWingExclusionModelComplete) {
+                            "non résolu dans le modèle testé"
+                        } else {
+                            "recherche indécise, à auditer"
+                        }) +
+                        "\nTaille : " + entry.puzzle.size +
+                        "\nSolution : unique (vérification indépendante)" +
+                        "\nObservations : " + entry.notes +
+                        "\n\nUne validation H2 n'est jamais présentée comme H3."
+                AlertDialog.Builder(this)
+                    .setTitle("Détails • grille " + entry.id.take(12))
+                    .setMessage(information)
+                    .setPositiveButton("OK", null)
+                    .show()
             }
             .setNegativeButton("Fermer", null)
             .show()
