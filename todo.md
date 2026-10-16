@@ -441,3 +441,7 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 - [ ] Tester en conditions réelles Android 16 : passage 12→5, migration de l'ancien `enabled`, distribution des huit tailles, température/chargeur, relance.
 - [ ] Collecter des candidats réellement générés, analyser profondeur et nécessaires X-Wing, mesurer rendements par taille.
 - [ ] Ne pas merger main ni publier Release ou Play sans autre ordre.
+
+**CI finale atelier 014 (16/10/2026)** : run GitHub Actions #550 `38921744094` GREEN, commit code `b56fce177805e103028c09bdfd6d9772ad7e8bc0`, Gradle `BUILD SUCCESSFUL in 2m 4s`, tests JVM, APK phone, Pierre/banque 240p vérifiés. Artefact Actions `GeckoDoku-v0.15.45-dev-phone` ID `12055281956`, APK SHA-256 `d879a10ea9ece31dcb866fadb83ea438826f52439c9a0881baf4664d569b966d`. Les #547–#549 avaient échoué pendant l'intégration : #547 ancien appel `start(context,size)`, puis #548/#549 ancien test exigeant un X-Wing sur 5×5 ; API et test corrigés avant #550. Pas de merge main, de Release ni de Google Play. Essais réels sur Samsung / démonstration de grilles H2–H4 restent à effectuer.
+- [x] CI 550 finale GREEN : tests JVM, assemblePhone, Pierre, sprites 240p, artefact APK récupérable via Actions.
+- [ ] Validation Samsung : captures du rapport par taille, nombre de grilles réellement générées et export ZIP de recherche.
