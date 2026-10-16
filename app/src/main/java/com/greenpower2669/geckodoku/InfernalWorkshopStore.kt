@@ -25,7 +25,9 @@ data class WorkshopEntry(
     val hypothesisCount: Int,
     val createdAt: Long,
     val status: WorkshopStatus = WorkshopStatus.CANDIDATE,
-    val notes: String = ""
+    val notes: String = "",
+    val xWingExclusionModelComplete: Boolean = false,
+    val shallowExclusionModelComplete: Boolean = false
 ) {
     // The original Infernal contract (3 nested decisions) stays intact.
     val eligibleForInfernal: Boolean
@@ -68,7 +70,11 @@ class InfernalWorkshopStore(context: Context) {
         persist(WorkshopEntry(
             id, puzzle, proof.xWingCount,
             proof.hypothesisDepth, proof.hypothesisCount,
-            System.currentTimeMillis()
+            System.currentTimeMillis(),
+            xWingExclusionModelComplete =
+                proof.xWingExclusionModelComplete,
+            shallowExclusionModelComplete =
+                proof.shallowExclusionModelComplete
         ))
         true
     }
@@ -186,6 +192,8 @@ class InfernalWorkshopStore(context: Context) {
             put("status", entry.status.name)
             put("notes", entry.notes)
             put("xWingCount", entry.xWingCount)
+            put("xWingExclusionModelComplete", entry.xWingExclusionModelComplete)
+            put("shallowExclusionModelComplete", entry.shallowExclusionModelComplete)
             put("nestedDepth", entry.nestedDepth)
             put("hypothesisCount", entry.hypothesisCount)
             put("size", puzzle.size)
@@ -261,7 +269,11 @@ class InfernalWorkshopStore(context: Context) {
             status = WorkshopStatus.entries.firstOrNull {
                 it.name == obj.optString("status")
             } ?: WorkshopStatus.CANDIDATE,
-            notes = obj.optString("notes", "").take(4000)
+            notes = obj.optString("notes", "").take(4000),
+            xWingExclusionModelComplete =
+                obj.optBoolean("xWingExclusionModelComplete", false),
+            shallowExclusionModelComplete =
+                obj.optBoolean("shallowExclusionModelComplete", false)
         )
     }
 

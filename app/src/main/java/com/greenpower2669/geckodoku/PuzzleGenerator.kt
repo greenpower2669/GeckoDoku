@@ -7,7 +7,9 @@ data class WorkshopCandidateProof(
     val puzzle: Puzzle,
     val xWingCount: Int,
     val hypothesisDepth: Int,
-    val hypothesisCount: Int
+    val hypothesisCount: Int,
+    val xWingExclusionModelComplete: Boolean = false,
+    val shallowExclusionModelComplete: Boolean = false
 )
 
 object PuzzleGenerator {
@@ -46,9 +48,16 @@ object PuzzleGenerator {
                 }
                 // Collect depth 2 candidates first; occasionally a
                 // deeper candidate becomes demonstrable after H2 fails.
-                val withWing = HypothesisSolver.analyze(
-                    candidate, 3, size, shouldCancel
+                val depthTwo = HypothesisSolver.analyze(
+                    candidate, 2, size, shouldCancel
                 )
+                val withWing = if (depthTwo.solved) {
+                    depthTwo
+                } else {
+                    HypothesisSolver.analyze(
+                        candidate, 3, size, shouldCancel
+                    )
+                }
                 val wingCount = withWing.steps.count {
                     it.technique == SolveTechnique.GECKO_X_WING
                 }
@@ -59,18 +68,23 @@ object PuzzleGenerator {
                 val shallow = HypothesisSolver.analyze(
                     candidate, 1, size, shouldCancel
                 )
-                if (shallow.solved || shallow.exhaustedBudget) continue
+                if (shallow.solved) continue
 
                 val noWing = HypothesisSolver.analyze(
-                    candidate, 3, size, shouldCancel,
+                    candidate,
+                    maxOf(2, withWing.maxHypothesisDepth),
+                    size,
+                    shouldCancel,
                     rules = SolverRules.NO_X_WING
                 )
-                if (noWing.solved || noWing.exhaustedBudget) continue
+                if (noWing.solved) continue
 
                 return WorkshopCandidateProof(
                     candidate.copy(solverTrace = withWing.steps),
                     wingCount, withWing.maxHypothesisDepth,
-                    withWing.hypothesisCount
+                    withWing.hypothesisCount,
+                    xWingExclusionModelComplete = !noWing.exhaustedBudget,
+                    shallowExclusionModelComplete = !shallow.exhaustedBudget
                 )
             }
         }

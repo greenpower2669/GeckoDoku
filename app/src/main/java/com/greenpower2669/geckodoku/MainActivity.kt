@@ -14585,6 +14585,12 @@ class MainActivity : Activity() {
             .setMessage(
                 "Statut : " + entry.status.name +
                 "\nHypothèses : " + entry.hypothesisCount +
+                "\nModèle sans X-Wing : " +
+                if (entry.xWingExclusionModelComplete) {
+                    "non résolu (dans le budget)"
+                } else {
+                    "recherche indécise, à auditer"
+                } +
                 "\nTaille : " + entry.puzzle.size +
                 "\nSolution : unique (vérification indépendante)" +
                 "\nObservations : " + entry.notes +
