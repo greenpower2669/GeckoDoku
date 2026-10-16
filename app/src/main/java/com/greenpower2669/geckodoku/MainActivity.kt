@@ -450,7 +450,6 @@ class MainActivity : Activity() {
     private var selectedSize = 5
 
     @Volatile
-    @Volatile
     private var classicGenerationToken =
         0
 
