@@ -420,3 +420,7 @@ Run 38802231998 GREEN ; dossier temporaire runner `temp/GeckoDoku-infernal-depth
 Branche feature/infernal-proof-search-v2 depuis 011. Voir missions/GECKO-INFERNAL-PROOF-SEARCH-012.md : HypothesisSolver toutes branches + états mémorisés, profondeur minimale contrôlée ; DifficultyIndexer interdit fausse classification après limite budget ; PuzzleGenerator.generateExact finitude/annulation effective ; MainActivity message d'échec explicite. Tests InfernalSearchRegressionTest, CI en validation ; projet CLASSIC seulement. Les cinq mémoires et le protocole sans merge ni Release sont conservés.
 
 CI mission 012 : #539 / 38859558302 GREEN, commit ce6d855, artefact phone 12028672971, SHA APK ba4acee944de16aa34951cd7f22a3ed3a8423e1e71e58e3b75a866086549fbd5. Validation profondeur 3 sur graine réelle reste ouverte.
+
+
+## Atelier Classic indépendant — mission 013 (16/10/2026)
+`feature/classic-infernal-workshop-v1` ; mission `missions/GECKO-CLASSIC-WORKSHOP-013.md`. `PuzzleGenerator.generateWorkshopCandidate` → unicité indépendante → `HypothesisSolver` avec/sans X-Wing (profondeur H2/H3) → `InfernalWorkshopWorker` (WorkManager opportuniste chargeur) → `InfernalWorkshopStore` (JSON atomique, empreinte SHA-256, ZIP export/import) → `MainActivity` menu Atelier (essais sans scores, notes, validation manuelle, sélection de validées). `SettingsMenuPolicy` expose Atelier uniquement dans Classic. `gradle.properties` AndroidX=true (nécessaire WorkManager). Preuves CI et limites dans todo.md. Pas de merge ni Release.

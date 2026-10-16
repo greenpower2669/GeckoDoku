@@ -400,3 +400,21 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 - [x] APK phone test artifact 12028672971, SHA-256 ba4acee944de16aa34951cd7f22a3ed3a8423e1e71e58e3b75a866086549fbd5.
 - [ ] À ouvrir dans GitHub Actions : https://github.com/greenpower2669/GeckoDoku/actions/runs/38859558302
 - [ ] Certification réelle d'une graine de 3 imbrications et durée de recherche toujours à faire avant merge/release.
+
+
+## GECKO-CLASSIC-WORKSHOP-013 — atelier de génération différée (16/10/2026)
+- [x] Créer branche dédiée depuis solveur v2 ; préserver main, protocole de signature et modes étrangers.
+- [x] Construire générateur candidat H2/H3 + ≥1 X-Wing visible dans trace, comparaison sans X-Wing, unicité indépendante.
+- [x] Créer WorkManager périodique (≥15min, chargeur/batterie) et lancement immédiat, pause/reprise, lots courts et interruption.
+- [x] Persistance atomique JSON (id SHA-256, version, solution, sources, trace, profondeur, statut, notes) ; aucun écrasement des autres données.
+- [x] Export ZIP/manifeste + fichiers grille JSON, import sous quota et anti-zip-bomb, statuts importés remis à CANDIDATE.
+- [x] Ajout du menu Atelier Classic, visualisation/notes/tests, validation/rejet et selection de grilles validées pour Infernal.
+- [x] Test d'atelier sans enregistrement dans stats ou Hall local/global ; profondeur affichée H2/H3.
+- [x] Tests JVM contractuels : unicité légale, non-promotion automatique, maintien H2, analyse sans X-Wing.
+- [ ] CI finale : testDebugUnitTest + assemblePhone + emballage Pierre/sprites ; renseigner run et SHA.
+- [ ] Vérifier sur Samsung que les tâches WorkManager tournent selon conditions, survivent au redémarrage, n'épuisent pas batterie et s'annulent proprement.
+- [ ] Générer plusieurs grilles H2+XWing pour graine réelle reproductible ; mesurer taux de réussite, CPU, taille, délai, et contrôle scientifique du « nécessaire ».
+- [ ] Tester ZIP export/import via SAF, confidentialité de la solution et déduplication entre appareils.
+- [ ] Vérifier prévisualisation, statut et absence de stats/Hall sur fin de grille, puis entrée manuelle Infernal H2/H3.
+- [ ] Si aucune grille n'est trouvée assez vite, adapter algorithme de construction plutôt que déclarer une grille non prouvée.
+- [ ] Pas de merge main / Release / Play sans ordre distinct.
