@@ -14577,7 +14577,63 @@ class MainActivity : Activity() {
                 }
             }
             .setNegativeButton("Fermer", null)
-            .show()
+            .create()
+            .also { dialog ->
+                dialog.show()
+                // Live display: the user need not close and reopen the
+                // dialog to see the search counter increment.
+                val handler = android.os.Handler(android.os.Looper.getMainLooper())
+                val ticker = object : Runnable {
+                    override fun run() {
+                        if (!dialog.isShowing) return
+                        dialog.setMessage(workshopLiveCounters())
+                        handler.postDelayed(this, 1_500L)
+                    }
+                }
+                handler.postDelayed(ticker, 1_500L)
+                dialog.setOnDismissListener {
+                    handler.removeCallbacks(ticker)
+                }
+            }
+    }
+
+    private fun workshopLiveCounters(): String {
+        val state = InfernalWorkshopScheduler.status(this)
+        val label = when (state) {
+            ContinuousWorkshopStatus.RUNNING -> "ACTIVE"
+            ContinuousWorkshopStatus.STARTING -> "DÉMARRAGE"
+            ContinuousWorkshopStatus.INTERRUPTED -> "INTERROMPUE"
+            ContinuousWorkshopStatus.STOPPED -> "ARRÊTÉE"
+        }
+        val count = InfernalWorkshopScheduler.attempts(this)
+        val completed = InfernalWorkshopPolicy.sizes.sumOf {
+            InfernalWorkshopScheduler.completedFor(this, it)
+        }
+        val errors = InfernalWorkshopPolicy.sizes.sumOf {
+            InfernalWorkshopScheduler.errorsFor(this, it)
+        }
+        val saved = InfernalWorkshopPolicy.sizes.sumOf {
+            InfernalWorkshopScheduler.savedFor(this, it)
+        }
+        val current = InfernalWorkshopScheduler.currentSize(this)
+        val totalInLibrary = InfernalWorkshopStore(this).list().size
+        val heartbeat = InfernalWorkshopScheduler.lastHeartbeat(this)
+        val latest = if (heartbeat == 0L) "jamais" else
+            "il y a " + ((System.currentTimeMillis() - heartbeat)
+                .coerceAtLeast(0L) / 1000L) + " secondes"
+        return "RECHERCHE $label" +
+            "\nLANCÉES : $count • TERMINÉES : $completed" +
+            "\nGRILLES SAUVEGARDÉES : $saved • ERREURS : $errors" +
+            "\nTOTAL BIBLIOTHÈQUE : $totalInLibrary" +
+            "\nACTUELLE : " +
+            (if (current == 0) "aucune" else "$current×$current") +
+            " • PROCHAINE : " + InfernalWorkshopScheduler.nextSize(this) + "×" +
+                InfernalWorkshopScheduler.nextSize(this) +
+            "\nDernier signal : $latest" +
+            "\nDernière erreur : " +
+                InfernalWorkshopScheduler.lastError(this).ifBlank { "aucune" } +
+            "\n\nLa notification Android propose un bouton ARRÊTER. " +
+            "Le service est suspendable par Android si nécessaire."
     }
 
     private fun showInfernalWorkshopStats() {

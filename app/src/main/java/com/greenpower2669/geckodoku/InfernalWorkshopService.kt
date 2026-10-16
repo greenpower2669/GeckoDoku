@@ -74,7 +74,6 @@ class InfernalWorkshopService : Service() {
                     error.javaClass.simpleName + ": " + error.message
             )
             InfernalWorkshopScheduler.serviceStopped(this)
-            InfernalWorkshopScheduler.pause(this)
             stopSelf()
             return START_NOT_STICKY
         }
@@ -140,7 +139,7 @@ class InfernalWorkshopService : Service() {
                 } catch (ex: Exception) {
                     error = "SEARCH_ERROR ${size}x${size} " +
                         ex.javaClass.simpleName + ": " + ex.message
-                    Log.e(LOG, error, ex)
+                    Log.e(LOG, error ?: "SEARCH_ERROR", ex)
                 } finally {
                     if (!canceled.get() && InfernalWorkshopScheduler.isEnabled(this)) {
                         InfernalWorkshopScheduler.recordFinish(this, size, saved, error)
