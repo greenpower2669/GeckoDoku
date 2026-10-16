@@ -14,7 +14,8 @@ private data class LogicState(
 
 private data class BinaryChoice(
     val first: Cell,
-    val second: Cell,
+    // null means the complementary branch excludes the first cell.
+    val second: Cell?,
     val sourceCells: Set<Cell>,
     val axis: String
 )
@@ -24,6 +25,30 @@ private sealed class BranchOutcome {
     data class Contradiction(val depth: Int) : BranchOutcome()
     object Solved : BranchOutcome()
     object Inconclusive : BranchOutcome()
+}
+
+// Shared by every tested bifurcation at a given search depth.
+private class ProofSearchContext(
+    private val nodeLimit: Int,
+    private val deadlineNanos: Long
+) {
+    val memo = HashMap<String, BranchOutcome>()
+    var visited = 0
+        private set
+    var truncated = false
+        private set
+
+    fun allowVisit(): Boolean {
+        if (visited >= nodeLimit ||
+            System.nanoTime() >= deadlineNanos ||
+            Thread.currentThread().isInterrupted
+        ) {
+            truncated = true
+            return false
+        }
+        visited += 1
+        return true
+    }
 }
 
 object HypothesisSolver {
@@ -151,79 +176,92 @@ object HypothesisSolver {
         excluded: Set<Cell>,
         maxDepth: Int
     ): SolveStep? {
-        if (maxDepth <= 0) return null
+        if (maxDepth <= 0 || Thread.currentThread().isInterrupted) {
+            return null
+        }
 
-        val choices =
-            binaryChoices(
-                puzzle,
-                confirmed,
-                excluded
+        val choices = binaryChoices(puzzle, confirmed, excluded)
+        if (choices.isEmpty()) return null
+
+        // Try the minimum proof depth first. Three independent guesses
+        // must NEVER be misclassified as a three-level nested proof.
+        for (depth in 1..maxDepth) {
+            val context = ProofSearchContext(
+                nodeLimit = if (depth >= 3) 4000 else 2500,
+                deadlineNanos = System.nanoTime() +
+                    if (depth >= 3) 1_500_000_000L else 850_000_000L
             )
 
-        for (choice in choices) {
-            val firstProof =
-                proveContradiction(
+            for (choice in choices) {
+                if (context.truncated) break
+                val first = proveContradiction(
                     puzzle,
                     confirmed + choice.first,
                     excluded,
-                    maxDepth - 1
+                    depth - 1,
+                    context
                 )
+                val second = if (choice.second != null) {
+                    proveContradiction(
+                        puzzle, confirmed + choice.second,
+                        excluded, depth - 1, context
+                    )
+                } else {
+                    proveContradiction(
+                        puzzle, confirmed,
+                        excluded + choice.first,
+                        depth - 1, context
+                    )
+                }
 
-            val secondProof =
-                proveContradiction(
-                    puzzle,
-                    confirmed + choice.second,
-                    excluded,
-                    maxDepth - 1
-                )
-
-            if (firstProof is BranchOutcome.Contradiction &&
-                secondProof !is BranchOutcome.Contradiction
-            ) {
-                val depth =
-                    1 + firstProof.depth
-
-                return SolveStep(
-                    technique =
-                        if (depth <= 1) {
+                // A shallow search that ran out of time cannot certify
+                // that a deeper hypothesis is genuinely necessary.
+                if (context.truncated) break
+                if (first is BranchOutcome.Contradiction &&
+                    second is BranchOutcome.Contradiction
+                ) {
+                    // Invalid state: neither alternative is possible.
+                    continue
+                }
+                if (first is BranchOutcome.Contradiction) {
+                    val proofDepth = 1 + first.depth
+                    return SolveStep(
+                        technique = if (proofDepth == 1) {
                             SolveTechnique.HYPOTHESIS_TEST
                         } else {
                             SolveTechnique.DOUBLE_HYPOTHESIS
                         },
-                    cell = choice.second,
-                    sourceCells =
-                        choice.sourceCells,
-                    axis = choice.axis,
-                    hypothesisRejected =
-                        choice.first,
-                    hypothesisDepth = depth
-                )
-            }
-
-            if (secondProof is BranchOutcome.Contradiction &&
-                firstProof !is BranchOutcome.Contradiction
-            ) {
-                val depth =
-                    1 + secondProof.depth
-
-                return SolveStep(
-                    technique =
-                        if (depth <= 1) {
+                        cell = choice.second,
+                        eliminated = if (choice.second == null) {
+                            setOf(choice.first)
+                        } else {
+                            emptySet()
+                        },
+                        sourceCells = choice.sourceCells,
+                        axis = choice.axis,
+                        hypothesisRejected = choice.first,
+                        hypothesisDepth = proofDepth
+                    )
+                }
+                if (second is BranchOutcome.Contradiction) {
+                    val proofDepth = 1 + second.depth
+                    return SolveStep(
+                        technique = if (proofDepth == 1) {
                             SolveTechnique.HYPOTHESIS_TEST
                         } else {
                             SolveTechnique.DOUBLE_HYPOTHESIS
                         },
-                    cell = choice.first,
-                    sourceCells =
-                        choice.sourceCells,
-                    axis = choice.axis,
-                    hypothesisRejected =
-                        choice.second,
-                    hypothesisDepth = depth
-                )
+                        cell = choice.first,
+                        sourceCells = choice.sourceCells,
+                        axis = choice.axis,
+                        hypothesisRejected = choice.second,
+                        hypothesisDepth = proofDepth
+                    )
+                }
             }
+
+            if (context.truncated) return null
         }
-
         return null
     }
 
@@ -231,27 +269,38 @@ object HypothesisSolver {
         puzzle: Puzzle,
         initialConfirmed: Set<Cell>,
         initialExcluded: Set<Cell>,
-        remainingDepth: Int
+        remainingDepth: Int,
+        context: ProofSearchContext
     ): BranchOutcome {
+        if (!context.allowVisit()) return BranchOutcome.Inconclusive
+
+        val key = stateKey(
+            puzzle, initialConfirmed, initialExcluded, remainingDepth
+        )
+        context.memo[key]?.let { return it }
+
         val state = LogicState(
             linkedSetOf<Cell>().apply { addAll(initialConfirmed) },
             linkedSetOf<Cell>().apply { addAll(initialExcluded) }
         )
-
-        // Account for inner proofs even when deterministic steps occur
-        // between the nested decisions and the eventual contradiction.
         var nestedDepthUsed = 0
+        var outcome: BranchOutcome = BranchOutcome.Inconclusive
 
-        repeat(puzzle.size * puzzle.size * 20) {
+        for (iteration in 0 until puzzle.size * puzzle.size * 20) {
+            if (Thread.currentThread().isInterrupted) {
+                context.allowVisit()
+                break
+            }
             if (hasContradiction(
                     puzzle, state.confirmed, state.excluded
                 )
             ) {
-                return BranchOutcome.Contradiction(nestedDepthUsed)
+                outcome = BranchOutcome.Contradiction(nestedDepthUsed)
+                break
             }
-
             if (state.confirmed.size == puzzle.size) {
-                return BranchOutcome.Solved
+                outcome = BranchOutcome.Solved
+                break
             }
 
             val step = HumanSolver.nextStep(
@@ -259,64 +308,127 @@ object HypothesisSolver {
             )
             if (step != null) {
                 applyStep(step, state)
-                return@repeat
+                continue
             }
 
-            if (remainingDepth <= 0) {
-                return BranchOutcome.Inconclusive
-            }
+            if (remainingDepth <= 0) break
 
-            val choice = binaryChoices(
+            var bestChoice: BinaryChoice? = null
+            var rejectFirst = false
+            var bestDepth = Int.MAX_VALUE
+            var foundSolution = false
+            var contradictoryBoth: BranchOutcome.Contradiction? = null
+
+            // Explore EVERY available bifurcation, not firstOrNull().
+            for (choice in binaryChoices(
                 puzzle, state.confirmed, state.excluded
-            ).firstOrNull() ?: return BranchOutcome.Inconclusive
+            )) {
+                if (context.truncated) break
 
-            val first = proveContradiction(
-                puzzle, state.confirmed + choice.first,
-                state.excluded, remainingDepth - 1
-            )
-            val second = proveContradiction(
-                puzzle, state.confirmed + choice.second,
-                state.excluded, remainingDepth - 1
-            )
-
-            if (first is BranchOutcome.Contradiction &&
-                second is BranchOutcome.Contradiction
-            ) {
-                return BranchOutcome.Contradiction(
-                    maxOf(nestedDepthUsed, 1 + maxOf(first.depth, second.depth))
+                val first = proveContradiction(
+                    puzzle, state.confirmed + choice.first,
+                    state.excluded, remainingDepth - 1, context
                 )
+                val second = if (choice.second != null) {
+                    proveContradiction(
+                        puzzle, state.confirmed + choice.second,
+                        state.excluded, remainingDepth - 1, context
+                    )
+                } else {
+                    proveContradiction(
+                        puzzle, state.confirmed,
+                        state.excluded + choice.first,
+                        remainingDepth - 1, context
+                    )
+                }
+                if (context.truncated) break
+
+                if (first is BranchOutcome.Contradiction &&
+                    second is BranchOutcome.Contradiction
+                ) {
+                    contradictoryBoth = BranchOutcome.Contradiction(
+                        maxOf(nestedDepthUsed, 1 + maxOf(
+                            first.depth, second.depth
+                        ))
+                    )
+                    break
+                }
+                // Finding one fully valid completion makes this whole
+                // branch satisfiable, but not necessarily unique.
+                if (first is BranchOutcome.Solved ||
+                    second is BranchOutcome.Solved
+                ) {
+                    foundSolution = true
+                    break
+                }
+
+                val forcedDepth = when {
+                    first is BranchOutcome.Contradiction ->
+                        1 + first.depth
+                    second is BranchOutcome.Contradiction ->
+                        1 + second.depth
+                    else -> continue
+                }
+                if (forcedDepth < bestDepth) {
+                    bestDepth = forcedDepth
+                    bestChoice = choice
+                    rejectFirst = first is BranchOutcome.Contradiction
+                }
             }
 
-            // A completed solution is not an impossible branch.
-            if (first is BranchOutcome.Solved ||
-                second is BranchOutcome.Solved
-            ) {
-                return BranchOutcome.Solved
+            if (context.truncated) break
+            if (contradictoryBoth != null) {
+                outcome = contradictoryBoth
+                break
+            }
+            if (foundSolution) {
+                outcome = BranchOutcome.Solved
+                break
             }
 
-            if (first is BranchOutcome.Contradiction) {
-                nestedDepthUsed = maxOf(nestedDepthUsed, 1 + first.depth)
-                state.confirmed.add(choice.second)
-                return@repeat
+            val forced = bestChoice ?: break
+            nestedDepthUsed = maxOf(nestedDepthUsed, bestDepth)
+            if (rejectFirst) {
+                if (forced.second != null) {
+                    state.confirmed.add(forced.second)
+                } else {
+                    state.excluded.add(forced.first)
+                }
+            } else {
+                state.confirmed.add(forced.first)
             }
-            if (second is BranchOutcome.Contradiction) {
-                nestedDepthUsed = maxOf(nestedDepthUsed, 1 + second.depth)
-                state.confirmed.add(choice.first)
-                return@repeat
-            }
-
-            // Both branches are still undecidable at this depth.
-            return BranchOutcome.Inconclusive
         }
 
-        return if (hasContradiction(
-                puzzle, state.confirmed, state.excluded
-            )
+        if (!context.truncated && outcome is BranchOutcome.Inconclusive &&
+            hasContradiction(puzzle, state.confirmed, state.excluded)
         ) {
-            BranchOutcome.Contradiction(nestedDepthUsed)
-        } else {
-            BranchOutcome.Inconclusive
+            outcome = BranchOutcome.Contradiction(nestedDepthUsed)
         }
+
+        // Never memoize a result from an interrupted or truncated search.
+        if (!context.truncated &&
+            outcome !is BranchOutcome.Inconclusive
+        ) {
+            context.memo[key] = outcome
+        }
+        return outcome
+    }
+
+    private fun stateKey(
+        puzzle: Puzzle,
+        confirmed: Set<Cell>,
+        excluded: Set<Cell>,
+        remainingDepth: Int
+    ): String {
+        val marks = CharArray(puzzle.size * puzzle.size) { '.' }
+        for (cell in excluded) {
+            marks[cell.index(puzzle.size)] = 'x'
+        }
+        for (cell in confirmed) {
+            val index = cell.index(puzzle.size)
+            marks[index] = if (marks[index] == 'x') '!' else 'g'
+        }
+        return remainingDepth.toString() + ":" + String(marks)
     }
 
     private fun applyStep(
@@ -419,11 +531,36 @@ object HypothesisSolver {
             }
         }
 
+        // Even when no row/column/region has exactly two places,
+        // a hypothesis can branch on one candidate: present or absent.
+        // Include non-paired cells too, so the solver cannot miss a
+        // contradiction simply because it picked an unlucky pair.
+        val paired = result.flatMap {
+            listOfNotNull(it.first, it.second)
+        }.toSet()
+        for (cell in candidates) {
+            if (cell !in paired) {
+                result.add(
+                    BinaryChoice(
+                        first = cell,
+                        second = null,
+                        sourceCells = setOf(cell),
+                        axis = "case (" + (cell.row + 1) +
+                            ", " + (cell.col + 1) + ")"
+                    )
+                )
+            }
+        }
+
         return result.distinctBy {
-            setOf(
-                it.first,
-                it.second
-            )
+            if (it.second == null) {
+                "cell:" + it.first.index(puzzle.size)
+            } else {
+                "pair:" + listOf(
+                    it.first.index(puzzle.size),
+                    it.second.index(puzzle.size)
+                ).sorted().joinToString("-")
+            }
         }
     }
 

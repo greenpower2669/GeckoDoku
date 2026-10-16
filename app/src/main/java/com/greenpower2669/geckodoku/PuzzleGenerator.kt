@@ -12,20 +12,30 @@ object PuzzleGenerator {
     fun generate(
         size: Int,
         requested: GameDifficulty,
-        seed: Long = System.nanoTime()
+        seed: Long = System.nanoTime(),
+        shouldCancel: () -> Boolean = { false }
     ): Puzzle {
         require(size in 5..12)
 
         val random = Random(seed)
         var best: Candidate? = null
 
-        val attempts = when {
-            size <= 7 -> 140
-            size <= 9 -> 90
-            else -> 55
+        val attempts = if (requested == GameDifficulty.INFERNAL) {
+            when {
+                size <= 7 -> 32
+                size <= 9 -> 24
+                else -> 16
+            }
+        } else {
+            when {
+                size <= 7 -> 140
+                size <= 9 -> 90
+                else -> 55
+            }
         }
 
         repeat(attempts) { attempt ->
+            if (shouldCancel()) return@repeat
             val solution =
                 randomSolution(size, random) ?: return@repeat
 
@@ -46,8 +56,9 @@ object PuzzleGenerator {
             )
 
             val tuned =
-                tuneGivens(base, requested, random)
+                tuneGivens(base, requested, random, shouldCancel)
 
+            if (shouldCancel()) return@repeat
             val report =
                 DifficultyIndexer.analyze(tuned)
 
@@ -107,8 +118,13 @@ object PuzzleGenerator {
         require(size in 5..12)
 
         var batch = 0
+        // A missing rare puzzle must not turn into an infinite search.
+        val deadline = System.nanoTime() + 60_000_000_000L
+        val maxBatches = if (requested == GameDifficulty.INFERNAL) 8 else 12
 
-        while (!shouldCancel()) {
+        while (!shouldCancel() && batch < maxBatches &&
+            System.nanoTime() < deadline
+        ) {
             val candidate =
                 generate(
                     size = size,
@@ -116,7 +132,10 @@ object PuzzleGenerator {
                     seed =
                         seed +
                             batch.toLong() *
-                                104_729L
+                                104_729L,
+                    shouldCancel = {
+                        shouldCancel() || System.nanoTime() >= deadline
+                    }
                 )
 
             if (shouldCancel()) {
@@ -187,7 +206,8 @@ object PuzzleGenerator {
     private fun tuneGivens(
         base: Puzzle,
         requested: GameDifficulty,
-        random: Random
+        random: Random,
+        shouldCancel: () -> Boolean
     ): Puzzle {
         var best = base.copy(
             givens = base.solutionCells().toSet()
@@ -195,7 +215,8 @@ object PuzzleGenerator {
 
         var bestDistance = Int.MAX_VALUE
 
-        repeat(8) {
+        repeat(if (requested == GameDifficulty.INFERNAL) 6 else 8) {
+            if (shouldCancel()) return best
             val chosen =
                 base.solutionCells().toMutableSet()
 
@@ -203,6 +224,7 @@ object PuzzleGenerator {
                 base.solutionCells().shuffled(random)
 
             for (cell in order) {
+                if (shouldCancel()) return best
                 if (chosen.size <=
                     requested.minimumGivens(base.size)
                 ) {

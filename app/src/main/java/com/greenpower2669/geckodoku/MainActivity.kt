@@ -2097,6 +2097,18 @@ class MainActivity : Activity() {
                 }
 
                 if (
+                    generated == null &&
+                    selectedGameMode == GameMode.GECKODOKU &&
+                    selectedSize == requestedSize &&
+                    selectedDifficulty == requestedDifficulty
+                ) {
+                    status.text =
+                        "Aucune grille " + requestedDifficulty.label +
+                        " certifiée dans le budget de recherche. " +
+                        "Réessaie, change de taille ou choisis un autre niveau."
+                }
+
+                if (
                     generated == null ||
                     selectedGameMode !=
                         GameMode.GECKODOKU ||
