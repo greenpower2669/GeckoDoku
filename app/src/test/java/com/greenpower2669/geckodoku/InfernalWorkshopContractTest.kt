@@ -57,7 +57,8 @@ class InfernalWorkshopContractTest {
         )
         assertTrue(checked.eligibleForInfernal)
         assertTrue(checked.nestedDepth == 2)
-        assertFalse(checked.copy(xWingCount = 0).eligibleForInfernal)
+        // A 5×5 may legitimately be approved without an X-Wing.
+        assertTrue(checked.copy(xWingCount = 0).eligibleForInfernal)
     }
 
     @Test
