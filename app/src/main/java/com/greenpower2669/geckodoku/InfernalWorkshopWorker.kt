@@ -39,6 +39,16 @@ object InfernalWorkshopScheduler {
     fun attemptsFor(context: Context, size: Int): Long =
         prefs(context).getLong("attempts_v2_$size", 0L)
 
+    // Separate A/B counters: old 1,194+ attempts remain untouched.
+    fun withoutXWingAttempts(context: Context): Long =
+        prefs(context).getLong("attempts_no_xwing_v4", 0L)
+
+    fun withoutXWingSaved(context: Context): Long =
+        prefs(context).getLong("saved_no_xwing_v4", 0L)
+
+    fun withoutXWingAttemptsFor(context: Context, size: Int): Long =
+        prefs(context).getLong("attempts_no_xwing_v4_$size", 0L)
+
     fun completedFor(context: Context, size: Int): Long =
         prefs(context).getLong("completed_v3_$size", 0L)
 
@@ -166,11 +176,15 @@ object InfernalWorkshopScheduler {
         val p = prefs(context)
         val size = nextSize(context)
         val key = "attempts_v2_$size"
+        val experiment = "attempts_no_xwing_v4"
+        val perSize = "attempts_no_xwing_v4_$size"
         val ok = p.edit()
             .putInt(NEXT_SIZE, InfernalWorkshopPolicy.nextSize(size))
             .putInt("current_size_v3", size)
             .putLong(ATTEMPTS, p.getLong(ATTEMPTS, 0L) + 1)
             .putLong(key, p.getLong(key, 0L) + 1)
+            .putLong(experiment, p.getLong(experiment, 0L) + 1)
+            .putLong(perSize, p.getLong(perSize, 0L) + 1)
             .putLong("last_attempt_v2_$size", System.currentTimeMillis())
             .putLong("heartbeat_v3", System.currentTimeMillis())
             .commit()
@@ -187,7 +201,11 @@ object InfernalWorkshopScheduler {
                 .putLong("heartbeat_v3", System.currentTimeMillis())
             if (saved) {
                 val foundKey = "saved_v3_$size"
+                val experiment = "saved_no_xwing_v4"
                 edit.putLong(foundKey, p.getLong(foundKey, 0L) + 1L)
+                edit.putLong(
+                    experiment, p.getLong(experiment, 0L) + 1L
+                )
             }
             if (error != null) edit.putString("last_error_v3", error.take(240))
             edit.commit()

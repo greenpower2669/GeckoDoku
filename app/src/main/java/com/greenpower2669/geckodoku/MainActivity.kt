@@ -14601,11 +14601,15 @@ class MainActivity : Activity() {
         }
         val current = InfernalWorkshopScheduler.currentSize(this)
         val totalInLibrary = InfernalWorkshopStore(this).list().size
+        val abAttempts = InfernalWorkshopScheduler.withoutXWingAttempts(this)
+        val abSaved = InfernalWorkshopScheduler.withoutXWingSaved(this)
         val heartbeat = InfernalWorkshopScheduler.lastHeartbeat(this)
         val latest = if (heartbeat == 0L) "jamais" else
             "il y a " + ((System.currentTimeMillis() - heartbeat)
                 .coerceAtLeast(0L) / 1000L) + " secondes"
         return "RECHERCHE $label" +
+            "\nTEST SANS X-WING OBLIGATOIRE" +
+            "\nNOUVEAUX ESSAIS : $abAttempts • CANDIDATS : $abSaved" +
             "\nMOTEUR : " + InfernalWorkshopScheduler.phase(this) +
             "\nLANCÉES : $count • TERMINÉES : $completed" +
             "\nGRILLES SAUVEGARDÉES : $saved • ERREURS : $errors" +
@@ -14629,15 +14633,15 @@ class MainActivity : Activity() {
                 it.status == WorkshopStatus.VALIDATED
             }
             val trials = InfernalWorkshopScheduler.attemptsFor(this, size)
+            val abTrials = InfernalWorkshopScheduler.withoutXWingAttemptsFor(
+                this, size
+            )
             val finished = InfernalWorkshopScheduler.completedFor(this, size)
             val errors = InfernalWorkshopScheduler.errorsFor(this, size)
             val found = InfernalWorkshopScheduler.savedFor(this, size)
-            val condition = if (InfernalWorkshopPolicy.requiresXWing(size)) {
-                "X-Wing requis"
-            } else {
-                "X-Wing facultatif"
-            }
-            "$size×$size • $trials lancées • $finished terminées • " +
+            val condition = "SANS exigence X-Wing"
+            "$size×$size • $trials lancées (dont $abTrials sans X-Wing) • " +
+                "$finished terminées • "
                 "$found enregistrées • $errors erreurs • " +
                 "${puzzles.size} grilles ($approved validées) • $condition"
         }.toTypedArray()
@@ -14806,14 +14810,8 @@ class MainActivity : Activity() {
             .setNeutralButton("Détails") { _, _ ->
                 val information = "Statut : " + entry.status.name +
                         "\nHypothèses : " + entry.hypothesisCount +
-                        "\nModèle sans X-Wing : " +
-                        (if (entry.xWingCount == 0) {
-                            "sans objet (facultatif pour cette taille)"
-                        } else if (entry.xWingExclusionModelComplete) {
-                            "non résolu dans le modèle testé"
-                        } else {
-                            "recherche indécise, à auditer"
-                        }) +
+                        "\nX-Wing : hors critères de sélection (test)" +
+                        "\nX-Wing observés dans la trace : " + entry.xWingCount +
                         "\nTaille : " + entry.puzzle.size +
                         "\nSolution : unique (vérification indépendante)" +
                         "\nObservations : " + entry.notes +

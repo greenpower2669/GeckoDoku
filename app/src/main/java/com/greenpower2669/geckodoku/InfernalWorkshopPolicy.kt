@@ -2,8 +2,8 @@ package com.greenpower2669.geckodoku
 
 /**
  * The Classic grid has one region/colour and one Gecko per row.
- * Small grids are allowed to show deep dependent hypotheses without
- * an artificial X-Wing gate; X-Wing is required for larger candidates.
+ * A/B experiment: X-Wing is NEVER required to qualify any board.
+ * The solver can still find and explain this technique naturally.
  *
  * A candidate remains unverified until the player tests it.
  */
@@ -15,16 +15,11 @@ object InfernalWorkshopPolicy {
 
     val sizes: IntRange = MIN_SIZE..MAX_SIZE
 
-    fun requiresXWing(size: Int): Boolean {
-        require(size in sizes)
-        return size >= 8
-    }
-
+    // No mandatory X-Wing gate for any size in this experiment.
     fun qualifies(size: Int, depth: Int, xWingCount: Int): Boolean =
         size in sizes &&
             depth in MIN_NESTED_DEPTH..MAX_SEARCH_DEPTH &&
-            xWingCount >= 0 &&
-            (!requiresXWing(size) || xWingCount >= 1)
+            xWingCount >= 0
 
     fun nextSize(size: Int): Int {
         require(size in sizes)

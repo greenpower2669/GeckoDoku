@@ -16,8 +16,8 @@ object PuzzleGenerator {
 
     /**
      * Search for independently unique Classic workshop candidates.
-     * Small sizes accept nested hypotheses without a X-Wing;
-     * 8x8–12x12 need at least one X-Wing elimination in the proof.
+     * No X-Wing is required at ANY size in this A/B test.
+     * Its occurrence may still be recorded as diagnostic metadata.
      * A candidate is not automatically a certified Infernal puzzle.
      */
     fun generateWorkshopCandidate(
@@ -75,29 +75,15 @@ object PuzzleGenerator {
                 )
                 if (shallow.solved) continue
 
-                // No X-Wing elimination is required for 5x5–7x7.
-                // If a X-Wing did occur, the no-X-Wing model is compared
-                // but an exhausted search is recorded as uncertainty.
-                val noWing = if (wingCount > 0) {
-                    HypothesisSolver.analyze(
-                        candidate,
-                        maxOf(
-                            InfernalWorkshopPolicy.MIN_NESTED_DEPTH,
-                            withWing.maxHypothesisDepth
-                        ),
-                        size,
-                        shouldCancel,
-                        rules = SolverRules.NO_X_WING
-                    )
-                } else null
-                if (noWing?.solved == true || shouldCancel()) continue
-
+                // The X-Wing exclusion/comparison stage was another
+                // rejection gate and cost CPU. Remove it ENTIRELY for this
+                // experiment. Keep the existing uniqueness and H2-H4 tests.
+                if (shouldCancel()) return null
                 return WorkshopCandidateProof(
                     candidate.copy(solverTrace = withWing.steps),
                     wingCount, withWing.maxHypothesisDepth,
                     withWing.hypothesisCount,
-                    xWingExclusionModelComplete =
-                        noWing != null && !noWing.exhaustedBudget,
+                    xWingExclusionModelComplete = false,
                     shallowExclusionModelComplete = !shallow.exhaustedBudget
                 )
             }
