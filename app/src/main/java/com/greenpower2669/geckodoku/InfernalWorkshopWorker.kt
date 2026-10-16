@@ -80,6 +80,8 @@ object InfernalWorkshopScheduler {
                 context.startService(intent)
             }
             Log.i("InfernalWorkshop", "START_REQUEST user action")
+            MediaTrace.install(context)
+            MediaTrace.event(source = "InfernalWorkshop", event = "START_REQUEST")
         } catch (error: RuntimeException) {
             prefs(context).edit()
                 .putBoolean("enabled", false)
@@ -104,6 +106,7 @@ object InfernalWorkshopScheduler {
             cancelUniqueWork(ONCE)
         }
         Log.i("InfernalWorkshop", "STOP_REQUEST user action")
+        MediaTrace.event(source = "InfernalWorkshop", event = "STOP_REQUEST")
     }
 
     internal fun isEnabled(context: Context): Boolean = enabled(context)
@@ -132,6 +135,10 @@ object InfernalWorkshopScheduler {
             .putString("last_error_v3", message.take(240))
             .commit()
         Log.e("InfernalWorkshop", message.take(240))
+        MediaTrace.event(
+            source = "InfernalWorkshop", event = "ERROR",
+            detail = message.take(240)
+        )
     }
 
     /** A counter increment means a search has actually started. */

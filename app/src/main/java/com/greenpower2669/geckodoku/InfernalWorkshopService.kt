@@ -37,6 +37,7 @@ class InfernalWorkshopService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        MediaTrace.install(this)
         val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(
             NotificationChannel(
@@ -86,6 +87,10 @@ class InfernalWorkshopService : Service() {
                 start()
             }
             Log.i(LOG, "SERVICE_ACTIVE persistent foreground notification")
+            MediaTrace.event(
+                source = LOG, event = "SERVICE_ACTIVE",
+                detail = "mode=CONTINUOUS foreground=true"
+            )
         }
         return START_STICKY
     }
@@ -102,12 +107,17 @@ class InfernalWorkshopService : Service() {
                 ) {
                     notifyProgress(manager, "Pause thermique • reprise automatique", true)
                     Log.w(LOG, "THERMAL_PAUSE")
+                    MediaTrace.event(
+                        source = LOG, event = "THERMAL_PAUSE",
+                        detail = "thermalStatus=${power.currentThermalStatus}"
+                    )
                     if (!rest(10_000L)) break
                     continue
                 }
                 if (power.isPowerSaveMode) {
                     notifyProgress(manager, "Économie de batterie • pause de recherche", true)
                     Log.i(LOG, "BATTERY_SAVER_PAUSE")
+                    MediaTrace.event(source = LOG, event = "BATTERY_SAVER_PAUSE")
                     if (!rest(10_000L)) break
                     continue
                 }
@@ -115,6 +125,10 @@ class InfernalWorkshopService : Service() {
                 val size = InfernalWorkshopScheduler.claimNextSize(this)
                 val total = InfernalWorkshopScheduler.attempts(this)
                 Log.i(LOG, "SEARCH_START size=${size}x${size} attempt=$total")
+                MediaTrace.event(
+                    source = LOG, event = "SEARCH_START",
+                    detail = "size=${size}x${size} attempt=$total"
+                )
                 notifyProgress(manager, "Recherche ${size}×${size} • essai $total", false)
 
                 var error: String? = null
@@ -146,6 +160,11 @@ class InfernalWorkshopService : Service() {
                     }
                 }
                 Log.i(LOG, "SEARCH_END size=${size}x${size} saved=$saved error=${error ?: "none"}")
+                MediaTrace.event(
+                    source = LOG, event = "SEARCH_END",
+                    detail = "size=${size}x${size} " +
+                        "saved=$saved error=${error ?: "none"}"
+                )
                 if (error != null) InfernalWorkshopScheduler.reportProblem(this, error)
                 if (!rest(250L)) break
             }
@@ -157,6 +176,10 @@ class InfernalWorkshopService : Service() {
         } finally {
             InfernalWorkshopScheduler.serviceStopped(this)
             Log.i(LOG, "SERVICE_STOPPED total=" + InfernalWorkshopScheduler.attempts(this))
+            MediaTrace.event(
+                source = LOG, event = "SERVICE_STOPPED",
+                detail = "total=" + InfernalWorkshopScheduler.attempts(this)
+            )
             stopSelf()
         }
     }
@@ -197,7 +220,7 @@ class InfernalWorkshopService : Service() {
             Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        val stop = PendingIntent.getService(
+        val stop = PendingIntent.getForegroundService(
             this, 1,
             Intent(this, InfernalWorkshopService::class.java)
                 .setAction(ACTION_STOP),
