@@ -29,11 +29,13 @@ data class WorkshopEntry(
     val xWingExclusionModelComplete: Boolean = false,
     val shallowExclusionModelComplete: Boolean = false
 ) {
-    // The original Infernal contract (3 nested decisions) stays intact.
+    // The player has approved this H2/H3/H4 candidate after a test.
+    // Depth is always displayed as recorded; H2 is never shown as H3.
     val eligibleForInfernal: Boolean
         get() = status == WorkshopStatus.VALIDATED &&
-            nestedDepth >= 2 &&
-            xWingCount >= 1
+            InfernalWorkshopPolicy.qualifies(
+                puzzle.size, nestedDepth, xWingCount
+            )
 }
 
 class InfernalWorkshopStore(context: Context) {
@@ -61,8 +63,9 @@ class InfernalWorkshopStore(context: Context) {
 
     fun add(proof: WorkshopCandidateProof): Boolean = synchronized(lock) {
         val puzzle = proof.puzzle
-        if (proof.xWingCount < 1 || proof.hypothesisDepth < 2 ||
-            !PuzzleGenerator.hasExactlyOneSolution(puzzle)
+        if (!InfernalWorkshopPolicy.qualifies(
+                puzzle.size, proof.hypothesisDepth, proof.xWingCount
+            ) || !PuzzleGenerator.hasExactlyOneSolution(puzzle)
         ) return@synchronized false
         val id = fingerprint(puzzle)
         val file = path(id)
@@ -258,8 +261,10 @@ class InfernalWorkshopStore(context: Context) {
         require(fingerprint(puzzle) == id)
         val wingCount = obj.getInt("xWingCount")
         val depth = obj.getInt("nestedDepth")
-        require(wingCount >= 1 && depth >= 2 && depth <= 12)
-        require(trace.count { it.technique == SolveTechnique.GECKO_X_WING } >= 1)
+        require(InfernalWorkshopPolicy.qualifies(size, depth, wingCount))
+        require(trace.count {
+            it.technique == SolveTechnique.GECKO_X_WING
+        } == wingCount)
         require(trace.any { it.hypothesisDepth >= 2 })
         return WorkshopEntry(
             id = id, puzzle = puzzle,

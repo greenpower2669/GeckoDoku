@@ -16,8 +16,9 @@ object PuzzleGenerator {
 
     /**
      * Search for independently unique Classic workshop candidates.
-     * Retain only demonstrated X-Wing usage and a dependent depth-two
-     * hypothesis. Candidate status is deliberately not "Infernal".
+     * Small sizes accept nested hypotheses without a X-Wing;
+     * 8x8–12x12 need at least one X-Wing elimination in the proof.
+     * A candidate is not automatically a certified Infernal puzzle.
      */
     fun generateWorkshopCandidate(
         size: Int,
@@ -46,23 +47,27 @@ object PuzzleGenerator {
                     chosen.add(cell)
                     continue
                 }
-                // Collect depth 2 candidates first; occasionally a
-                // deeper candidate becomes demonstrable after H2 fails.
-                val depthTwo = HypothesisSolver.analyze(
-                    candidate, 2, size, shouldCancel
+                // Test depth H2 first, then H3/H4 only when unresolved.
+                // A higher search depth is not a count of independent guesses.
+                var withWing = HypothesisSolver.analyze(
+                    candidate,
+                    InfernalWorkshopPolicy.MIN_NESTED_DEPTH,
+                    size,
+                    shouldCancel
                 )
-                val withWing = if (depthTwo.solved) {
-                    depthTwo
-                } else {
-                    HypothesisSolver.analyze(
-                        candidate, 3, size, shouldCancel
+                for (depth in 3..InfernalWorkshopPolicy.MAX_SEARCH_DEPTH) {
+                    if (withWing.solved || shouldCancel()) break
+                    withWing = HypothesisSolver.analyze(
+                        candidate, depth, size, shouldCancel
                     )
                 }
                 val wingCount = withWing.steps.count {
                     it.technique == SolveTechnique.GECKO_X_WING
                 }
                 if (!withWing.solved || withWing.exhaustedBudget ||
-                    withWing.maxHypothesisDepth < 2 || wingCount < 1
+                    !InfernalWorkshopPolicy.qualifies(
+                        size, withWing.maxHypothesisDepth, wingCount
+                    )
                 ) continue
 
                 val shallow = HypothesisSolver.analyze(
@@ -70,20 +75,29 @@ object PuzzleGenerator {
                 )
                 if (shallow.solved) continue
 
-                val noWing = HypothesisSolver.analyze(
-                    candidate,
-                    maxOf(2, withWing.maxHypothesisDepth),
-                    size,
-                    shouldCancel,
-                    rules = SolverRules.NO_X_WING
-                )
-                if (noWing.solved) continue
+                // No X-Wing elimination is required for 5x5–7x7.
+                // If a X-Wing did occur, the no-X-Wing model is compared
+                // but an exhausted search is recorded as uncertainty.
+                val noWing = if (wingCount > 0) {
+                    HypothesisSolver.analyze(
+                        candidate,
+                        maxOf(
+                            InfernalWorkshopPolicy.MIN_NESTED_DEPTH,
+                            withWing.maxHypothesisDepth
+                        ),
+                        size,
+                        shouldCancel,
+                        rules = SolverRules.NO_X_WING
+                    )
+                } else null
+                if (noWing?.solved == true || shouldCancel()) continue
 
                 return WorkshopCandidateProof(
                     candidate.copy(solverTrace = withWing.steps),
                     wingCount, withWing.maxHypothesisDepth,
                     withWing.hypothesisCount,
-                    xWingExclusionModelComplete = !noWing.exhaustedBudget,
+                    xWingExclusionModelComplete =
+                        noWing != null && !noWing.exhaustedBudget,
                     shallowExclusionModelComplete = !shallow.exhaustedBudget
                 )
             }

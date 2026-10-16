@@ -204,9 +204,17 @@ object HypothesisSolver {
         // must NEVER be misclassified as a three-level nested proof.
         for (depth in 1..maxDepth) {
             val context = ProofSearchContext(
-                nodeLimit = if (depth >= 3) 4000 else 2500,
+                nodeLimit = when {
+                    depth >= 4 -> 8_000
+                    depth >= 3 -> 4_000
+                    else -> 2_500
+                },
                 deadlineNanos = System.nanoTime() +
-                    if (depth >= 3) 1_500_000_000L else 850_000_000L,
+                    when {
+                        depth >= 4 -> 2_500_000_000L
+                        depth >= 3 -> 1_500_000_000L
+                        else -> 850_000_000L
+                    },
                 shouldCancel = shouldCancel
             )
 
