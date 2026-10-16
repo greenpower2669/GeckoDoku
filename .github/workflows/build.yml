@@ -203,8 +203,47 @@ jobs:
           gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isPrerelease,assets | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null)'
           echo "APK direct: https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
 
+  # Explicit user-requested direct APK delivery from successful foreground-search build #557.
+  publish_temp_apk_557:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run557]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify and publish raw Android foreground-workshop APK #557
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="temp-geckodoku-workshop-continuous-run557"
+          dest="temp/GeckoDoku-workshop-continuous-run557"
+          mkdir -p "$dest"
+          gh run download 38929818514 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "GeckoDoku-v0.15.45-dev-phone" \
+            --dir "$dest"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk.sha256"
+          (
+            cd "$dest"
+            sha256sum -c GeckoDoku-v0.15.45-dev.apk.sha256
+            actual="$(sha256sum GeckoDoku-v0.15.45-dev.apk | cut -d ' ' -f1)"
+            expected="da540f8e19007d7d4fe932df13d30c00a09160958560adbe5f15b6d26dede8af"
+            test "$actual" = "$expected"
+          )
+          gh release create "$tag" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk#GeckoDoku-v0.15.45-dev.apk" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk.sha256#GeckoDoku-v0.15.45-dev.apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "TEMP GeckoDoku Atelier recherche continue • run 557" \
+            --notes "APK brut issu de la CI #557 GREEN, commit ad65fab0. Recherche continue lancée volontairement, notification Android et arrêt, compteurs de recherche par taille 5×5–12×12, journal SEARCH_START/SEARCH_END. APK téléphone de test, pas de merge main ni diffusion Google Play. Fonctionnement à confirmer sur Samsung Android 16." \
+            --prerelease
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isPrerelease,assets | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null)'
+          echo "APK direct : https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
+
   android:
-    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') && !contains(github.event.head_commit.message, '[temp-apk-run533]') && !contains(github.event.head_commit.message, '[temp-apk-run539]') && !contains(github.event.head_commit.message, '[temp-apk-run545]') && !contains(github.event.head_commit.message, '[temp-apk-run550]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') && !contains(github.event.head_commit.message, '[temp-apk-run533]') && !contains(github.event.head_commit.message, '[temp-apk-run539]') && !contains(github.event.head_commit.message, '[temp-apk-run545]') && !contains(github.event.head_commit.message, '[temp-apk-run550]') && !contains(github.event.head_commit.message, '[temp-apk-run557]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
