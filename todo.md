@@ -428,3 +428,16 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 - [ ] Générer au moins une grille candidate avec preuve exploitable et vérifier son ZIP après export/import réel.
 - [ ] Essai sur Samsung, autonomie chargeur et fiabilité WorkManager (OS Android 16).
 - [ ] Attendre feu vert distinct avant tout merge main, GitHub Release ou Google Play.
+
+## Mission 014 — Atelier Classic toutes tailles / H4 (16/10/2026)
+- [x] Créer branche dédiée depuis atelier 013, sans main ni Release.
+- [x] Rotation 5×5→12×12, curseur persistent réclamé au début de chaque essai, poursuite après arrêt/reprise.
+- [x] Compteurs d'essais et date par taille, éviter recherche parallèle entre jobs periodic et manual.
+- [x] Contrat X-Wing optionnel sur 5–7, requis ≥8 ; H2 minimum, H4 maximum, validation Store/import/éligibilité cohérente.
+- [x] Comparaison par règles X-Wing pour grilles où il intervient, drapeaux d'incertitude préservés.
+- [x] Bilan de tailles et accès aux grilles par taille dans l'atelier ; correction affichage du statut actif.
+- [x] Tests unitaires rotation 16 passages, palette 12 couleurs, qualification size/XWing/H2-H4 et promotion manuelle.
+- [ ] Vérifier tests et APK Android final dans CI ; reporter run/artefact/SHA ici.
+- [ ] Tester en conditions réelles Android 16 : passage 12→5, migration de l'ancien `enabled`, distribution des huit tailles, température/chargeur, relance.
+- [ ] Collecter des candidats réellement générés, analyser profondeur et nécessaires X-Wing, mesurer rendements par taille.
+- [ ] Ne pas merger main ni publier Release ou Play sans autre ordre.

@@ -428,3 +428,6 @@ CI mission 012 : #539 / 38859558302 GREEN, commit ce6d855, artefact phone 120286
 Le sous-moteur persiste aussi l'état de preuve `xWingExclusionModelComplete` (recherche sans X-Wing bornée) et `shallowExclusionModelComplete` : un dépassement laisse la grille candidate exportable, pas certifiée. Relecture manuelle impérative.
 
 Mission 013 build #545 GREEN, commit fcc114e4, artefact Actions 12043056881 ; APK SHA256 `1e49ba40e09e316d6857a12df33bda533cb5fa9c2c3aa0e4fd9892f9f0162e78`. CI = tests/compilation/assets ; travail restant : production d'un candidat H2 + X-Wing en conditions réelles, ZIP round-trip, validation manuelle Samsung.
+
+## Atelier multitailles 014 — 16/10/2026
+`feature/classic-workshop-multisize-h4-v2` → `InfernalWorkshopPolicy.kt` (tailles 5..12, X-Wing optionnel 5..7, requis 8..12, H2..H4) ; `InfernalWorkshopWorker.kt` (curseur préférences atomique par tentative, 8 compteurs, verrou WorkManager) ; `PuzzleGenerator.kt` / `HypothesisSolver.kt` (progression H2/H3/H4) ; `InfernalWorkshopStore.kt` (validation adaptée) ; `MainActivity.kt` (statistiques, filtres par taille, rotation). Tests `InfernalWorkshopRotationTest.kt`. Mission détaillée `missions/GECKO-CLASSIC-WORKSHOP-MULTISIZE-014.md`. Pas de merge main/Release/Play.

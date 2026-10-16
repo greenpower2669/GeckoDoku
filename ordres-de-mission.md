@@ -322,3 +322,6 @@ Ne jamais assimiler « recherche sans X-Wing épuisée » à « X-Wing démontr�
 
 ### Atelier Classic 013 — bilan code et compilation (16/10/2026)
 Workflow phone #545 / 38894030798 GREEN (tests JVM, APK Android, vérification Pierre + sprites 240p) commit fcc114e4 ; artefact GitHub Actions 12043056881, SHA-256 APK `1e49ba40e09e316d6857a12df33bda533cb5fa9c2c3aa0e4fd9892f9f0162e78`. Build Android de test signé par clé debug habituelle, **PAS AAB signé Play**. Aucune demande de merge main ni publication stable/temporaire n'est intervenue ; ne pas en créer. Les tests Samsung et la génération effective d'une candidate vérifiable restent ouverts.
+
+## GECKO-CLASSIC-WORKSHOP-MULTISIZE-014 — ordre reçu le 16/10/2026
+Après audit du moteur mono-taille, Fab confirme « Ok corrige ça » : autorisation de coder une rotation autonome 5×5 à 12×12 en tâche de fond, conserver 5..12 couleurs existantes, X-Wing facultatif 5×5 à 7×7, obligatoire 8×8 à 12×12, recherche H2 à H4, stats par taille, bibliothèque et ZIP inchangés. Branche autorisée `feature/classic-workshop-multisize-h4-v2`, tests CI Android. Un X-Wing observé n'est pas une preuve universelle de nécessité ; ne jamais gonfler une profondeur d'imbrication. Ne pas toucher à main, ne pas publier de Release, APK direct, AAB ou Play sans demande distincte. Préserver les grilles déjà enregistrées sous le format JSON actuel.
