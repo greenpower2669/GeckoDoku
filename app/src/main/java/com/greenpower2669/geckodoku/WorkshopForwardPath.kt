@@ -13,7 +13,8 @@ import java.util.Random
  * by the sequence itself (which is deliberately independent of Sudoku).
  */
 object WorkshopForwardPath {
-    fun stages(solution: Set<Cell>, random: Random): List<Set<Cell>> {
+    fun stages(solution: Collection<Cell>, random: Random): List<Set<Cell>> {
+        require(solution.size == solution.toSet().size) { "Duplicate solution Gecko" }
         val order = solution.shuffled(random)
         val placed = linkedSetOf<Cell>()
         val stages = ArrayList<Set<Cell>>(order.size + 1)

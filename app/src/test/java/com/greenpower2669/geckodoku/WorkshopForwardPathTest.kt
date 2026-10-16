@@ -24,7 +24,7 @@ class WorkshopForwardPathTest {
         )
         assertEquals(6, states.size)
         assertTrue(states.first().isEmpty())
-        assertEquals(solutionCells, states.last())
+        assertEquals(solutionCells.toSet(), states.last())
         for (index in 1 until states.size) {
             val before = states[index - 1]
             val after = states[index]
