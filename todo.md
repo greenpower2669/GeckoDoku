@@ -496,3 +496,7 @@ Après le test sans X-Wing (v4, zéro candidat) Fab propose d'inverser le sens d
 - [ ] CI finale GREEN, APK téléphone avec Pierre / sprites 240p, SHA vérifié.
 - [ ] Tester sur Samsung production réelle de frontières uniques et de candidats H2/X-Wing.
 - [ ] Ne pas publier sur main, Release ou Play sans nouvel ordre.
+
+## CI finale mission 018 — vérifiée le 16/10/2026
+GitHub Actions workflow `Build GeckoDoku phone APK` run **#568** id `38969577659`, commit source `2ba3dc5daf4021376003b8376a0834b3725e1453` **GREEN** : Gradle `BUILD SUCCESSFUL in 2m 36s`, tests JVM, APK Android phone, vérification Pierre Piper + banque sprites 240p réussies. Artefact GitHub Actions `GeckoDoku-v0.15.45-dev-phone` id `12076173884`, contenant `GeckoDoku-v0.15.45-dev.apk` SHA-256 `4f65aa420229e041fdf533f6e867713cd7ae155624623cc934bf854ae875763d`. Ci intermédiaire #565-#567 a échoué à cause du type `List<Cell>` vs `Set<Cell>` dans `WorkshopForwardPath.stages` ; correctif accepté avec `Collection<Cell>`, tests comparaison `toSet()`, #568 vert. Étapes workflow « Publish phone prerelease » et « Promote validated phone release » **skipped**. **Pas de lien direct .apk publié** ni main fusionné, Release/Play en attente d'autorisation. Tests Samsung de la génération réelle et du nombre de frontières uniques encore ouverts.
+- [x] Mission 018 CI #568 GREEN / APK phone SHA-256, Pierre et sprites 240p contrôlés.
