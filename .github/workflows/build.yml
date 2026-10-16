@@ -87,8 +87,47 @@ jobs:
           gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isPrerelease,assets | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null)'
           echo "APK direct : https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
 
+  # Explicit delivery of raw APK from GREEN build #539.
+  publish_temp_apk_539:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run539]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify and publish raw APK #539 without Actions ZIP
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="temp-geckodoku-infernal-proof-v2-run539"
+          dest="temp/GeckoDoku-infernal-proof-v2-run539"
+          mkdir -p "$dest"
+          gh run download 38859558302 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "GeckoDoku-v0.15.45-dev-phone" \
+            --dir "$dest"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk.sha256"
+          (
+            cd "$dest"
+            sha256sum -c GeckoDoku-v0.15.45-dev.apk.sha256
+            actual="$(sha256sum GeckoDoku-v0.15.45-dev.apk | cut -d ' ' -f1)"
+            expected="ba4acee944de16aa34951cd7f22a3ed3a8423e1e71e58e3b75a866086549fbd5"
+            test "$actual" = "$expected"
+          )
+          gh release create "$tag" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk#GeckoDoku-v0.15.45-dev.apk" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk.sha256#GeckoDoku-v0.15.45-dev.apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "TEMP GeckoDoku Infernal proof-search v2 • run 539" \
+            --notes "APK Android de test issu du run #539 GREEN (commit ce6d855). APK brut sans ZIP, SHA-256 vérifié. Les essais de génération d'une grille nécessitant 3 imbrications restent à mener ; ni Google Play ni Release stable." \
+            --prerelease
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isPrerelease,assets | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null)'
+          echo "APK direct: https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
+
   android:
-    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') && !contains(github.event.head_commit.message, '[temp-apk-run533]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') && !contains(github.event.head_commit.message, '[temp-apk-run533]') && !contains(github.event.head_commit.message, '[temp-apk-run539]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
