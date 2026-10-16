@@ -50,6 +50,9 @@ class InfernalWorkshopService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_STOP) {
+            InfernalWorkshopScheduler.stoppedByNotification(this)
+        }
         if (intent?.action == ACTION_STOP || !InfernalWorkshopScheduler.isEnabled(this)) {
             canceled.set(true)
             workThread?.interrupt()

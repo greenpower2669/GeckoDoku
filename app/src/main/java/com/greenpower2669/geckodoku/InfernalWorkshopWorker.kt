@@ -121,6 +121,14 @@ object InfernalWorkshopScheduler {
 
     internal fun isEnabled(context: Context): Boolean = enabled(context)
 
+    internal fun stoppedByNotification(context: Context) {
+        prefs(context).edit()
+            .putBoolean("enabled", false)
+            .putString("phase_v3", "ARRÊT PAR NOTIFICATION")
+            .commit()
+        MediaTrace.event(source = "InfernalWorkshop", event = "STOP_NOTIFICATION")
+    }
+
     internal fun serviceStarted(context: Context) {
         prefs(context).edit()
             .putBoolean("service_active_v3", true)
