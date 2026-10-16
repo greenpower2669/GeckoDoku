@@ -69,6 +69,10 @@ class MainActivity : Activity() {
     private val exportSpriteBanksRequestCode =
         7403
 
+    private val workshopExportRequestCode = 7410
+    private val workshopImportRequestCode = 7411
+    private var workshopPreviewId: String? = null
+
     private var pendingSpriteBankExportHeight:
         Int? = null
 
@@ -2026,6 +2030,24 @@ class MainActivity : Activity() {
         val requestedDifficulty =
             selectedDifficulty
 
+        // Only explicit, player-validated archive entries can enter
+        // Infernal; H2 and H3 keep their distinct proof metadata.
+        if (requestedDifficulty == GameDifficulty.INFERNAL) {
+            val eligible = InfernalWorkshopStore(this)
+                .forInfernal(requestedSize)
+            if (eligible.isNotEmpty()) {
+                val selected = eligible[Random.nextInt(eligible.size)]
+                startPuzzle(selected.puzzle.copy(
+                    difficulty = GameDifficulty.INFERNAL
+                ), recordStart)
+                refreshGameUi()
+                status.text = "Infernal validée depuis l'atelier • H" +
+                    selected.nestedDepth + " • X-Wing " +
+                    selected.xWingCount
+                return
+            }
+        }
+
         classicGenerationActive = true
 
         if (::newButton.isInitialized) {
@@ -2199,6 +2221,7 @@ class MainActivity : Activity() {
         }
 
         puzzle = nextPuzzle
+        workshopPreviewId = null
 
         selectedSize =
             puzzle.size
@@ -3893,6 +3916,12 @@ class MainActivity : Activity() {
                             mode
                         )
                 )
+
+        if (mode == GameMode.GECKODOKU && workshopPreviewId != null) {
+            // Workshop demonstrations must never reach stats, Hall or network.
+            completionRecorded = true
+            return stars
+        }
 
         if (!completionRecorded) {
             val seconds =
@@ -6170,6 +6199,49 @@ class MainActivity : Activity() {
                 ?: return
 
         when (requestCode) {
+            workshopExportRequestCode -> {
+                Thread {
+                    try {
+                        val output = contentResolver.openOutputStream(uri)
+                            ?: error("Impossible d'ouvrir la destination ZIP")
+                        InfernalWorkshopStore(this).exportZip(output)
+                        runOnUiThread {
+                            status.text = "Atelier exporté en ZIP. Attention : solutions incluses."
+                        }
+                    } catch (e: Exception) {
+                        runOnUiThread {
+                            showDataTransferError(
+                                title = "Export atelier impossible",
+                                message = e.message ?: "Erreur ZIP"
+                            )
+                        }
+                    }
+                }.start()
+            }
+
+            workshopImportRequestCode -> {
+                Thread {
+                    try {
+                        val input = contentResolver.openInputStream(uri)
+                            ?: error("Impossible d'ouvrir l'archive")
+                        val imported = input.use {
+                            InfernalWorkshopStore(this).importZip(it)
+                        }
+                        runOnUiThread {
+                            status.text = "$imported nouvelle(s) grille(s) importée(s), à revoir."
+                            showInfernalWorkshop()
+                        }
+                    } catch (e: Exception) {
+                        runOnUiThread {
+                            showDataTransferError(
+                                title = "Import atelier impossible",
+                                message = e.message ?: "Archive ZIP incorrecte"
+                            )
+                        }
+                    }
+                }.start()
+            }
+
             exportDataRequestCode -> {
                 try {
                     val json =
@@ -14400,6 +14472,186 @@ class MainActivity : Activity() {
         }
     }
 
+
+    /** Review queue: generation continues using Android's scheduled jobs. */
+    private fun showInfernalWorkshop() {
+        val store = InfernalWorkshopStore(this)
+        val all = store.list()
+        val running = InfernalWorkshopScheduler.running(this)
+        val sizes = all.groupingBy { it.status }.eachCount()
+        val header = arrayOf(
+            if (running) "⏸ Suspendre le générateur" else
+                "▶ Démarrer la génération automatique",
+            "🔁 Lancer un lot maintenant (batterie suffisante)",
+            "📤 Exporter toutes les grilles en ZIP (solutions incluses)",
+            "📥 Importer un lot ZIP pour réanalyse"
+        )
+        val shown = all.take(60)
+        val labels = header + shown.map { item ->
+            val stage = when (item.status) {
+                WorkshopStatus.CANDIDATE -> "À tester"
+                WorkshopStatus.TESTING -> "En cours"
+                WorkshopStatus.VALIDATED -> "Validée"
+                WorkshopStatus.REJECTED -> "Rejetée"
+            }
+            "🦎 ${item.puzzle.size}×${item.puzzle.size} • H${item.nestedDepth} " +
+                "• X-Wing ${item.xWingCount} • $stage • " +
+                item.id.take(8)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("🧪 Atelier Infernal • " + all.size + " grilles")
+            .setMessage(
+                "Recherche : " + if (running) "active" else "suspendue" +
+                " • essais : " + InfernalWorkshopScheduler.attempts(this) +
+                " • candidats : " +
+                (sizes[WorkshopStatus.CANDIDATE] ?: 0) +
+                " • validées : " + (sizes[WorkshopStatus.VALIDATED] ?: 0) +
+                ".\n\nLes recherches périodiques ont lieu de préférence sur chargeur."
+            )
+            .setItems(labels) { _, index ->
+                when (index) {
+                    0 -> {
+                        if (running) {
+                            InfernalWorkshopScheduler.pause(this)
+                            status.text = "Atelier suspendu. Candidats conservés."
+                        } else {
+                            InfernalWorkshopScheduler.start(this, selectedSize)
+                            status.text = "Atelier activé en arrière-plan • " +
+                                selectedSize + "×" + selectedSize
+                        }
+                        showInfernalWorkshop()
+                    }
+                    1 -> {
+                        if (!running) {
+                            InfernalWorkshopScheduler.start(this, selectedSize)
+                        } else {
+                            InfernalWorkshopScheduler.runNow(this)
+                        }
+                        status.text = "Lot d'atelier demandé à Android."
+                    }
+                    2 -> exportInfernalWorkshop()
+                    3 -> importInfernalWorkshop()
+                    else -> showInfernalWorkshopEntry(shown[index - header.size])
+                }
+            }
+            .setNegativeButton("Fermer", null)
+            .show()
+    }
+
+    private fun exportInfernalWorkshop() {
+        AlertDialog.Builder(this)
+            .setTitle("Export privé")
+            .setMessage(
+                "Le ZIP contient les solutions complètes et les preuves. " +
+                    "Ne le publie pas si tu souhaites garder les grilles secrètes."
+            )
+            .setPositiveButton("Exporter") { _, _ ->
+                val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "application/zip"
+                    putExtra(
+                        Intent.EXTRA_TITLE,
+                        "GeckoDoku-atelier-infernal-" +
+                            System.currentTimeMillis() + ".zip"
+                    )
+                }
+                startActivityForResult(intent, workshopExportRequestCode)
+            }
+            .setNegativeButton("Annuler", null)
+            .show()
+    }
+
+    private fun importInfernalWorkshop() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/zip"
+        }
+        startActivityForResult(intent, workshopImportRequestCode)
+    }
+
+    private fun showInfernalWorkshopEntry(entry: WorkshopEntry) {
+        val store = InfernalWorkshopStore(this)
+        val actions = arrayOf(
+            "▶ Tester la grille (sans Hall ni score)",
+            "✏ Mes observations",
+            "✅ Valider pour la sélection Infernal",
+            "🚫 Rejeter",
+            "↺ Remettre en attente"
+        )
+        AlertDialog.Builder(this)
+            .setTitle("🦎 " + entry.id.take(12) +
+                " • H" + entry.nestedDepth + " • X-Wing " +
+                entry.xWingCount)
+            .setMessage(
+                "Statut : " + entry.status.name +
+                "\nHypothèses : " + entry.hypothesisCount +
+                "\nTaille : " + entry.puzzle.size +
+                "\nSolution : unique (vérification indépendante)" +
+                "\nObservations : " + entry.notes +
+                "\n\nUne validation H2 n'est jamais présentée comme H3."
+            )
+            .setItems(actions) { _, which ->
+                when (which) {
+                    0 -> {
+                        if (selectedGameMode != GameMode.GECKODOKU) {
+                            status.text = "Passe d'abord au mode GeckoDoku classique."
+                            return@setItems
+                        }
+                        store.update(entry.id, WorkshopStatus.TESTING, entry.notes)
+                        startPuzzle(entry.puzzle.copy(
+                            difficulty = GameDifficulty.INFERNAL
+                        ), recordStart = false)
+                        workshopPreviewId = entry.id
+                        refreshGameUi()
+                        status.text = "TEST ATELIER • Non homologué • H" +
+                            entry.nestedDepth + " • " + entry.id.take(8)
+                    }
+                    1 -> {
+                        val input = EditText(this).apply {
+                            setText(entry.notes)
+                            hint = "Mon essai, X-Wing, hypothèses…"
+                        }
+                        AlertDialog.Builder(this)
+                            .setTitle("Observations du test")
+                            .setView(input)
+                            .setPositiveButton("Enregistrer") { _, _ ->
+                                store.update(
+                                    entry.id,
+                                    entry.status,
+                                    input.text.toString()
+                                )
+                                showInfernalWorkshop()
+                            }
+                            .setNegativeButton("Annuler", null)
+                            .show()
+                    }
+                    2 -> {
+                        // Explicit human validation, never automatic.
+                        store.update(
+                            entry.id, WorkshopStatus.VALIDATED, entry.notes
+                        )
+                        status.text = "Grille validée H" + entry.nestedDepth +
+                            " : disponible pour Infernal."
+                        showInfernalWorkshop()
+                    }
+                    3 -> {
+                        store.update(
+                            entry.id, WorkshopStatus.REJECTED, entry.notes
+                        )
+                        showInfernalWorkshop()
+                    }
+                    else -> {
+                        store.update(
+                            entry.id, WorkshopStatus.CANDIDATE, entry.notes
+                        )
+                        showInfernalWorkshop()
+                    }
+                }
+            }
+            .setNegativeButton("Fermer", null)
+            .show()
+    }
+
     private fun showSettings() {
         val entries =
             settingsMenuPolicy
@@ -14475,6 +14727,9 @@ class MainActivity : Activity() {
 
                     SettingsEntry.JOURNAL ->
                         "📚 Journal de grilles"
+
+                    SettingsEntry.INFERNAL_WORKSHOP ->
+                        "🧪 Atelier de grilles difficiles"
 
                     SettingsEntry.PLAYER_NAME ->
                         "✏️ Pseudo : " +
@@ -14588,6 +14843,11 @@ class MainActivity : Activity() {
                     SettingsEntry.JOURNAL -> {
                         dialog.dismiss()
                         showJournal()
+                    }
+
+                    SettingsEntry.INFERNAL_WORKSHOP -> {
+                        dialog.dismiss()
+                        showInfernalWorkshop()
                     }
 
                     SettingsEntry.PLAYER_NAME -> {

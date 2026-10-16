@@ -44,8 +44,10 @@ object PuzzleGenerator {
                     chosen.add(cell)
                     continue
                 }
+                // Collect depth 2 candidates first; occasionally a
+                // deeper candidate becomes demonstrable after H2 fails.
                 val withWing = HypothesisSolver.analyze(
-                    candidate, 2, size, shouldCancel
+                    candidate, 3, size, shouldCancel
                 )
                 val wingCount = withWing.steps.count {
                     it.technique == SolveTechnique.GECKO_X_WING
@@ -60,7 +62,7 @@ object PuzzleGenerator {
                 if (shallow.solved || shallow.exhaustedBudget) continue
 
                 val noWing = HypothesisSolver.analyze(
-                    candidate, 2, size, shouldCancel,
+                    candidate, 3, size, shouldCancel,
                     rules = SolverRules.NO_X_WING
                 )
                 if (noWing.solved || noWing.exhaustedBudget) continue

@@ -30,7 +30,7 @@ data class WorkshopEntry(
     // The original Infernal contract (3 nested decisions) stays intact.
     val eligibleForInfernal: Boolean
         get() = status == WorkshopStatus.VALIDATED &&
-            nestedDepth >= InfernalDepthPolicy.MINIMUM_DEPTH &&
+            nestedDepth >= 2 &&
             xWingCount >= 1
 }
 
