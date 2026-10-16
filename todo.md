@@ -445,3 +445,18 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 **CI finale atelier 014 (16/10/2026)** : run GitHub Actions #550 `38921744094` GREEN, commit code `b56fce177805e103028c09bdfd6d9772ad7e8bc0`, Gradle `BUILD SUCCESSFUL in 2m 4s`, tests JVM, APK phone, Pierre/banque 240p vérifiés. Artefact Actions `GeckoDoku-v0.15.45-dev-phone` ID `12055281956`, APK SHA-256 `d879a10ea9ece31dcb866fadb83ea438826f52439c9a0881baf4664d569b966d`. Les #547–#549 avaient échoué pendant l'intégration : #547 ancien appel `start(context,size)`, puis #548/#549 ancien test exigeant un X-Wing sur 5×5 ; API et test corrigés avant #550. Pas de merge main, de Release ni de Google Play. Essais réels sur Samsung / démonstration de grilles H2–H4 restent à effectuer.
 - [x] CI 550 finale GREEN : tests JVM, assemblePhone, Pierre, sprites 240p, artefact APK récupérable via Actions.
 - [ ] Validation Samsung : captures du rapport par taille, nombre de grilles réellement générées et export ZIP de recherche.
+
+## Mission GECKO-CLASSIC-WORKSHOP-CONTINUOUS-015 (16/10/2026)
+- [x] Créer branche `feature/classic-workshop-continuous-fgs-v3` depuis mission 014, pas de changement main.
+- [x] Remplacer ancien planning WorkManager contraint chargeur par service FGS de recherche continue déclenché explicitement depuis Atelier.
+- [x] Fournir notification Android persistante avec commande Arrêter ; traiter aussi Arrêter depuis l'atelier.
+- [x] Retenir rotation 5–12, X-Wing conditionnel, recherche H2–H4, bibliothèque/import-export intacts.
+- [x] Sauvegarder compteurs *recherches lancées*, *recherches terminées*, *grilles enregistrées*, *erreurs* par taille ; heartbeat, phase, dernier échec.
+- [x] Actualiser les compteurs à l'écran toutes les 1,5s sans fermer l'atelier.
+- [x] Tracer la vie du moteur SEARCH_START/SEARCH_END, pauses et erreurs dans MediaTrace (Journal vidéo) ; ancien worker neutralisé.
+- [x] Tests JVM statut stop/start/actif/interrompu ; Android Manifest FGS spécial + notifications.
+- [ ] Reporter CI finale (run, SHA APK et artéfact) ; vérifier compilation, tests, assets 240p/Pierre.
+- [ ] Installer sur Samsung Android 16 puis appuyer « DÉMARRER RECHERCHE CONTINUE » : voir notification, compteurs 5..12 >0, fin de recherche >0, puis option Arrêter.
+- [ ] Vérifier que le Journal vidéo contient SERVICE_ACTIVE, SEARCH_START et SEARCH_END ; capturer erreurs réelles si compteur reste à 0.
+- [ ] Tester écran éteint, économie de batterie, forte température, arrêt système / redémarrage manuel, pendant 15–30 min et plusieurs tailles ; vérifier l'autonomie.
+- [ ] Exiger revue du FGS `specialUse` et politique Google Play avant publication ; aucune autorisation de Release/merge/Play.
