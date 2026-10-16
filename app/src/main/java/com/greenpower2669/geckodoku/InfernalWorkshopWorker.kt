@@ -49,6 +49,16 @@ object InfernalWorkshopScheduler {
     fun withoutXWingAttemptsFor(context: Context, size: Int): Long =
         prefs(context).getLong("attempts_no_xwing_v4_$size", 0L)
 
+    // Independent forward-placement experiment counters. Do not reset v4.
+    fun forwardAttempts(context: Context): Long =
+        prefs(context).getLong("attempts_forward_v5", 0L)
+
+    fun forwardSaved(context: Context): Long =
+        prefs(context).getLong("saved_forward_v5", 0L)
+
+    fun forwardAttemptsFor(context: Context, size: Int): Long =
+        prefs(context).getLong("attempts_forward_v5_$size", 0L)
+
     fun completedFor(context: Context, size: Int): Long =
         prefs(context).getLong("completed_v3_$size", 0L)
 
@@ -176,8 +186,8 @@ object InfernalWorkshopScheduler {
         val p = prefs(context)
         val size = nextSize(context)
         val key = "attempts_v2_$size"
-        val experiment = "attempts_no_xwing_v4"
-        val perSize = "attempts_no_xwing_v4_$size"
+        val experiment = "attempts_forward_v5"
+        val perSize = "attempts_forward_v5_$size"
         val ok = p.edit()
             .putInt(NEXT_SIZE, InfernalWorkshopPolicy.nextSize(size))
             .putInt("current_size_v3", size)
@@ -201,7 +211,7 @@ object InfernalWorkshopScheduler {
                 .putLong("heartbeat_v3", System.currentTimeMillis())
             if (saved) {
                 val foundKey = "saved_v3_$size"
-                val experiment = "saved_no_xwing_v4"
+                val experiment = "saved_forward_v5"
                 edit.putLong(foundKey, p.getLong(foundKey, 0L) + 1L)
                 edit.putLong(
                     experiment, p.getLong(experiment, 0L) + 1L

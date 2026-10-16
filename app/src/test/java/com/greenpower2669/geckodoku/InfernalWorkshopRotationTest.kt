@@ -28,9 +28,14 @@ class InfernalWorkshopRotationTest {
     }
 
     @Test
-    fun xWingIsNeverRequiredAtAnySizeInThisExperiment() {
+    fun xWingIsRestoredForBoardsAtLeastEight() {
         for (size in 5..12) {
-            assertTrue(InfernalWorkshopPolicy.qualifies(size, 2, 0))
+            assertEquals(
+                size >= 8, InfernalWorkshopPolicy.requiresXWing(size)
+            )
+            assertEquals(
+                size < 8, InfernalWorkshopPolicy.qualifies(size, 2, 0)
+            )
             assertTrue(InfernalWorkshopPolicy.qualifies(size, 2, 1))
         }
     }
@@ -38,7 +43,7 @@ class InfernalWorkshopRotationTest {
     @Test
     fun aNestedProofNeverBecomesFourByCountingSeparateGuesses() {
         for (size in 5..12) {
-            val xWings = 0
+            val xWings = if (size >= 8) 1 else 0
             assertFalse(InfernalWorkshopPolicy.qualifies(size, 1, xWings))
             assertTrue(InfernalWorkshopPolicy.qualifies(size, 2, xWings))
             assertTrue(InfernalWorkshopPolicy.qualifies(size, 3, xWings))
@@ -78,6 +83,7 @@ class InfernalWorkshopRotationTest {
             ),
             status = WorkshopStatus.VALIDATED
         )
-        assertTrue(large.eligibleForInfernal)
+        assertFalse(large.eligibleForInfernal)
+        assertTrue(large.copy(xWingCount = 1).eligibleForInfernal)
     }
 }
