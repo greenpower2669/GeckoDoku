@@ -242,8 +242,46 @@ jobs:
           gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isPrerelease,assets | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null)'
           echo "APK direct : https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
 
+  # Explicit opt-in delivery of the validated Samsung UI fix from run #560.
+  publish_temp_apk_560:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run560]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify and publish raw workshop dialog fix phone APK from GREEN #560
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="temp-geckodoku-workshop-dialog-fix-run560"
+          dest="temp/GeckoDoku-workshop-dialog-run560"
+          mkdir -p "$dest"
+          gh run download 38933645991 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "GeckoDoku-v0.15.45-dev-phone" \
+            --dir "$dest"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk.sha256"
+          (
+            cd "$dest"
+            sha256sum -c GeckoDoku-v0.15.45-dev.apk.sha256
+            actual="$(sha256sum GeckoDoku-v0.15.45-dev.apk | cut -d ' ' -f1)"
+            test "$actual" = "e04f89f783c187cae19eb015f6fc5c870cd6401ff2b3b4fd5cb58520abbfbfb1"
+          )
+          gh release create "$tag" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk#GeckoDoku-v0.15.45-dev.apk" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk.sha256#GeckoDoku-v0.15.45-dev.apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "TEMP GeckoDoku Atelier boutons visibles • run #560" \
+            --notes "APK de test EXACT du run #560 GREEN (code da5a0d9), SHA-256 validé. Correction Android : menu Atelier avec Démarrer/Arrêter visible, compteurs en direct séparés, liste tailles et commandes candidats visibles. Moteur continu inchangé. Test réel sur Samsung Android 16 nécessaire. Aucun merge main ni diffusion Play." \
+            --prerelease
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isPrerelease,assets | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null)'
+          echo "APK direct : https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
+
   android:
-    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') && !contains(github.event.head_commit.message, '[temp-apk-run533]') && !contains(github.event.head_commit.message, '[temp-apk-run539]') && !contains(github.event.head_commit.message, '[temp-apk-run545]') && !contains(github.event.head_commit.message, '[temp-apk-run550]') && !contains(github.event.head_commit.message, '[temp-apk-run557]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') && !contains(github.event.head_commit.message, '[temp-apk-run533]') && !contains(github.event.head_commit.message, '[temp-apk-run539]') && !contains(github.event.head_commit.message, '[temp-apk-run545]') && !contains(github.event.head_commit.message, '[temp-apk-run550]') && !contains(github.event.head_commit.message, '[temp-apk-run557]') && !contains(github.event.head_commit.message, '[temp-apk-run560]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
