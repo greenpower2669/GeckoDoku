@@ -14603,13 +14603,15 @@ class MainActivity : Activity() {
         val totalInLibrary = InfernalWorkshopStore(this).list().size
         val abAttempts = InfernalWorkshopScheduler.forwardAttempts(this)
         val abSaved = InfernalWorkshopScheduler.forwardSaved(this)
+        val unique = InfernalWorkshopScheduler.forwardUniqueBoundaries(this)
         val heartbeat = InfernalWorkshopScheduler.lastHeartbeat(this)
         val latest = if (heartbeat == 0L) "jamais" else
             "il y a " + ((System.currentTimeMillis() - heartbeat)
                 .coerceAtLeast(0L) / 1000L) + " secondes"
         return "RECHERCHE $label" +
             "\nTEST POSE PROGRESSIVE DES GECKO" +
-            "\nESSAIS V5 : $abAttempts • CANDIDATS V5 : $abSaved" +
+            "\nESSAIS V5 : $abAttempts • UNIQUES : $unique" +
+            "\nCANDIDATS V5 : $abSaved" +
             "\nMOTEUR : " + InfernalWorkshopScheduler.phase(this) +
             "\nLANCÉES : $count • TERMINÉES : $completed" +
             "\nGRILLES SAUVEGARDÉES : $saved • ERREURS : $errors" +
@@ -14636,6 +14638,7 @@ class MainActivity : Activity() {
             val abTrials = InfernalWorkshopScheduler.forwardAttemptsFor(
                 this, size
             )
+            val unique = InfernalWorkshopScheduler.forwardUniqueFor(this, size)
             val finished = InfernalWorkshopScheduler.completedFor(this, size)
             val errors = InfernalWorkshopScheduler.errorsFor(this, size)
             val found = InfernalWorkshopScheduler.savedFor(this, size)
@@ -14645,7 +14648,7 @@ class MainActivity : Activity() {
                 "X-Wing facultatif"
             }
             "$size×$size • $trials lancées (dont $abTrials en pose progressive) • " +
-                "$finished terminées • "
+                "$unique frontières uniques • $finished terminées • "
                 "$found enregistrées • $errors erreurs • " +
                 "${puzzles.size} grilles ($approved validées) • $condition"
         }.toTypedArray()

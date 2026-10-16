@@ -144,13 +144,17 @@ class InfernalWorkshopService : Service() {
                     val cutoff = System.nanoTime() + 20_000_000_000L
                     val seed = System.nanoTime() xor System.currentTimeMillis()
                     val result = PuzzleGenerator.generateWorkshopCandidate(
-                        size, seed
-                    ) {
-                        canceled.get() ||
-                            !InfernalWorkshopScheduler.isEnabled(this) ||
-                            Thread.currentThread().isInterrupted ||
-                            System.nanoTime() >= cutoff
-                    }
+                        size, seed,
+                        shouldCancel = {
+                            canceled.get() ||
+                                !InfernalWorkshopScheduler.isEnabled(this) ||
+                                Thread.currentThread().isInterrupted ||
+                                System.nanoTime() >= cutoff
+                        },
+                        onFirstUnique = {
+                            InfernalWorkshopScheduler.markForwardUnique(this, size)
+                        }
+                    )
                     if (result != null && !canceled.get() &&
                         InfernalWorkshopScheduler.isEnabled(this)
                     ) {

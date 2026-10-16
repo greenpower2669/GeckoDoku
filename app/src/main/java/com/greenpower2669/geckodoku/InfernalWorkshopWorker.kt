@@ -56,6 +56,22 @@ object InfernalWorkshopScheduler {
     fun forwardSaved(context: Context): Long =
         prefs(context).getLong("saved_forward_v5", 0L)
 
+    fun forwardUniqueBoundaries(context: Context): Long =
+        prefs(context).getLong("unique_forward_v5", 0L)
+
+    fun forwardUniqueFor(context: Context, size: Int): Long =
+        prefs(context).getLong("unique_forward_v5_$size", 0L)
+
+    internal fun markForwardUnique(context: Context, size: Int) = synchronized(lock) {
+        val p = prefs(context)
+        val perSize = "unique_forward_v5_$size"
+        p.edit()
+            .putLong("unique_forward_v5",
+                p.getLong("unique_forward_v5", 0L) + 1)
+            .putLong(perSize, p.getLong(perSize, 0L) + 1)
+            .commit()
+    }
+
     fun forwardAttemptsFor(context: Context, size: Int): Long =
         prefs(context).getLong("attempts_forward_v5_$size", 0L)
 

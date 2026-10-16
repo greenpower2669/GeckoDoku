@@ -30,7 +30,8 @@ object PuzzleGenerator {
     fun generateWorkshopCandidate(
         size: Int,
         seed: Long,
-        shouldCancel: () -> Boolean = { false }
+        shouldCancel: () -> Boolean = { false },
+        onFirstUnique: () -> Unit = {}
     ): WorkshopCandidateProof? {
         require(size in InfernalWorkshopPolicy.sizes)
         val random = Random(seed)
@@ -60,6 +61,10 @@ object PuzzleGenerator {
                     if (!hasExactlyOneSolution(candidate, shouldCancel)) {
                         continue
                     }
+                    // A genuine unique boundary, even if H2/X-Wing
+                    // eventually fails. Measure discovery independently.
+                    if (shouldCancel()) return null
+                    onFirstUnique()
                     val proved = proveWorkshopCandidate(
                         candidate, shouldCancel
                     )

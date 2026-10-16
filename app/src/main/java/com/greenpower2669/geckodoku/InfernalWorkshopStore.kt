@@ -261,7 +261,13 @@ class InfernalWorkshopStore(context: Context) {
         require(fingerprint(puzzle) == id)
         val wingCount = obj.getInt("xWingCount")
         val depth = obj.getInt("nestedDepth")
-        require(InfernalWorkshopPolicy.qualifies(size, depth, wingCount))
+        // Legacy v4 archives with no X-Wing must remain readable in the
+        // library. They are NOT eligible for new Infernal promotion unless
+        // they meet today's policy; the policy applies to new generation.
+        require(size in InfernalWorkshopPolicy.sizes &&
+            depth in InfernalWorkshopPolicy.MIN_NESTED_DEPTH..
+                InfernalWorkshopPolicy.MAX_SEARCH_DEPTH &&
+            wingCount >= 0)
         require(trace.count {
             it.technique == SolveTechnique.GECKO_X_WING
         } == wingCount)
