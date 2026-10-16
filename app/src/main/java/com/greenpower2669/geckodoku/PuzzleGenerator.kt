@@ -15,80 +15,120 @@ data class WorkshopCandidateProof(
 object PuzzleGenerator {
 
     /**
-     * Search for independently unique Classic workshop candidates.
-     * No X-Wing is required at ANY size in this A/B test.
-     * Its occurrence may still be recorded as diagnostic metadata.
-     * A candidate is not automatically a certified Infernal puzzle.
+     * Construct Classic clues by PLACING Gecko rather than removing them.
+     *
+     * For each hidden legal full solution and its colour regions:
+     *  1. Start with ZERO visible Gecko;
+     *  2. Place Gecko one at a time in different orders;
+     *  3. Stop adding clues at the FIRST uniquely solvable prefix;
+     *  4. Require a demonstrated H2..H4 proof and, for 8x8+, X-Wing.
+     *
+     * Randomized paths yield different unique boundaries for the same
+     * region geometry. Existing stored candidates and live game modes
+     * are not altered.
      */
     fun generateWorkshopCandidate(
         size: Int,
         seed: Long,
         shouldCancel: () -> Boolean = { false }
     ): WorkshopCandidateProof? {
-        require(size in 5..12)
+        require(size in InfernalWorkshopPolicy.sizes)
         val random = Random(seed)
         repeat(12) { attempt ->
             if (shouldCancel()) return null
             val solution = randomSolution(size, random) ?: return@repeat
             val base = Puzzle(
-                id = "workshop-$size-$seed-$attempt",
+                id = "workshop-forward-$size-$seed-$attempt",
                 size = size,
                 regions = growRegions(size, solution, random),
                 solutionCols = solution,
                 difficulty = GameDifficulty.INFERNAL,
                 seed = seed
             )
-            val chosen = base.solutionCells().toMutableSet()
-            for (cell in base.solutionCells().shuffled(random)) {
-                if (shouldCancel()) return null
-                chosen.remove(cell)
-                val candidate = base.copy(givens = chosen.toSet())
-                if (!hasExactlyOneSolution(candidate, shouldCancel)) {
-                    chosen.add(cell)
-                    continue
-                }
-                // Test depth H2 first, then H3/H4 only when unresolved.
-                // A higher search depth is not a count of independent guesses.
-                var withWing = HypothesisSolver.analyze(
-                    candidate,
-                    InfernalWorkshopPolicy.MIN_NESTED_DEPTH,
-                    size,
-                    shouldCancel
-                )
-                for (depth in 3..InfernalWorkshopPolicy.MAX_SEARCH_DEPTH) {
-                    if (withWing.solved || shouldCancel()) break
-                    withWing = HypothesisSolver.analyze(
-                        candidate, depth, size, shouldCancel
-                    )
-                }
-                val wingCount = withWing.steps.count {
-                    it.technique == SolveTechnique.GECKO_X_WING
-                }
-                if (!withWing.solved || withWing.exhaustedBudget ||
-                    !InfernalWorkshopPolicy.qualifies(
-                        size, withWing.maxHypothesisDepth, wingCount
-                    )
-                ) continue
+            // Explore multiple ADDITIVE clue orders without mutating
+            // any earlier stage. This is NOT deletion in reverse.
+            repeat(4) {
+                for (givens in WorkshopForwardPath.stages(
+                    base.solutionCells(), random
+                )) {
+                    if (shouldCancel()) return null
+                    val candidate = base.copy(givens = givens)
 
-                val shallow = HypothesisSolver.analyze(
-                    candidate, 1, size, shouldCancel
-                )
-                if (shallow.solved) continue
-
-                // The X-Wing exclusion/comparison stage was another
-                // rejection gate and cost CPU. Remove it ENTIRELY for this
-                // experiment. Keep the existing uniqueness and H2-H4 tests.
-                if (shouldCancel()) return null
-                return WorkshopCandidateProof(
-                    candidate.copy(solverTrace = withWing.steps),
-                    wingCount, withWing.maxHypothesisDepth,
-                    withWing.hypothesisCount,
-                    xWingExclusionModelComplete = false,
-                    shallowExclusionModelComplete = !shallow.exhaustedBudget
-                )
+                    // Once uniqueness is reached, adding more clues
+                    // typically makes solving easier. Inspect that
+                    // transition and try a different order if too easy.
+                    if (!hasExactlyOneSolution(candidate, shouldCancel)) {
+                        continue
+                    }
+                    val proved = proveWorkshopCandidate(
+                        candidate, shouldCancel
+                    )
+                    if (proved != null) return proved
+                    break
+                }
             }
         }
         return null
+    }
+
+    private fun proveWorkshopCandidate(
+        candidate: Puzzle,
+        shouldCancel: () -> Boolean
+    ): WorkshopCandidateProof? {
+        val size = candidate.size
+        if (shouldCancel()) return null
+        var proof = HypothesisSolver.analyze(
+            candidate, InfernalWorkshopPolicy.MIN_NESTED_DEPTH,
+            size, shouldCancel
+        )
+        for (depth in 3..InfernalWorkshopPolicy.MAX_SEARCH_DEPTH) {
+            if (proof.solved || shouldCancel()) break
+            proof = HypothesisSolver.analyze(
+                candidate, depth, size, shouldCancel
+            )
+        }
+        if (!proof.solved || proof.exhaustedBudget || shouldCancel()) {
+            return null
+        }
+        val wingCount = proof.steps.count {
+            it.technique == SolveTechnique.GECKO_X_WING
+        }
+        if (!InfernalWorkshopPolicy.qualifies(
+                size, proof.maxHypothesisDepth, wingCount
+            )
+        ) return null
+
+        // A successful shallower demonstration invalidates the H2 claim.
+        val shallow = HypothesisSolver.analyze(
+            candidate, 1, size, shouldCancel
+        )
+        if (shallow.solved || shouldCancel()) return null
+
+        // Restore the X-Wing exclusion experiment on boards where
+        // X-Wing is required. If no-X-Wing SOLVES, reject the grid;
+        // if the search runs out of budget, preserve its uncertainty.
+        val noWing = if (InfernalWorkshopPolicy.requiresXWing(size)) {
+            HypothesisSolver.analyze(
+                candidate,
+                maxOf(
+                    InfernalWorkshopPolicy.MIN_NESTED_DEPTH,
+                    proof.maxHypothesisDepth
+                ),
+                size,
+                shouldCancel,
+                rules = SolverRules.NO_X_WING
+            )
+        } else null
+        if (noWing?.solved == true || shouldCancel()) return null
+
+        return WorkshopCandidateProof(
+            candidate.copy(solverTrace = proof.steps),
+            wingCount, proof.maxHypothesisDepth,
+            proof.hypothesisCount,
+            xWingExclusionModelComplete =
+                noWing != null && !noWing.exhaustedBudget,
+            shallowExclusionModelComplete = !shallow.exhaustedBudget
+        )
     }
 
     /** Exact solution count, independent of the pedagogical proof. */

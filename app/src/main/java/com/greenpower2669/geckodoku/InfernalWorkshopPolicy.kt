@@ -1,11 +1,12 @@
 package com.greenpower2669.geckodoku
 
 /**
- * The Classic grid has one region/colour and one Gecko per row.
- * A/B experiment: X-Wing is NEVER required to qualify any board.
- * The solver can still find and explain this technique naturally.
+ * Classic workshop puzzle contract.
  *
- * A candidate remains unverified until the player tests it.
+ * H2..H4 means genuinely nested hypotheses, not separate guesses.
+ * The Gecko X-Wing is required in the proof for boards 8x8..12x12;
+ * it remains optional for 5x5..7x7. A generated candidate still
+ * requires the player's test and explicit manual approval.
  */
 object InfernalWorkshopPolicy {
     const val MIN_SIZE = 5
@@ -15,11 +16,16 @@ object InfernalWorkshopPolicy {
 
     val sizes: IntRange = MIN_SIZE..MAX_SIZE
 
-    // No mandatory X-Wing gate for any size in this experiment.
+    fun requiresXWing(size: Int): Boolean {
+        require(size in sizes)
+        return size >= 8
+    }
+
     fun qualifies(size: Int, depth: Int, xWingCount: Int): Boolean =
         size in sizes &&
             depth in MIN_NESTED_DEPTH..MAX_SEARCH_DEPTH &&
-            xWingCount >= 0
+            xWingCount >= 0 &&
+            (!requiresXWing(size) || xWingCount >= 1)
 
     fun nextSize(size: Int): Int {
         require(size in sizes)
