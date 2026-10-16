@@ -319,3 +319,6 @@ Après le constat que le solveur de grilles Infernal était trop lent, Fab propo
 
 ### Mission 013 — garde-fou sur les preuves incomplètes
 Ne jamais assimiler « recherche sans X-Wing épuisée » à « X-Wing démontré nécessaire ». Ces cas restent exportables pour vérification, mais étiquetés comme candidats incertains. Validation explicite humaine, test préalable et profondeur H2/H3 d'origine restent obligatoires.
+
+### Atelier Classic 013 — bilan code et compilation (16/10/2026)
+Workflow phone #545 / 38894030798 GREEN (tests JVM, APK Android, vérification Pierre + sprites 240p) commit fcc114e4 ; artefact GitHub Actions 12043056881, SHA-256 APK `1e49ba40e09e316d6857a12df33bda533cb5fa9c2c3aa0e4fd9892f9f0162e78`. Build Android de test signé par clé debug habituelle, **PAS AAB signé Play**. Aucune demande de merge main ni publication stable/temporaire n'est intervenue ; ne pas en créer. Les tests Samsung et la génération effective d'une candidate vérifiable restent ouverts.

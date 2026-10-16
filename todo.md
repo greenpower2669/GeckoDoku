@@ -421,3 +421,10 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 
 - [x] Atténuer la perte de candidats lors des recherches alternatives interrompues : profondeur 2 prioritaire, indicateurs d'incertitude persistés/exportés et visibles ; aucun faux certificat X-Wing.
 - [ ] Quantifier taux de succès par taille et confirmer en pratique que des grilles candidates non vides sont produites pendant les lots de fond.
+
+### Preuve CI Atelier #545 — 16/10/2026
+- [x] Run 38894030798 / #545 GREEN sur commit fcc114e4 : tests JVM, assemblePhone, vérifications Pierre et sprites 240p.
+- [x] Artifact `GeckoDoku-v0.15.45-dev-phone` ID `12043056881`; APK test SHA-256 `1e49ba40e09e316d6857a12df33bda533cb5fa9c2c3aa0e4fd9892f9f0162e78`.
+- [ ] Générer au moins une grille candidate avec preuve exploitable et vérifier son ZIP après export/import réel.
+- [ ] Essai sur Samsung, autonomie chargeur et fiabilité WorkManager (OS Android 16).
+- [ ] Attendre feu vert distinct avant tout merge main, GitHub Release ou Google Play.

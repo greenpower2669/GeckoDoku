@@ -20,3 +20,8 @@ Lancer générateur branché et débatterie OK ; laisser une exécution ; vérif
 
 ### Amélioration de rendement et traçabilité
 La recherche de profondeur 2 est tentée avant profondeur 3. Une recherche sans X-Wing non concluante faute de budget ne supprime plus le candidat : les flags `xWingExclusionModelComplete` et `shallowExclusionModelComplete` indiquent l'incomplétude dans JSON/export/UI. Le modèle sans X-Wing qui résout la grille est éliminatoire. L'atelier ne présente jamais une preuve incomplète comme preuve mathématique d'indispensabilité.
+
+## Preuves GitHub CI
+- Run #545 `38894030798` sur code fcc114e4 : GREEN, tests et assemblePhone, Pierre et sprites 240p vérifiés.
+- Artifact Actions `12043056881` ; APK téléphone `GeckoDoku-v0.15.45-dev.apk` SHA256 `1e49ba40e09e316d6857a12df33bda533cb5fa9c2c3aa0e4fd9892f9f0162e78` (dans ZIP artifact), pas de Release.
+- CI ne prouve pas le taux réel de grilles générées ; tester sur Samsung et exporter le premier lot avant de déclarer fonctionnel.
