@@ -126,8 +126,47 @@ jobs:
           gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isPrerelease,assets | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null)'
           echo "APK direct: https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
 
+  # One-time opt-in: publish the exact successful #545 workshop build.
+  publish_temp_apk_545:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run545]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify and publish unzipped workshop APK from #545
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="temp-geckodoku-workshop-run545"
+          dest="temp/GeckoDoku-workshop-run545"
+          mkdir -p "$dest"
+          gh run download 38894030798 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "GeckoDoku-v0.15.45-dev-phone" \
+            --dir "$dest"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk.sha256"
+          (
+            cd "$dest"
+            sha256sum -c GeckoDoku-v0.15.45-dev.apk.sha256
+            actual="$(sha256sum GeckoDoku-v0.15.45-dev.apk | cut -d ' ' -f1)"
+            expected="1e49ba40e09e316d6857a12df33bda533cb5fa9c2c3aa0e4fd9892f9f0162e78"
+            test "$actual" = "$expected"
+          )
+          gh release create "$tag" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk#GeckoDoku-v0.15.45-dev.apk" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk.sha256#GeckoDoku-v0.15.45-dev.apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "TEMP GeckoDoku Atelier Infernal • run 545" \
+            --notes "APK Android téléphone de test, artefact vérifié du run #545 GREEN (commit fcc114e4). Inclut générateur en tâche de fond, bibliothèque et export ZIP. Aucun merge main ni publication Play. Tests en conditions réelles et production effective de grilles X-Wing H2 restent à confirmer." \
+            --prerelease
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isPrerelease,assets | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null)'
+          echo "APK direct: https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
+
   android:
-    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') && !contains(github.event.head_commit.message, '[temp-apk-run533]') && !contains(github.event.head_commit.message, '[temp-apk-run539]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') && !contains(github.event.head_commit.message, '[temp-apk-run533]') && !contains(github.event.head_commit.message, '[temp-apk-run539]') && !contains(github.event.head_commit.message, '[temp-apk-run545]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
