@@ -378,3 +378,19 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 - [x] Publier APK autonome `GeckoDoku-v0.15.45-dev.apk` et `.sha256` sous prérelease TEMP (run #534 GREEN) : https://github.com/greenpower2669/GeckoDoku/releases/download/temp-geckodoku-infernal-depth3-run533/GeckoDoku-v0.15.45-dev.apk.
 - [x] Vérifier asset réel accessible via API GitHub (299496421 octets) ; ne pas confondre Actions ZIP et APK.
 - [ ] Recette fonctionnelle d'une grille à 3 hypothèses imbriquées et tests Samsung restent à faire avant publication.
+
+
+## GECKO-INFERNAL-PROOF-SEARCH-012 — suivi (16/10/2026)
+- [x] Localiser la recherche limitée à firstOrNull() et l'appel generateExact en boucle sans borne.
+- [x] Ajouter exploration de toutes bifurcations (paires et candidat présent/absent) ; cache état/profondeur ; impossibilité, résolution, indécision distinctes.
+- [x] Rechercher les profondeurs croissantes pour éviter l'attribution erronée d'une preuve H3 à une déduction H1.
+- [x] Bloquer la certification profondeur 3 si une recherche de niveau 1/2 a épuisé son budget.
+- [x] Borner génération à ~60 s + séries maximales, propager annulation aux solveurs/décompte d'unicité.
+- [x] Annoncer clairement aucun Infernal certifié trouvé, sans rétrograder silencieusement la difficulté.
+- [x] Ajouter tests de non-régression pour annulation, classification et grille déjà résolue.
+- [x] Corriger le double @Volatile révélé par CI intermédiaire (compilation Kotlin).
+- [ ] CI complète tests JVM + APK phone + médias pour commit final ; relever SHA / run.
+- [ ] Fournir une graine reproductible qui génère vraiment une grille ayant au moins trois niveaux de contradiction nécessaires dans le budget ; test fonctionnel non encore disponible.
+- [ ] Mesurer fréquence et durée par taille 5..12, optimiser génération si le taux de succès est insuffisant ; ne pas présenter une non-découverte comme grille valide.
+- [ ] Tester sur Samsung la progression de recherche, son annulation et la démonstration Pierre.
+- [ ] Ne pas merger main ni créer Release/Play sans feu vert.

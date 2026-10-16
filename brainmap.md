@@ -414,3 +414,7 @@ Preuve compilation 011 : run #533 (38800346305) GREEN, commit d394a65, artefact 
 
 ## Livraison APK direct #534 — mission 011
 Run 38802231998 GREEN ; dossier temporaire runner `temp/GeckoDoku-infernal-depth3-run533` ; APK direct vérifié https://github.com/greenpower2669/GeckoDoku/releases/download/temp-geckodoku-infernal-depth3-run533/GeckoDoku-v0.15.45-dev.apk. Tag temporaire `temp-geckodoku-infernal-depth3-run533`. APK de test, pas d'AAB. Preuve SHA-256 dans `ordres-de-mission.md` ; recette réelle Infernal à profondeur 3 toujours ouverte.
+
+
+## Correctif 012 — Infernal solveur qui ne trouve pas (16/10/2026)
+Branche feature/infernal-proof-search-v2 depuis 011. Voir missions/GECKO-INFERNAL-PROOF-SEARCH-012.md : HypothesisSolver toutes branches + états mémorisés, profondeur minimale contrôlée ; DifficultyIndexer interdit fausse classification après limite budget ; PuzzleGenerator.generateExact finitude/annulation effective ; MainActivity message d'échec explicite. Tests InfernalSearchRegressionTest, CI en validation ; projet CLASSIC seulement. Les cinq mémoires et le protocole sans merge ni Release sont conservés.
