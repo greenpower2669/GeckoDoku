@@ -318,8 +318,47 @@ jobs:
           gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isPrerelease,assets | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null)'
           echo "APK direct: https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
 
+  # User-requested direct APK from the verified GREEN #568 phone build.
+  publish_temp_apk_568:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run568]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify and publish forward-placement workshop phone APK from GREEN #568
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="temp-geckodoku-workshop-forward-run568"
+          dest="temp/GeckoDoku-workshop-forward-run568"
+          mkdir -p "$dest"
+          gh run download 38969577659 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "GeckoDoku-v0.15.45-dev-phone" \
+            --dir "$dest"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk.sha256"
+          (
+            cd "$dest"
+            sha256sum -c GeckoDoku-v0.15.45-dev.apk.sha256
+            actual="$(sha256sum GeckoDoku-v0.15.45-dev.apk | cut -d ' ' -f1)"
+            expected="4f65aa420229e041fdf533f6e867713cd7ae155624623cc934bf854ae875763d"
+            test "$actual" = "$expected"
+          )
+          gh release create "$tag" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk#GeckoDoku-v0.15.45-dev.apk" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk.sha256#GeckoDoku-v0.15.45-dev.apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "TEMP GeckoDoku Atelier pose progressive et X-Wing • #568" \
+            --notes "APK téléphone de TEST provenant exactement du workflow GREEN #568 (commit 2ba3dc5). Construction additive depuis zéro Gecko visible, frontière de solution unique, preuves H2–H4, X-Wing restauré pour 8×8 à 12×12, compteur expériences V5. Compilé avec Pierre et banque sprites 240p. Non validé encore sur Samsung Android 16. Ne pas merger main ni publier sur Play." \
+            --prerelease
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isPrerelease,assets | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null) and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk.sha256") != null)'
+          echo "APK direct : https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
+
   android:
-    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') && !contains(github.event.head_commit.message, '[temp-apk-run533]') && !contains(github.event.head_commit.message, '[temp-apk-run539]') && !contains(github.event.head_commit.message, '[temp-apk-run545]') && !contains(github.event.head_commit.message, '[temp-apk-run550]') && !contains(github.event.head_commit.message, '[temp-apk-run557]') && !contains(github.event.head_commit.message, '[temp-apk-run560]') && !contains(github.event.head_commit.message, '[temp-apk-run563]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[temp-apk-run529]') && !contains(github.event.head_commit.message, '[temp-apk-run533]') && !contains(github.event.head_commit.message, '[temp-apk-run539]') && !contains(github.event.head_commit.message, '[temp-apk-run545]') && !contains(github.event.head_commit.message, '[temp-apk-run550]') && !contains(github.event.head_commit.message, '[temp-apk-run557]') && !contains(github.event.head_commit.message, '[temp-apk-run560]') && !contains(github.event.head_commit.message, '[temp-apk-run563]') && !contains(github.event.head_commit.message, '[temp-apk-run568]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
