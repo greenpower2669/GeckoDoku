@@ -418,3 +418,6 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 - [ ] Vérifier prévisualisation, statut et absence de stats/Hall sur fin de grille, puis entrée manuelle Infernal H2/H3.
 - [ ] Si aucune grille n'est trouvée assez vite, adapter algorithme de construction plutôt que déclarer une grille non prouvée.
 - [ ] Pas de merge main / Release / Play sans ordre distinct.
+
+- [x] Atténuer la perte de candidats lors des recherches alternatives interrompues : profondeur 2 prioritaire, indicateurs d'incertitude persistés/exportés et visibles ; aucun faux certificat X-Wing.
+- [ ] Quantifier taux de succès par taille et confirmer en pratique que des grilles candidates non vides sont produites pendant les lots de fond.

@@ -424,3 +424,5 @@ CI mission 012 : #539 / 38859558302 GREEN, commit ce6d855, artefact phone 120286
 
 ## Atelier Classic indépendant — mission 013 (16/10/2026)
 `feature/classic-infernal-workshop-v1` ; mission `missions/GECKO-CLASSIC-WORKSHOP-013.md`. `PuzzleGenerator.generateWorkshopCandidate` → unicité indépendante → `HypothesisSolver` avec/sans X-Wing (profondeur H2/H3) → `InfernalWorkshopWorker` (WorkManager opportuniste chargeur) → `InfernalWorkshopStore` (JSON atomique, empreinte SHA-256, ZIP export/import) → `MainActivity` menu Atelier (essais sans scores, notes, validation manuelle, sélection de validées). `SettingsMenuPolicy` expose Atelier uniquement dans Classic. `gradle.properties` AndroidX=true (nécessaire WorkManager). Preuves CI et limites dans todo.md. Pas de merge ni Release.
+
+Le sous-moteur persiste aussi l'état de preuve `xWingExclusionModelComplete` (recherche sans X-Wing bornée) et `shallowExclusionModelComplete` : un dépassement laisse la grille candidate exportable, pas certifiée. Relecture manuelle impérative.

@@ -17,3 +17,6 @@ L'objectif est une bibliothèque de candidats pour revue humaine. `X-Wing` obser
 
 ## Recette attendue
 Lancer générateur branché et débatterie OK ; laisser une exécution ; vérifier nombre d'essais, création candidate ; lancer test sans stats/Hall ; noter et valider ; lancer Infernal pour prise en compte des validées ; exporter ZIP, importer et vérifier déduplication/remise à l'état candidat. Aucun envoi Play.
+
+### Amélioration de rendement et traçabilité
+La recherche de profondeur 2 est tentée avant profondeur 3. Une recherche sans X-Wing non concluante faute de budget ne supprime plus le candidat : les flags `xWingExclusionModelComplete` et `shallowExclusionModelComplete` indiquent l'incomplétude dans JSON/export/UI. Le modèle sans X-Wing qui résout la grille est éliminatoire. L'atelier ne présente jamais une preuve incomplète comme preuve mathématique d'indispensabilité.
