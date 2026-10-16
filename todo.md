@@ -460,3 +460,7 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 - [ ] Vérifier que le Journal vidéo contient SERVICE_ACTIVE, SEARCH_START et SEARCH_END ; capturer erreurs réelles si compteur reste à 0.
 - [ ] Tester écran éteint, économie de batterie, forte température, arrêt système / redémarrage manuel, pendant 15–30 min et plusieurs tailles ; vérifier l'autonomie.
 - [ ] Exiger revue du FGS `specialUse` et politique Google Play avant publication ; aucune autorisation de Release/merge/Play.
+
+### CI atelier 015 — 16/10/2026
+Run téléphone #557 `38929818514` GREEN sur commit `ad65fab01d05d0ec3751246d8d8446d6a64fabe7`. `BUILD SUCCESSFUL in 2m 33s`, tests JVM, `assemblePhone`, contrôles de Pierre et sprites 240p OK. Artefact Actions `GeckoDoku-v0.15.45-dev-phone` id `12058666334` ; SHA-256 APK `da540f8e19007d7d4fe932df13d30c00a09160958560adbe5f15b6d26dede8af`. Les anciennes CI #552, #554, #555 étaient aussi vertes. APK brut non publié : seul l'artefact ZIP Actions existe ; ne pas inventer un lien direct .apk ni créer de prérelease sans nouvelle demande. Aucun test Android 16 réel effectué. Aucun merge main, aucune Release/Play. Un foreground service est susceptible d'être interrompu par Android ; `specialUse` nécessite examen Play avant diffusion publique.
+- [x] CI finale #557 GREEN : APK phone compilé, empreinte et artefact vérifiés.
