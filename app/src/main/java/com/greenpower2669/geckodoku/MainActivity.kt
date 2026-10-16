@@ -14473,16 +14473,36 @@ class MainActivity : Activity() {
     }
 
 
-    /** Review queue: generation continues using Android's scheduled jobs. */
+    /** Foreground exploration is deliberately user-started and user-stopped. */
     private fun showInfernalWorkshop() {
         val store = InfernalWorkshopStore(this)
         val all = store.list()
-        val running = InfernalWorkshopScheduler.running(this)
+        val runningState = InfernalWorkshopScheduler.status(this)
+        val running = runningState == ContinuousWorkshopStatus.RUNNING ||
+            runningState == ContinuousWorkshopStatus.STARTING
         val sizes = all.groupingBy { it.status }.eachCount()
+        val statusLabel = when (runningState) {
+            ContinuousWorkshopStatus.RUNNING -> "ACTIVE (notification Android)"
+            ContinuousWorkshopStatus.STARTING -> "DÉMARRAGE DEMANDÉ"
+            ContinuousWorkshopStatus.INTERRUPTED -> "INTERROMPUE (relancer)"
+            ContinuousWorkshopStatus.STOPPED -> "ARRÊTÉE"
+        }
+        val total = InfernalWorkshopScheduler.attempts(this)
+        val completed = InfernalWorkshopPolicy.sizes.sumOf {
+            InfernalWorkshopScheduler.completedFor(this, it)
+        }
+        val errors = InfernalWorkshopPolicy.sizes.sumOf {
+            InfernalWorkshopScheduler.errorsFor(this, it)
+        }
+        val lastHeartbeat = InfernalWorkshopScheduler.lastHeartbeat(this)
+        val ageSeconds = if (lastHeartbeat > 0L) {
+            ((System.currentTimeMillis() - lastHeartbeat)
+                .coerceAtLeast(0L) / 1000L)
+        } else -1L
         val header = arrayOf(
-            if (running) "⏸ Suspendre le générateur" else
-                "▶ Démarrer la génération automatique",
-            "🔁 Lancer un lot maintenant (batterie suffisante)",
+            if (running) "⏹ ARRÊTER la recherche continue" else
+                "▶ DÉMARRER / REPRENDRE la recherche continue",
+            "🔄 Actualiser les compteurs maintenant",
             "📤 Exporter toutes les grilles en ZIP (solutions incluses)",
             "📥 Importer un lot ZIP pour réanalyse",
             "📊 Bilan des recherches : 5×5 à 12×12"
@@ -14502,39 +14522,54 @@ class MainActivity : Activity() {
         AlertDialog.Builder(this)
             .setTitle("🧪 Atelier Infernal • " + all.size + " grilles")
             .setMessage(
-                "Recherche : " +
-                    (if (running) "active" else "suspendue") +
-                " • essais : " + InfernalWorkshopScheduler.attempts(this) +
+                "Recherche : " + statusLabel +
+                "\nRecherches lancées : " + total +
+                " • terminées : " + completed +
+                " • erreurs : " + errors +
+                "\nEn cours : " + InfernalWorkshopScheduler.currentSize(this) + "×" +
+                    InfernalWorkshopScheduler.currentSize(this) +
                 " • prochaine : " + InfernalWorkshopScheduler.nextSize(this) + "×" +
                     InfernalWorkshopScheduler.nextSize(this) +
-                " • candidats : " +
-                (sizes[WorkshopStatus.CANDIDATE] ?: 0) +
+                "\nDernier signal du moteur : " +
+                    (if (ageSeconds < 0L) "aucun" else "il y a ${ageSeconds}s") +
+                "\nCandidats : " + (sizes[WorkshopStatus.CANDIDATE] ?: 0) +
                 " • validées : " + (sizes[WorkshopStatus.VALIDATED] ?: 0) +
-                ".\n\nRotation automatique de 5×5 à 12×12. " +
-                "X-Wing facultatif jusqu'à 7×7. " +
-                "Recherche jusqu'à H4 ; priorité aux preuves vérifiables. " +
-                "Calculs périodiques surtout sur chargeur."
+                "\nDernière erreur : " +
+                    (InfernalWorkshopScheduler.lastError(this).ifBlank { "aucune" }) +
+                "\n\nRecherche continue 5×5 à 12×12 avec notification " +
+                "et bouton Arrêter. Pause thermique et économie de batterie ; " +
+                "Android peut interrompre le service."
             )
             .setItems(labels) { _, index ->
                 when (index) {
                     0 -> {
-                        if (running) {
-                            InfernalWorkshopScheduler.pause(this)
-                            status.text = "Atelier suspendu. Candidats conservés."
-                        } else {
-                            InfernalWorkshopScheduler.start(this)
-                            status.text = "Atelier activé : rotation 5×5 à 12×12"
+                        try {
+                            if (running) {
+                                InfernalWorkshopScheduler.pause(this)
+                                status.text = "Recherche arrêtée. Grilles conservées."
+                            } else {
+                                InfernalWorkshopScheduler.start(this)
+                                status.text =
+                                    "Recherche continue demandée • 5×5 à 12×12"
+                                if (android.os.Build.VERSION.SDK_INT >= 33 &&
+                                    checkSelfPermission(
+                                        android.Manifest.permission.POST_NOTIFICATIONS
+                                    ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+                                ) {
+                                    requestPermissions(
+                                        arrayOf(
+                                            android.Manifest.permission.POST_NOTIFICATIONS
+                                        ), 7412
+                                    )
+                                }
+                            }
+                        } catch (error: RuntimeException) {
+                            status.text = "Démarrage impossible : " +
+                                (error.message ?: error.javaClass.simpleName)
                         }
                         showInfernalWorkshop()
                     }
-                    1 -> {
-                        if (!running) {
-                            InfernalWorkshopScheduler.start(this)
-                        } else {
-                            InfernalWorkshopScheduler.runNow(this)
-                        }
-                        status.text = "Lot d'atelier demandé à Android."
-                    }
+                    1 -> showInfernalWorkshop()
                     2 -> exportInfernalWorkshop()
                     3 -> importInfernalWorkshop()
                     4 -> showInfernalWorkshopStats()
@@ -14553,21 +14588,26 @@ class MainActivity : Activity() {
                 it.status == WorkshopStatus.VALIDATED
             }
             val trials = InfernalWorkshopScheduler.attemptsFor(this, size)
+            val finished = InfernalWorkshopScheduler.completedFor(this, size)
+            val errors = InfernalWorkshopScheduler.errorsFor(this, size)
+            val found = InfernalWorkshopScheduler.savedFor(this, size)
             val condition = if (InfernalWorkshopPolicy.requiresXWing(size)) {
                 "X-Wing requis"
             } else {
                 "X-Wing facultatif"
             }
-            "$size×$size • $trials essais • ${puzzles.size} grilles " +
-                "($approved validées) • $condition"
+            "$size×$size • $trials lancées • $finished terminées • " +
+                "$found enregistrées • $errors erreurs • " +
+                "${puzzles.size} grilles ($approved validées) • $condition"
         }.toTypedArray()
 
         AlertDialog.Builder(this)
             .setTitle("📊 Atelier — 8 tailles / H2 à H4")
             .setMessage(
-                "Répartition équilibrée : un essai par taille, " +
-                "puis reprise au 5×5. " +
-                "Prochaine : " + InfernalWorkshopScheduler.nextSize(this) +
+                "Exploration continue, taille par taille ; " +
+                "compteurs persistants, même sans candidat. " +
+                "État : " + InfernalWorkshopScheduler.status(this) +
+                ". Prochaine : " + InfernalWorkshopScheduler.nextSize(this) +
                 "×" + InfernalWorkshopScheduler.nextSize(this) +
                 ". Les résultats sont conservés et exportables."
             )
