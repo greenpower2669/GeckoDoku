@@ -21,6 +21,7 @@ data class SolverRules(
         val SINGLES = SolverRules(false, false, false)
         val REGION = SolverRules(true, true, false)
         val NO_PROJECTION = SolverRules(true, false, true)
+        val NO_X_WING = SolverRules(true, true, false)
         val FULL = SolverRules(true, true, true)
     }
 }

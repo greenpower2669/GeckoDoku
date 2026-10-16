@@ -3,7 +3,105 @@ package com.greenpower2669.geckodoku
 import java.util.Random
 import kotlin.math.abs
 
+data class WorkshopCandidateProof(
+    val puzzle: Puzzle,
+    val xWingCount: Int,
+    val hypothesisDepth: Int,
+    val hypothesisCount: Int
+)
+
 object PuzzleGenerator {
+
+    /**
+     * Search for independently unique Classic workshop candidates.
+     * Retain only demonstrated X-Wing usage and a dependent depth-two
+     * hypothesis. Candidate status is deliberately not "Infernal".
+     */
+    fun generateWorkshopCandidate(
+        size: Int,
+        seed: Long,
+        shouldCancel: () -> Boolean = { false }
+    ): WorkshopCandidateProof? {
+        require(size in 5..12)
+        val random = Random(seed)
+        repeat(12) { attempt ->
+            if (shouldCancel()) return null
+            val solution = randomSolution(size, random) ?: return@repeat
+            val base = Puzzle(
+                id = "workshop-$size-$seed-$attempt",
+                size = size,
+                regions = growRegions(size, solution, random),
+                solutionCols = solution,
+                difficulty = GameDifficulty.INFERNAL,
+                seed = seed
+            )
+            val chosen = base.solutionCells().toMutableSet()
+            for (cell in base.solutionCells().shuffled(random)) {
+                if (shouldCancel()) return null
+                chosen.remove(cell)
+                val candidate = base.copy(givens = chosen.toSet())
+                if (!hasExactlyOneSolution(candidate, shouldCancel)) {
+                    chosen.add(cell)
+                    continue
+                }
+                val withWing = HypothesisSolver.analyze(
+                    candidate, 2, size, shouldCancel
+                )
+                val wingCount = withWing.steps.count {
+                    it.technique == SolveTechnique.GECKO_X_WING
+                }
+                if (!withWing.solved || withWing.exhaustedBudget ||
+                    withWing.maxHypothesisDepth < 2 || wingCount < 1
+                ) continue
+
+                val shallow = HypothesisSolver.analyze(
+                    candidate, 1, size, shouldCancel
+                )
+                if (shallow.solved || shallow.exhaustedBudget) continue
+
+                val noWing = HypothesisSolver.analyze(
+                    candidate, 2, size, shouldCancel,
+                    rules = SolverRules.NO_X_WING
+                )
+                if (noWing.solved || noWing.exhaustedBudget) continue
+
+                return WorkshopCandidateProof(
+                    candidate.copy(solverTrace = withWing.steps),
+                    wingCount, withWing.maxHypothesisDepth,
+                    withWing.hypothesisCount
+                )
+            }
+        }
+        return null
+    }
+
+    /** Exact solution count, independent of the pedagogical proof. */
+    fun hasExactlyOneSolution(
+        puzzle: Puzzle,
+        shouldCancel: () -> Boolean = { false }
+    ): Boolean {
+        if (!validSolution(puzzle)) return false
+        return countSolutions(puzzle, 2, shouldCancel) == 1 &&
+            !shouldCancel()
+    }
+
+    private fun validSolution(puzzle: Puzzle): Boolean {
+        val n = puzzle.size
+        if (puzzle.regions.any { it !in 0 until n } ||
+            puzzle.solutionCols.any { it !in 0 until n } ||
+            puzzle.solutionCols.toSet().size != n
+        ) return false
+        val solution = puzzle.solutionCells()
+        if (solution.map { puzzle.regionAt(it) }.toSet().size != n) {
+            return false
+        }
+        if (solution.zipWithNext().any { (a, b) ->
+                kotlin.math.abs(a.col - b.col) <= 1
+            }
+        ) return false
+        return puzzle.givens.all { it in solution }
+    }
+
     private data class Candidate(
         val puzzle: Puzzle,
         val distance: Int

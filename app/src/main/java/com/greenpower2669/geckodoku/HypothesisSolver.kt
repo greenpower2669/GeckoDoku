@@ -59,7 +59,8 @@ object HypothesisSolver {
         puzzle: Puzzle,
         maxDepth: Int,
         maxHypothesisSteps: Int,
-        shouldCancel: () -> Boolean = { false }
+        shouldCancel: () -> Boolean = { false },
+        rules: SolverRules = SolverRules.FULL
     ): HypothesisAnalysis {
         val state = LogicState(
             linkedSetOf<Cell>().apply {
@@ -106,7 +107,7 @@ object HypothesisSolver {
                     puzzle,
                     state.confirmed,
                     state.excluded,
-                    SolverRules.FULL
+                    rules
                 )
 
             if (deterministic != null) {
@@ -142,7 +143,8 @@ object HypothesisSolver {
                     state.excluded,
                     maxDepth,
                     shouldCancel,
-                    onLimitHit = { proofBudgetExhausted = true }
+                    onLimitHit = { proofBudgetExhausted = true },
+                    rules = rules
                 ) ?: return HypothesisAnalysis(
                     false,
                     steps,
@@ -187,7 +189,8 @@ object HypothesisSolver {
         excluded: Set<Cell>,
         maxDepth: Int,
         shouldCancel: () -> Boolean = { false },
-        onLimitHit: () -> Unit = {}
+        onLimitHit: () -> Unit = {},
+        rules: SolverRules = SolverRules.FULL
     ): SolveStep? {
         if (maxDepth <= 0 || shouldCancel() ||
             Thread.currentThread().isInterrupted) {
@@ -214,18 +217,18 @@ object HypothesisSolver {
                     confirmed + choice.first,
                     excluded,
                     depth - 1,
-                    context
+                    context, rules
                 )
                 val second = if (choice.second != null) {
                     proveContradiction(
                         puzzle, confirmed + choice.second,
-                        excluded, depth - 1, context
+                        excluded, depth - 1, context, rules
                     )
                 } else {
                     proveContradiction(
                         puzzle, confirmed,
                         excluded + choice.first,
-                        depth - 1, context
+                        depth - 1, context, rules
                     )
                 }
 
@@ -288,7 +291,8 @@ object HypothesisSolver {
         initialConfirmed: Set<Cell>,
         initialExcluded: Set<Cell>,
         remainingDepth: Int,
-        context: ProofSearchContext
+        context: ProofSearchContext,
+        rules: SolverRules
     ): BranchOutcome {
         if (!context.allowVisit()) return BranchOutcome.Inconclusive
 
@@ -319,7 +323,7 @@ object HypothesisSolver {
             }
 
             val step = HumanSolver.nextStep(
-                puzzle, state.confirmed, state.excluded, SolverRules.FULL
+                puzzle, state.confirmed, state.excluded, rules
             )
             if (step != null) {
                 applyStep(step, state)
@@ -342,18 +346,18 @@ object HypothesisSolver {
 
                 val first = proveContradiction(
                     puzzle, state.confirmed + choice.first,
-                    state.excluded, remainingDepth - 1, context
+                    state.excluded, remainingDepth - 1, context, rules
                 )
                 val second = if (choice.second != null) {
                     proveContradiction(
                         puzzle, state.confirmed + choice.second,
-                        state.excluded, remainingDepth - 1, context
+                        state.excluded, remainingDepth - 1, context, rules
                     )
                 } else {
                     proveContradiction(
                         puzzle, state.confirmed,
                         state.excluded + choice.first,
-                        remainingDepth - 1, context
+                        remainingDepth - 1, context, rules
                     )
                 }
                 if (context.truncated) break
