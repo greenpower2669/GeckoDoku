@@ -59,9 +59,16 @@ class InfernalWorkshopContractTest {
         assertTrue(checked.nestedDepth == 2)
         // All sizes are now allowed without X-Wing for this experiment.
         assertTrue(checked.copy(xWingCount = 0).eligibleForInfernal)
+        // Keep structural invariants: 12 rows and 144 region cells.
+        val largeBoard = checked.puzzle.copy(
+            size = 12,
+            regions = IntArray(144) { it / 12 },
+            solutionCols = IntArray(12) { it },
+            givens = emptySet()
+        )
         assertTrue(checked.copy(
             xWingCount = 0,
-            puzzle = checked.puzzle.copy(size = 12)
+            puzzle = largeBoard
         ).eligibleForInfernal)
     }
 
