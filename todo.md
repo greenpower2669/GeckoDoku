@@ -394,3 +394,9 @@ Mission : `missions/GECKO-SUDOKU-KEYPAD-OPEN-COMPACT-009.md`.
 - [ ] Mesurer fréquence et durée par taille 5..12, optimiser génération si le taux de succès est insuffisant ; ne pas présenter une non-découverte comme grille valide.
 - [ ] Tester sur Samsung la progression de recherche, son annulation et la démonstration Pierre.
 - [ ] Ne pas merger main ni créer Release/Play sans feu vert.
+
+### Preuve de build mission 012 — 16/10/2026
+- [x] Run #539 (38859558302) GREEN : tests JVM + assemblePhone, Pierre, banque 240p.
+- [x] APK phone test artifact 12028672971, SHA-256 ba4acee944de16aa34951cd7f22a3ed3a8423e1e71e58e3b75a866086549fbd5.
+- [ ] À ouvrir dans GitHub Actions : https://github.com/greenpower2669/GeckoDoku/actions/runs/38859558302
+- [ ] Certification réelle d'une graine de 3 imbrications et durée de recherche toujours à faire avant merge/release.

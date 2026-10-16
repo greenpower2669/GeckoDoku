@@ -26,3 +26,6 @@ Workflow build.yml : CI phone de branche feature/infernal-proof-search-v2.
 
 ## Limites et preuves attendues
 Même après cette correction, aucune grille trois fois imbriquée générée à partir d'une graine précise n'est encore certifiée ; quantifier et améliorer les candidats en fonction de ce résultat. CI green = compilation + tests, pas validation statistique du générateur. L'APK phone est signé Android test, pas Play ; aucun merge main ou Release sans accord explicite de Fab.
+
+## CI de compilation vérifiée
+Run #539 / 38859558302 GREEN pour commit ce6d855 : tests JVM + assemblePhone et empaquetage Pierre/sprites vérifiés. Artifact Actions 12028672971, APK téléphone SHA-256 ba4acee944de16aa34951cd7f22a3ed3a8423e1e71e58e3b75a866086549fbd5. N'atteste pas encore que la génération trouve réellement une grille depth3 dans les budgets prévus ; contrôle sur seed/téléphone indispensable.

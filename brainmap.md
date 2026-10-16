@@ -418,3 +418,5 @@ Run 38802231998 GREEN ; dossier temporaire runner `temp/GeckoDoku-infernal-depth
 
 ## Correctif 012 — Infernal solveur qui ne trouve pas (16/10/2026)
 Branche feature/infernal-proof-search-v2 depuis 011. Voir missions/GECKO-INFERNAL-PROOF-SEARCH-012.md : HypothesisSolver toutes branches + états mémorisés, profondeur minimale contrôlée ; DifficultyIndexer interdit fausse classification après limite budget ; PuzzleGenerator.generateExact finitude/annulation effective ; MainActivity message d'échec explicite. Tests InfernalSearchRegressionTest, CI en validation ; projet CLASSIC seulement. Les cinq mémoires et le protocole sans merge ni Release sont conservés.
+
+CI mission 012 : #539 / 38859558302 GREEN, commit ce6d855, artefact phone 12028672971, SHA APK ba4acee944de16aa34951cd7f22a3ed3a8423e1e71e58e3b75a866086549fbd5. Validation profondeur 3 sur graine réelle reste ouverte.
