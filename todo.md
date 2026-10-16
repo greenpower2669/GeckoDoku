@@ -470,3 +470,15 @@ L'utilisateur fournit une capture à 18h34 : popup « Atelier Infernal • 0 gri
 
 ### Livraison correction popup masquée — 16/10/2026
 CI #559 GREEN pour correctif des fenêtres, CI #560 run `38933645991` GREEN incluant quatre tests `InfernalWorkshopDialogVisibilityTest`. Artefact phone #560 ID `12059284259`, APK `GeckoDoku-v0.15.45-dev.apk` SHA-256 `e04f89f783c187cae19eb015f6fc5c870cd6401ff2b3b4fd5cb58520abbfbfb1`. À la demande implicite de poursuivre les essais avec des APK GitHub directs (dernière livraison #557), prérelease **temporaire** #561 run `38934166078` GREEN, tag `temp-geckodoku-workshop-dialog-fix-run560` ; asset exact APK brut vérifié (300771417 octets) : https://github.com/greenpower2669/GeckoDoku/releases/download/temp-geckodoku-workshop-dialog-fix-run560/GeckoDoku-v0.15.45-dev.apk . Ce nouveau fichier remplace le test #557 qui affichait uniquement FERMER. Aucune fusion main ni Release stable ni Play. Tester sur Samsung : appuyer « ▶ DÉMARRER / REPRENDRE », la notification doit apparaître et les compteurs LANCÉES/TERMINÉES monter même sans grille. Si l'état reste ARRÊTÉ après appui, contrôler dernière erreur et SEARCH_START dans Journal vidéo. L'installation seule ne démarre pas la recherche.
+
+## Atelier 017 — test A/B sans critère X-Wing (16/10/2026)
+- [x] Branche dédiée `feature/classic-workshop-no-xwing-v4`, aucune fusion main/Play.
+- [x] Lever toute exigence X-Wing taille 5..12 dans la politique de qualification.
+- [x] Supprimer l'étape supplémentaire de comparaison avec solveur sans X-Wing, qui écartait des grilles et coûtait des ressources.
+- [x] Garder solution UNIQUE et preuve d'hypothèses imbriquées H2 à H4, version pédagogique standard et autres modes intacts.
+- [x] Ajouter compteurs A/B « nouveaux essais sans obligation X-Wing » et « candidats enregistrés » tout en conservant l'historique, et afficher la règle dans les tailles.
+- [x] Mettre à jour les tests contrats pour 8×8 et 12×12 sans X-Wing.
+- [ ] CI JVM + APK phone + contrôle Pierre/sprites 240p GREEN et checksum.
+- [ ] APK GitHub direct de test, tag TEMP seulement, pas de main/Release stable.
+- [ ] Sur Samsung : vérifier que le service reprend après l'installation, que les compteurs A/B progressent et que des candidats H2 sont produits ; relever après quelques centaines d'essais.
+- [ ] Si toujours zéro candidat, auditer méthode de création random/retour `withWing.solved`/profondeur, et instrumentation de causes de rejet AVANT tout assouplissement du contrat H2.
