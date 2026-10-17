@@ -127,57 +127,77 @@ class InfernalWorkshopService : Service() {
                     continue
                 }
 
-                val size = InfernalWorkshopScheduler.claimNextSize(this)
+                // Prioritize an interrupted attempt over the next size.
+                val checkpoints = WorkshopCheckpointStore(this)
+                val previous = checkpoints.load()
+                val size = previous?.size ?: InfernalWorkshopScheduler.claimNextSize(this)
+                val seed = previous?.seed ?:
+                    (System.nanoTime() xor System.currentTimeMillis())
                 InfernalWorkshopScheduler.setPhase(this, "RECHERCHE ${size}×${size}")
                 val total = InfernalWorkshopScheduler.attempts(this)
-                Log.i(LOG, "SEARCH_START size=${size}x${size} attempt=$total")
-                MediaTrace.event(
-                    source = LOG, event = "SEARCH_START",
-                    detail = "size=${size}x${size} attempt=$total"
+                Log.i(LOG, "SEARCH_START size=${size}x${size} attempt=$total resumed=${previous != null}")
+                notifyProgress(manager,
+                    "Recherche ${size}×${size} • ${if (previous != null) "reprise" else "essai $total"}",
+                    false
                 )
-                notifyProgress(manager, "Recherche ${size}×${size} • essai $total", false)
+
+                fun environmentPause(): Boolean =
+                    (Build.VERSION.SDK_INT >= 29 &&
+                        power.currentThermalStatus >= PowerManager.THERMAL_STATUS_SEVERE) ||
+                        power.isPowerSaveMode
 
                 var error: String? = null
                 var saved = false
                 try {
-                    // A bounded *single attempt* avoids starving the next size.
-                    val cutoff = System.nanoTime() + 20_000_000_000L
-                    val seed = System.nanoTime() xor System.currentTimeMillis()
                     val result = PuzzleGenerator.generateWorkshopCandidate(
                         size, seed,
                         shouldCancel = {
                             canceled.get() ||
                                 !InfernalWorkshopScheduler.isEnabled(this) ||
                                 Thread.currentThread().isInterrupted ||
-                                System.nanoTime() >= cutoff
+                                environmentPause()
                         },
                         onFirstUnique = {
-                            InfernalWorkshopScheduler.markForwardUnique(this, size)
-                        }
+                            InfernalWorkshopScheduler.markDeletionUnique(this, size)
+                        },
+                        resume = previous,
+                        onCheckpoint = { checkpoints.save(it) }
                     )
-                    if (result != null && !canceled.get() &&
-                        InfernalWorkshopScheduler.isEnabled(this)
-                    ) {
-                        saved = store.add(result)
+
+                    val paused = canceled.get() ||
+                        !InfernalWorkshopScheduler.isEnabled(this) ||
+                        Thread.currentThread().isInterrupted ||
+                        environmentPause()
+                    if (!paused) {
+                        if (result != null) saved = store.add(result)
+                        // No result without cancellation means these
+                        // geometries were really exhausted. Advance size.
+                        checkpoints.clear()
+                        InfernalWorkshopScheduler.recordFinish(this, size, saved)
+                    } else {
+                        InfernalWorkshopScheduler.setPhase(this, "RECHERCHE SUSPENDUE")
+                        Log.i(LOG, "SEARCH_PAUSED size=${size}x${size} checkpoint retained")
                     }
                 } catch (ex: Exception) {
                     error = "SEARCH_ERROR ${size}x${size} " +
                         ex.javaClass.simpleName + ": " + ex.message
-                    Log.e(LOG, error ?: "SEARCH_ERROR", ex)
-                } finally {
-                    if (!canceled.get() && InfernalWorkshopScheduler.isEnabled(this)) {
-                        InfernalWorkshopScheduler.recordFinish(this, size, saved, error)
-                    }
+                    Log.e(LOG, error, ex)
+                    InfernalWorkshopScheduler.reportProblem(this, error)
+                    // Keep the last committed checkpoint for the next attempt.
                 }
                 Log.i(LOG, "SEARCH_END size=${size}x${size} saved=$saved error=${error ?: "none"}")
                 MediaTrace.event(
-                    source = LOG, event = "SEARCH_END",
-                    detail = "size=${size}x${size} " +
-                        "saved=$saved error=${error ?: "none"}"
+                    source = LOG, event = if (error == null) "SEARCH_END" else "SEARCH_ERROR",
+                    detail = "size=${size}x${size} saved=$saved error=${error ?: "none"}"
                 )
+                if (environmentPause()) {
+                    InfernalWorkshopScheduler.setPhase(this, "PAUSE THERMIQUE / BATTERIE")
+                    if (!rest(10_000L)) break
+                    continue
+                }
                 if (error != null) {
-                    InfernalWorkshopScheduler.setPhase(this, "ERREUR ${size}×${size}")
-                    InfernalWorkshopScheduler.reportProblem(this, error)
+                    if (!rest(2_000L)) break
+                    continue
                 }
                 if (!rest(250L)) break
             }
