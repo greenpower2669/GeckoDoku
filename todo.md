@@ -515,7 +515,8 @@ Autorisation Fab « Ok, gogogo ». Travail sur `feature/classic-workshop-resumab
 - [x] Ne pas traiter l'interruption `shouldCancel` comme une impossibilité logique.
 - [x] Isoler les compteurs v6 des essais additifs v5 (anciens compteurs non effacés).
 - [x] Ajouter tests de sérialisation du curseur, retrait/restauration, annulation indécise.
-- [ ] **IMPORTANT : reprendre en plein milieu d'une récursion de preuve H2–H4.** Pour l'instant, le checkpoint conserve le retrait/les indices, mais une preuve partiellement explorée doit être recalculée après interruption. Il faudra sérialiser explicitement les cadres DFS / choix restants / mémos (avec version et validation) pour satisfaire entièrement la reprise « branches restantes ». Ne pas déclarer cette exigence satisfaite.
+- [x] Conserver sur disque les issues définitives des sous-branches H2–H4 (`C`, `S`, `I`) avec clés de grille et de règles. Reprise logique depuis les mêmes choix : les sous-arbres conclus sont réutilisés, les tronqués ne sont jamais mémorisés comme impossibles.
+- [ ] **IMPORTANT : reprise exactement au cadre actif d'une récursion profonde.** La mémoïsation durable évite de recalculer les sous-branches terminées, mais l'appel actif est rejoué à la reprise jusqu'à rejoindre sa frontière. Si exigence stricte « aucune réexploration même du chemin actif », sérialiser cadres DFS/choix courants en complément. Vérifier aussi les volumes disque/mémoire sur tailles 10–12 et l'intégrité de l'archive.
 - [ ] Prouver par tests et recette que les comparaisons H1 / X-Wing sont exhaustives aux règles H4 et que les grilles n'échappent pas au contrat.
 - [ ] Vérifier CI complète finale : tests JVM, APK phone, Pierre, sprites 240p, aucune action de publication automatique.
 - [ ] Tester sur Samsung (chauffe, pause, STOP, kill Android, batterie et plusieurs tailles).
