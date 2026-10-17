@@ -15,63 +15,82 @@ data class WorkshopCandidateProof(
 object PuzzleGenerator {
 
     /**
-     * Construct Classic clues by PLACING Gecko rather than removing them.
+     * Original workshop strategy: begin with the FULL legal solution and
+     * REMOVE one Gecko at a time. Restore a removed clue when uniqueness
+     * is lost. Search checkpoints are committed at every finished removal.
      *
-     * For each hidden legal full solution and its colour regions:
-     *  1. Start with ZERO visible Gecko;
-     *  2. Place Gecko one at a time in different orders;
-     *  3. Stop adding clues at the FIRST uniquely solvable prefix;
-     *  4. Require a demonstrated H2..H4 proof and, for 8x8+, X-Wing.
-     *
-     * Randomized paths yield different unique boundaries for the same
-     * region geometry. Existing stored candidates and live game modes
-     * are not altered.
+     * The seed is stable across Android restarts; a resumed attempt uses
+     * the same generated geometry and the same deletion permutation.
      */
     fun generateWorkshopCandidate(
         size: Int,
         seed: Long,
         shouldCancel: () -> Boolean = { false },
-        onFirstUnique: () -> Unit = {}
+        onFirstUnique: () -> Unit = {},
+        resume: WorkshopDeletionProgress? = null,
+        onCheckpoint: (WorkshopDeletionProgress) -> Unit = {}
     ): WorkshopCandidateProof? {
         require(size in InfernalWorkshopPolicy.sizes)
-        val random = Random(seed)
-        repeat(12) { attempt ->
+        require(resume == null || (resume.size == size && resume.seed == seed))
+
+        for (attempt in (resume?.attempt ?: 0) until 12) {
             if (shouldCancel()) return null
-            val solution = randomSolution(size, random) ?: return@repeat
+            val random = Random(seed + attempt.toLong() * 104_729L)
+            val solution = randomSolution(size, random)
+            if (solution == null) {
+                onCheckpoint(WorkshopDeletionProgress(size, seed, attempt + 1, 0, emptySet()))
+                continue
+            }
             val base = Puzzle(
-                id = "workshop-forward-$size-$seed-$attempt",
+                id = "workshop-deletion-$size-$seed-$attempt",
                 size = size,
                 regions = growRegions(size, solution, random),
                 solutionCols = solution,
                 difficulty = GameDifficulty.INFERNAL,
                 seed = seed
             )
-            // Explore multiple ADDITIVE clue orders without mutating
-            // any earlier stage. This is NOT deletion in reverse.
-            repeat(4) {
-                for (givens in WorkshopForwardPath.stages(
-                    base.solutionCells(), random
-                )) {
-                    if (shouldCancel()) return null
-                    val candidate = base.copy(givens = givens)
-
-                    // Once uniqueness is reached, adding more clues
-                    // typically makes solving easier. Inspect that
-                    // transition and try a different order if too easy.
-                    if (!hasExactlyOneSolution(candidate, shouldCancel)) {
-                        continue
-                    }
-                    // A genuine unique boundary, even if H2/X-Wing
-                    // eventually fails. Measure discovery independently.
-                    if (shouldCancel()) return null
-                    onFirstUnique()
-                    val proved = proveWorkshopCandidate(
-                        candidate, shouldCancel
-                    )
-                    if (proved != null) return proved
-                    break
-                }
+            val allCells = base.solutionCells().toSet()
+            val order = allCells.shuffled(random)
+            val from = if (resume?.attempt == attempt) resume.nextRemoval else 0
+            val kept = if (from > 0 && resume?.attempt == attempt) {
+                require(resume.kept.all { it in allCells })
+                resume.kept.toMutableSet()
+            } else {
+                allCells.toMutableSet()
             }
+            onCheckpoint(WorkshopDeletionProgress(size, seed, attempt, from, kept.toSet()))
+
+            for (offset in from until order.size) {
+                if (shouldCancel()) return null
+                val removed = order[offset]
+                check(removed in kept) { "Curseur de retrait incohérent" }
+                val current = WorkshopDeletionProgress(
+                    size, seed, attempt, offset, kept.toSet()
+                )
+                val probe = base.copy(givens = kept - removed)
+                val unique = hasExactlyOneSolution(probe, shouldCancel)
+                if (shouldCancel()) return null
+                if (!unique) {
+                    // The Gecko must stay to preserve the unique solution.
+                    onCheckpoint(WorkshopDeletionProgress.afterTest(
+                        current, removed, unique = false
+                    ))
+                    continue
+                }
+
+                onFirstUnique()
+                val proved = proveWorkshopCandidate(probe, shouldCancel)
+                if (shouldCancel()) return null
+                if (proved != null) return proved
+
+                // Even an Infernal rejection can leave a valid unique
+                // puzzle; retain the removal to explore a harder board.
+                kept.remove(removed)
+                onCheckpoint(WorkshopDeletionProgress.afterTest(
+                    current, removed, unique = true
+                ))
+            }
+            onCheckpoint(WorkshopDeletionProgress(size, seed, attempt + 1, 0, emptySet()))
         }
         return null
     }
@@ -84,12 +103,12 @@ object PuzzleGenerator {
         if (shouldCancel()) return null
         var proof = HypothesisSolver.analyze(
             candidate, InfernalWorkshopPolicy.MIN_NESTED_DEPTH,
-            size, shouldCancel
+            Int.MAX_VALUE, shouldCancel
         )
         for (depth in 3..InfernalWorkshopPolicy.MAX_SEARCH_DEPTH) {
             if (proof.solved || shouldCancel()) break
             proof = HypothesisSolver.analyze(
-                candidate, depth, size, shouldCancel
+                candidate, depth, Int.MAX_VALUE, shouldCancel
             )
         }
         if (!proof.solved || proof.exhaustedBudget || shouldCancel()) {
@@ -105,9 +124,9 @@ object PuzzleGenerator {
 
         // A successful shallower demonstration invalidates the H2 claim.
         val shallow = HypothesisSolver.analyze(
-            candidate, 1, size, shouldCancel
+            candidate, 1, Int.MAX_VALUE, shouldCancel
         )
-        if (shallow.solved || shouldCancel()) return null
+        if (shallow.solved || shallow.exhaustedBudget || shouldCancel()) return null
 
         // Restore the X-Wing exclusion experiment on boards where
         // X-Wing is required. If no-X-Wing SOLVES, reject the grid;
@@ -119,12 +138,12 @@ object PuzzleGenerator {
                     InfernalWorkshopPolicy.MIN_NESTED_DEPTH,
                     proof.maxHypothesisDepth
                 ),
-                size,
+                Int.MAX_VALUE,
                 shouldCancel,
                 rules = SolverRules.NO_X_WING
             )
         } else null
-        if (noWing?.solved == true || shouldCancel()) return null
+        if (noWing?.solved == true || noWing?.exhaustedBudget == true || shouldCancel()) return null
 
         return WorkshopCandidateProof(
             candidate.copy(solverTrace = proof.steps),
