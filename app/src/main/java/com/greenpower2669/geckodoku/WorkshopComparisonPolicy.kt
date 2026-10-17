@@ -25,6 +25,14 @@ enum class WorkshopComparisonLane(val label: String, val depth: Int) {
 
 enum class WorkshopComparisonVerdict { MATCH, NO_MATCH }
 
+/** Only an experimentally observed proof result; never homologated Infernal. */
+data class WorkshopComparisonResult(
+    val match: Boolean,
+    val hypothesisCount: Int,
+    val xWingCount: Int,
+    val depth: Int
+)
+
 object WorkshopComparisonPolicy {
     fun qualifies(
         lane: WorkshopComparisonLane,
