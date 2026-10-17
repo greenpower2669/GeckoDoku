@@ -463,3 +463,6 @@ GitHub Actions workflow `Build GeckoDoku phone APK` run **#568** id `38969577659
 
 ## Atelier Infernal v6 — reprise persistante par retrait (17/10/2026)
 Autorisation Fab « Ok, gogogo ». Branche indépendante `feature/classic-workshop-resumable-deletion-v6`, base v5. Mission : [GECKO-CLASSIC-WORKSHOP-RESUME-019](missions/GECKO-CLASSIC-WORKSHOP-RESUME-019.md). Construction restaurée par retrait de Gecko ; curseur sérialisé + sous-branches de preuves H2–H4 terminées mises en cache persistant ; aucun délai/nombre de nœuds n'impose de faux échec. Se reporter à `todo.md` pour tests Samsung et reprise des cadres DFS actifs restant à optimiser. Jamais de merge main ou Release sans ordre distinct.
+
+## Nouvelle couche X-Wing v7
+`feature/classic-workshop-xwing-two-layer-v7` (17/10/2026) : voir [mission 020](missions/GECKO-CLASSIC-WORKSHOP-XWING-LAYER-020.md) et `todo.md`. Deux flux : détecter/archiver X-Wing puis reprendre les grilles en preuve approfondie, avec validation humaine seule. `WorkshopXWingQueueStore.kt`, `WorkshopXWingTwoLayer.kt`, `InfernalWorkshopService.kt`; recherche par retrait v6 préservée.

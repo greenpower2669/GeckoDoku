@@ -521,3 +521,15 @@ Autorisation Fab « Ok, gogogo ». Travail sur `feature/classic-workshop-resumab
 - [ ] Vérifier CI complète finale : tests JVM, APK phone, Pierre, sprites 240p, aucune action de publication automatique.
 - [ ] Tester sur Samsung (chauffe, pause, STOP, kill Android, batterie et plusieurs tailles).
 - [ ] Nouvelle APK directe uniquement après vérification et accord distinct de Fab ; jamais signer ni publier Play automatiquement.
+
+## Mission 020 — X-Wing deux couches (17/10/2026)
+- [x] Détecteur X-Wing sur état initial et trace déductive sans changement des règles H2–H4.
+- [x] Archive persistante `WorkshopXWingQueueStore` : unicité contrôlée à la découverte, déduplication, preuve laissée `PENDING` si interrompue.
+- [x] Service alternant recherche par retrait v6 et analyse des X-Wing déjà observés, sans validation automatique.
+- [x] Afficher repérés/en attente/explorés/prometteurs dans les statistiques.
+- [x] Tests unitaires : vraie grille unique 5×5 avec X-Wing, interruptions, statut manuel.
+- [ ] Valider CI finale v7 et compresser hors du processus Git si APK directe demandée ultérieurement.
+- [ ] Ajouter détection de X-Wing enfoui dans l'arbre d'hypothèses si elle devient nécessaire sans surcharger le producteur.
+- [ ] Vérifier alternance réelle si une démonstration H4 bloque longtemps, protection thermique et croissance archive dans Android.
+- [ ] Tests téléphone Samsung 5×5–12×12, redémarrage, écran verrouillé, reprise et contrôle de démonstration.
+- [ ] Aucun merge main, Release ou Play sans feu vert.
