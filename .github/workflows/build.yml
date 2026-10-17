@@ -10,6 +10,54 @@ permissions:
   actions: read
 
 jobs:
+  # Ordre explicite Fab : livrer directement le .apk v8 du run #607
+  # L'artefact GitHub Actions reste ZIP en stockage ; extraction dans
+  # le runner temporaire uniquement, puis APK brut dans prerelease TEMP.
+  publish_temp_apk_607:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run607]')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Décompresser le build #607 sur GitHub et vérifier l'APK
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GH_RELEASE_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          tag="temp-geckodoku-h1-xwing-h2-no-xwing-run607"
+          path="temp/geckodoku-v8-run607"
+          source_sha="9135686c5c6999c9ec96d0b1d2c536e8a0cb60e7"
+          apk="GeckoDoku-v0.15.45-dev.apk"
+          mkdir -p "$path"
+          # gh run download EXTRACTS the GitHub ZIP into the temp folder.
+          gh run download 39060835780 \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "GeckoDoku-v0.15.45-dev-phone" \
+            --dir "$path"
+          test -s "$path/$apk"
+          test -s "$path/$apk.sha256"
+          ( cd "$path" && sha256sum -c "$apk.sha256" )
+          unzip -t "$path/$apk" > /dev/null
+          actual="$(sha256sum "$path/$apk" | cut -d' ' -f1)"
+          printf 'APK v8 vérifié : %s\nSHA-256 : %s\n' "$apk" "$actual" >> "$GITHUB_STEP_SUMMARY"
+
+          gh release create "$tag" \
+            "$path/$apk#$apk" \
+            "$path/$apk.sha256#$apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$source_sha" \
+            --title "TEMP GeckoDoku v8 - H1 X-Wing / H2 sans X-Wing - #607" \
+            --notes "Test Android, APK direct non ZIP issu du run GREEN #607, commit source $source_sha. Vérification SHA-256 faite sur runner GitHub. Sans merge main, sans publication Play. Validation téléphone Fab requise." \
+            --prerelease
+
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" \
+            --json isPrerelease,assets \
+            | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null)'
+          direct="https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/$apk"
+          echo "APK DIRECT (sans ZIP) : $direct" >> "$GITHUB_STEP_SUMMARY"
+
   # Explicit user approval on 17/10/2026: deliver the exact GREEN run #588
   # unpacked APK as a temporary prerelease; do not merge or publish Play.
   publish_temp_apk_588:
