@@ -21,7 +21,23 @@ data class WorkshopXWingProspect(
     val eliminated: Set<Cell>,
     val axis: String,
     val detectedAt: Long,
-    val status: WorkshopXWingStatus = WorkshopXWingStatus.PENDING
+    val status: WorkshopXWingStatus = WorkshopXWingStatus.PENDING,
+    // Independent, optional laboratory outcomes: old v7 records are intact.
+    val laboratory: Map<WorkshopComparisonLane, WorkshopComparisonAttempt> = emptyMap()
+)
+
+data class WorkshopComparisonAttempt(
+    val verdict: WorkshopComparisonVerdict,
+    val depth: Int,
+    val hypotheses: Int,
+    val xWings: Int
+)
+
+data class WorkshopComparisonStats(
+    val total: Int,
+    val pending: Int,
+    val matched: Int,
+    val rejected: Int
 )
 
 data class WorkshopXWingStats(
@@ -55,6 +71,57 @@ class WorkshopXWingQueueStore(context: Context) {
         ))
         true
     }
+
+    fun nextUntried(lane: WorkshopComparisonLane): WorkshopXWingProspect? =
+        synchronized(lock) {
+            records().asSequence()
+                .filter { lane !in it.laboratory }
+                .minWithOrNull(
+                    compareBy<WorkshopXWingProspect> { it.detectedAt }.thenBy { it.id }
+                )
+        }
+
+    fun completeExperiment(
+        id: String, lane: WorkshopComparisonLane,
+        result: WorkshopComparisonResult
+    ): Boolean = synchronized(lock) {
+        val old = read(id) ?: return@synchronized false
+        if (lane in old.laboratory) return@synchronized false
+        val attempt = WorkshopComparisonAttempt(
+            verdict = if (result.match) {
+                WorkshopComparisonVerdict.MATCH
+            } else {
+                WorkshopComparisonVerdict.NO_MATCH
+            },
+            depth = result.depth,
+            hypotheses = result.hypothesisCount,
+            xWings = result.xWingCount
+        )
+        write(old.copy(laboratory = old.laboratory + (lane to attempt)))
+        true
+    }
+
+    fun comparisonStats(): Map<WorkshopComparisonLane, WorkshopComparisonStats> =
+        synchronized(lock) {
+            val all = records()
+            WorkshopComparisonLane.entries.associateWith { lane ->
+                val seen = all.mapNotNull { it.laboratory[lane] }
+                WorkshopComparisonStats(
+                    total = all.size,
+                    pending = all.size - seen.size,
+                    matched = seen.count { it.verdict == WorkshopComparisonVerdict.MATCH },
+                    rejected = seen.count { it.verdict == WorkshopComparisonVerdict.NO_MATCH }
+                )
+            }
+        }
+
+    fun matching(lane: WorkshopComparisonLane, size: Int? = null): List<WorkshopXWingProspect> =
+        synchronized(lock) {
+            records().filter { prospect ->
+                (size == null || prospect.puzzle.size == size) &&
+                    prospect.laboratory[lane]?.verdict == WorkshopComparisonVerdict.MATCH
+            }.sortedByDescending { it.detectedAt }
+        }
 
     fun nextPending(): WorkshopXWingProspect? = synchronized(lock) {
         records().filter { it.status == WorkshopXWingStatus.PENDING }
@@ -125,7 +192,8 @@ class WorkshopXWingQueueStore(context: Context) {
                 obj.getLong("detectedAt"),
                 WorkshopXWingStatus.entries.firstOrNull {
                     it.name == obj.optString("status")
-                } ?: WorkshopXWingStatus.PENDING
+                } ?: WorkshopXWingStatus.PENDING,
+                laboratory = parseLaboratory(obj.optJSONObject("laboratory"))
             )
         }
     } catch (_: Exception) {
@@ -148,6 +216,16 @@ class WorkshopXWingQueueStore(context: Context) {
             put("axis", item.axis)
             put("detectedAt", item.detectedAt)
             put("status", item.status.name)
+            put("laboratory", JSONObject().also { labs ->
+                for ((lane, assessment) in item.laboratory) {
+                    labs.put(lane.name, JSONObject().apply {
+                        put("verdict", assessment.verdict.name)
+                        put("depth", assessment.depth)
+                        put("hypotheses", assessment.hypotheses)
+                        put("xWings", assessment.xWings)
+                    })
+                }
+            })
         }
         val atom = AtomicFile(path(item.id))
         val stream = atom.startWrite()
@@ -158,6 +236,25 @@ class WorkshopXWingQueueStore(context: Context) {
             atom.failWrite(stream)
             throw e
         }
+    }
+
+    private fun parseLaboratory(json: JSONObject?): Map<WorkshopComparisonLane, WorkshopComparisonAttempt> {
+        if (json == null) return emptyMap()
+        val result = mutableMapOf<WorkshopComparisonLane, WorkshopComparisonAttempt>()
+        for (lane in WorkshopComparisonLane.entries) {
+            val entry = json.optJSONObject(lane.name) ?: continue
+            val verdict = WorkshopComparisonVerdict.entries.firstOrNull {
+                it.name == entry.optString("verdict")
+            } ?: continue
+            val depth = entry.optInt("depth", -1)
+            val hypotheses = entry.optInt("hypotheses", -1)
+            val xWings = entry.optInt("xWings", -1)
+            if (depth < 0 || hypotheses < 0 || xWings < 0) continue
+            result[lane] = WorkshopComparisonAttempt(
+                verdict, depth, hypotheses, xWings
+            )
+        }
+        return result
     }
 
     private fun fingerprint(puzzle: Puzzle): String {
