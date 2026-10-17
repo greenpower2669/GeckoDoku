@@ -234,12 +234,17 @@ object HypothesisSolver {
         proofMemo: MutableMap<String, String> = mutableMapOf(),
         onProofCheckpoint: (Map<String, String>) -> Unit = {}
     ): SolveStep? {
-        if (maxDepth <= 0 || shouldCancel() ||
-            Thread.currentThread().isInterrupted) {
+        if (maxDepth <= 0) return null
+        if (shouldCancel() || Thread.currentThread().isInterrupted) {
+            onLimitHit()
             return null
         }
 
         val choices = binaryChoices(puzzle, confirmed, excluded)
+        if (shouldCancel() || Thread.currentThread().isInterrupted) {
+            onLimitHit()
+            return null
+        }
         if (choices.isEmpty()) return null
 
         // Try the minimum proof depth first. Three independent guesses
