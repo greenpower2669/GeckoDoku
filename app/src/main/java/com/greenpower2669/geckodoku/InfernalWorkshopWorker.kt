@@ -75,6 +75,31 @@ object InfernalWorkshopScheduler {
     fun forwardAttemptsFor(context: Context, size: Int): Long =
         prefs(context).getLong("attempts_forward_v5_$size", 0L)
 
+    // Version 6: deletion search statistics are independent of v5 forward trials.
+    fun deletionAttempts(context: Context): Long =
+        prefs(context).getLong("attempts_deletion_v6", 0L)
+
+    fun deletionSaved(context: Context): Long =
+        prefs(context).getLong("saved_deletion_v6", 0L)
+
+    fun deletionUniqueBoundaries(context: Context): Long =
+        prefs(context).getLong("unique_deletion_v6", 0L)
+
+    fun deletionAttemptsFor(context: Context, size: Int): Long =
+        prefs(context).getLong("attempts_deletion_v6_$size", 0L)
+
+    fun deletionUniqueFor(context: Context, size: Int): Long =
+        prefs(context).getLong("unique_deletion_v6_$size", 0L)
+
+    internal fun markDeletionUnique(context: Context, size: Int) = synchronized(lock) {
+        val p = prefs(context)
+        val key = "unique_deletion_v6_$size"
+        check(p.edit()
+            .putLong("unique_deletion_v6", p.getLong("unique_deletion_v6", 0L) + 1)
+            .putLong(key, p.getLong(key, 0L) + 1)
+            .commit())
+    }
+
     fun completedFor(context: Context, size: Int): Long =
         prefs(context).getLong("completed_v3_$size", 0L)
 
@@ -202,8 +227,8 @@ object InfernalWorkshopScheduler {
         val p = prefs(context)
         val size = nextSize(context)
         val key = "attempts_v2_$size"
-        val experiment = "attempts_forward_v5"
-        val perSize = "attempts_forward_v5_$size"
+        val experiment = "attempts_deletion_v6"
+        val perSize = "attempts_deletion_v6_$size"
         val ok = p.edit()
             .putInt(NEXT_SIZE, InfernalWorkshopPolicy.nextSize(size))
             .putInt("current_size_v3", size)
@@ -227,7 +252,7 @@ object InfernalWorkshopScheduler {
                 .putLong("heartbeat_v3", System.currentTimeMillis())
             if (saved) {
                 val foundKey = "saved_v3_$size"
-                val experiment = "saved_forward_v5"
+                val experiment = "saved_deletion_v6"
                 edit.putLong(foundKey, p.getLong(foundKey, 0L) + 1L)
                 edit.putLong(
                     experiment, p.getLong(experiment, 0L) + 1L
