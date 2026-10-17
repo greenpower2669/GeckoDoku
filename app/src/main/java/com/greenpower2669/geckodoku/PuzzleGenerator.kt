@@ -28,7 +28,8 @@ object PuzzleGenerator {
         shouldCancel: () -> Boolean = { false },
         onFirstUnique: () -> Unit = {},
         resume: WorkshopDeletionProgress? = null,
-        onCheckpoint: (WorkshopDeletionProgress) -> Unit = {}
+        onCheckpoint: (WorkshopDeletionProgress) -> Unit = {},
+        proofArchive: WorkshopProofMemoArchive? = null
     ): WorkshopCandidateProof? {
         require(size in InfernalWorkshopPolicy.sizes)
         require(resume == null || (resume.size == size && resume.seed == seed))
@@ -78,9 +79,13 @@ object PuzzleGenerator {
                     continue
                 }
 
-                onFirstUnique()
-                val proved = proveWorkshopCandidate(probe, shouldCancel)
+                val proved = proveWorkshopCandidate(
+                    probe, shouldCancel, proofArchive
+                )
                 if (shouldCancel()) return null
+                // Count a finished uniqueness test once, never a canceled
+                // proof that will be retried from the same cursor.
+                onFirstUnique()
                 if (proved != null) return proved
 
                 // Even an Infernal rejection can leave a valid unique
@@ -97,18 +102,25 @@ object PuzzleGenerator {
 
     private fun proveWorkshopCandidate(
         candidate: Puzzle,
-        shouldCancel: () -> Boolean
+        shouldCancel: () -> Boolean,
+        proofArchive: WorkshopProofMemoArchive?
     ): WorkshopCandidateProof? {
         val size = candidate.size
         if (shouldCancel()) return null
+        val memo = proofArchive?.load(candidate) ?: mutableMapOf()
+        val persistMemo: (Map<String, String>) -> Unit = { entries ->
+            proofArchive?.persist(candidate, entries)
+        }
         var proof = HypothesisSolver.analyze(
             candidate, InfernalWorkshopPolicy.MIN_NESTED_DEPTH,
-            Int.MAX_VALUE, shouldCancel
+            Int.MAX_VALUE, shouldCancel,
+            proofMemo = memo, onProofCheckpoint = persistMemo
         )
         for (depth in 3..InfernalWorkshopPolicy.MAX_SEARCH_DEPTH) {
             if (proof.solved || shouldCancel()) break
             proof = HypothesisSolver.analyze(
-                candidate, depth, Int.MAX_VALUE, shouldCancel
+                candidate, depth, Int.MAX_VALUE, shouldCancel,
+                proofMemo = memo, onProofCheckpoint = persistMemo
             )
         }
         if (!proof.solved || proof.exhaustedBudget || shouldCancel()) {
@@ -124,7 +136,8 @@ object PuzzleGenerator {
 
         // A successful shallower demonstration invalidates the H2 claim.
         val shallow = HypothesisSolver.analyze(
-            candidate, 1, Int.MAX_VALUE, shouldCancel
+            candidate, 1, Int.MAX_VALUE, shouldCancel,
+            proofMemo = memo, onProofCheckpoint = persistMemo
         )
         if (shallow.solved || shallow.exhaustedBudget || shouldCancel()) return null
 
@@ -140,7 +153,8 @@ object PuzzleGenerator {
                 ),
                 Int.MAX_VALUE,
                 shouldCancel,
-                rules = SolverRules.NO_X_WING
+                rules = SolverRules.NO_X_WING,
+                proofMemo = memo, onProofCheckpoint = persistMemo
             )
         } else null
         if (noWing?.solved == true || noWing?.exhaustedBudget == true || shouldCancel()) return null
