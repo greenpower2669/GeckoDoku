@@ -148,10 +148,18 @@ class InfernalWorkshopService : Service() {
 
                 var error: String? = null
                 var saved = false
+                var lastPulse = System.nanoTime()
                 try {
                     val result = PuzzleGenerator.generateWorkshopCandidate(
                         size, seed,
                         shouldCancel = {
+                            // Heartbeat is for UI liveness only; NEVER a
+                            // search deadline or a reason to reject a puzzle.
+                            val now = System.nanoTime()
+                            if (now - lastPulse >= 5_000_000_000L) {
+                                lastPulse = now
+                                InfernalWorkshopScheduler.heartbeat(this)
+                            }
                             canceled.get() ||
                                 !InfernalWorkshopScheduler.isEnabled(this) ||
                                 Thread.currentThread().isInterrupted ||
