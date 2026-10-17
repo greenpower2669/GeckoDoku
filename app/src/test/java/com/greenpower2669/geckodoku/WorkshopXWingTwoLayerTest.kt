@@ -14,7 +14,16 @@ class WorkshopXWingTwoLayerTest {
             axis = "lignes 1 et 3"
         )
         assertTrue(WorkshopXWingTwoLayer.isProspect(step))
-        assertFalse(WorkshopXWingTwoLayer.isPromotedAutomatically(step))
+        val candidate = WorkshopEntry(
+            id = "not-promoted",
+            puzzle = Puzzle(
+                id = "test", size = 5, regions = IntArray(25) { it / 5 },
+                solutionCols = intArrayOf(0, 2, 4, 1, 3)
+            ),
+            xWingCount = 1, nestedDepth = 2,
+            hypothesisCount = 1, createdAt = 1L
+        )
+        assertFalse(candidate.eligibleForInfernal)
         assertFalse(WorkshopXWingTwoLayer.isProspect(step.copy(eliminated = emptySet())))
         assertFalse(WorkshopXWingTwoLayer.isProspect(
             step.copy(technique = SolveTechnique.REGION_LOCKED)
