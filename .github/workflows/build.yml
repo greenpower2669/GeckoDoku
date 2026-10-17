@@ -10,6 +10,39 @@ permissions:
   actions: read
 
 jobs:
+  # Explicit user approval on 17/10/2026: deliver the exact GREEN run #588
+  # unpacked APK as a temporary prerelease; do not merge or publish Play.
+  publish_temp_apk_588:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[temp-apk-run588]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify run 588 APK and publish an unpacked prerelease asset
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="temp-geckodoku-workshop-resume-v6-run588"
+          dest="temp/GeckoDoku-workshop-v6-run588"
+          source_sha="e8a4e5f4112505e37f63948fdcea9de0b35b6ab6"
+          mkdir -p "$dest"
+          gh run download 39041069929 --repo "$GITHUB_REPOSITORY" --name "GeckoDoku-v0.15.45-dev-phone" --dir "$dest"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk"
+          test -s "$dest/GeckoDoku-v0.15.45-dev.apk.sha256"
+          (cd "$dest" && sha256sum -c "GeckoDoku-v0.15.45-dev.apk.sha256")
+          unzip -t "$dest/GeckoDoku-v0.15.45-dev.apk" > /dev/null
+          gh release create "$tag" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk#GeckoDoku-v0.15.45-dev.apk" \
+            "$dest/GeckoDoku-v0.15.45-dev.apk.sha256#GeckoDoku-v0.15.45-dev.apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$source_sha" \
+            --title "TEMP GeckoDoku atelier Infernal v6 • run #588" \
+            --notes "APK de test directe (sans ZIP) issue du run #588 GREEN, commit e8a4e5f. Signature téléphone/test Android ; ne pas utiliser sur Google Play. Aucun merge main. Test physique Samsung encore nécessaire." \
+            --prerelease
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isPrerelease,assets \
+            | jq -e '.isPrerelease == true and ([.assets[].name] | index("GeckoDoku-v0.15.45-dev.apk") != null)'
+          echo "Téléchargement APK direct : https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/GeckoDoku-v0.15.45-dev.apk" >> "$GITHUB_STEP_SUMMARY"
   # Explicit opt-in only. Publish the EXACT validated phone APK from run #525
   # as an unpacked GitHub Release asset; never copy it to the Git tree.
   publish_temp_apk_529:
