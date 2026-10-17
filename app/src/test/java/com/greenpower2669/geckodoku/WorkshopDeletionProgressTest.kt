@@ -34,6 +34,11 @@ class WorkshopDeletionProgressTest {
         assertEquals(2, resumed.nextRemoval)
     }
 
+    @Test fun checkpointForNextGeometryWithZeroCluesRoundTrips() {
+        val next = WorkshopDeletionProgress(5, 42L, 4, 0, emptySet())
+        assertEquals(next, WorkshopDeletionProgress.decode(next.encode()))
+    }
+
     @Test fun progressionCanRoundTripAndRejectCorruption() {
         val state = WorkshopDeletionProgress.afterTest(
             WorkshopDeletionProgress.start(5, 42L, 3, solution),
