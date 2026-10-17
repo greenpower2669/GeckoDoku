@@ -100,6 +100,15 @@ object InfernalWorkshopScheduler {
             .commit())
     }
 
+    fun detectedXWingFor(context: Context, size: Int): Long =
+        prefs(context).getLong("xwing_detected_v7_$size", 0L)
+
+    internal fun recordXWingDetected(context: Context, size: Int) = synchronized(lock) {
+        val p = prefs(context)
+        val key = "xwing_detected_v7_$size"
+        check(p.edit().putLong(key, p.getLong(key, 0L) + 1L).commit())
+    }
+
     fun completedFor(context: Context, size: Int): Long =
         prefs(context).getLong("completed_v3_$size", 0L)
 
