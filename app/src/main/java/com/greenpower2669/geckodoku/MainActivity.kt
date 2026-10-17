@@ -14489,7 +14489,8 @@ class MainActivity : Activity() {
             "📈 Voir les compteurs EN DIRECT",
             "📤 Exporter toutes les grilles en ZIP (solutions incluses)",
             "📥 Importer un lot ZIP pour réanalyse",
-            "📊 Bilan des recherches : 5×5 à 12×12"
+            "📊 Bilan des recherches : 5×5 à 12×12",
+            "🧪 Comparer H1 + X-Wing / H2 sans X-Wing"
         )
         val displayed = entries.take(60)
         val labels = header + displayed.map { item ->
@@ -14544,6 +14545,7 @@ class MainActivity : Activity() {
                     2 -> exportInfernalWorkshop()
                     3 -> importInfernalWorkshop()
                     4 -> showInfernalWorkshopStats()
+                    5 -> showWorkshopComparison()
                     else -> showInfernalWorkshopEntry(
                         displayed[index - header.size]
                     )
@@ -14606,14 +14608,20 @@ class MainActivity : Activity() {
         val unique = InfernalWorkshopScheduler.deletionUniqueBoundaries(this)
         val checkpoint = WorkshopCheckpointStore(this).load()
         val wings = WorkshopXWingQueueStore(this).stats()
+        val h1Lab = wings.comparisons[WorkshopComparisonLane.H1_XWING]
+        val h2Lab = wings.comparisons[WorkshopComparisonLane.H2_NO_XWING]
         val heartbeat = InfernalWorkshopScheduler.lastHeartbeat(this)
         val latest = if (heartbeat == 0L) "jamais" else
             "il y a " + ((System.currentTimeMillis() - heartbeat)
                 .coerceAtLeast(0L) / 1000L) + " secondes"
         return "RECHERCHE $label" +
-            "\nMÉTHODE V7 : RETRAIT + 2 COUCHES X-WING" +
+            "\nMÉTHODE V8 : COMPARAISON H1/H2" +
+            "\nH1 + X-WING : ${h1Lab?.matched ?: 0} RETENUES / " +
+                "${h1Lab?.rejected ?: 0} ÉCARTÉES / ${h1Lab?.pending ?: 0} À TESTER" +
+            "\nH2 SANS X-WING : ${h2Lab?.matched ?: 0} RETENUES / " +
+                "${h2Lab?.rejected ?: 0} ÉCARTÉES / ${h2Lab?.pending ?: 0} À TESTER" +
             "\nX-WING DÉTECTÉS : ${wings.detected} • À EXPLORER : ${wings.pending}" +
-            "\nX-WING PROMETTEURS : ${wings.promising} • EXPLORÉS : ${wings.explored}" +
+            "\nHISTORIQUE V7 • PROMETTEURS : ${wings.promising} • EXPLORÉS : ${wings.explored}" +
             "\nESSAIS V6 : $abAttempts • UNIQUES : $unique" +
             "\nCANDIDATS V6 : $abSaved" +
             "\nCURSEUR : " + (if (checkpoint == null) "aucun" else
@@ -14666,6 +14674,87 @@ class MainActivity : Activity() {
                 showInfernalWorkshopSize(
                     InfernalWorkshopPolicy.MIN_SIZE + position
                 )
+            }
+            .setNegativeButton("Fermer", null)
+            .show()
+    }
+
+    /**
+     * Dedicated A/B laboratory, not the homologated Infernal library.
+     * Both lanes inspect the very same persisted X-Wing puzzle archive.
+     */
+    private fun showWorkshopComparison() {
+        val stats = WorkshopXWingQueueStore(this).stats().comparisons
+        val lanes = WorkshopComparisonLane.entries
+        val labels = lanes.map { lane ->
+            val s = stats[lane]
+            "${lane.label} • ${s?.matched ?: 0} retenues / " +
+                "${s?.rejected ?: 0} écartées / ${s?.pending ?: 0} en attente"
+        }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("🧪 Comparatif sur les mêmes grilles X-Wing")
+            .setItems(labels) { _, i ->
+                showWorkshopComparisonMatches(lanes[i])
+            }
+            .setNeutralButton("Actualiser") { _, _ -> showWorkshopComparison() }
+            .setNegativeButton("Fermer", null)
+            .show()
+    }
+
+    private fun showWorkshopComparisonMatches(lane: WorkshopComparisonLane) {
+        val results = WorkshopXWingQueueStore(this).matching(lane)
+        if (results.isEmpty()) {
+            AlertDialog.Builder(this)
+                .setTitle("🦎 ${lane.label}")
+                .setMessage("Aucune grille retenue pour le moment. " +
+                    "Les autres grilles sont sauvegardées et les recherches continuent. " +
+                    "Une grille H1 ou H2 ici n'est jamais homologuée Infernal.")
+                .setPositiveButton("Retour") { _, _ -> showWorkshopComparison() }
+                .show()
+            return
+        }
+        val shown = results.take(80)
+        val labels = shown.map { item ->
+            val result = item.laboratory[lane]!!
+            "${item.puzzle.size}×${item.puzzle.size} • " +
+                "H${result.depth} • ${result.hypotheses} hypothèse(s) • " +
+                "${result.xWings} X-Wing • ${item.id.take(8)}"
+        }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("${lane.label} • ${results.size} grilles de laboratoire")
+            .setItems(labels) { _, i ->
+                showWorkshopComparisonSample(lane, shown[i])
+            }
+            .setNegativeButton("Fermer", null)
+            .show()
+    }
+
+    private fun showWorkshopComparisonSample(
+        lane: WorkshopComparisonLane,
+        prospect: WorkshopXWingProspect
+    ) {
+        val metrics = prospect.laboratory[lane] ?: return
+        AlertDialog.Builder(this)
+            .setTitle("🧪 ${lane.label} • ${prospect.puzzle.size}×${prospect.puzzle.size}")
+            .setMessage(
+                "Solution unique contrôlée. " +
+                "H${metrics.depth} • ${metrics.hypotheses} hypothèse(s) • " +
+                "${metrics.xWings} X-Wing appliqué(s)." +
+                "\n\nRésultat expérimental, NON homologué Infernal. " +
+                "La validation par le joueur reste distincte."
+            )
+            .setPositiveButton("▶ Tester la grille") { _, _ ->
+                if (selectedGameMode != GameMode.GECKODOKU) {
+                    status.text = "Passe d'abord au mode GeckoDoku classique."
+                    return@setPositiveButton
+                }
+                startPuzzle(
+                    prospect.puzzle.copy(difficulty = GameDifficulty.INFERNAL),
+                    recordStart = false
+                )
+                workshopPreviewId = null
+                refreshGameUi()
+                status.text = "TEST COMPARATIF ${lane.label} • NON homologué"
             }
             .setNegativeButton("Fermer", null)
             .show()
