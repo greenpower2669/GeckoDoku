@@ -13,7 +13,7 @@ data class WorkshopDeletionProgress(
 ) {
     fun encode(): String = listOf(
         "1", size, seed, attempt, nextRemoval,
-        kept.map { it.index(size) }.sorted().joinToString(",")
+        kept.map { it.index(size) }.sorted().joinToString(",").ifEmpty { "-" }
     ).joinToString("|")
 
     companion object {
@@ -52,7 +52,7 @@ data class WorkshopDeletionProgress(
             val attempt = fields[3].toInt()
             val offset = fields[4].toInt()
             require(attempt in 0..12 && offset in 0..size)
-            val indexes = if (fields[5].isEmpty()) emptyList() else {
+            val indexes = if (fields[5] == "-") emptyList() else {
                 fields[5].split(",").map { it.toInt() }
             }
             require(indexes.distinct().size == indexes.size)
