@@ -1,5 +1,6 @@
 package com.greenpower2669.geckodoku
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -85,6 +86,29 @@ class InfernalWorkshopContractTest {
         )
         assertFalse(result.solved)
         assertTrue(result.exhaustedBudget)
+    }
+
+    @Test
+    fun definitiveBranchesMayBeReusedWithoutChangingTheProof() {
+        val emptyPuzzle = puzzle().copy(givens = emptySet())
+        val confirmed = emptySet<Cell>()
+        val memo = mutableMapOf<String, String>()
+        var checkpoints = 0
+        val first = HypothesisSolver.nextHypothesisStep(
+            emptyPuzzle, confirmed, emptySet(), maxDepth = 1,
+            proofMemo = memo,
+            onProofCheckpoint = { checkpoints++ }
+        )
+        assertTrue("Completed subtrees must be memoized", memo.isNotEmpty())
+        assertTrue("At least one persistent checkpoint must be emitted",
+            checkpoints > 0)
+        val previousSize = memo.size
+        val resumed = HypothesisSolver.nextHypothesisStep(
+            emptyPuzzle, confirmed, emptySet(), maxDepth = 1,
+            proofMemo = memo
+        )
+        assertEquals(first, resumed)
+        assertEquals(previousSize, memo.size)
     }
 
     @Test
