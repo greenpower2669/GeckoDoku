@@ -14605,12 +14605,15 @@ class MainActivity : Activity() {
         val abSaved = InfernalWorkshopScheduler.deletionSaved(this)
         val unique = InfernalWorkshopScheduler.deletionUniqueBoundaries(this)
         val checkpoint = WorkshopCheckpointStore(this).load()
+        val wings = WorkshopXWingQueueStore(this).stats()
         val heartbeat = InfernalWorkshopScheduler.lastHeartbeat(this)
         val latest = if (heartbeat == 0L) "jamais" else
             "il y a " + ((System.currentTimeMillis() - heartbeat)
                 .coerceAtLeast(0L) / 1000L) + " secondes"
         return "RECHERCHE $label" +
-            "\nMÉTHODE V6 : RETRAIT DES GECKO" +
+            "\nMÉTHODE V7 : RETRAIT + 2 COUCHES X-WING" +
+            "\nX-WING DÉTECTÉS : ${wings.detected} • À EXPLORER : ${wings.pending}" +
+            "\nX-WING PROMETTEURS : ${wings.promising} • EXPLORÉS : ${wings.explored}" +
             "\nESSAIS V6 : $abAttempts • UNIQUES : $unique" +
             "\nCANDIDATS V6 : $abSaved" +
             "\nCURSEUR : " + (if (checkpoint == null) "aucun" else
@@ -14645,6 +14648,7 @@ class MainActivity : Activity() {
             val finished = InfernalWorkshopScheduler.completedFor(this, size)
             val errors = InfernalWorkshopScheduler.errorsFor(this, size)
             val found = InfernalWorkshopScheduler.savedFor(this, size)
+            val detected = InfernalWorkshopScheduler.detectedXWingFor(this, size)
             val condition = if (InfernalWorkshopPolicy.requiresXWing(size)) {
                 "X-Wing requis"
             } else {
@@ -14652,7 +14656,7 @@ class MainActivity : Activity() {
             }
             "$size×$size • $trials lancées (dont $abTrials par retrait) • " +
                 "$unique frontières uniques • $finished terminées • " +
-                "$found enregistrées • $errors erreurs • " +
+                "$detected X-Wing détectés • $found enregistrées • $errors erreurs • " +
                 "${puzzles.size} grilles ($approved validées) • $condition"
         }.toTypedArray()
 
