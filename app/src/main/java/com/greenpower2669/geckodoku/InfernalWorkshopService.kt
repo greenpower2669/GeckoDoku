@@ -102,6 +102,8 @@ class InfernalWorkshopService : Service() {
         val store = InfernalWorkshopStore(this)
         val manager = getSystemService(NotificationManager::class.java)
         val power = getSystemService(PowerManager::class.java)
+        var exploreArchivedXWing = true
+        val xWingQueue = WorkshopXWingQueueStore(this)
         try {
             while (!canceled.get() && InfernalWorkshopScheduler.isEnabled(this)) {
                 InfernalWorkshopScheduler.heartbeat(this)
@@ -127,8 +129,72 @@ class InfernalWorkshopService : Service() {
                     continue
                 }
 
-                // Prioritize an interrupted attempt over the next size.
+                // Two cooperative layers on the same service thread:
+                // 1) generate/reduce and archive unique X-Wing boards;
+                // 2) independently prove archived boards with H2–H4.
+                // Alternating completed operations prevents either queue
+                // from being starved; an interrupted board remains pending.
                 val checkpoints = WorkshopCheckpointStore(this)
+                val archived = if (exploreArchivedXWing) xWingQueue.nextPending()
+                    else null
+                if (archived != null) {
+                    exploreArchivedXWing = false
+                    val board = archived.puzzle
+                    var lastProofPulse = System.nanoTime()
+                    fun proofPaused(): Boolean {
+                        val now = System.nanoTime()
+                        if (now - lastProofPulse >= 5_000_000_000L) {
+                            lastProofPulse = now
+                            InfernalWorkshopScheduler.heartbeat(this)
+                        }
+                        return canceled.get() ||
+                            !InfernalWorkshopScheduler.isEnabled(this) ||
+                            Thread.currentThread().isInterrupted ||
+                            power.isPowerSaveMode ||
+                            (Build.VERSION.SDK_INT >= 29 &&
+                                power.currentThermalStatus >= PowerManager.THERMAL_STATUS_SEVERE)
+                    }
+                    InfernalWorkshopScheduler.setPhase(
+                        this, "COUCHE 2 • PREUVE X-WING ${board.size}×${board.size}"
+                    )
+                    notifyProgress(
+                        manager,
+                        "Couche 2 • X-Wing ${board.size}×${board.size} • hypothèses H2–H4",
+                        true
+                    )
+                    try {
+                        val proof = PuzzleGenerator.proveArchivedXWingCandidate(
+                            board, shouldCancel = { proofPaused() },
+                            proofArchive = checkpoints
+                        )
+                        if (!proofPaused()) {
+                            if (proof != null) {
+                                val saved = store.add(proof)
+                                Log.i(LOG, "XWING_PROVED size=${board.size} saved=$saved")
+                            }
+                            xWingQueue.complete(
+                                archived.id, proofAccepted = proof != null
+                            )
+                            MediaTrace.event(
+                                source = LOG, event = "XWING_EXPLORED",
+                                detail = "size=${board.size} accepted=${proof != null}"
+                            )
+                        } else {
+                            Log.i(LOG, "XWING_PAUSED id=${archived.id.take(12)}")
+                        }
+                    } catch (error: Exception) {
+                        val label = "XWING_PROOF_ERROR ${board.size}×${board.size}: " +
+                            error.javaClass.simpleName + ": " + error.message
+                        InfernalWorkshopScheduler.reportProblem(this, label)
+                        Log.e(LOG, label, error)
+                        // Keep PENDING on failures; a later retry may succeed.
+                        if (!rest(2_000L)) break
+                    }
+                    if (!rest(250L)) break
+                    continue
+                }
+                exploreArchivedXWing = true
+
                 val previous = checkpoints.load()
                 val size = previous?.size ?: InfernalWorkshopScheduler.claimNextSize(this)
                 val seed = previous?.seed ?:
@@ -170,7 +236,22 @@ class InfernalWorkshopService : Service() {
                         },
                         resume = previous,
                         onCheckpoint = { checkpoints.save(it) },
-                        proofArchive = checkpoints
+                        proofArchive = checkpoints,
+                        onXWingDetected = { board, step ->
+                            if (xWingQueue.enqueue(board, step)) {
+                                InfernalWorkshopScheduler.recordXWingDetected(
+                                    this, board.size
+                                )
+                                Log.i(LOG,
+                                    "XWING_ARCHIVED size=${board.size} givens=${board.givens.size}"
+                                )
+                                MediaTrace.event(
+                                    source = LOG, event = "XWING_ARCHIVED",
+                                    detail = "size=${board.size}"
+                                )
+                            }
+                        },
+                        deferDetectedXWingProof = true
                     )
 
                     val paused = canceled.get() ||
