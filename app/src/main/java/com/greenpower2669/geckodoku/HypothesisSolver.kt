@@ -28,28 +28,23 @@ private sealed class BranchOutcome {
     object Inconclusive : BranchOutcome()
 }
 
-// Shared by every tested bifurcation at a given search depth.
+// One proof context may run until logically exhausted. Only a genuine
+// Android stop/thermal pause may interrupt it; no time or node quota.
 private class ProofSearchContext(
-    private val nodeLimit: Int,
-    private val deadlineNanos: Long,
     private val shouldCancel: () -> Boolean
 ) {
     val memo = HashMap<String, BranchOutcome>()
-    var visited = 0
+    var visited: Long = 0
         private set
     var truncated = false
         private set
 
     fun allowVisit(): Boolean {
-        if (visited >= nodeLimit ||
-            System.nanoTime() >= deadlineNanos ||
-            Thread.currentThread().isInterrupted ||
-            shouldCancel()
-        ) {
+        if (Thread.currentThread().isInterrupted || shouldCancel()) {
             truncated = true
             return false
         }
-        visited += 1
+        visited += 1L
         return true
     }
 }
@@ -73,9 +68,9 @@ object HypothesisSolver {
         var maxUsedDepth = 0
         var proofBudgetExhausted = false
 
-        repeat(puzzle.size * puzzle.size * 30) {
+        while (true) {
             if (shouldCancel() || Thread.currentThread().isInterrupted) {
-                return HypothesisAnalysis(false, steps, hypotheses, maxUsedDepth)
+                return HypothesisAnalysis(false, steps, hypotheses, maxUsedDepth, true)
             }
             val contradiction =
                 hasContradiction(
@@ -111,6 +106,8 @@ object HypothesisSolver {
                 )
 
             if (deterministic != null) {
+                val beforeConfirmed = state.confirmed.toSet()
+                val beforeExcluded = state.excluded.toSet()
                 val step =
                     deterministic.copy(
                         beforeConfirmed =
@@ -123,8 +120,15 @@ object HypothesisSolver {
                     step,
                     state
                 )
+                if (state.confirmed == beforeConfirmed &&
+                    state.excluded == beforeExcluded
+                ) {
+                    return HypothesisAnalysis(
+                        false, steps, hypotheses, maxUsedDepth
+                    )
+                }
                 steps.add(step)
-                return@repeat
+                continue
             }
 
             if (hypotheses >= maxHypothesisSteps) {
@@ -203,20 +207,7 @@ object HypothesisSolver {
         // Try the minimum proof depth first. Three independent guesses
         // must NEVER be misclassified as a three-level nested proof.
         for (depth in 1..maxDepth) {
-            val context = ProofSearchContext(
-                nodeLimit = when {
-                    depth >= 4 -> 8_000
-                    depth >= 3 -> 4_000
-                    else -> 2_500
-                },
-                deadlineNanos = System.nanoTime() +
-                    when {
-                        depth >= 4 -> 2_500_000_000L
-                        depth >= 3 -> 1_500_000_000L
-                        else -> 850_000_000L
-                    },
-                shouldCancel = shouldCancel
-            )
+            val context = ProofSearchContext(shouldCancel)
 
             for (choice in choices) {
                 if (context.truncated) break
@@ -316,7 +307,7 @@ object HypothesisSolver {
         var nestedDepthUsed = 0
         var outcome: BranchOutcome = BranchOutcome.Inconclusive
 
-        for (iteration in 0 until puzzle.size * puzzle.size * 20) {
+        while (true) {
             if (!context.allowVisit()) break
             if (hasContradiction(
                     puzzle, state.confirmed, state.excluded
@@ -334,7 +325,12 @@ object HypothesisSolver {
                 puzzle, state.confirmed, state.excluded, rules
             )
             if (step != null) {
+                val previousConfirmed = state.confirmed.toSet()
+                val previousExcluded = state.excluded.toSet()
                 applyStep(step, state)
+                if (previousConfirmed == state.confirmed &&
+                    previousExcluded == state.excluded
+                ) break
                 continue
             }
 
