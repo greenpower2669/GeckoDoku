@@ -8,9 +8,6 @@ object WorkshopXWingTwoLayer {
         step?.technique == SolveTechnique.GECKO_X_WING &&
             step.eliminated.isNotEmpty()
 
-    /** Detection itself never promotes or approves a board. */
-    fun isPromotedAutomatically(step: SolveStep?): Boolean = false
-
     fun afterProof(
         previous: WorkshopXWingStatus,
         interrupted: Boolean,
