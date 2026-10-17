@@ -28,16 +28,48 @@ private sealed class BranchOutcome {
     object Inconclusive : BranchOutcome()
 }
 
-// One proof context may run until logically exhausted. Only a genuine
-// Android stop/thermal pause may interrupt it; no time or node quota.
+// Cache of logically resolved subtrees. No result from a paused search is
+// stored as a mathematical conclusion. Persistent maps are puzzle-scoped.
 private class ProofSearchContext(
-    private val shouldCancel: () -> Boolean
+    private val shouldCancel: () -> Boolean,
+    private val saved: MutableMap<String, String>,
+    private val namespace: String,
+    private val onPersist: (Map<String, String>) -> Unit
 ) {
-    val memo = HashMap<String, BranchOutcome>()
+    private var pending = 0
     var visited: Long = 0
         private set
     var truncated = false
         private set
+
+    fun cached(key: String): BranchOutcome? =
+        when (val code = saved[namespace + key]) {
+            "S" -> BranchOutcome.Solved
+            "I" -> BranchOutcome.Inconclusive
+            null -> null
+            else -> code.takeIf { it.startsWith("C") }
+                ?.drop(1)?.toIntOrNull()?.let(BranchOutcome::Contradiction)
+        }
+
+    fun remember(key: String, value: BranchOutcome) {
+        val code = when (value) {
+            is BranchOutcome.Contradiction -> "C" + value.depth
+            BranchOutcome.Solved -> "S"
+            BranchOutcome.Inconclusive -> "I"
+        }
+        val fullKey = namespace + key
+        if (saved[fullKey] == code) return
+        saved[fullKey] = code
+        pending += 1
+        if (pending >= 64) flush()
+    }
+
+    fun flush() {
+        if (pending > 0) {
+            onPersist(saved)
+            pending = 0
+        }
+    }
 
     fun allowVisit(): Boolean {
         if (Thread.currentThread().isInterrupted || shouldCancel()) {
@@ -55,7 +87,9 @@ object HypothesisSolver {
         maxDepth: Int,
         maxHypothesisSteps: Int,
         shouldCancel: () -> Boolean = { false },
-        rules: SolverRules = SolverRules.FULL
+        rules: SolverRules = SolverRules.FULL,
+        proofMemo: MutableMap<String, String> = mutableMapOf(),
+        onProofCheckpoint: (Map<String, String>) -> Unit = {}
     ): HypothesisAnalysis {
         val state = LogicState(
             linkedSetOf<Cell>().apply {
@@ -148,7 +182,9 @@ object HypothesisSolver {
                     maxDepth,
                     shouldCancel,
                     onLimitHit = { proofBudgetExhausted = true },
-                    rules = rules
+                    rules = rules,
+                    proofMemo = proofMemo,
+                    onProofCheckpoint = onProofCheckpoint
                 ) ?: return HypothesisAnalysis(
                     false,
                     steps,
@@ -194,7 +230,9 @@ object HypothesisSolver {
         maxDepth: Int,
         shouldCancel: () -> Boolean = { false },
         onLimitHit: () -> Unit = {},
-        rules: SolverRules = SolverRules.FULL
+        rules: SolverRules = SolverRules.FULL,
+        proofMemo: MutableMap<String, String> = mutableMapOf(),
+        onProofCheckpoint: (Map<String, String>) -> Unit = {}
     ): SolveStep? {
         if (maxDepth <= 0 || shouldCancel() ||
             Thread.currentThread().isInterrupted) {
@@ -207,9 +245,13 @@ object HypothesisSolver {
         // Try the minimum proof depth first. Three independent guesses
         // must NEVER be misclassified as a three-level nested proof.
         for (depth in 1..maxDepth) {
-            val context = ProofSearchContext(shouldCancel)
-
-            for (choice in choices) {
+            val namespace = "${rules.regionLocked}:" +
+                "${rules.regionTouchProjection}:${rules.xWing}:"
+            val context = ProofSearchContext(
+                shouldCancel, proofMemo, namespace, onProofCheckpoint
+            )
+            try {
+                for (choice in choices) {
                 if (context.truncated) break
                 val first = proveContradiction(
                     puzzle,
@@ -277,9 +319,13 @@ object HypothesisSolver {
                 }
             }
 
-            if (context.truncated) {
-                onLimitHit()
-                return null
+                if (context.truncated) {
+                    onLimitHit()
+                    return null
+                }
+            } finally {
+                // Reached also by early returns from a successful deduction.
+                context.flush()
             }
         }
         return null
@@ -298,7 +344,7 @@ object HypothesisSolver {
         val key = stateKey(
             puzzle, initialConfirmed, initialExcluded, remainingDepth
         )
-        context.memo[key]?.let { return it }
+        context.cached(key)?.let { return it }
 
         val state = LogicState(
             linkedSetOf<Cell>().apply { addAll(initialConfirmed) },
@@ -428,11 +474,10 @@ object HypothesisSolver {
             outcome = BranchOutcome.Contradiction(nestedDepthUsed)
         }
 
-        // Never memoize a result from an interrupted or truncated search.
-        if (!context.truncated &&
-            outcome !is BranchOutcome.Inconclusive
-        ) {
-            context.memo[key] = outcome
+        // An exhausted search at this exact remaining depth is a
+        // definitive no-proof outcome, NOT an interrupted result.
+        if (!context.truncated) {
+            context.remember(key, outcome)
         }
         return outcome
     }
