@@ -102,7 +102,8 @@ class InfernalWorkshopService : Service() {
         val store = InfernalWorkshopStore(this)
         val manager = getSystemService(NotificationManager::class.java)
         val power = getSystemService(PowerManager::class.java)
-        var exploreArchivedXWing = true
+        var exploreComparisons = true
+        var preferH1 = true
         val xWingQueue = WorkshopXWingQueueStore(this)
         try {
             while (!canceled.get() && InfernalWorkshopScheduler.isEnabled(this)) {
@@ -129,17 +130,33 @@ class InfernalWorkshopService : Service() {
                     continue
                 }
 
-                // Two cooperative layers on the same service thread:
-                // 1) generate/reduce and archive unique X-Wing boards;
-                // 2) independently prove archived boards with H2–H4.
-                // Alternating completed operations prevents either queue
-                // from being starved; an interrupted board remains pending.
+                // A/B tests: same durable X-Wing puzzles, two independent
+                // proof contracts, with generation interleaved between
+                // completed evaluations. Old v7 outcome fields are preserved.
                 val checkpoints = WorkshopCheckpointStore(this)
-                val archived = if (exploreArchivedXWing) xWingQueue.nextPending()
-                    else null
-                if (archived != null) {
-                    exploreArchivedXWing = false
-                    val board = archived.puzzle
+                val preferred = if (preferH1) {
+                    WorkshopComparisonLane.H1_XWING
+                } else {
+                    WorkshopComparisonLane.H2_NO_XWING
+                }
+                val secondary = if (preferH1) {
+                    WorkshopComparisonLane.H2_NO_XWING
+                } else {
+                    WorkshopComparisonLane.H1_XWING
+                }
+                val firstBoard = if (exploreComparisons) {
+                    xWingQueue.nextUntried(preferred)
+                } else null
+                val otherBoard = if (exploreComparisons && firstBoard == null) {
+                    xWingQueue.nextUntried(secondary)
+                } else null
+                val experimental = firstBoard ?: otherBoard
+                val lane = if (firstBoard != null) preferred else secondary
+
+                if (experimental != null) {
+                    exploreComparisons = false
+                    preferH1 = !preferH1
+                    val board = experimental.puzzle
                     var lastProofPulse = System.nanoTime()
                     fun proofPaused(): Boolean {
                         val now = System.nanoTime()
@@ -155,45 +172,48 @@ class InfernalWorkshopService : Service() {
                                 power.currentThermalStatus >= PowerManager.THERMAL_STATUS_SEVERE)
                     }
                     InfernalWorkshopScheduler.setPhase(
-                        this, "COUCHE 2 • PREUVE X-WING ${board.size}×${board.size}"
+                        this, "COMPARATIF ${lane.label} • ${board.size}×${board.size}"
                     )
                     notifyProgress(
-                        manager,
-                        "Couche 2 • X-Wing ${board.size}×${board.size} • hypothèses H2–H4",
+                        manager, "Atelier • ${lane.label} • ${board.size}×${board.size}",
                         true
                     )
                     try {
-                        val proof = PuzzleGenerator.proveArchivedXWingCandidate(
-                            board, shouldCancel = { proofPaused() },
+                        val outcome = PuzzleGenerator.proveArchivedComparison(
+                            board, lane,
+                            shouldCancel = { proofPaused() },
                             proofArchive = checkpoints
                         )
-                        if (!proofPaused()) {
-                            if (proof != null) {
-                                val saved = store.add(proof)
-                                Log.i(LOG, "XWING_PROVED size=${board.size} saved=$saved")
-                            }
-                            xWingQueue.complete(
-                                archived.id, proofAccepted = proof != null
+                        if (!proofPaused() && outcome != null) {
+                            xWingQueue.completeExperiment(
+                                experimental.id, lane, outcome
+                            )
+                            Log.i(LOG,
+                                "COMPARISON_COMPLETE lane=${lane.name} size=${board.size} " +
+                                    "match=${outcome.match} depth=${outcome.depth}"
                             )
                             MediaTrace.event(
-                                source = LOG, event = "XWING_EXPLORED",
-                                detail = "size=${board.size} accepted=${proof != null}"
+                                source = LOG, event = "COMPARISON_COMPLETE",
+                                detail = "lane=${lane.name} size=${board.size} " +
+                                    "match=${outcome.match}"
                             )
                         } else {
-                            Log.i(LOG, "XWING_PAUSED id=${archived.id.take(12)}")
+                            Log.i(LOG,
+                                "COMPARISON_PAUSED lane=${lane.name} id=${experimental.id.take(12)}"
+                            )
                         }
                     } catch (error: Exception) {
-                        val label = "XWING_PROOF_ERROR ${board.size}×${board.size}: " +
+                        val label = "COMPARISON_ERROR ${lane.name} ${board.size}×${board.size}: " +
                             error.javaClass.simpleName + ": " + error.message
                         InfernalWorkshopScheduler.reportProblem(this, label)
                         Log.e(LOG, label, error)
-                        // Keep PENDING on failures; a later retry may succeed.
+                        // Preserve the existing puzzle without writing a verdict.
                         if (!rest(2_000L)) break
                     }
                     if (!rest(250L)) break
                     continue
                 }
-                exploreArchivedXWing = true
+                exploreComparisons = true
 
                 val previous = checkpoints.load()
                 val size = previous?.size ?: InfernalWorkshopScheduler.claimNextSize(this)
