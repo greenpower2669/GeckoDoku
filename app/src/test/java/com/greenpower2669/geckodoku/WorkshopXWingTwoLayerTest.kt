@@ -21,6 +21,24 @@ class WorkshopXWingTwoLayerTest {
         ))
     }
 
+    @Test fun uniqueFiveByFiveCanBeObservedBeforeDeepProof() {
+        // Complete legal solution. The first two given Gecko have a
+        // unique completion, and leave an observable column X-Wing.
+        val cols = intArrayOf(0, 2, 4, 1, 3)
+        val puzzle = Puzzle(
+            id = "two-layer-observation",
+            size = 5,
+            regions = IntArray(25) { it / 5 },
+            solutionCols = cols,
+            givens = setOf(Cell(0, 0), Cell(1, 2))
+        )
+        assertTrue(PuzzleGenerator.hasExactlyOneSolution(puzzle))
+        val detection = HumanSolver.firstObservableGeckoXWing(puzzle)
+        assertTrue("A real eliminable X-Wing must be found",
+            WorkshopXWingTwoLayer.isProspect(detection))
+        assertTrue(detection!!.eliminated.isNotEmpty())
+    }
+
     @Test fun interruptedProofKeepsProspectPending() {
         assertEquals(
             WorkshopXWingStatus.PENDING,
