@@ -77,6 +77,17 @@ class InfernalWorkshopContractTest {
     }
 
     @Test
+    fun cancellationIsIncompleteNotAProofOfImpossibility() {
+        val result = HypothesisSolver.analyze(
+            puzzle = puzzle(), maxDepth = 4,
+            maxHypothesisSteps = Int.MAX_VALUE,
+            shouldCancel = { true }
+        )
+        assertFalse(result.solved)
+        assertTrue(result.exhaustedBudget)
+    }
+
+    @Test
     fun noXWingSolverStillRecognizesFullyCompletedBoard() {
         val result = HypothesisSolver.analyze(
             puzzle = puzzle(),
