@@ -44,7 +44,8 @@ data class WorkshopXWingStats(
     val detected: Int,
     val pending: Int,
     val promising: Int,
-    val explored: Int
+    val explored: Int,
+    val comparisons: Map<WorkshopComparisonLane, WorkshopComparisonStats> = emptyMap()
 )
 
 class WorkshopXWingQueueStore(context: Context) {
@@ -102,18 +103,7 @@ class WorkshopXWingQueueStore(context: Context) {
     }
 
     fun comparisonStats(): Map<WorkshopComparisonLane, WorkshopComparisonStats> =
-        synchronized(lock) {
-            val all = records()
-            WorkshopComparisonLane.entries.associateWith { lane ->
-                val seen = all.mapNotNull { it.laboratory[lane] }
-                WorkshopComparisonStats(
-                    total = all.size,
-                    pending = all.size - seen.size,
-                    matched = seen.count { it.verdict == WorkshopComparisonVerdict.MATCH },
-                    rejected = seen.count { it.verdict == WorkshopComparisonVerdict.NO_MATCH }
-                )
-            }
-        }
+        stats().comparisons
 
     fun matching(lane: WorkshopComparisonLane, size: Int? = null): List<WorkshopXWingProspect> =
         synchronized(lock) {
@@ -145,7 +135,16 @@ class WorkshopXWingQueueStore(context: Context) {
             detected = all.size,
             pending = all.count { it.status == WorkshopXWingStatus.PENDING },
             promising = all.count { it.status == WorkshopXWingStatus.PROMISING },
-            explored = all.count { it.status == WorkshopXWingStatus.EXPLORED }
+            explored = all.count { it.status == WorkshopXWingStatus.EXPLORED },
+            comparisons = WorkshopComparisonLane.entries.associateWith { lane ->
+                val seen = all.mapNotNull { it.laboratory[lane] }
+                WorkshopComparisonStats(
+                    total = all.size,
+                    pending = all.size - seen.size,
+                    matched = seen.count { it.verdict == WorkshopComparisonVerdict.MATCH },
+                    rejected = seen.count { it.verdict == WorkshopComparisonVerdict.NO_MATCH }
+                )
+            }
         )
     }
 
