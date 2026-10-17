@@ -42,7 +42,7 @@ Notification Play Console : nouvelle Upload Key prévue active le 14/10/2026 à 
 3. `sauvegarde.md` = archive froide.
 4. Aucun merge `main`, Release ou prerelease sans ordre explicite de Fab.
 5. Ne pas modifier gameplay/médias source hors cause démontrée.
-6. **Règle immuable — lien APK direct GitHub :** lorsque Fab demande « APK décompressé sur GitHub » après CI verte, ne **jamais** proposer un lien Actions/Artifacts ZIP comme s'il s'agissait du fichier APK. Fournir un lien HTTPS finissant par `.apk`, hébergé comme asset d'une **prérelease TEMP** propre au run concerné (et son `.sha256`), sans dépôt Git de gros binaire, merge `main`, Release stable ni publication Play. Une demande explicite d'APK direct vaut autorisation de créer uniquement cette prérelease TEMP de test ; aucune autorisation générale pour les Releases stables. Vérifier l'existence du lien avant d'annoncer la réussite.
+6. **Règle immuable — APK direct pour Fab :** sur la branche/fork en cours, faire **décompresser l’artefact ZIP par GitHub Actions dans un dossier temporaire GitHub**, vérifier le SHA-256, puis publier le `.apk` **brut** en asset d’une **prérelease TEMP**. Livrer uniquement un lien GitHub direct finissant par `.apk`, vérifié : **jamais de ZIP à télécharger ou dézipper pour Fab** (place disque limitée). Ne pas committer le gros APK, merger `main` ni publier Play. La demande d’APK autorise cette seule prérelease TEMP, pas une Release stable.
 7. **Réponses brèves :** dire ce qui est fait, GREEN ou non, et donner le lien direct ; éviter les explications répétitives.
 
 ## Contrat HOF
