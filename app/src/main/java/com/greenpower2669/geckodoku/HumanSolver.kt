@@ -100,6 +100,23 @@ object HumanSolver {
         )
     }
 
+    /**
+     * Look for a real non-empty Gecko X-Wing elimination on this board.
+     * Observation does not imply that X-Wing is necessary for a final proof.
+     * Include a direct pattern before deterministic deductions (which could
+     * otherwise hide a valid X-Wing), then the normal logical trace.
+     */
+    fun firstObservableGeckoXWing(puzzle: Puzzle): SolveStep? {
+        val direct = findGeckoXWingElimination(
+            puzzle, puzzle.givens, candidates(puzzle, puzzle.givens, emptySet())
+        )
+        if (direct != null) return direct
+        return analyze(puzzle).steps.firstOrNull {
+            it.technique == SolveTechnique.GECKO_X_WING &&
+                it.eliminated.isNotEmpty()
+        }
+    }
+
     fun nextStep(
         puzzle: Puzzle,
         confirmed: Set<Cell>,
