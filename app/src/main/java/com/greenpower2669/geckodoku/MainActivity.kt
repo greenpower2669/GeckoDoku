@@ -14620,8 +14620,7 @@ class MainActivity : Activity() {
                 "${h1Lab?.rejected ?: 0} ÉCARTÉES / ${h1Lab?.pending ?: 0} À TESTER" +
             "\nH2 SANS X-WING : ${h2Lab?.matched ?: 0} RETENUES / " +
                 "${h2Lab?.rejected ?: 0} ÉCARTÉES / ${h2Lab?.pending ?: 0} À TESTER" +
-            "\nX-WING DÉTECTÉS : ${wings.detected} • À EXPLORER : ${wings.pending}" +
-            "\nHISTORIQUE V7 • PROMETTEURS : ${wings.promising} • EXPLORÉS : ${wings.explored}" +
+            "\nARCHIVES X-WING : ${wings.detected} • HISTORIQUE V7 : ${wings.explored} explorées" +
             "\nESSAIS V6 : $abAttempts • UNIQUES : $unique" +
             "\nCANDIDATS V6 : $abSaved" +
             "\nCURSEUR : " + (if (checkpoint == null) "aucun" else
