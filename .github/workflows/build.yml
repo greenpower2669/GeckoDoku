@@ -47,7 +47,7 @@ jobs:
             "$path/$apk#$apk" \
             "$path/$apk.sha256#$apk.sha256" \
             --repo "$GITHUB_REPOSITORY" \
-            --target "$source_sha" \
+            --target "$GITHUB_SHA" \
             --title "TEMP GeckoDoku v8 - H1 X-Wing / H2 sans X-Wing - #607" \
             --notes "Test Android, APK direct non ZIP issu du run GREEN #607, commit source $source_sha. Vérification SHA-256 faite sur runner GitHub. Sans merge main, sans publication Play. Validation téléphone Fab requise." \
             --prerelease
