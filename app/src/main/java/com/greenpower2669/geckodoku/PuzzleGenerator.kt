@@ -131,6 +131,67 @@ object PuzzleGenerator {
         return proveWorkshopCandidate(candidate, shouldCancel, proofArchive)
     }
 
+    /**
+     * Laboratory A/B evaluation on one archived X-Wing puzzle. Returns null
+     * ONLY on interruption, so a suspended proof stays pending.
+     * Unlike proveWorkshopCandidate, this does not certify Infernal H2-H4.
+     */
+    fun proveArchivedComparison(
+        candidate: Puzzle,
+        lane: WorkshopComparisonLane,
+        shouldCancel: () -> Boolean = { false },
+        proofArchive: WorkshopProofMemoArchive? = null
+    ): WorkshopComparisonResult? {
+        if (shouldCancel()) return null
+        val unique = hasExactlyOneSolution(candidate, shouldCancel)
+        if (shouldCancel()) return null
+        if (!unique) return WorkshopComparisonResult(false, 0, 0, 0)
+
+        val memo = proofArchive?.load(candidate) ?: mutableMapOf()
+        val persist: (Map<String, String>) -> Unit = {
+            proofArchive?.persist(candidate, it)
+        }
+        val proof = HypothesisSolver.analyze(
+            puzzle = candidate,
+            maxDepth = lane.depth,
+            maxHypothesisSteps = Int.MAX_VALUE,
+            shouldCancel = shouldCancel,
+            rules = lane.rules,
+            proofMemo = memo,
+            onProofCheckpoint = persist
+        )
+        if (shouldCancel() || proof.exhaustedBudget) return null
+
+        // True nested H2 requires an unsuccessful, completed H1 proof under
+        // the SAME rules. Never reject a canceled or incomplete H1 search.
+        val shallow = if (
+            lane == WorkshopComparisonLane.H2_NO_XWING &&
+            proof.solved && proof.maxHypothesisDepth == 2
+        ) {
+            HypothesisSolver.analyze(
+                puzzle = candidate,
+                maxDepth = 1,
+                maxHypothesisSteps = Int.MAX_VALUE,
+                shouldCancel = shouldCancel,
+                rules = SolverRules.NO_X_WING,
+                proofMemo = memo,
+                onProofCheckpoint = persist
+            )
+        } else null
+        if (shouldCancel() || shallow?.exhaustedBudget == true) return null
+
+        val wingCount = proof.steps.count {
+            it.technique == SolveTechnique.GECKO_X_WING &&
+                it.eliminated.isNotEmpty()
+        }
+        return WorkshopComparisonResult(
+            match = WorkshopComparisonPolicy.qualifies(lane, proof, shallow),
+            hypothesisCount = proof.hypothesisCount,
+            xWingCount = wingCount,
+            depth = proof.maxHypothesisDepth
+        )
+    }
+
     private fun proveWorkshopCandidate(
         candidate: Puzzle,
         shouldCancel: () -> Boolean,
