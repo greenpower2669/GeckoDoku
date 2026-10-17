@@ -29,7 +29,9 @@ object PuzzleGenerator {
         onFirstUnique: () -> Unit = {},
         resume: WorkshopDeletionProgress? = null,
         onCheckpoint: (WorkshopDeletionProgress) -> Unit = {},
-        proofArchive: WorkshopProofMemoArchive? = null
+        proofArchive: WorkshopProofMemoArchive? = null,
+        onXWingDetected: (Puzzle, SolveStep) -> Unit = { _, _ -> },
+        deferDetectedXWingProof: Boolean = false
     ): WorkshopCandidateProof? {
         require(size in InfernalWorkshopPolicy.sizes)
         require(resume == null || (resume.size == size && resume.seed == seed))
@@ -79,9 +81,21 @@ object PuzzleGenerator {
                     continue
                 }
 
-                val proved = proveWorkshopCandidate(
-                    probe, shouldCancel, proofArchive
-                )
+                // Layer 1: preserve every distinct UNIQUE grid with an
+                // actual Gecko X-Wing elimination before deep H2-H4 work.
+                // The callback saves it durably before we advance the cursor.
+                val observedWing = HumanSolver.firstObservableGeckoXWing(probe)
+                if (shouldCancel()) return null
+                if (WorkshopXWingTwoLayer.isProspect(observedWing)) {
+                    onXWingDetected(probe, observedWing!!)
+                }
+                // Layer 2 will prove the archived X-Wing boards; legacy
+                // path still examines all other grids without losing them.
+                val proved = if (deferDetectedXWingProof && observedWing != null) {
+                    null
+                } else {
+                    proveWorkshopCandidate(probe, shouldCancel, proofArchive)
+                }
                 if (shouldCancel()) return null
                 // Count a finished uniqueness test once, never a canceled
                 // proof that will be retried from the same cursor.
@@ -98,6 +112,23 @@ object PuzzleGenerator {
             onCheckpoint(WorkshopDeletionProgress(size, seed, attempt + 1, 0, emptySet()))
         }
         return null
+    }
+
+    /**
+     * Second workshop layer: inspect one recorded X-Wing prospect with the
+     * SAME H2-H4, uniqueness, and no-X-Wing exclusion contract as v6.
+     * Returning null does not mean the search should forget the record:
+     * the service checks pause/cancel before marking it explored.
+     */
+    fun proveArchivedXWingCandidate(
+        candidate: Puzzle,
+        shouldCancel: () -> Boolean = { false },
+        proofArchive: WorkshopProofMemoArchive? = null
+    ): WorkshopCandidateProof? {
+        if (shouldCancel()) return null
+        if (!hasExactlyOneSolution(candidate, shouldCancel)) return null
+        if (shouldCancel()) return null
+        return proveWorkshopCandidate(candidate, shouldCancel, proofArchive)
     }
 
     private fun proveWorkshopCandidate(
