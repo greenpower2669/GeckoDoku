@@ -466,3 +466,6 @@ Autorisation Fab « Ok, gogogo ». Branche indépendante `feature/classic-worksh
 
 ## Nouvelle couche X-Wing v7
 `feature/classic-workshop-xwing-two-layer-v7` (17/10/2026) : voir [mission 020](missions/GECKO-CLASSIC-WORKSHOP-XWING-LAYER-020.md) et `todo.md`. Deux flux : détecter/archiver X-Wing puis reprendre les grilles en preuve approfondie, avec validation humaine seule. `WorkshopXWingQueueStore.kt`, `WorkshopXWingTwoLayer.kt`, `InfernalWorkshopService.kt`; recherche par retrait v6 préservée.
+
+## Atelier expérimental v8 (17/10/2026)
+Comparatif H1 + Gecko X-Wing versus H2 sans Gecko X-Wing dans `feature/classic-workshop-h1-xwing-h2-no-xwing-v8`. Deux verdicts de laboratoire par grille X-Wing archivée, sans toucher au contrat Infernal H2–H4. Voir `missions/GECKO-CLASSIC-WORKSHOP-COMPARISON-021.md`, `WorkshopComparisonPolicy.kt`, `WorkshopXWingQueueStore.kt`, `todo.md`.

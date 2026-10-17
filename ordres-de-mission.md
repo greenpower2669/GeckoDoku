@@ -360,3 +360,6 @@ Autorisation du codage sur `feature/classic-workshop-resumable-deletion-v6` : re
 
 ## Mission 020 — 17/10/2026, ordre Fab « rajoute cette couche^^ »
 Mettre en place, sur une branche distincte v7 issue du v6, une première couche qui détecte et archive chaque grille unique présentant un Gecko X-Wing et une seconde couche qui explore ces archives par preuves H2–H4 et test X-Wing obligatoire 8–12. Ne jamais confondre détection et nécessité ; aucune approbation automatique, aucune perte des pistes à l'interruption, aucune limite arbitraire d'abandon. Préserver méthode par retrait et protections Android. Voir `missions/GECKO-CLASSIC-WORKSHOP-XWING-LAYER-020.md`. Aucun merge `main`, aucune Release, aucune signature Play ou publication sans nouveau feu vert.
+
+## Mission 021 — 17/10/2026 : « Voir les deux »
+Fab demande de comparer les deux méthodes assouplies du workshop : une hypothèse H1 avec X-Wing et deux hypothèses imbriquées H2 sans X-Wing. Conserver les X-Wing archivés et visualiser deux listes/compteurs indépendants de grilles prouvées, sans réécrire l'Infernal H2–H4 ni homologuer des grilles non approuvées. Protocole dans `missions/GECKO-CLASSIC-WORKSHOP-COMPARISON-021.md`, branche expérimentale `feature/classic-workshop-h1-xwing-h2-no-xwing-v8`; pas de merge main / Release / Play sans nouvel ordre.

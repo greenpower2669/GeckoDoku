@@ -533,3 +533,14 @@ Autorisation Fab « Ok, gogogo ». Travail sur `feature/classic-workshop-resumab
 - [ ] Vérifier alternance réelle si une démonstration H4 bloque longtemps, protection thermique et croissance archive dans Android.
 - [ ] Tests téléphone Samsung 5×5–12×12, redémarrage, écran verrouillé, reprise et contrôle de démonstration.
 - [ ] Aucun merge main, Release ou Play sans feu vert.
+
+## Mission 021 — comparatif H1 + X-Wing / H2 sans X-Wing (17/10/2026)
+- [x] Branch `feature/classic-workshop-h1-xwing-h2-no-xwing-v8` depuis v7, v7 et main préservées.
+- [x] Politique A/B : H1 exactement une hypothèse avec X-Wing utilisé ; H2 imbriquée, no-X-Wing, exclusion H1.
+- [x] Compteurs et verdicts persistants indépendants sur mêmes grilles X-Wing, schéma JSON rétrocompatible et pause sans faux échec.
+- [x] Interface « Comparer H1 + X-Wing / H2 sans X-Wing », compteurs distincts, listes et aperçu de jeu NON homologué.
+- [ ] Valider CI de la dernière révision complète.
+- [ ] Contrôler sur Samsung les 3 770+ archives reprises, durée de recherche, résultats des deux pistes, ouverture de grilles et absence de réinitialisation.
+- [ ] Biais d'échantillonnage : la piste B est évaluée sur les grilles X-Wing sauvegardées, pas toutes les grilles uniques. Ajouter plus tard une source généraliste pour B si souhaitée.
+- [ ] Tester performance des calculs stats et lecture JSON sur bibliothèques très volumineuses.
+- [ ] Grilles expérimentales jamais éligibles Infernal automatiquement ; garde main/Play.
