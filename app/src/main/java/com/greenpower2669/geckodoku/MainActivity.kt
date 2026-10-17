@@ -14601,9 +14601,10 @@ class MainActivity : Activity() {
         }
         val current = InfernalWorkshopScheduler.currentSize(this)
         val totalInLibrary = InfernalWorkshopStore(this).list().size
-        val abAttempts = InfernalWorkshopScheduler.forwardAttempts(this)
-        val abSaved = InfernalWorkshopScheduler.forwardSaved(this)
-        val unique = InfernalWorkshopScheduler.forwardUniqueBoundaries(this)
+        val abAttempts = InfernalWorkshopScheduler.deletionAttempts(this)
+        val abSaved = InfernalWorkshopScheduler.deletionSaved(this)
+        val unique = InfernalWorkshopScheduler.deletionUniqueBoundaries(this)
+        val checkpoint = WorkshopCheckpointStore(this).load()
         val heartbeat = InfernalWorkshopScheduler.lastHeartbeat(this)
         val latest = if (heartbeat == 0L) "jamais" else
             "il y a " + ((System.currentTimeMillis() - heartbeat)
@@ -14635,10 +14636,10 @@ class MainActivity : Activity() {
                 it.status == WorkshopStatus.VALIDATED
             }
             val trials = InfernalWorkshopScheduler.attemptsFor(this, size)
-            val abTrials = InfernalWorkshopScheduler.forwardAttemptsFor(
+            val abTrials = InfernalWorkshopScheduler.deletionAttemptsFor(
                 this, size
             )
-            val unique = InfernalWorkshopScheduler.forwardUniqueFor(this, size)
+            val unique = InfernalWorkshopScheduler.deletionUniqueFor(this, size)
             val finished = InfernalWorkshopScheduler.completedFor(this, size)
             val errors = InfernalWorkshopScheduler.errorsFor(this, size)
             val found = InfernalWorkshopScheduler.savedFor(this, size)
@@ -14647,7 +14648,7 @@ class MainActivity : Activity() {
             } else {
                 "X-Wing facultatif"
             }
-            "$size×$size • $trials lancées (dont $abTrials en pose progressive) • " +
+            "$size×$size • $trials lancées (dont $abTrials par retrait) • " +
                 "$unique frontières uniques • $finished terminées • "
                 "$found enregistrées • $errors erreurs • " +
                 "${puzzles.size} grilles ($approved validées) • $condition"
