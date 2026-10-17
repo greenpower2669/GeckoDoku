@@ -161,7 +161,8 @@ class InfernalWorkshopService : Service() {
                             InfernalWorkshopScheduler.markDeletionUnique(this, size)
                         },
                         resume = previous,
-                        onCheckpoint = { checkpoints.save(it) }
+                        onCheckpoint = { checkpoints.save(it) },
+                        proofArchive = checkpoints
                     )
 
                     val paused = canceled.get() ||
