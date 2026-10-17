@@ -503,3 +503,20 @@ GitHub Actions workflow `Build GeckoDoku phone APK` run **#568** id `38969577659
 
 ## Livraison APK direct mission 018 — 17/10/2026
 À la demande « Ok je l attends », publication de l'APK téléphone de test construit en CI #568 (source `2ba3dc5daf4021376003b8376a0834b3725e1453`). GitHub Actions #569 run `38977217042` GREEN, job `publish_temp_apk_568` SUCCESS ; SHA256 validé `4f65aa420229e041fdf533f6e867713cd7ae155624623cc934bf854ae875763d`, APK brut vérifié comme asset GitHub Release temporaire `temp-geckodoku-workshop-forward-run568`, taille 300771417 octets : https://github.com/greenpower2669/GeckoDoku/releases/download/temp-geckodoku-workshop-forward-run568/GeckoDoku-v0.15.45-dev.apk (à ne pas confondre avec ZIP Actions). Fichier .sha256 dans la même prerelease. Le nouveau workflow GitHub ne recompile pas le code sur le commit de publication `[temp-apk-run568]` et ne touche pas `main`. Aucune Release stable, Play ou merge ; validation de la recherche par pose réelle sur Samsung encore attendue.
+
+## Mission 019 — atelier Infernal par retrait / reprise (17/10/2026)
+
+Autorisation Fab « Ok, gogogo ». Travail sur `feature/classic-workshop-resumable-deletion-v6`, **aucun merge main, aucune Release**. Spécification : `missions/GECKO-CLASSIC-WORKSHOP-RESUME-019.md`.
+
+- [x] Remplacer le parcours de pose additive par solution complète puis retrait ; si retrait supprime l'unicité, conserver le Gecko.
+- [x] Créer un curseur série/géométrie/retrait/indices persisté par Android SharedPreferences.commit().
+- [x] Prioriser le curseur sauvegardé à la reprise du service et le garder lors d'un STOP ou d'une pause thermique/batterie.
+- [x] Retirer le cutoff de 20 s dans le service ; retirer les quotas 850 ms / 1,5 s / 2,5 s et le nombre maximum de nœuds dans HypothesisSolver.
+- [x] Ne pas traiter l'interruption `shouldCancel` comme une impossibilité logique.
+- [x] Isoler les compteurs v6 des essais additifs v5 (anciens compteurs non effacés).
+- [x] Ajouter tests de sérialisation du curseur, retrait/restauration, annulation indécise.
+- [ ] **IMPORTANT : reprendre en plein milieu d'une récursion de preuve H2–H4.** Pour l'instant, le checkpoint conserve le retrait/les indices, mais une preuve partiellement explorée doit être recalculée après interruption. Il faudra sérialiser explicitement les cadres DFS / choix restants / mémos (avec version et validation) pour satisfaire entièrement la reprise « branches restantes ». Ne pas déclarer cette exigence satisfaite.
+- [ ] Prouver par tests et recette que les comparaisons H1 / X-Wing sont exhaustives aux règles H4 et que les grilles n'échappent pas au contrat.
+- [ ] Vérifier CI complète finale : tests JVM, APK phone, Pierre, sprites 240p, aucune action de publication automatique.
+- [ ] Tester sur Samsung (chauffe, pause, STOP, kill Android, batterie et plusieurs tailles).
+- [ ] Nouvelle APK directe uniquement après vérification et accord distinct de Fab ; jamais signer ni publier Play automatiquement.
