@@ -14610,9 +14610,11 @@ class MainActivity : Activity() {
             "il y a " + ((System.currentTimeMillis() - heartbeat)
                 .coerceAtLeast(0L) / 1000L) + " secondes"
         return "RECHERCHE $label" +
-            "\nTEST POSE PROGRESSIVE DES GECKO" +
-            "\nESSAIS V5 : $abAttempts • UNIQUES : $unique" +
-            "\nCANDIDATS V5 : $abSaved" +
+            "\nMÉTHODE V6 : RETRAIT DES GECKO" +
+            "\nESSAIS V6 : $abAttempts • UNIQUES : $unique" +
+            "\nCANDIDATS V6 : $abSaved" +
+            "\nCURSEUR : " + (if (checkpoint == null) "aucun" else
+                "${checkpoint.size}×${checkpoint.size}, géométrie ${checkpoint.attempt + 1}, retrait ${checkpoint.nextRemoval}") +
             "\nMOTEUR : " + InfernalWorkshopScheduler.phase(this) +
             "\nLANCÉES : $count • TERMINÉES : $completed" +
             "\nGRILLES SAUVEGARDÉES : $saved • ERREURS : $errors" +
