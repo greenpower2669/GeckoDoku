@@ -14651,7 +14651,7 @@ class MainActivity : Activity() {
                 "X-Wing facultatif"
             }
             "$size×$size • $trials lancées (dont $abTrials par retrait) • " +
-                "$unique frontières uniques • $finished terminées • "
+                "$unique frontières uniques • $finished terminées • " +
                 "$found enregistrées • $errors erreurs • " +
                 "${puzzles.size} grilles ($approved validées) • $condition"
         }.toTypedArray()
